@@ -19,8 +19,30 @@ The separate one-run control batch never obtained a host-heavy slot. It was canc
 while queued after the mutation stage proved all of its unmutated and no-op controls green.
 The predeclared fifty-run loaded batch remains the repetition proof.
 
-Final code at 202635627:
+Before probe isolation, at 202635627:
   scripts/check_wallclock.py: PASS, unchanged counts (2487 sites; 2352 baseline entries).
   scripts/check_personal_setup.py: 0 findings.
   Changed Python files parse; engine and installed copies are identical.
   git diff --check: PASS.
+
+The first repeated loaded batch found a suite 151 defect in the new handler probe:
+its direct call to space_supervise enabled subreaping in the suite process. The
+residue row then found five adopted children not reaped. These are failures, not
+load data. The mutation worker's controls had not exercised the dispatcher's residue row.
+Fix cd099f7c2 runs the handler-return probe in its own child, which is reaped normally.
+No product code changed. The first batch continues; none of its suite 151 results
+is counted toward the fresh fifty-run proof at cd099f7c2.
+Suites 71 and 83, and every file in their mutation-control opened-files records,
+are unchanged from 202635627 to cd099f7c2 (empty changed/opened intersections).
+Census after isolation: PASS, unchanged counts.
+
+Final loaded results at cd099f7c2:
+  Suites 71 and 83: fifty of fifty green each, unchanged throughout their batch.
+  Suite 151: fresh fifty of fifty green, including dispatcher residue checks.
+  Its first batch retained thirteen residue failures and thirty-seven passes; none counted above.
+  Four suite 151 mutants rechecked after probe isolation: all assertion-killed, controls green.
+  Both repetition generators applied; all 24 spinners and both writers alive to the end.
+  Detailed compact summaries: load50.txt and mutants.txt.
+Suite 160 remains unresolved; no timing red accepted as data and no fifty-run claim for it.
+Final documentation checks: personal setup 0 findings; diff whitespace check passed.
+New proof summaries total less than 8 KiB. Suite 157 and gate_unconfined.json unchanged.

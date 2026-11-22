@@ -21,3 +21,13 @@ space313-unread-started-after-the-run-left-out: assertion; target VELDO-0313 fix
 
 Load: applied=True; all 18 spinners and 2 writers alive=True; probe slowdown=4.822 (data).
 Every spinner consumed CPU: True; every writer wrote bytes: True.
+
+Suite 151 final probe-isolation recheck at cd099f7c2:
+host_heavy.sh; gate_load.py --slots 6; force-fresh; actual confined mutation workers.
+Stage passed; executed=4; rejected=4; invalid=0.
+space313-stop-after-the-command-ends-the-supervisor: assertion; target VELDO-0313 supervise/stop-after-the-command-ends-nothing
+space313-unread-bounded-by-a-read-parent: assertion; target VELDO-0313 fix3/unread-process-holds
+space313-unread-process-not-counted: assertion; target VELDO-0313 fix3/unread-process-holds
+space313-unread-started-after-the-run-left-out: assertion; target VELDO-0313 fix3/unread-process-holds
+Load applied=true; all 18 spinners and two writers alive; all CPU/byte counters positive.
+Probe slowdown=7.382 (data only).

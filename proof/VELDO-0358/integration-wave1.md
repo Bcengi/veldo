@@ -184,12 +184,15 @@ exceptions) is not changed by wave 1.
 
 ## 7. Open, for the lead and the owner
 
-Fix round 1 (base 850f7a1d): implementation commits a57c5b5f2, 48e9ec291, c4e83a70d and
-9209989ae and 202635627 address items 1 and 2. The loaded mutation stage rejected all fourteen
-cases by assertion with every control green and no invalid result
-([fix-round1/mutants.txt](fix-round1/mutants.txt)). The fifty-run proof is still pending; the blockers
-below are not yet closed. The initial loaded control found and fixed an absent-log read during service startup;
-[fix-round1/checks.txt](fix-round1/checks.txt) retains that failure and the static checks.
+Fix round 1 (base 850f7a1d; final implementation cd099f7c2) closes items 1 and 2 below.
+The loaded twelve-worker mutation stage rejected all fourteen selected cases by assertion with every
+control green and no invalid result. After isolating suite 151's handler probe, a fresh loaded stage
+again rejected its four cases by assertion ([fix-round1/mutants.txt](fix-round1/mutants.txt)).
+Suites 71, 83 and final suite 151 each passed fifty of fifty loaded runs through host_heavy.sh and
+the AC12 generator, with every generator alive and every CPU/byte counter positive
+([fix-round1/load50.txt](fix-round1/load50.txt)). Neither a hang bound nor a load measurement supplied
+a verdict. The startup-log and probe-residue failures found during this round are retained in
+[fix-round1/checks.txt](fix-round1/checks.txt). Item 3 remains the owner's decision; item 4 is unresolved.
 
 - Suite 83 reads the service's actual poll interests (`unwatched`), and rejects a completed pass
   whose orphan release remains pending after all launches and wakes are gone. Neither a receiver's
@@ -203,14 +206,19 @@ below are not yet closed. The initial loaded control found and fixed an absent-l
 - Suite 151 ends the churn wait when the supervisor's own holder list omitted the process whose
   exit should wake it. The stop row additionally invokes the installed handler through its return:
   an acknowledgement written before an eventual SystemExit cannot prove the handler returned.
-  The inherited stop mutant is unchanged.
+  The probe now runs in its own child (cd099f7c2): the first loaded repetition batch found that
+  calling space_supervise in the suite process enabled subreaping and left adopted children. That
+  failure is retained; a fresh fifty-run batch after isolation passed every run, including residue.
+  None of the first batch's suite 151 results counts toward that proof. The inherited stop mutant is unchanged.
 - Item 3 and scripts/gate_unconfined.json are untouched. Item 4 remains open: AC12's exact real-time
   sleep comparison conflicts with the requirement that its alone and loaded verdicts be independent
   of external scheduling. No red is relabelled as data or accepted as a passing row.
 
-BLOCKERS FOR THE GATE:
+BLOCKERS FOR THE GATE (original findings, with fix-round-1 dispositions):
 
-1. Four inherited mutants of suite 83 hang it (mutants-suite83.txt): loop154-pipe-not-polled (the pass after a
+1. **Closed by fix round 1:** the four suite 83 and four suite 71 cases below are rejected by assertion;
+   both suites passed fifty loaded runs. Original finding: four inherited mutants of suite 83 hang it
+   (mutants-suite83.txt): loop154-pipe-not-polled (the pass after a
    run's end never comes: the service holds the run and is neither idle nor ended), loop154-ask-reruns and
    loop154-account-slot-kept (the service is quiet for good but lists an orphan whose release is pending, which
    the suite's idle answer does not accept), loop154-orphan-not-stopped (under the profile the service itself
@@ -220,12 +228,14 @@ BLOCKERS FOR THE GATE:
    twice after it, still holding the run) and an idle answer that accepts a pending orphan and a timer further
    away than any wait. On an idle machine they ended three of the four on evidence; under load they made the
    unmutated suite red (7 of 32 loaded runs; loop/receiver-death five times, the waiting unit not offered in the
-   pass of the receiver's death), so suite 83 is as the loaded runs proved it. The fourth needs the product to
-   record that it made the orphan's stop before it waits. This goes back to brief F.
+   pass of the receiver's death). Those withdrawn changes are not used in fix round 1. The fourth needed the
+   product to record that it made the orphan's stop before it waits; the new record and its falsifier do so.
    The same in suite 71, four inherited cases (mutants-suite71.txt): owner-command-unrouted,
    service-skips-open-ingress, resume-drops-backlog and probe-on-the-real-bot each hang a wait for a request to
    be presented or settled, which has no terminal condition for a service that will never do it.
-2. Suite 151 under the gate's confinement, which brief G's host could not give it (stage-groups.txt): three
+2. **Closed by fix round 1:** all four suite 151 cases below are rejected by assertion, including the
+   unchanged stop mutant; the final suite passed fifty loaded runs with confinement. Original finding:
+   suite 151 under the gate's confinement, which brief G's host could not give it (stage-groups.txt): three
    inherited cases hang at the same wait (the idle supervisor to sleep again after a process ended):
    space313-unread-process-not-counted, -unread-bounded-by-a-read-parent and
    -unread-started-after-the-run-left-out. And space313-stop-after-the-command-ends-the-supervisor survived in
@@ -241,8 +251,10 @@ BLOCKERS FOR THE GATE:
    controls in the first stage; green in the group stage). The lead has ruled that AC12 stands: the canary
    must be green alone under load, and its red cannot be accepted as data. This remains unresolved in fix
    round 1: the exact experiment compares a child's 0.1 CPU-seconds with the parent's 0.2-second sleep.
-   Scheduling can delay either process across the marker read, independently of the generator's correctness.
-   No canary assertion, exception, or result classification was weakened here.
+   A permitted schedule lets the parent finish its sleep and read before the child receives its 0.1 CPU-seconds:
+   alone is then red. Delaying the parent's read until after the child finishes makes the loaded canary green.
+   Affinity does not prohibit either schedule. No canary assertion, exception, or result classification was
+   weakened here; no suite 160 fix or fifty-run proof is claimed.
 
 OTHER:
 
