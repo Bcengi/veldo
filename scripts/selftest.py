@@ -557,8 +557,16 @@ def _audit(event, args):
         path = os.path.abspath(path)
     if path.startswith(_REPO):
         rel = path[len(_REPO):]
-        if rel.startswith(("scripts/", "proof/")) and "__pycache__" not in rel:
-            _OPENED.setdefault(_OPENER[0], set()).add(os.path.normpath(rel))
+        if not rel.startswith(("scripts/", "proof/")):
+            return
+        if "__pycache__" in rel:
+            # A compiled module read from its cache is its source (as the authority's watch counts it): the
+            # interpreter opens only the cache file when it is fresh, and the source is what the suite loaded.
+            cache, name = os.path.split(rel)
+            rel = os.path.join(os.path.dirname(cache), name.split(".", 1)[0] + ".py")
+            if os.path.basename(cache) != "__pycache__" or not os.path.isfile(_REPO + rel):
+                return
+        _OPENED.setdefault(_OPENER[0], set()).add(os.path.normpath(rel))
 
 
 def _claim_opened():
