@@ -1,0 +1,58 @@
+# Suite 83's twelve registered cases through the registered cases' own worker, after the terminal conditions of wave 1 integration (the deaf service, the idle answer with a far timer and with a pending orphan).
+# loop154-orphan-not-stopped is NOT rejected: it hangs (integration-wave1.md, section 7).
+CASE loop154-pipe-not-polled targets ['loop/review-offered']
+baseline rc 0 rows 41 failed [] targets {'loop/review-offered': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/review-offered': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/review-offered', 'VELDO-0154 loop/receiver-death', 'VELDO-0154 loop/rerun-another-account', 'VELDO-0154 loop/ask-before-rerun', 'VELDO-0154 loop/owner-yes-reruns', 'VELDO-0154 loop/owner-no-stops', 'VELDO-0154 loop/owner-stop-asked-on-wake', 'VELDO-0154 loop/reset-timer-wake', 'VELDO-0154 loop/no-other-timer'] targets {'loop/review-offered': [False]}
+CASE loop154-orphan-not-stopped targets ['loop/receiver-death']
+baseline rc 0 rows 41 failed [] targets {'loop/receiver-death': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/receiver-death': [True]}
+mutant rc 1 NO JSON: SELFTEST HUNG a state of instance a: wait a state of instance a at ~/projects/veldo-worktrees/veldo-0358-w1/scripts/suites/83_veldo_0154_factory_loop.py:1012; bound 600 s since the wait began; last observed: done=False, terminal=False; sources: path(<scratch>/install-a/2c9972972ddf96a8/state/observations.jsonl, watching <scratch>/install-a/2c9972972ddf96a8/state), store(<scratch>/authority-a/control.sqlite3), pidfd(1157953), receiver exits (0 followed, 7 exited); stacks: /tmp/veldo-hang-1151041.txt
+CASE loop154-eof-ignored targets ['loop/receiver-death']
+baseline rc 0 rows 41 failed [] targets {'loop/receiver-death': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/receiver-death': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/receiver-death', 'VELDO-0154 loop/owner-yes-reruns', 'VELDO-0154 loop/owner-stop-asked-on-wake'] targets {'loop/receiver-death': [False]}
+CASE loop154-rerun-from-head targets ['loop/rerun-another-account']
+baseline rc 0 rows 41 failed [] targets {'loop/rerun-another-account': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/rerun-another-account': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/rerun-another-account'] targets {'loop/rerun-another-account': [False]}
+CASE loop154-ask-reruns targets ['loop/ask-before-rerun']
+baseline rc 0 rows 41 failed [] targets {'loop/ask-before-rerun': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/ask-before-rerun': [True]}
+mutant rc 1 NO JSON: SELFTEST HUNG VELDO-0172 fake/capture: wait a state of instance a at ~/projects/veldo-worktrees/veldo-0358-w1/scripts/suites/83_veldo_0154_factory_loop.py:1071; bound 600 s since the wait began; last observed: done=False, terminal=False; sources: path(<scratch>/install-a/e15d0b40254bbc2b/state/observations.jsonl, watching <scratch>/install-a/e15d0b40254bbc2b/state), store(<scratch>/authority-a/control.sqlite3), pidfd(1066469), receiver exits (0 followed, 16 exited); stacks: /tmp/veldo-hang-1060327.txt
+CASE loop154-owner-no-reruns targets ['loop/owner-no-stops']
+baseline rc 0 rows 41 failed [] targets {'loop/owner-no-stops': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/owner-no-stops': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/owner-no-stops'] targets {'loop/owner-no-stops': [False]}
+CASE loop154-periodic-pass targets ['loop/no-other-timer']
+baseline rc 0 rows 41 failed [] targets {'loop/no-other-timer': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/no-other-timer': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/journal-wake-offers', 'VELDO-0154 loop/review-offered', 'VELDO-0154 loop/receiver-death', 'VELDO-0154 loop/rerun-another-account', 'VELDO-0154 loop/owner-yes-reruns', 'VELDO-0154 loop/owner-stop-asked-on-wake', 'VELDO-0154 loop/reset-timer-wake', 'VELDO-0154 loop/no-other-timer'] targets {'loop/no-other-timer': [False]}
+CASE loop154-reset-timer-unset targets ['loop/reset-timer-wake']
+baseline rc 0 rows 41 failed [] targets {'loop/reset-timer-wake': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/reset-timer-wake': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/reset-timer-wake', 'VELDO-0154 loop/no-other-timer'] targets {'loop/reset-timer-wake': [False]}
+CASE loop154-journal-wake-dropped targets ['loop/journal-wake-offers']
+baseline rc 0 rows 41 failed [] targets {'loop/journal-wake-offers': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/journal-wake-offers': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/runner-in-service', 'VELDO-0154 loop/journal-wake-offers', 'VELDO-0154 loop/review-offered', 'VELDO-0154 loop/receiver-death', 'VELDO-0154 loop/rerun-another-account', 'VELDO-0154 loop/ask-before-rerun', 'VELDO-0154 loop/owner-yes-reruns', 'VELDO-0154 loop/owner-no-stops', 'VELDO-0154 loop/owner-stop-asked-on-wake', 'VELDO-0154 loop/reset-timer-wake', 'VELDO-0154 loop/no-other-timer'] targets {'loop/journal-wake-offers': [False]}
+CASE service131-stop-not-asked-on-wake targets ['loop/owner-stop-asked-on-wake']
+baseline rc 0 rows 41 failed [] targets {'loop/owner-stop-asked-on-wake': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/owner-stop-asked-on-wake': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/owner-stop-asked-on-wake'] targets {'loop/owner-stop-asked-on-wake': [False]}
+CASE loop154-account-slot-kept targets ['loop/receiver-death']
+baseline rc 0 rows 41 failed [] targets {'loop/receiver-death': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/receiver-death': [True]}
+mutant rc 1 NO JSON: SELFTEST HUNG VELDO-0172 fake/capture: wait a pass of instance a after 16 at ~/projects/veldo-worktrees/veldo-0358-w1/scripts/suites/83_veldo_0154_factory_loop.py:1103; bound 600 s since the wait began; last observed: done=None, terminal=False; sources: path(<scratch>/install-a/9ee41277fbc4035a/state/observations.jsonl, watching <scratch>/install-a/9ee41277fbc4035a/state), store(<scratch>/authority-a/control.sqlite3), pidfd(1066381), receiver exits (0 followed, 12 exited); stacks: /tmp/veldo-hang-1060294.txt
+CASE timers358-claim-window-literal targets ['loop/reset-timer-wake']
+baseline rc 0 rows 41 failed [] targets {'loop/reset-timer-wake': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/reset-timer-wake': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/reset-timer-wake', 'VELDO-0154 loop/no-other-timer'] targets {'loop/reset-timer-wake': [False]}
+CASE loop154-account-slot-kept targets ['loop/receiver-death']
+baseline rc 0 rows 41 failed [] targets {'loop/receiver-death': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/receiver-death': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/receiver-death', 'VELDO-0154 loop/owner-yes-reruns', 'VELDO-0154 loop/owner-stop-asked-on-wake'] targets {'loop/receiver-death': [False]}
+CASE loop154-ask-reruns targets ['loop/ask-before-rerun']
+baseline rc 0 rows 41 failed [] targets {'loop/ask-before-rerun': [True]}
+noop rc 0 rows 41 failed [] targets {'loop/ask-before-rerun': [True]}
+mutant rc 0 rows 41 failed ['VELDO-0154 loop/ask-before-rerun', 'VELDO-0154 loop/owner-yes-reruns', 'VELDO-0154 loop/owner-no-stops'] targets {'loop/ask-before-rerun': [False]}
