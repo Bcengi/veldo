@@ -12850,7 +12850,7 @@ def cases():
         ['ac1/unread-process-reach'])
     # The re-review of VELDO-0330: rule 6's look does not look on disk for a nested repository.
     add(330, 'space330-nested-repository-not-looked-for', space330, 'control_space_signal.py',
-        "    if record.get('kind') in HOLDS_REPOSITORIES and path:\n",
+        "    if record.get('kind') in HOLDS_REPOSITORIES + HOLDS_UNLESS_CLEAN and path:\n",
         "    if False:\n",
         ['ac1/nested-repository-holds-worktree'])
     # VELDO-0300: the removers. The declared falsifier of each acceptance criterion: AC1 the folder is
@@ -16241,8 +16241,8 @@ def cases():
 
     # VELDO-0302 fix round: the form agent, and a source that is a linked worktree.
     add(302, 'space302-agent-form-refused', '153_veldo_0302_space_creators.py', 'control_space.py',
-        "                                 ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')):",
-        "                                 ('worker_clone', 'batch_clone', 'candidate_workspace')):",
+        "(kind != 'agent_repository' or form not in AGENT_FORMS):",
+        "(kind != 'agent_repository' or form not in AGENT_FORMS[1:]):",  # defect: the agent form is refused
         ['ledger/forms'])
     add(302, 'space302-worktree-source-not-resolved', '153_veldo_0302_space_creators.py', 'control_clone.py',
         "        return Path(main)\n    return Path(common)\n",
@@ -16274,8 +16274,8 @@ def cases():
         ['ac4/standalone'])
     result[-1]['dir'] = 'scripts'
     add(324, 'space324-failed-keep-still-deletes', '154_veldo_0324_batch_sandbox.py', 'control_space_remove.py',
-        "    kept = _kept(ctx, identity, record)\n    pools = _before(ctx, record, answer)\n    answer['bytes'], answer['bytes_source'] = _folder(",
-        "    kept = {'ok': True, 'tips': tips(record['locator']['path'], 'agent_repository')}\n    pools = _before(ctx, record, answer)\n    answer['bytes'], answer['bytes_source'] = _folder(",
+        "    kept = _kept(ctx, identity, record)\n    pools = _before(ctx, record, answer)\n    before_file, seen = None, {}\n",
+        "    kept = {'ok': True, 'tips': tips(record['locator']['path'], 'agent_repository')}\n    pools = _before(ctx, record, answer)\n    before_file, seen = None, {}\n",
         ['safety/keep-failure'])
     add(324, 'space324-nested-repository-deleted', '154_veldo_0324_batch_sandbox.py', 'control_space_remove.py',
         "        if own is not None and ('.git' in names or GIT_FOLDER <= names):",
@@ -16323,8 +16323,8 @@ def cases():
         "with creation.item('evidence', directory):",
         "with creation.item('scratch', directory):", ['ac1/observation-end'])
     add(324, 'space324-ledger-drops-ticket-end', '154_veldo_0324_batch_sandbox.py', 'control_space.py',
-        "'events': list(self.lifecycle['ends_on'][kind])},",
-        "'events': [e for e in self.lifecycle['ends_on'][kind] if kind != 'evidence' or e == 'verdict_recorded']},",
+        "or self.lifecycle['ends_on'][kind])},",
+        "or [e for e in self.lifecycle['ends_on'][kind] if kind != 'evidence' or e == 'verdict_recorded'])},",
         ['ac1/observation-end'])
     add(324, 'space324-declare-end-option', '154_veldo_0324_batch_sandbox.py', 'control_space.py',
         "                pool=None, principal=None, command_id=None, form=None):\n"
