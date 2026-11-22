@@ -82,6 +82,20 @@ def child_environment(folder=None, environ=None):
     return environment
 
 
+def configuration_commit(conn):
+    """Accepted provenance for a newly created runtime record on this store."""
+    loader = getattr(conn, 'installation_loader', None)
+    if loader is not None:
+        return loader.accepted_commit
+    import json
+    rows = conn.execute("SELECT data FROM entities WHERE kind='installation_configuration' "
+                        "AND id NOT LIKE '%:accepted:%' AND id NOT LIKE '%:status'").fetchall()
+    commits = {json.loads(row[0])['commit'] for row in rows if 'configuration' in json.loads(row[0])}
+    if len(commits) > 1:
+        raise InstallationError('installation_unreadable:ambiguous_authority')
+    return next(iter(commits), None)
+
+
 def resolve(environ=None):
     """{folder, how, found}: the folder this deployment's installation is read from, how it was chosen
     ('environment' or 'default') and whether it is a folder."""

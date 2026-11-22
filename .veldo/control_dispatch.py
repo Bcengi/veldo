@@ -537,6 +537,7 @@ def transition(conn, params, before):
         _reservation_bound(conn, contract)
         _claim_bound(conn, contract)
         record = {'schema': SCHEMA, 'dispatch_id': params['dispatch_id'], 'state': 'prepared',
+                  'configuration_commit': _organ('installation').configuration_commit(conn),
                   'contract': contract, 'contract_digest': digest(contract), 'receiver': None, 'process': None,
                   'termination': None, 'refusal': None, 'stop': None, 'reason': None,
                   'history': [dict(history, state='prepared')]}

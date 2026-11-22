@@ -142,7 +142,17 @@
         "path": {
           "type": "string"
         },
-        "token": "secret"
+        "token": "secret",
+        "profiles": {
+          "type": "object",
+          "values": {
+            "type": "string"
+          }
+        },
+        "concurrency": {
+          "type": "integer",
+          "minimum": 1
+        }
       },
       "required": []
     },
@@ -924,8 +934,8 @@
       "base_url": "changed",
       "credential": "changed",
       "credential_location": "changed",
-      "routes": "changed",
-      "read_overrides": "changed",
+      "routes": "added",
+      "read_overrides": "added",
       "tools_snapshot": "changed",
       "grants": "changed",
       "openapi": "changed",

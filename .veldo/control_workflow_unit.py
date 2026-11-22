@@ -207,7 +207,9 @@ def pinned(store, conn, domain, repository, found):
         return definition
     loader = getattr(conn, 'installation_loader', None)
     if loader is not None:
-        domain, repository = loader.domain, loader.workflow_repository
+        old = WF._entity_row(conn, WF.revision_id(domain, repository, found['id'], found['version']))
+        if old is None or old['data'].get('definition_digest') != found['digest']:
+            domain, repository = loader.domain, loader.workflow_repository
     current, definition = bound_revision(store, conn, domain, repository, found['id'], found['version'])
     if current['digest'] != found['digest']:
         raise Refused(MISSING + ':digest', found['id'])
