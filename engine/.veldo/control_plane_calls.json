@@ -19,8 +19,17 @@
     "control_agent_config_handoff.py": "connector_qualification"
   },
   "local_only": {
+    "candidate_git.py": [
+      "clone"
+    ],
+    "control_launch_work.py": [
+      "_collect",
+      "build"
+    ],
     "control_memory_adapter.py": [
-      "request"
+      "ready",
+      "http",
+      "get"
     ]
   }
 }

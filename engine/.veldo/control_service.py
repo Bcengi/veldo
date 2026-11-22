@@ -2085,6 +2085,8 @@ class Service:
                 result = self.api_call(packet)
             elif command.get('operation') == 'work':
                 result = self.work_command(packet, repository)
+            elif command.get('operation') == 'tracker_call':
+                result = _organ('control_tracker_service').execute(self, packet, repository)
             elif command.get('operation') == 'reconcile_space':
                 result = self.space_reconcile_command(packet, repository)
             elif command.get('operation') == 'save_memory_store':

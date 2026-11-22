@@ -307,7 +307,8 @@ else:
             return [json.loads(x) for x in path.read_text().splitlines()] if path.exists() else []
 
         # THE CANARIES: one per fixture service, random at run time, set through the keystore seam.
-        CANARIES = {'fixture-mail': canary(), 'fixture-tracker': canary()}
+        CANARIES = {name: canary() for name in ('fixture-mail', 'fixture-tracker', 'tracker-init',
+                    'doorbell', 'repository-provisioner', 'landing-push', 'owner-channel')}
         seam = KS.SecretService(str(tool))
         for name, value in CANARIES.items():
             seam.set(name, value)

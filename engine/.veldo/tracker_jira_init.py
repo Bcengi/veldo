@@ -611,35 +611,11 @@ def _cli(argv=None):
                     help="the Jira account email for Basic auth (else the tracker entry's 'email')")
     ap.add_argument("--dry-run", action="store_true", dest="dry_run",
                     help="preview over an in-memory FakeTracker (no network, no token)")
+    ap.add_argument('--principal', help='owner principal signing the service command')
+    ap.add_argument('--key', help='owner signing key')
+    ap.add_argument('--host-trust')
     args = ap.parse_args(list(argv) if argv is not None else None)
-
-    config = load_tracker_config(repo_root=args.repo_root)
-    if not config:
-        print("veldo jira init: no tracker config (.veldo/trackers.json); the tracker is not wired for this "
-              "repo, nothing to do")
-        return 0
-    try:
-        if args.dry_run:
-            bc = resolve_bootstrap_config(config)
-            if bc is None:
-                print("veldo jira init (dry-run): no 'bootstrap' block in the tracker config, nothing to preview")
-                return 0
-            provisioner = FakeTracker()
-            # Seed a fresh project (no types, no statuses) + stock the instance catalog with the
-            # configured types, so the preview shows what would be ADDED with no network and no token.
-            provisioner.seed_project(bc["project_key"], bc["required_project_type"], issue_types=[])
-            provisioner.seed_instance_issue_types(bc["issue_types"])
-            report = bootstrap(provisioner, config=config, repo_root=args.repo_root)
-        else:
-            provisioner = build_live_provisioner(config, tracker_id=args.tracker, email=args.email)
-            report = bootstrap(provisioner, config=config, repo_root=args.repo_root)
-    except (BootstrapError, MirrorRunnerError, TrackerConfigError, TrackerItemNotFound) + _ADAPTER_ERRORS as ex:
-        sys.stderr.write("veldo jira init: %s\n" % ex)
-        return 2
-    header = "veldo jira init (dry-run preview, no network)" if args.dry_run else "veldo jira init (live)"
-    print(header)
-    print(json.dumps(_report_summary(report), indent=2, sort_keys=True))
-    return 0
+    return _load_tracker_service().cli('init', args)
 
 
 def _snapshot_cli(argv=None):
@@ -665,36 +641,11 @@ def _snapshot_cli(argv=None):
                     help="the Jira account email for Basic auth (else the tracker entry's 'email')")
     ap.add_argument("--dry-run", action="store_true", dest="dry_run",
                     help="preview over an in-memory FakeTracker (no network, no token)")
+    ap.add_argument('--principal', help='owner principal signing the service command')
+    ap.add_argument('--key', help='owner signing key')
+    ap.add_argument('--host-trust')
     args = ap.parse_args(list(argv) if argv is not None else None)
-
-    config = load_tracker_config(repo_root=args.repo_root)
-    if not config:
-        print("veldo jira snapshot: no tracker config (.veldo/trackers.json); the tracker is not wired for "
-              "this repo, nothing to do")
-        return 0
-    try:
-        if args.dry_run:
-            # The FakeTracker only needs to ACCEPT the upserts (find/create/set_status over its object
-            # store); the snapshot provisions no status set, so no project seeding is required. When a
-            # bootstrap block is present the project is seeded as the required type for parity with init.
-            provisioner = FakeTracker()
-            bc = resolve_bootstrap_config(config)
-            if bc is not None:
-                provisioner.seed_project(bc["project_key"], bc["required_project_type"], issue_types=[])
-                provisioner.seed_instance_issue_types(bc["issue_types"])
-            report = snapshot_from_repo(provisioner, config=config, repo_root=args.repo_root)
-        else:
-            provisioner = build_live_provisioner(config, tracker_id=args.tracker, email=args.email)
-            report = snapshot_from_repo(provisioner, config=config, repo_root=args.repo_root)
-    except (BootstrapError, MirrorRunnerError, TrackerConfigError,
-            TrackerItemNotFound) + _ADAPTER_ERRORS + _MIRROR_ERRORS as ex:
-        sys.stderr.write("veldo jira snapshot: %s\n" % ex)
-        return 2
-    header = ("veldo jira snapshot (dry-run preview, no network)" if args.dry_run
-              else "veldo jira snapshot (live)")
-    print(header)
-    print(json.dumps(_snapshot_summary(report), indent=2, sort_keys=True))
-    return 0
+    return _load_tracker_service().cli('snapshot', args)
 
 
 def selfcheck():
@@ -814,6 +765,15 @@ def main(argv=None):
         return _snapshot_cli(rest)
     return 2
 
+
+
+def _load_tracker_service():
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location('tracker_service', Path(__file__).with_name('control_tracker_service.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 if __name__ == "__main__":
     sys.exit(main())

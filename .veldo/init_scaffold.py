@@ -574,7 +574,7 @@ _GATE = "scripts/verify.sh"
 # VELDO's suites, so an adopter has none and every stage of its gate is confined.
 _REUSE_AUTHORITY = ['.veldo/candidate_git.py', '.veldo/reuse_evidence.py', 'scripts/agent_sandbox.json', 'scripts/agent_sandbox.py', 'scripts/mutation_sandbox.py', 'scripts/gate_candidate.py', 'scripts/reuse_worker.py', 'scripts/mutation_observer.py', 'scripts/mutation_ownership.py', 'scripts/check_gate_mutations.py', 'scripts/case_reuse.py', 'scripts/case_inputs.py', 'scripts/case_trace.py', 'scripts/mutation_reuse.py', 'scripts/gate_reuse.py', 'scripts/reuse_stamp.py', 'scripts/gate_legs.py', 'scripts/gate_schedule.py']
 _FILES += ['.veldo/' + name for name in (
-    'control_plane_calls.py', 'control_plane_scan.py', 'control_plane_calls.json',
+    'control_tracker_service.py', 'control_plane_calls.py', 'control_plane_scan.py', 'control_plane_calls.json',
     'tracker_adapter.py', 'tracker_mirror_runner.py', 'tracker_jira_init.py', 'tracker_jira_live.py',
     'request_doorbell.py') if '.veldo/' + name not in _FILES]
 _FILES += _REUSE_AUTHORITY

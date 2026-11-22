@@ -256,7 +256,7 @@ class TelegramSink:
             "%s/bot%s/sendMessage" % (self.ORIGIN, self._token), data=payload, method="POST")
         req.add_header("Content-Type", "application/json")
         projection = _load("veldo_channel_projection_for_doorbell", "control_channel_projection.py")
-        with projection.gated_open(self._activation, self.ORIGIN, req, 30, "sendMessage", self._chat_id) as resp:
+        with projection.gated_open(self._activation, self.ORIGIN, req, 30, "sendMessage", self._chat_id, caller="doorbell") as resp:
             resp.read()
         return True
 

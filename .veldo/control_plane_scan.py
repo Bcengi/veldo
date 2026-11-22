@@ -34,6 +34,9 @@ def calls(source):
                               'http.client.HTTPConnection', 'http.client.HTTPSConnection')
                    or target.startswith(('requests.', 'httpx.'))
                    or target.endswith(('.http', '.gated_open'))
+                   or (target.endswith(('.run', '.check_output', '.Popen', '.call'))
+                       and any(isinstance(part, ast.Constant) and part.value in ('push', 'fetch', 'ls-remote', 'clone')
+                               for arg in node.args for part in ast.walk(arg)))
                    or (isinstance(node.func, ast.Attribute) and node.func.attr == 'open'
                        and (name(node.func.value).endswith(('opener', '_opener'))
                             or isinstance(node.func.value, ast.Call)
