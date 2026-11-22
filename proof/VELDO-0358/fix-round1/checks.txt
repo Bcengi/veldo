@@ -1,0 +1,26 @@
+VELDO-0358 wave 1 fix round 1; base 850f7a1d.
+All test runs use host_heavy.sh and gate_load.Generator; no quiet runs or load-sampled verdicts.
+Suites 83 and 71 use pidfds; suite 151 additionally uses the gate's confined launcher.
+
+Initial loaded control (new reader before 48e9ec291): suite 83 RED.
+Cause: the reader opened observations.jsonl before the service created it.
+Evidence: FileNotFoundError from Instance.idle, not a hang or a timing verdict.
+Fixed in 48e9ec291: read complete JSON objects only, with an absent log meaning no events yet.
+The failed run remains evidence; subsequent controls exercise changed code.
+Generator: applied=true; all 24 spinners and both writers alive; probe slowdown 4.037 (data).
+
+At c4e83a70d:
+  scripts/check_wallclock.py: PASS; 2487 sites, 2352 baseline entries, no growth or stale entry.
+  scripts/check_personal_setup.py: 0 findings.
+  git diff --check: PASS.
+  Materialization of every registered case touching changed modules: 383 passed, 0 moved anchors.
+
+The separate one-run control batch never obtained a host-heavy slot. It was cancelled
+while queued after the mutation stage proved all of its unmutated and no-op controls green.
+The predeclared fifty-run loaded batch remains the repetition proof.
+
+Final code at 202635627:
+  scripts/check_wallclock.py: PASS, unchanged counts (2487 sites; 2352 baseline entries).
+  scripts/check_personal_setup.py: 0 findings.
+  Changed Python files parse; engine and installed copies are identical.
+  git diff --check: PASS.
