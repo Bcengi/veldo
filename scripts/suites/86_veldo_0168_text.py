@@ -456,6 +456,7 @@ def _v168_suite():
                 ('control_space.py', 'Ledger.reconcile', 'self', '_send'),
                 ('control_space.py', 'Ledger.set_mode', 'self', '_send'),
                 ('control_service.py', 'reconcile_cli', 'client', 'send'),
+                ('control_tracker_service.py', 'cli', "organ('control_client')", 'send'),
                 ('status_server.py', '_Handler.do_GET', 'self', '_send'),
             }
             wanted_calls = Counter(wanted_calls)
@@ -487,18 +488,17 @@ def _v168_suite():
                 ('control_channel_presentation.py', 'Presenter._hint_text', 'line', 'TEXT.visible(line)'),
                 ('control_service_channel.py', 'Channel.tell_renewal', 'text', 'V.TEXT.message(text, free_text=False)'),
             }
-            # The repository's own doorbell (.veldo/request_doorbell.py, not installed into the engine) is
-            # named outside the set by the specification.
+            # VELDO-0258 ships the doorbell in the engine; both copies remain explicit in the inventory.
             outside = {('request_doorbell.py', 'TelegramSink.send')}
             for label, (_, found) in inventories.items():
-                expected_calls = wanted_calls + (outside_calls if label == 'production' else engine_calls)
+                expected_calls = wanted_calls + outside_calls + (engine_calls if label == 'engine' else Counter())
                 if found != expected_calls:
                     print('VELDO-0168 detail: inventory delta', label,
                           sorted((found - expected_calls).items()), sorted((expected_calls - found).items()))
             scaffold = load('v168_scaffold', ROOT / '.veldo/init_scaffold.py')
             assets = ['.veldo/control_channel_presentation_text.py', '.veldo/control_channel_presentation_v1.py']
             check('inventory/sends-and-assets', 'complete endpoint and send inventory; new renderer assets installed identically',
-                  inventories['engine'] == (wanted_endpoints, wanted_calls + engine_calls)
+                  inventories['engine'] == (wanted_endpoints | outside, wanted_calls + engine_calls + outside_calls)
                   and all(wanted_routes <= routes for routes in render_routes.values())
                   and all(wanted_assignments <= found for found in render_assignments.values())
                   and inventories['production'] == (wanted_endpoints | outside, wanted_calls + outside_calls)

@@ -107,6 +107,7 @@ footprint:
   - "scripts/suites/86_veldo_0189_engine_upgrade.py"
   - "scripts/suites/87_veldo_0170_receiver_trust.py"
   - "scripts/suites/support/outside_fixture.py"
+  - "scripts/suites/support/v169_census.py"
   - "scripts/suites/support/v73_authority.py"
 behavior_bearing: true
 observability:
