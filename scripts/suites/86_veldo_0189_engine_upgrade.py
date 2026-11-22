@@ -726,10 +726,13 @@ def _v189_suite():
     def substitutions(host):
         record = host.record()
         repository = sorted(record.get('repositories') or {})
+        channel = json.loads((host.home / 'config/channel-ingress.json').read_text())
+        channel_reference = (channel.get('bot_api') or {}).get('token_ref')
         found = {str(host.root): '@STATE_ROOT@', str(host.install): '@INSTALL_ROOT@', str(host.units): '@UNIT_DIR@',
                  str(host.trust.parent): '@HOST_TRUST_DIR@', str(host.clone): '@CLONE@',
                  record.get('service'): '@SERVICE@', record.get('domain_uuid'): '@DOMAIN@',
-                 record.get('store_uuid'): '@STORE@', adoption_public(host): '@ADOPTION_SIGNER@'}
+                 record.get('store_uuid'): '@STORE@', adoption_public(host): '@ADOPTION_SIGNER@',
+                 channel_reference: '@CHANNEL_CREDENTIAL@'}
         for uuid in repository:
             found[uuid] = '@REPOSITORY@'
             found[hashlib.sha256(uuid.encode()).hexdigest()[:16]] = '@RECEIVER@'
@@ -798,6 +801,14 @@ def _v189_suite():
         check(row, label + ': qualified Claude pin equals fresh bytes and mode',
               target.is_file() and reference.is_file() and target.read_bytes() == reference.read_bytes()
               and stat.S_IMODE(target.stat().st_mode) == stat.S_IMODE(reference.stat().st_mode) == 0o555)
+        custody = load('v189_channel_custody', mods / 'control_credential_keystore.py').SecretService()
+        for installation in (host, fresh):
+            for path in (installation.root / 'host/ingress.json', installation.home / 'config/channel-ingress.json'):
+                bot = json.loads(path.read_text()).get('bot_api') or {}
+                reference = bot.get('token_ref') or ''
+                check(row, label + ': both channel configurations resolve the original token only through the keystore',
+                      set(bot) == {'origin', 'token_ref'} and reference.startswith('keychain:')
+                      and custody.get('keychain', reference.split(':', 1)[1]) == token)
         a, b = rendering(host), rendering(fresh)
         differing = sorted(n for n in set(a) | set(b) if a.get(n) != b.get(n))
         detail = []
@@ -810,7 +821,7 @@ def _v189_suite():
         check(row, '%s: the unit files, the record and every configuration file equal the fresh host\'s after each '
               'host\'s scratch root and identities are substituted, apart from the listed fields [%s]' % (label, detail),
               bool(a) and not differing and equivalence.get('fields') is not None
-              and sorted(s.get('placeholder') for s in equivalence.get('substituted') or [])
+              and sorted([s.get('placeholder') for s in equivalence.get('substituted') or []] + ['@CHANNEL_CREDENTIAL@'])
               == sorted({new for _old, new in substitutions(host)})
               and all(f.get('reason') for f in equivalence.get('fields') or []))
 

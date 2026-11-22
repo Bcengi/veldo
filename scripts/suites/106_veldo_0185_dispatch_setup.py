@@ -225,6 +225,9 @@ else:
 
     def exercise(h):
         F, S, CEN, base = h['F'], h['S'], h['CEN'], h['base']
+        import shutil
+        for assets in ('installation_schema', 'installation_template'):
+            shutil.copytree(ROOT / '.veldo' / assets, h['mods'] / assets, dirs_exist_ok=True)
         AR = load('v185_accounts', h['mods'] / 'accounts.py')
         scaffold = load('v185_scaffold', h['mods'] / 'init_scaffold.py')
         check('install/asset', 'the dispatch module is in the scaffold inventory, with every setup module',

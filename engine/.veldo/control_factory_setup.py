@@ -460,6 +460,38 @@ def import_channel_credential(plan):
     return reference
 
 
+def channel_migration(plan, home, engine):
+    """Plan an explicit setup-file import in the existing engine/configuration transaction.
+
+    Both configuration copies switch with the engine, so its existing interruption
+    and rollback machinery retains the matching older configuration. Runtime never
+    resolves a file reference, including while an upgrade is interrupted.
+    """
+    reference = channel_reference(plan)
+    wanted = {'origin': plan['origin'], 'token_ref': reference}
+    legacy = {'origin': plan['origin'], 'token_file': plan['token_file']}
+    imported = False
+    for path in (os.path.join(plan['root'], HOST_DIR, 'ingress.json'),
+                 os.path.join(home, 'config', 'channel-ingress.json')):
+        held = json.loads(Path(path).read_text())
+        bot = held.get('bot_api')
+        if bot == wanted:
+            continue
+        if plan['token_file'].startswith('keychain:') or bot != legacy:
+            raise _differs(path)
+        imported = True
+        # Retain any top-level keys the ordinary engine upgrade already adds.
+        pending = next((json.loads(body) for kind, target, body, mode in engine['writes']
+                        if target == path), held)
+        pending['bot_api'] = wanted
+        engine['writes'] = [entry for entry in engine['writes'] if entry[1] != path]
+        engine['writes'].insert(0, ('configuration', path,
+                                   json.dumps(pending, indent=1, sort_keys=True) + '\n', 0o600))
+    if imported:
+        engine['restart_due'] = True
+    return imported
+
+
 def ingress_files(plan, ids):
     """The protected signer's configuration and the VELDO-0073 ingress configuration: {path: text}."""
     E, IN = organ('control_channel_enrollment'), organ('control_channel_ingress')
@@ -1417,7 +1449,9 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         holds('workspace')
     if (json.loads(row[0]) if row else {}).get('chat_id') != plan['chat']:
         holds('chat')
-    if (laid.get('bot_api') or {}).get('token_ref') != channel_reference(plan):
+    legacy_channel = (not plan['token_file'].startswith('keychain:')
+                      and laid.get('bot_api') == {'origin': plan['origin'], 'token_file': plan['token_file']})
+    if not legacy_channel and (laid.get('bot_api') or {}).get('token_ref') != channel_reference(plan):
         holds('token_file')
     if laid.get('host_trust') != plan['host_trust']:
         holds('host_trust')
@@ -1479,7 +1513,13 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     adoption = adoption_laying(plan, installed, home, settlement_public, _differs)
     base = dict(host_files(plan, settlement_public, adoption['public']), **ingress_files(plan, ids))
     base.pop(adoption['signers'][0])
-    base_states = {path: API.file_state(path, data, 0o600, _differs) for path, data in base.items()}
+    compared = dict(base)
+    if legacy_channel:
+        path = os.path.join(host, 'ingress.json')
+        expected_legacy = json.loads(base[path])
+        expected_legacy['bot_api'] = dict(laid['bot_api'])
+        compared[path] = json.dumps(expected_legacy, indent=1, sort_keys=True) + '\n'
+    base_states = {path: API.file_state(path, data, 0o600, _differs) for path, data in compared.items()}
     # The memory step's readers and searches, exercised as a fresh setup does, when the step will write.
     if memory_plan is not None and memory_plan['outcome'] == 'done':
         _memory(lambda: organ('control_memory_check').preflight(memory_plan['definition']))
@@ -1496,6 +1536,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     # here; the upgrade is the first step this run writes.
     engine = inspect_engine(plan, installed, home, unit_dir, (api['unit_path'], unit_body)
                             if os.path.lexists(api['unit_path']) else None)
+    import_channel = channel_migration(plan, home, engine)
     if adoption['due'] and engine['state'] == 'current':
         # The service reads its enrollment signers when it starts, so laying the adoption signer's restarts it once.
         engine['restart_due'] = True
@@ -1554,6 +1595,8 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             for path, _expected, _own, state, text, _added in record_plan['files']:
                 if path in (api['service_config'], api['installed_service_config']) and state == 'upgrade':
                     engine['writes'].insert(0, ('configuration', path, text, 0o600))
+        if import_channel:
+            import_channel_credential(plan)
         upgraded = upgrade_engine(plan, engine, runner, running, adoption)
         if released:
             lock = take_lock(root, create=False)

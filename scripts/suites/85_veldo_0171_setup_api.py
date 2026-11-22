@@ -1186,6 +1186,8 @@ def _v171_suite():
         before, head = trees_b(), journal(store_b)
         before_signers_b = (host_b / 'enrollment_signers').read_text()
         before_config = json.loads((home_b / 'config' / 'service.json').read_text())
+        channel_before = {path: json.loads(path.read_text()) for path in
+                          (host_b / 'ingress.json', home_b / 'config/channel-ingress.json')}
         receivers_before = {path: json.loads(Path(path).read_text())
                             for path in sorted(((before_config.get('receiver') or {}).get('configs') or {}).values())}
         calls_before = len(manager_b.calls)
@@ -1235,10 +1237,22 @@ def _v171_suite():
             signers_b = [str(host_b / 'enrollment_signers'), str(config_b / 'enrollment_signers')]
             check(OB, 'the earlier files that changed outside the installed engine are only the service configuration, the '
                   'key projection, the receiver configuration the upgrade adds a key to and the two enrollment signers '
-                  'files the adoption signer is added to [%s]' % outside,
+                  'files the adoption signer is added to, and the channel custody migration [%s]' % outside,
                   sorted(set(outside) - set(receivers))
-                  == sorted([str(config_b / 'service.json'), str(host_b / 'allowed_signers')] + signers_b)
+                  == sorted([str(config_b / 'service.json'), str(host_b / 'allowed_signers')] + signers_b
+                            + [str(path) for path in channel_before])
                   and receivers == sorted(receivers_before))
+            for path, held in channel_before.items():
+                current = json.loads(path.read_text())
+                bot = current.get('bot_api') or {}
+                reference = bot.get('token_ref') or ''
+                custody = load('v171_channel_custody', mods / 'control_credential_keystore.py').SecretService()
+                check(OB, 'explicit setup migrates only channel custody and retains the same credential',
+                      {k: v for k, v in current.items() if k != 'bot_api'}
+                      == {k: v for k, v in held.items() if k != 'bot_api'}
+                      and bot == {'origin': held['bot_api']['origin'], 'token_ref': reference}
+                      and reference.startswith('keychain:')
+                      and custody.get('keychain', reference.split(':', 1)[1]) == token)
             adoption_public = derived(keys_b / F.ADOPTION_KEY) if (keys_b / F.ADOPTION_KEY).is_file() else None
             line = '%s namespaces="%s" %s\n' % (F.ADOPTION_PRINCIPAL, EL.ENROLLMENT_NAMESPACE, adoption_public)
             check(OB, 'each enrollment signers file kept every byte it held and gained only the adoption signer\'s line, '
