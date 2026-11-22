@@ -1,0 +1,71 @@
+# The cases the full stage at 9e3acdd1 did not judge, through the gate's own driver (scripts/check_gate_mutations.py --case ...), by host_heavy.sh,
+# VELDO_GATE_FORCE_FRESH=1, six CPUs (twelve workers), at 5342fa22. Driver: stage_groups.py.txt. One line per group.
+# The group of suite 83 ran with the terminal conditions that were withdrawn afterwards (4486b1bf) and is VOID: suite 83's cases are in mutants-suite83.txt.
+queued 2026-11-22T08:21:19Z head 5342fa22
+started 2026-11-22T08:33:20Z load 45.75 38.09 25.41
+registered in check_teeth_mutations.py: 3660; pending here: 2958 in 23 groups
+{"group": "62_veldo_0039", "cases": 37, "exit": 0, "seconds": 710, "status": "passed", "executed": 37, "rejected": 37, "error": null, "invalid": [], "kill_by": [["assertion", 37]]}
+{"group": "63_veldo_0040", "cases": 42, "exit": 0, "seconds": 5651, "status": "passed", "executed": 42, "rejected": 42, "error": null, "invalid": [], "kill_by": [["assertion", 42]]}
+{"group": "66_veldo_0042", "cases": 24, "exit": 0, "seconds": 22, "status": "passed", "executed": 24, "rejected": 24, "error": null, "invalid": [], "kill_by": [["assertion", 24]]}
+{"group": "66_veldo_0047", "cases": 43, "exit": 0, "seconds": 843, "status": "passed", "executed": 43, "rejected": 43, "error": null, "invalid": [], "kill_by": [["assertion", 43]]}
+{"group": "71_veldo_0138", "cases": 17, "exit": 1, "seconds": 658, "status": "failed", "executed": 17, "rejected": 13, "error": "worker_cleanup_error", "invalid": [["check_teeth_mutations.py:owner-command-unrouted: ownership ledger names resources outside this worker: [\"directory\", \"/d", "check_teeth_mutations.py"], ["check_teeth_mutations.py:service-skips-open-ingress: ownership ledger names resources outside this worker: [\"directory\",", "check_teeth_mutations.py"], ["check_teeth_mutations.py:resume-drops-backlog: ownership ledger names resources outside this worker: [\"directory\", \"/dev", "check_teeth_mutations.py"], ["check_teeth_mutations.py:probe-on-the-real-bot: ownership ledger names resources outside this worker: [\"directory\", \"/de", "check_teeth_mutations.py"]], "kill_by": [["assertion", 13]]}
+{"group": "78_veldo_0060", "cases": 36, "exit": 0, "seconds": 412, "status": "passed", "executed": 36, "rejected": 36, "error": null, "invalid": [], "kill_by": [["assertion", 36]]}
+{"group": "85_veldo_0171", "cases": 17, "exit": 0, "seconds": 68, "status": "passed", "executed": 17, "rejected": 17, "error": null, "invalid": [], "kill_by": [["assertion", 17]]}
+{"group": "106_veldo_0185", "cases": 20, "exit": 0, "seconds": 109, "status": "passed", "executed": 20, "rejected": 20, "error": null, "invalid": [], "kill_by": [["assertion", 20]]}
+{"group": "151_veldo_0313", "cases": 45, "exit": 1, "seconds": 617, "status": "failed", "executed": 45, "rejected": 41, "error": "hung_not_killed", "invalid": [["space313-stop-after-the-command-ends-the-supervisor", "mutation_survived"], ["check_teeth_mutations.py:space313-unread-process-not-counted: worker exit 1", "check_teeth_mutations.py"], ["stage stopped before worker completed", "stage stopped before worker completed"], ["stage stopped before worker completed", "stage stopped before worker completed"]], "kill_by": [["assertion", 41]]}
+{"group": "157_veldo_0358", "cases": 13, "exit": 1, "seconds": 39, "status": "failed", "executed": 13, "rejected": 0, "error": "control_failed", "invalid": [["wait358-expiry-reads-false", "control_failed"], ["wait358-enodev-not-gone", "control_failed"], ["wait358-holder-outlives-test", "control_failed"], ["wait358-watchdog-total-time", "control_failed"], ["opened358-ledger-reaches-children", "control_failed"], ["wait358-declared-rows-unread", "control_failed"], ["opened358-dispatcher-claims-nothing", "control_failed"], ["wait358-orphans-not-kept", "control_failed"], ["wait358-watchdog-silent", "control_failed"], ["wait358-threads-not-counted", "control_failed"], ["wait358-hung-tree-left", "control_failed"], ["wait358-path-polled", "control_failed"], ["opened358-cached-module-unclaimed", "control_failed"]], "kill_by": []}
+{"group": "158_veldo_0358", "cases": 13, "exit": 0, "seconds": 38, "status": "passed", "executed": 13, "rejected": 13, "error": null, "invalid": [], "kill_by": [["unproven", 13]]}
+{"group": "160_veldo_0358", "cases": 3, "exit": 0, "seconds": 766, "status": "passed", "executed": 3, "rejected": 3, "error": null, "invalid": [], "kill_by": [["unproven", 3]]}
+{"group": "112_veldo_0215", "cases": 26, "exit": 0, "seconds": 12, "status": "passed", "executed": 26, "rejected": 26, "error": null, "invalid": [], "kill_by": [["unproven", 26]]}
+{"group": "121_veldo_0131", "cases": 2, "exit": 1, "seconds": 107, "status": "failed", "executed": 2, "rejected": 1, "error": "control_failed", "invalid": [["wave358-harness-bound-restored", "control_failed"]], "kill_by": [["assertion", 1]]}
+{"group": "86_veldo_0148", "cases": 2, "exit": 1, "seconds": 133, "status": "failed", "executed": 2, "rejected": 1, "error": "control_failed", "invalid": [["receiver148-release-deadline-not-finite", "control_failed"]], "kill_by": [["unproven", 1]]}
+{"group": "rest-00", "cases": 400, "exit": 0, "seconds": 850, "status": "passed", "executed": 400, "rejected": 400, "error": null, "invalid": [], "kill_by": [["assertion", 42], ["unproven", 358]]}
+{"group": "rest-01", "cases": 400, "exit": 0, "seconds": 844, "status": "passed", "executed": 400, "rejected": 400, "error": null, "invalid": [], "kill_by": [["unproven", 400]]}
+{"group": "rest-02", "cases": 400, "exit": 0, "seconds": 675, "status": "passed", "executed": 400, "rejected": 400, "error": null, "invalid": [], "kill_by": [["assertion", 7], ["unproven", 393]]}
+{"group": "rest-03", "cases": 400, "exit": 0, "seconds": 980, "status": "passed", "executed": 400, "rejected": 400, "error": null, "invalid": [], "kill_by": [["assertion", 5], ["unproven", 395]]}
+{"group": "rest-04", "cases": 400, "exit": 0, "seconds": 1113, "status": "passed", "executed": 400, "rejected": 400, "error": null, "invalid": [], "kill_by": [["unproven", 400]]}
+{"group": "rest-05", "cases": 400, "exit": 0, "seconds": 1527, "status": "passed", "executed": 400, "rejected": 400, "error": null, "invalid": [], "kill_by": [["unproven", 400]]}
+{"group": "rest-06", "cases": 207, "exit": 0, "seconds": 694, "status": "passed", "executed": 207, "rejected": 207, "error": null, "invalid": [], "kill_by": [["assertion", 13], ["unproven", 194]]}
+end 2026-11-22T13:24:15Z load 8.75 14.95 16.23
+
+# Suite 151's three open cases, one stage each (the confined leg), at 5342fa22:
+started 2026-11-22T12:48:56Z load 20.82 21.65 19.53
+case space313-stop-after-the-command-ends-the-supervisor exit 0
+{"status": "passed", "executed": 1, "rejected": 1, "error": null} []
+  mutant rc 0 4 None 
+case space313-unread-bounded-by-a-read-parent exit 1
+{"status": "failed", "executed": 1, "rejected": 0, "error": "hung_not_killed"} ['check_teeth_mutations.py:space313-unread-bounded-by-a-read-parent: worker exit 1']
+  mutant rc 1 602 hung_not_killed SELFTEST HUNG the idle supervisor to sleep again after process 122 ended: wait the idle supervisor to sleep again after process 122 ended at /tmp/w1/run-mut2/scripts/mutation_observer.py:313; bound 600 s since the wait began; last observed: done=False, terminal={'exit': None}; sources: readable(18); stacks: <stage>/2/veldo-hang-2.txt 
+case space313-unread-started-after-the-run-left-out exit 1
+{"status": "failed", "executed": 1, "rejected": 0, "error": "hung_not_killed"} ['check_teeth_mutations.py:space313-unread-started-after-the-run-left-out: worker exit 1']
+  mutant rc 1 604 hung_not_killed SELFTEST HUNG the idle supervisor to sleep again after process 122 ended: wait the idle supervisor to sleep again after process 122 ended at /tmp/w1/run-mut2/scripts/mutation_observer.py:313; bound 600 s since the wait began; last observed: done=False, terminal={'exit': None}; sources: readable(18); stacks: <stage>/2/veldo-hang-2.txt 
+end 2026-11-22T13:09:29Z load 15.19 18.88 18.03
+
+# wave358-harness-bound-restored alone (its control in the group died in npm ci, two installs at once):
+started 2026-11-22T13:24:20Z load 8.37 14.77 16.16
+case wave358-harness-bound-restored exit 0
+{"status": "passed", "executed": 1, "rejected": 1, "error": null} []
+  mutant rc 0 55 None 
+end 2026-11-22T13:26:33Z load 7.57 12.26 15.05
+
+# The five cases of the review driver (check_review_mutations.py 13 to 17):
+started 2026-11-22T13:30:57Z load 9.27 9.46 13.04
+exit 0
+{"status": "passed", "executed": 5, "rejected": 5, "error": null, "registered": 5} []
+end 2026-11-22T13:31:08Z load 8.46 9.28 12.94
+
+# Suite 71's group, its stopped case:
+owner-command-unrouted mutant rc 1 617 worker_cleanup_error o-mutations-bu1e6oli/input/scripts/suites/71_veldo_0138_channel_service.py:107; bound 600 s since the wait began; last observed: done=None, terminal=False; sources: store(<scratch>/a/authority/control.sqlite3), pidfd(27479); stacks: <stage>/19/veldo-hang-17270.txt 
+service-skips-open-ingress mutant rc -9 617 worker_cleanup_error 
+resume-drops-backlog mutant rc -9 617 worker_cleanup_error 
+probe-on-the-real-bot mutant rc -9 617 worker_cleanup_error 
+# Suite 151's group, its unjudged cases:
+mutation_survived: check_teeth_mutations.py:space313-stop-after-the-command-ends-the-supervisor
+check_teeth_mutations.py:space313-unread-process-not-counted: worker exit 1
+stage stopped before worker completed
+stage stopped before worker completed
+space313-unread-process-not-counted mutant rc 1 603 hung_not_killed ess 122 ended: wait the idle supervisor to sleep again after process 122 ended at /tmp/w1/run-mut2/scripts/mutation_observer.py:313; bound 600 s since the wait began; last observed: done=False, terminal={'exit': None}; sources: readable(17); stacks: <stage>/26/veldo-hang-2.txt 
+space313-unread-bounded-by-a-read-parent mutant rc -9 603 worker_cancelled 
+space313-unread-started-after-the-run-left-out mutant rc -9 599 worker_cancelled 
+# Suite 157's group, the control every case shares (first case):
+control_failed: check_teeth_mutations.py:wait358-expiry-reads-false: completed controls: {"baseline": {"failed_details": [["waits/no-idle-wake", "{'pidfd': {'outcome': 'done', 'events': 2, 'switches': 2, 'lock_switches': 0, 'in_readings': 0, 'readings': 3}, 'readable': {'outcome': 'done', 'events': 2, 'switches': 2, 'lock_switches': 0, 'in_readings': 0, 'readings': 3}, 'path': {'outcome': 'done', 'events': 2, 'switches': 2, 'lock_switches': 0, 'in_readings': 0, 'readings': 3}, 'deep': {'outcome': 'done', 'events': 3, 'switches': 3, 'lock_switches': 0, 'in_readings': 0, 'readings': 6}, 'store': {'outcome': 'done', 'events': 2, 'switches': 2, 'lock_switches': 2, 'in_readings': 0, 'readings': 3}, 'cgroup': {'error': \"a child cgroup could not be made here: [Errno 13] Permission denied: '/sys/fs/cgroup/user.slice/user-<uid>.slice/user@<uid>.service/app.slice/run-u2785466.scope/v358-wake-2-0'\"}}"], ["waits/cgroup-gone-is-empty", "{'error': \"a child cgroup could not be made here: [Errno 13] Permission denied: '/sys/fs/cgroup/user.slice/user-<uid>.slice/user@<uid>.service/app.slice/run-u2785466.scope/v358-gone-2-kernel'\"}"], ["record/cached-module-is-its-source", "{'rc': 2, 'compiled': 'support', 'claims': ['scripts/suites/fx_cached.py', 'scripts/suites/support/v358_cached.py'], 'cache_paths': []}"]], "failed_rows": ["waits/no-idle-wake", "waits/cgroup-gone-is-empty", "record/cached-module-is-its-source"], "hung_rows": []}, "noop": {"failed_details": [["waits/no-idle-wake", "{'pidfd'
