@@ -516,8 +516,7 @@ def build_live_provisioner(config, tracker_id=None, email=None, resolve_secret=N
     Parallels the runner's build_live_adapter but constructs the PROVISIONER subclass (which also carries
     the mirror write ops it inherits from JiraCloudAdapter), so ONE object provisions and mirrors. Reads a
     jira-cloud tracker from config["trackers"] (base_url, token_ref, optional email, optional project the
-    epic/child creation writes into); the token_ref is a SECRET REFERENCE resolved from the environment or
-    a secrets store, never a raw credential, and the provisioner FAILS CLOSED when no token resolves. Needs
+    epic/child creation writes into); the token_ref is a SECRET REFERENCE resolved only from the keystore, never a raw credential, and the provisioner FAILS CLOSED when no token resolves. Needs
     a live Jira, so it is NEVER run in the gate - it is wired per org, the same honesty as the reference
     intake/mirror adapters. Raises BootstrapError by name when no jira-cloud tracker is configured (never
     guesses a connection)."""
