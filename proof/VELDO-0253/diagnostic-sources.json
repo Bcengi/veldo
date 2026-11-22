@@ -18,8 +18,8 @@
     "transcript_lines": 47
   },
   "static-checks": {
-    "run": "rr20261122032505-2cba",
-    "raw_sha256": "b548e77783cf3d3dba632512ddbc2b34a729e8dd00be56ae1370df4ca27818ed",
+    "run": "rr20261122032925-d743",
+    "raw_sha256": "b885af6fe48887051727aa23e626bd3b317b9fcb6c01a2c744307acd4c773f3f",
     "raw_bytes": 912,
     "transcript_lines": 9
   },

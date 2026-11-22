@@ -1,0 +1,17 @@
+{
+  "status": "queued when recorded; no current confined receipt claimed",
+  "recorded_at": "2026-11-22T03:30:55.724139+00:00",
+  "commit": "4883f8a4193b74a75647c6e8caa01af5b1d29943",
+  "wrapper": "external host_heavy.sh",
+  "script": "/tmp/veldo-0253-host-checks.py",
+  "script_sha256": "7e8a6a8ad7ae83c6521d40c80965cce072a97e0c69da8cc201c436ec48e59483",
+  "artifacts": "/tmp/veldo-0253-host-*/results.json",
+  "checks": [
+    "check_gate_mutations finding 253",
+    "65_veldo_0132_workflow",
+    "71_veldo_0130_api",
+    "73_veldo_0139_factory_setup",
+    "85_veldo_0171_setup_api",
+    "127_veldo_0259_installation"
+  ]
+}
