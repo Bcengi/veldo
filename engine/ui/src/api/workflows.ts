@@ -35,6 +35,8 @@ export interface WorkflowDocument {
   layout: WorkflowLayout | null
   definition_digest: string
   saved: { principal: string; at: number } | null
+  configuration_commit?: string | null
+  source?: { commit: string; path: string; blob: string } | null
   watermark: Watermark
   freshness: string
 }
@@ -44,6 +46,9 @@ export interface WorkflowSaved {
   version: number
   revision: string
   api_request_id: string
+  commit?: string
+  configuration_commit?: string
+  reason?: string
 }
 
 /** One stored revision of a workflow (its head when `version` is omitted). */
@@ -52,5 +57,5 @@ export const readWorkflow = (workflow: string, version?: number, signal?: AbortS
 
 /** Save the edited definition and layout as the next version, edited from `base` (the version shown). A save
  * edited from a version that is no longer the head is refused `stale_version` and stores nothing. */
-export const saveWorkflow = (workflow: string, base: number, definition: WorkflowDefinition, layout: WorkflowLayout) =>
-  request<WorkflowSaved>('workflows.save', { body: { workflow, base, definition, layout } })
+export const saveWorkflow = (workflow: string, base: number, definition: WorkflowDefinition, layout: WorkflowLayout, base_commit?: string | null) =>
+  request<WorkflowSaved>('workflows.save', { body: { workflow, base, definition, layout, base_commit } })

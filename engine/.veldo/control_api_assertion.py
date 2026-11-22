@@ -125,9 +125,12 @@ def shape_problems(a):
     spec = OPERATIONS.get(a['operation'])
     if spec is None:
         problems.append('the operation is one of %s' % ', '.join(sorted(OPERATIONS)))
-    elif (not isinstance(a['parameters'], dict) or not set(a['parameters']) <= set(spec['parameters'])
+    elif (not isinstance(a['parameters'], dict)
+          or not set(a['parameters']) <= set(spec['parameters']) | (
+              {'base_commit', 'approval'} if a['operation'] == 'save_workflow' else set())
           or set(spec['parameters']) - set(spec.get('optional', ())) - set(a['parameters'])):
         # VELDO-0175: an operation's optional parameters (send_message's conversation) may be absent.
+        # VELDO-0253: save_workflow may also carry its base_commit and approval.
         problems.append('the parameters are exactly %s' % ', '.join(spec['parameters']))
     if not isinstance(a['expected_versions'], dict):
         problems.append('the expected versions are a mapping')

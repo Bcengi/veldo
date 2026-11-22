@@ -247,6 +247,13 @@ class Installation:
         """installation.yaml, checked against its schema. {} when there is none."""
         if self._settings is not None:
             return self._settings
+        accepted = os.environ.get('VELDO_INSTALLATION_COMMIT')
+        if accepted and self.revision() is not None:
+            files = Repository(self.folder, os.environ.get('VELDO_INSTALLATION_BRANCH', 'main')).snapshot(accepted)['files']
+            import json
+            raw = files.get(SETTINGS_FILE, b'{}').decode('utf-8')
+            self._settings = json.loads(raw) if raw.lstrip().startswith('{') else _yamlish().parse(raw)
+            return self._settings
         path = self._path(SETTINGS_FILE)
         if not self.found or not path.is_file():
             self._settings = {}
@@ -378,6 +385,197 @@ class Installation:
         if not self.found or not folder.is_dir():
             return []
         return sorted(p for p in folder.rglob('*') if p.is_file())
+
+
+class Repository:
+    """The committed installation boundary. Object operations never touch the index or work tree."""
+
+    def __init__(self, folder, branch='main'):
+        self.folder, self.branch = str(folder), branch
+        if not isinstance(branch, str) or not branch or branch.startswith('-'):
+            raise InstallationError('installation_unreadable:branch')
+        self.ref = 'refs/heads/' + branch
+        self.git('check-ref-format', self.ref)
+        if self.git('rev-parse', '--show-toplevel').strip() != str(Path(folder).resolve()):
+            raise InstallationError('installation_unreadable:not_repository')
+
+    def git(self, *args, body=None, identity=None, profile='isolated', binary=False):
+        try:
+            result = _git_process.run(['git', '-C', self.folder, *args], input=body,
+                                      capture_output=True, timeout=120, identity=identity, profile=profile)
+        except (OSError, subprocess.SubprocessError):
+            raise InstallationError('installation_unreadable:git_unavailable') from None
+        if result.returncode:
+            # Git diagnostics may quote credentials from configuration or URLs. Do not copy them.
+            reason = 'stale_version' if args[0] == 'update-ref' else 'installation_unreadable:' + args[0]
+            raise InstallationError(reason)
+        return result.stdout if binary else result.stdout.decode('utf-8')
+
+    def head(self):
+        return self.git('rev-parse', '--verify', self.ref + '^{commit}').strip()
+
+    def snapshot(self, commit=None):
+        commit = commit or self.head()
+        if not re.fullmatch(r'[0-9a-f]{40,64}', commit):
+            raise InstallationError('installation_unreadable:commit')
+        tree = self.git('rev-parse', commit + '^{tree}').strip()
+        files, blobs = {}, {}
+        for entry in self.git('ls-tree', '-rz', '--full-tree', commit).split('\0'):
+            if not entry:
+                continue
+            metadata, path = entry.split('\t', 1)
+            mode, kind, blob = metadata.split()
+            if mode not in ('100644', '100755') or kind != 'blob':
+                raise InstallationError('installation_invalid:%s:$:not_regular' % path)
+            files[path] = self.git('cat-file', 'blob', blob, binary=True)
+            blobs[path] = blob
+        fields = self.git('show', '-s', '--format=%an%x00%ae%x00%aI%x00%cn%x00%ce%x00%cI', commit).strip().split('\0')
+        return {'commit': commit, 'tree': tree, 'files': files, 'blobs': blobs,
+                'author': dict(zip(('name', 'email', 'at'), fields[:3])),
+                'committer': dict(zip(('name', 'email', 'at'), fields[3:]))}
+
+    def commit(self, files, parent, identity, message):
+        """Write Git objects only. publish() is the separate branch compare and swap."""
+        directories = {'': {}}
+        for path, body in sorted(files.items()):
+            parts = path.split('/')
+            if any(part in ('', '.', '..') or '\0' in part or '\n' in part for part in parts):
+                raise InstallationError('installation_invalid:%s:$:path' % path)
+            blob = self.git('hash-object', '-w', '--stdin', body=body).strip()
+            folder = '/'.join(parts[:-1])
+            directories.setdefault(folder, {})[parts[-1]] = ('100644', 'blob', blob)
+            for index in range(len(parts) - 1):
+                directories.setdefault('/'.join(parts[:index]), {})
+        tree = None
+        for folder in sorted(directories, key=lambda p: (p.count('/') + bool(p), p), reverse=True):
+            entries = directories[folder]
+            body = b''.join(('%s %s %s\t%s\0' % (*value, name)).encode() for name, value in sorted(entries.items()))
+            tree = self.git('mktree', '-z', body=body).strip()
+            if folder:
+                parent_path, _, name = folder.rpartition('/')
+                directories[parent_path][name] = ('040000', 'tree', tree)
+        args = ['commit-tree', tree]
+        if parent:
+            args += ['-p', parent]
+        return self.git(*args, body=(message + '\n').encode(), identity=(identity['name'], identity['email'])).strip()
+
+    def publish(self, commit, parent):
+        self.git('update-ref', self.ref, commit, parent or '0' * len(commit))
+
+    def send(self, commit, remote):
+        """Send exactly the accepted commit, without force. A refusal keeps it live locally."""
+        if not isinstance(remote, str) or not remote or remote.startswith('-'):
+            raise InstallationError('installation_push_failed:remote_missing')
+        try:
+            self.git('push', '--', remote, commit + ':' + self.ref, profile='network')
+        except InstallationError:
+            raise InstallationError('installation_push_failed:remote_refused') from None
+
+    @classmethod
+    def create(cls, folder, branch='main'):
+        folder = Path(folder)
+        folder.mkdir(mode=0o700, parents=True, exist_ok=True)
+        os.chmod(folder, 0o700)
+        if (folder / '.git').exists():
+            return cls(folder, branch)
+        result = _git_process.run(['git', 'init', '-b', branch, str(folder)], capture_output=True, timeout=120)
+        if result.returncode:
+            raise InstallationError('installation_unreadable:init')
+        return cls(folder, branch)
+
+
+class RefChanges:
+    """OS notification subscription. Subscribe first, then reconcile; overflow also reconciles.
+
+    Watching directories covers loose-ref replacement and packed-refs replacement.
+    Rebuilding watches after every event covers newly created branch directories.
+    There is no timer and no sampling of reference modification times.
+    """
+
+    def __init__(self, repository):
+        import ctypes
+        import select
+        self.repo, self.watches, self.handles = repository, {}, []
+        common = Path(repository.git('rev-parse', '--git-common-dir').strip())
+        self.common = common if common.is_absolute() else Path(repository.folder) / common
+        self.queue = None
+        if sys.platform.startswith('linux'):
+            self.libc = ctypes.CDLL(None, use_errno=True)
+            self.libc.inotify_init1.argtypes = [ctypes.c_int]
+            self.libc.inotify_add_watch.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_uint32]
+            self.fd = self.libc.inotify_init1(os.O_NONBLOCK | os.O_CLOEXEC)
+            if self.fd < 0:
+                raise InstallationError('installation_unreadable:notification')
+        elif hasattr(select, 'kqueue'):
+            self.queue = select.kqueue()
+            self.fd = self.queue.fileno()
+        else:
+            raise InstallationError('installation_unreadable:notifications_unsupported')
+        try:
+            self.refresh()
+        except BaseException:
+            self.close()
+            raise
+
+    def refresh(self):
+        import select
+        folders = [self.common]
+        ref = self.common / 'refs'
+        if ref.is_dir():
+            folders += [ref] + [p for p in ref.rglob('*') if p.is_dir()]
+        for folder in folders:
+            name = str(folder)
+            if name in self.watches:
+                continue
+            if self.queue is None:
+                wd = self.libc.inotify_add_watch(self.fd, os.fsencode(name), 0x00000fc8)
+                if wd < 0:
+                    raise InstallationError('installation_unreadable:notification_watch')
+                self.watches[name] = wd
+            else:
+                handle = os.open(name, os.O_RDONLY | os.O_CLOEXEC)
+                self.handles.append(handle)
+                event = select.kevent(handle, filter=select.KQ_FILTER_VNODE,
+                    flags=select.KQ_EV_ADD | select.KQ_EV_CLEAR,
+                    fflags=select.KQ_NOTE_WRITE | select.KQ_NOTE_DELETE | select.KQ_NOTE_RENAME)
+                self.queue.control([event], 0, 0)
+                self.watches[name] = handle
+
+    def consume(self):
+        import struct
+        if self.queue is None:
+            while True:
+                try:
+                    data = os.read(self.fd, 65536)
+                except BlockingIOError:
+                    break
+                if not data:
+                    raise InstallationError('installation_unreadable:notification_closed')
+                offset = 0
+                while offset < len(data):
+                    wd, mask, _, size = struct.unpack_from('iIII', data, offset)
+                    offset += 16 + size
+                    if mask & (0x00008000 | 0x00000800 | 0x00000400):
+                        self.watches = {path: held for path, held in self.watches.items() if held != wd}
+        else:
+            import select
+            for event in self.queue.control([], 128, 0):
+                if event.fflags & (select.KQ_NOTE_DELETE | select.KQ_NOTE_RENAME):
+                    self.watches = {path: held for path, held in self.watches.items() if held != event.ident}
+        self.refresh()
+
+    def fileno(self):
+        return self.fd
+
+    def close(self):
+        if self.queue is not None:
+            self.queue.close()
+        elif getattr(self, 'fd', -1) >= 0:
+            os.close(self.fd)
+        for handle in self.handles:
+            os.close(handle)
+        self.handles.clear()
+        self.fd = -1
 
 
 if __name__ == '__main__':

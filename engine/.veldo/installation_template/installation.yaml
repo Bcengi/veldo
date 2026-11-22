@@ -1,0 +1,2 @@
+schema: veldo.installation/v1
+git: {branch: main}

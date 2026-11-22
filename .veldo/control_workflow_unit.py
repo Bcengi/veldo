@@ -168,10 +168,22 @@ def binding(project, kind_of_work=None):
 def resolve(store, conn, domain, repository, project, kind_of_work=None):
     """(pin, definition) a new unit of this project and kind of work takes: its binding's revision, or the
     shipped `code`."""
+    loader = getattr(conn, 'installation_loader', None)
+    if loader is not None:
+        name = (project or {}).get('name')
+        project = dict(project or {}, workflows=(loader.record() or {}).get('bindings', {}).get(name, {}))
     bound = binding(project, kind_of_work)
     if bound is None:
+        if loader is not None and 'workflows/code.json' in loader.live:
+            version = WF.head_version(conn, loader.domain, loader.workflow_repository, DEFAULT)
+            return bound_revision(store, conn, loader.domain, loader.workflow_repository, DEFAULT, version)
         definition = shipped()
         return pin(definition, SHIPPED), definition
+    if bound.get('version') == SHIPPED and bound.get('workflow') == DEFAULT:
+        definition = shipped()
+        return pin(definition, SHIPPED), definition
+    if loader is not None:
+        domain, repository = loader.domain, loader.workflow_repository
     found, definition = bound_revision(store, conn, domain, repository, bound.get('workflow'), bound.get('version'))
     if found['digest'] != bound.get('digest'):
         raise Refused(MISSING + ':stale_binding', bound.get('workflow'))
@@ -193,6 +205,9 @@ def pinned(store, conn, domain, repository, found):
         if WF.definition_digest(definition) != found['digest']:
             raise Refused(MISSING + ':shipped_changed', found['id'])
         return definition
+    loader = getattr(conn, 'installation_loader', None)
+    if loader is not None:
+        domain, repository = loader.domain, loader.workflow_repository
     current, definition = bound_revision(store, conn, domain, repository, found['id'], found['version'])
     if current['digest'] != found['digest']:
         raise Refused(MISSING + ':digest', found['id'])

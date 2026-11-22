@@ -183,6 +183,13 @@ _FILES = [
     # registry load it, so it is in the authority service's closure); a runtime asset, no validator import,
     # not substrate.
     ".veldo/installation.py",
+    ".veldo/control_installation_config.py",
+    ".veldo/control_installation_commit.py",
+    ".veldo/control_installation_schema.py",
+    ".veldo/control_installation_decision.py",
+    ".veldo/control_installation_service.py",
+    ".veldo/installation_schema/schema.json",
+    ".veldo/installation_template/installation.yaml",
     # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the
     # receiver process executes, no validator import, so not REQUIRED_SUBSTRATE.
     ".veldo/control_dispatch.py",
