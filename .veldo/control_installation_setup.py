@@ -58,8 +58,8 @@ def export(conn, settings, files=None):
         elif kind == 'memory_store' and eid == 'memory:head':
             files['memory/manifest.yaml'] = WF.canonical({'manifest': organ('control_memory').manifest_of(data['definition'])})
         elif kind == 'account':
-            settings.setdefault('accounts', {})[data['id']] = {
-                key: data[key] for key in ('label', 'provider', 'profiles', 'concurrency') if key in data}
+            entry = settings.setdefault('accounts', {}).setdefault(data['id'], {})
+            entry.update({key: data[key] for key in ('label', 'provider', 'profiles', 'concurrency') if key in data})
     files[I.SETTINGS_FILE] = WF.canonical(settings)
     return files
 
@@ -137,6 +137,15 @@ def factory(store, conn, plan, ids, installed, identities, workspace_identity, *
     if remote is not None:
         settings['git']['remote'] = remote
     settings = dict(existing, **settings)
+    # The registry's live accounts use the qualified binaries pinned by setup. Import
+    # those paths, as well as their store fields, rather than losing host configuration.
+    engines_file = Path(plan['root']) / 'host' / 'engines.json'
+    engines = json.loads(engines_file.read_text()) if engines_file.is_file() else {}
+    for (raw,) in conn.execute("SELECT data FROM entities WHERE kind='account'"):
+        account = json.loads(raw)
+        engine = engines.get(account.get('provider'), {})
+        if engine.get('path'):
+            settings.setdefault('accounts', {}).setdefault(account['id'], {})['binary'] = engine['path']
     result = create(store, conn, folder, settings=settings, identity=identity, domain=ids['domain_uuid'],
                   repository=ids['repository_uuid'], signer=journal[0], sign=journal[1],
                   secret_exists=ks.contains, observe=observe)

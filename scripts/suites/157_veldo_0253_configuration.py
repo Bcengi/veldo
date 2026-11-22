@@ -236,6 +236,11 @@ def _v253_suite():
             migration = S.open_store(root / 'migration' / 'authority.sqlite3')
             try:
                 S.execute(migration, command, 'setup', sign, 1)
+                S.execute(migration, dict(command_id='import-account', principal='setup', operation='upsert_entity',
+                    nonce='import-account', artifact_digests=[], expected_versions={'account:primary': 0},
+                    parameters=dict(entity_id='account:primary', kind='account',
+                        data={'id': 'primary', 'provider': 'codex', 'concurrency': 1})), 'setup', sign, 1)
+                settings['accounts']['primary']['binary'] = '/opt/example-engine'
                 legacy = WF.Workflows(S, migration, domain='domain', repository='repository', signer='setup', sign=sign)
                 legacy.save({'definition': definition}, principal='owner', base=0)
                 legacy.save({'definition': edited}, principal='owner', base=1)
@@ -248,7 +253,9 @@ def _v253_suite():
                     secret_exists=lambda name: False, observe=events.append)
                 check('ac1/setup-import', imported['outcome'] == 'accepted' and repeated['outcome'] == 'already_done'
                       and imported['commit'] == repeated['commit'] and legacy.history('example') == before
-                      and legacy.load('example')['source']['commit'] == imported['commit'])
+                      and legacy.load('example')['source']['commit'] == imported['commit']
+                      and migration.installation_loader.live['installation.yaml']['accounts']['primary'] == {
+                          'label': 'Example', 'binary': '/opt/example-engine', 'provider': 'codex', 'concurrency': 1})
                 check('ac4/migrated-pins', WU.pinned(S, migration, 'domain', 'repository', pinned) == definition
                       and WF._entity_row(migration, 'workflow-definition:' + WF.definition_digest(definition)) is not None)
                 reader = S.open_store(root / 'migration' / 'authority.sqlite3')
