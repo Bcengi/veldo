@@ -1,0 +1,34 @@
+VELDO-0359 B1 fix round 1: wider regression on pc2 (remote_run --share), base 994599e4d against head 647d1f421
+Each line: suite, passed/failed, exit and seconds at base and at head, rows red at head whose text is not red at base.
+A partial run exits 2 with zero failures and 1 with failures. Counts include each suite's prerequisite closure.
+The two rows flagged as new differ from the base row only in an id generated per run (a dispatch id, a commit id);
+each is the same single failing row at base: VELDO-0039 dispatch/observations and VELDO-0239 gate/once.
+The head total also counts suite 157 (32 passed, 0 failed), which does not exist at base.
+
+01_warp_0101_reviewer_notes              base 637/0 rc2 26.88s | head 637/0 rc2 31.04s | new red 0
+03_plugin_extension_loading_runner       base 896/2 rc1 71.03s | head 896/2 rc1 60.54s | new red 0
+04_run_status_reader_veldo               base 1150/2 rc1 83.86s | head 1150/2 rc1 70.0s | new red 0
+37_veldo_0024_replica                    base 42/0 rc2 1.49s | head 42/0 rc2 1.49s | new red 0
+60_veldo_0052_eligibility                base 80/0 rc2 5.24s | head 80/0 rc2 5.06s | new red 0
+62_veldo_0039_dispatch                   base 38/13 rc1 14.12s | head 38/13 rc1 14.36s | new red 1
+    NEW RED: VELDO-0039 dispatch/observations: unknown dispatches differ from the t ...
+62_veldo_0054_decisions                  base 65/0 rc2 19.86s | head 65/0 rc2 12.28s | new red 0
+63_veldo_0049_floor                      base 33/13 rc1 13.19s | head 33/13 rc1 9.79s | new red 0
+67_veldo_0135_offers                     base 30/5 rc1 11.36s | head 30/5 rc1 8.75s | new red 0
+70_veldo_0057_landing                    base 35/22 rc1 22.43s | head 35/22 rc1 16.18s | new red 0
+70_veldo_0069_bindings                   base 35/1 rc1 18.58s | head 35/1 rc1 13.3s | new red 0
+70_veldo_0073_activation                 base 37/0 rc2 9.84s | head 37/0 rc2 7.22s | new red 0
+85_veldo_0158_credential_delivery        base 28/21 rc1 182.63s | head 28/21 rc1 181.1s | new red 0
+85_veldo_0171_setup_api                  base 29/15 rc1 6.26s | head 29/15 rc1 5.23s | new red 0
+87_veldo_0170_receiver_trust             base 26/12 rc1 1.19s | head 26/12 rc1 1.07s | new red 0
+103_veldo_0142_git_identities            base 49/0 rc2 58.43s | head 49/0 rc2 50.94s | new red 0
+103_veldo_0211_borrowed_login            base 88/0 rc2 1.98s | head 88/0 rc2 1.8s | new red 0
+127_veldo_0254_secret_scan               base 48/0 rc2 11.71s | head 48/0 rc2 10.63s | new red 0
+129_veldo_0239_batch_landing             base 26/23 rc1 37.52s | head 26/23 rc1 27.88s | new red 1
+    NEW RED: VELDO-0239 gate/once: the batch was gated once, by the project's own g ...
+129_veldo_0247_line                      base 40/0 rc2 3.22s | head 40/0 rc2 2.13s | new red 0
+129_veldo_0254_canary_launch             base 29/4 rc1 6.14s | head 29/4 rc1 4.72s | new red 0
+129_veldo_0260_checkout_in_step          base 26/18 rc1 19.91s | head 26/18 rc1 14.38s | new red 0
+143_veldo_0305_space_census              base 52/0 rc2 3.22s | head 52/0 rc2 2.11s | new red 0
+150_veldo_0350_end_write                 base 37/0 rc2 6.12s | head 37/0 rc2 4.66s | new red 0
+TOTAL base 3556 passed 151 failed; head 3588 passed 151 failed; new red rows 2

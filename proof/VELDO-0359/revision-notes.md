@@ -403,3 +403,6 @@ Lead decisions applied; B1's scope and its "Do not" list are unchanged.
   longer added. A conversation receiver, which serves no repository, answers no record request of a
   raw client. The frontier label that claimed observations is renamed, and a row requires that the
   compared callbacks included every kind. The scaffold row is a baseline failure, recorded as such.
+- Found in this round's own run of suite 63: the store guard sample and the query endpoint's
+  creation and count lines had entered Launch.messages, which containment/observations reads as
+  accepted, running, exited. Launch._take now keeps those three in Launch.query_notices.
