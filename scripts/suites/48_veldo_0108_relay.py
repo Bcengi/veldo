@@ -25,6 +25,13 @@ The row passes only when every receipt is complete and records no service event 
 relay created. A missing or INCOMPLETE receipt makes the row STAND DOWN by name with
 census_incomplete, printed and never passed, whatever a fixture-local socket snapshot would show.
 The census-only rows of the same claim are scripts/suites/113_veldo_0114_relay_census.py.
+
+WHICH GATE LEG OWNS WHICH ROW (VELDO-0208 leg_runs, VELDO-0114 fix round 2). The composite asks
+leg_runs("census") and every other row asks leg_runs(), so a rows-scoped list entry
+(48_veldo_0108_relay, rows "census") moves only the composite to the unconfined leg, where ptrace is
+allowed, and keeps the other ten rows in the confined leg; the unconfined leg asserts the composite
+alone. Without an entry, or with a whole-suite one, every row runs where it ran before. Suite 0114's
+relay/rows-scoped-entry-moves-only-the-census-row drives both legs of this file.
 """
 import hashlib as _v108_hashlib
 import hmac as _v108_hmac
@@ -160,15 +167,17 @@ for _v108_name, _v108_payload in _v108_PAYLOADS.items():
 # Every refusal path promises no answer: compare raw bytes, never parsed JSON.
 _v108_usage = _v108_sp.run([_v108_sys.executable, str(_v108_MAIN / "control_relay.py")],
                           input=b"", capture_output=True, timeout=5)
-expect("VELDO-0108 relay/usage-has-zero-stdout: usage failure exits 64 with exactly zero stdout bytes",
-       _v108_usage.returncode == 64 and _v108_usage.stdout == b""
-       and b"usage:" in _v108_usage.stderr)
+if leg_runs():
+    expect("VELDO-0108 relay/usage-has-zero-stdout: usage failure exits 64 with exactly zero stdout bytes",
+           _v108_usage.returncode == 64 and _v108_usage.stdout == b""
+           and b"usage:" in _v108_usage.stderr)
 _v108_large_request = _v108_sp.run(
     [_v108_sys.executable, str(_v108_MAIN / "control_relay.py"), _v108_echo_addr],
     input=b"x" * (RL108.MAX_BYTES + 1), capture_output=True, timeout=5)
-expect("VELDO-0108 relay/oversized-request-has-zero-stdout: oversized input exits 4 without an answer",
-       _v108_large_request.returncode == RL108.EXIT_TOO_LARGE
-       and _v108_large_request.stdout == b"" and b"request exceeded" in _v108_large_request.stderr)
+if leg_runs():
+    expect("VELDO-0108 relay/oversized-request-has-zero-stdout: oversized input exits 4 without an answer",
+           _v108_large_request.returncode == RL108.EXIT_TOO_LARGE
+           and _v108_large_request.stdout == b"" and b"request exceeded" in _v108_large_request.stderr)
 
 
 def _v108_oversized_answer():
@@ -191,10 +200,11 @@ try:
         input=b"request", capture_output=True, timeout=5)
 finally:
     _v108_large_thread.join(timeout=5)
-expect("VELDO-0108 relay/oversized-response-has-zero-stdout: oversized endpoint output exits 4 "
-       "with exactly zero stdout bytes",
-       not _v108_large_thread.is_alive() and _v108_large_response.returncode == RL108.EXIT_TOO_LARGE
-       and _v108_large_response.stdout == b"" and b"response exceeded" in _v108_large_response.stderr)
+if leg_runs():
+    expect("VELDO-0108 relay/oversized-response-has-zero-stdout: oversized endpoint output exits 4 "
+           "with exactly zero stdout bytes",
+           not _v108_large_thread.is_alive() and _v108_large_response.returncode == RL108.EXIT_TOO_LARGE
+           and _v108_large_response.stdout == b"" and b"response exceeded" in _v108_large_response.stderr)
 # Inclusive 1 MiB boundaries, with each direction isolated from the other's limit.
 def _v108_boundary_exchange(request, response):
     received = []
@@ -225,19 +235,22 @@ def _v108_boundary_exchange(request, response):
             and result.returncode == 0 and result.stdout == response and result.stderr == b"")
 
 
-expect("relay/exact-limit-request-is-carried: exactly 1 MiB reaches the endpoint unchanged "
-       "and its short response is returned with exit zero",
-       _v108_boundary_exchange(bytes(range(256)) * 4096, b"ok"))
-expect("relay/exact-limit-response-is-carried: a short request reaches the endpoint and exactly "
-       "1 MiB of response is returned unchanged with exit zero",
-       _v108_boundary_exchange(b"request", bytes(range(256)) * 4096))
+if leg_runs():
+    expect("relay/exact-limit-request-is-carried: exactly 1 MiB reaches the endpoint unchanged "
+           "and its short response is returned with exit zero",
+           _v108_boundary_exchange(bytes(range(256)) * 4096, b"ok"))
+if leg_runs():
+    expect("relay/exact-limit-response-is-carried: a short request reaches the endpoint and exactly "
+           "1 MiB of response is returned unchanged with exit zero",
+           _v108_boundary_exchange(b"request", bytes(range(256)) * 4096))
 _v108_echo_srv.close()
 
 if not _v108_have_git:
-    expect("VELDO-0108 STOOD DOWN in part by name - git is not installed here, so the rows that need a real "
-           "enrolled repository and a real authority cannot run; the carrying promise above does not need "
-           "one and it %s" % ("PASSED" if all(ok for _, ok in _v108_byte_rows) else "FAILED"),
-           all(ok for _, ok in _v108_byte_rows))
+    if leg_runs():
+        expect("VELDO-0108 STOOD DOWN in part by name - git is not installed here, so the rows that need a real "
+               "enrolled repository and a real authority cannot run; the carrying promise above does not need "
+               "one and it %s" % ("PASSED" if all(ok for _, ok in _v108_byte_rows) else "FAILED"),
+               all(ok for _, ok in _v108_byte_rows))
 else:
     _v108_env = dict(_v108_os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@t",
                      GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@t")
@@ -289,8 +302,9 @@ else:
                 proc.wait(timeout=5)
 
     if not RUNNER_108.is_file():
-        expect("VELDO-0108 STOOD DOWN by name - the authority runner support script is absent, so no real "
-               "authority can be started", True)
+        if leg_runs():
+            expect("VELDO-0108 STOOD DOWN by name - the authority runner support script is absent, so no real "
+                   "authority can be started", True)
     else:
         try:
             _v108_A = _v108_repo("repoA")
@@ -369,22 +383,23 @@ else:
             _v108_rc_mut, _v108_ans_mut, _ = _v108_relay(
                 _v108_MUT1, _v108_ADDR_A, _v108_raw.replace(b'"relayed"', b'"tampered"'))
 
-            expect("VELDO-0108 AC1 relay/the-authority-judges-not-the-relay: the relay is run as a REAL CHILD "
-                   "PROCESS with the request on its standard input, exactly as sshd runs it, against a real "
-                   "authority on a real socket. A valid command is accepted and ARRIVES UNCHANGED, compared "
-                   "against what was sent; a command tampered with in transit and a command signed by a key "
-                   "the authority does not know are both refused AT THE AUTHORITY on the signature, not at the "
-                   "relay. The carrying promise is measured separately against a bare echo socket, byte for "
-                   "byte, on a NUL byte, text that is not valid UTF-8, half a megabyte and an empty payload, "
-                   "because a relay that quietly re-encodes what it carries breaks signatures for reasons "
-                   "nobody can find. DRIVEN: a copy that answers the client itself instead of forwarding "
-                   "reports the TAMPERED command as accepted, which is the relay deciding",
-                   _v108_rc_ok == 0 and _v108_ans_ok.get("accepted") is True
-                   and _v108_arrived == _v108_cmd
-                   and _v108_ans_tam.get("reason") == "command_signature_invalid"
-                   and _v108_ans_for.get("reason") == "command_signature_invalid"
-                   and all(ok for _, ok in _v108_byte_rows)
-                   and _v108_ans_mut.get("accepted") is True)
+            if leg_runs():
+                expect("VELDO-0108 AC1 relay/the-authority-judges-not-the-relay: the relay is run as a REAL CHILD "
+                       "PROCESS with the request on its standard input, exactly as sshd runs it, against a real "
+                       "authority on a real socket. A valid command is accepted and ARRIVES UNCHANGED, compared "
+                       "against what was sent; a command tampered with in transit and a command signed by a key "
+                       "the authority does not know are both refused AT THE AUTHORITY on the signature, not at the "
+                       "relay. The carrying promise is measured separately against a bare echo socket, byte for "
+                       "byte, on a NUL byte, text that is not valid UTF-8, half a megabyte and an empty payload, "
+                       "because a relay that quietly re-encodes what it carries breaks signatures for reasons "
+                       "nobody can find. DRIVEN: a copy that answers the client itself instead of forwarding "
+                       "reports the TAMPERED command as accepted, which is the relay deciding",
+                       _v108_rc_ok == 0 and _v108_ans_ok.get("accepted") is True
+                       and _v108_arrived == _v108_cmd
+                       and _v108_ans_tam.get("reason") == "command_signature_invalid"
+                       and _v108_ans_for.get("reason") == "command_signature_invalid"
+                       and all(ok for _, ok in _v108_byte_rows)
+                       and _v108_ans_mut.get("accepted") is True)
 
             # ---- AC2: SSH is transport, the signature is authority -----------------------------
             _v108_unsigned = dict(_v108_req, signature="")
@@ -412,21 +427,22 @@ else:
                                                        _v108_json.dumps(_v108_unsigned).encode(),
                                                        _v108_SSH_ENV)
 
-            expect("VELDO-0108 AC2 relay/ssh-is-transport-not-authority: with SSH's own environment set, "
-                   "SSH_CONNECTION, SSH_ORIGINAL_COMMAND, SSH_CLIENT and a principal, an UNSIGNED command is "
-                   "refused, and a correctly signed command with NO ssh environment at all is accepted: the "
-                   "signature authorises and SSH's presence neither adds nor is needed. The relay reads no "
-                   "environment variable and performs no verification, asserted in its source. STOOD DOWN BY "
-                   "NAME, and this is the honest half: there is no SSH server on this machine, so the leg "
-                   "where sshd refuses an unknown principal is NOT exercised here; that leg is sshd's and not "
-                   "this program's, and every decision this program does make is above. DRIVEN: a copy that "
-                   "accepts because a principal is present passes the unsigned command, which makes every "
-                   "host with relay access an authority",
-                   _v108_ans_u.get("accepted") is False
-                   and _v108_ans_n.get("accepted") is True
-                   and "os.environ" not in _v108_relay_src
-                   and "verify" not in _v108_relay_src
-                   and _v108_ans_m2.get("accepted") is True)
+            if leg_runs():
+                expect("VELDO-0108 AC2 relay/ssh-is-transport-not-authority: with SSH's own environment set, "
+                       "SSH_CONNECTION, SSH_ORIGINAL_COMMAND, SSH_CLIENT and a principal, an UNSIGNED command is "
+                       "refused, and a correctly signed command with NO ssh environment at all is accepted: the "
+                       "signature authorises and SSH's presence neither adds nor is needed. The relay reads no "
+                       "environment variable and performs no verification, asserted in its source. STOOD DOWN BY "
+                       "NAME, and this is the honest half: there is no SSH server on this machine, so the leg "
+                       "where sshd refuses an unknown principal is NOT exercised here; that leg is sshd's and not "
+                       "this program's, and every decision this program does make is above. DRIVEN: a copy that "
+                       "accepts because a principal is present passes the unsigned command, which makes every "
+                       "host with relay access an authority",
+                       _v108_ans_u.get("accepted") is False
+                       and _v108_ans_n.get("accepted") is True
+                       and "os.environ" not in _v108_relay_src
+                       and "verify" not in _v108_relay_src
+                       and _v108_ans_m2.get("accepted") is True)
 
             # ---- AC3: one endpoint, one judgement, and no listener ----------------------------
             _v108_local = CC108.send(_v108_A, {"operation": "upsert", "id": "same-command"}, EN108,
@@ -499,22 +515,24 @@ else:
                        _v108_status == "PASS")
 
             # The stand-down rule itself, on a real relayed call whose census is refused ptrace, as on
-            # the confined gate leg. Runs on every leg: it needs no census, only an incomplete one.
+            # the confined gate leg. It needs no census, only an incomplete one, so it is an ordinary
+            # row: a rows-scoped entry keeps it in the confined leg with the other relay rows.
             _v108_rc_d, _v108_ans_d, _v108_census_d = _v108_relay_census(
                 "denied", _v108_MAIN, _v108_ADDR_A, _v108_raw, fault="denied")
             _v108_denied_ready = _v108_ready((_v108_census_d,))
-            expect("VELDO-0114 relay/stand-down-never-hides-a-failed-comparison: a relayed call measured "
-                   "under a census that is refused ptrace leaves an INCOMPLETE receipt, which is not ready. "
-                   "With that receipt a failed endpoint/judgement comparison makes the composite FAIL "
-                   "(comparison_failed), never STANDS DOWN, and a comparison that held makes it STANDS DOWN "
-                   "(census_incomplete), never PASS: a standing-down census withholds a pass and never turns "
-                   "a falsified comparison green",
-                   _v108_census_d.get("status") == "INCOMPLETE" and not _v108_denied_ready
-                   and _v108_composite(_v108_denied_ready, False, False) == ("FAIL", "comparison_failed")
-                   and _v108_composite(_v108_denied_ready, False, True) == ("STANDS DOWN", "census_incomplete")
-                   and _v108_composite(True, True, False) == ("FAIL", "comparison_failed")
-                   and _v108_composite(True, False, True) == ("FAIL", "relay_listener")
-                   and _v108_composite(True, True, True) == ("PASS", None))
+            if leg_runs():
+                expect("VELDO-0114 relay/stand-down-never-hides-a-failed-comparison: a relayed call measured "
+                       "under a census that is refused ptrace leaves an INCOMPLETE receipt, which is not ready. "
+                       "With that receipt a failed endpoint/judgement comparison makes the composite FAIL "
+                       "(comparison_failed), never STANDS DOWN, and a comparison that held makes it STANDS DOWN "
+                       "(census_incomplete), never PASS: a standing-down census withholds a pass and never turns "
+                       "a falsified comparison green",
+                       _v108_census_d.get("status") == "INCOMPLETE" and not _v108_denied_ready
+                       and _v108_composite(_v108_denied_ready, False, False) == ("FAIL", "comparison_failed")
+                       and _v108_composite(_v108_denied_ready, False, True) == ("STANDS DOWN", "census_incomplete")
+                       and _v108_composite(True, True, False) == ("FAIL", "comparison_failed")
+                       and _v108_composite(True, False, True) == ("FAIL", "relay_listener")
+                       and _v108_composite(True, True, True) == ("PASS", None))
 
             # ---- the authority goes away: reported, never invented -----------------------------
             _v108_count = len(_v108_applied(_v108_cA))
@@ -523,14 +541,15 @@ else:
             _v108_rc_down, _v108_ans_down, _v108_err_down = _v108_relay(
                 _v108_MAIN, _v108_ADDR_A, _v108_raw, raw_stdout=True)
 
-            expect("VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered: with the authority "
-                   "stopped, the relay exits %d, writes NOTHING to its standard output, names the endpoint on "
-                   "its standard error, and applies nothing. It does not invent an answer, which would be the "
-                   "local fallback VELDO-0109 exists to forbid arriving one layer lower down"
-                   % RL108.EXIT_UNREACHABLE,
-                   _v108_rc_down == RL108.EXIT_UNREACHABLE and _v108_ans_down == b""
-                   and "not answering" in _v108_err_down and _v108_ADDR_A in _v108_err_down
-                   and len(_v108_applied(_v108_cA)) == _v108_count)
+            if leg_runs():
+                expect("VELDO-0108 AC1 relay/an-unreachable-authority-is-reported-not-answered: with the authority "
+                       "stopped, the relay exits %d, writes NOTHING to its standard output, names the endpoint on "
+                       "its standard error, and applies nothing. It does not invent an answer, which would be the "
+                       "local fallback VELDO-0109 exists to forbid arriving one layer lower down"
+                       % RL108.EXIT_UNREACHABLE,
+                       _v108_rc_down == RL108.EXIT_UNREACHABLE and _v108_ans_down == b""
+                       and "not answering" in _v108_err_down and _v108_ADDR_A in _v108_err_down
+                       and len(_v108_applied(_v108_cA)) == _v108_count)
 
             # ---- the negative control ----------------------------------------------------------
             _v108_NOOP, _ = _v108_organ("noop", [
@@ -547,10 +566,11 @@ else:
                 (_v108_relay(_v108_NOOP, _v108_ADDR_B, _v108_raw)[1].get("reason"),
                  _v108_orig_other[1].get("reason")),
             ]
-            expect("VELDO-0108 control relay/copying-is-not-what-changes-it: a copy of the relay carrying only "
-                   "an added comment answers exactly as the original does, both against the stopped authority "
-                   "and against the other running one, so the difference each DRIVEN mutant shows is the "
-                   "mutation and not the copying",
-                   all(a == b for a, b in _v108_control))
+            if leg_runs():
+                expect("VELDO-0108 control relay/copying-is-not-what-changes-it: a copy of the relay carrying only "
+                       "an added comment answers exactly as the original does, both against the stopped authority "
+                       "and against the other running one, so the difference each DRIVEN mutant shows is the "
+                       "mutation and not the copying",
+                       all(a == b for a, b in _v108_control))
         finally:
             _v108_stop_all()
