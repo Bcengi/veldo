@@ -16,7 +16,7 @@ receiver process; and control_service_projects' NewProjectPass starting the repo
 
 THE KEYSTORE is the Linux Secret Service seam (control_credential_keystore.SecretService) over a generated fake
 `secret-tool` first on every PATH the suite and the receivers use, exactly as suite 85_veldo_0158 builds it, so the
-real keyring is never reached. It holds one canary per fixture service (fixture-mail, fixture-tracker), each value
+real keyring is never reached. It holds one canary per fixture service and VELDO-0258 control-plane credential, each value
 random at run time and set through the seam. No dispatch configuration and no role selects a catalog server.
 
 THE ENGINES are fakes on VELDO-0172's shared constructors: a `claude` pinned as the engines record's version and a
@@ -863,7 +863,7 @@ out.close()
         with region('ac1/canary-keystore'):
             check('ac1/canary-keystore', 'the keystore (the Secret Service seam over the fake secret-tool) holds a '
                   'canary for each fixture service, read back through the seam [%s]' % sorted(CANARIES),
-                  held_back == CANARIES and len(set(CANARIES.values())) == 2
+                  held_back == CANARIES and len(set(CANARIES.values())) == 7
                   and all(v.startswith('CANARY') and len(v) > 30 for v in CANARIES.values()))
             check('ac1/canary-keystore', 'no format of the scan\'s list matches a canary, so only the canary row can '
                   'find one', not [f for f in SS.scan('run_end', PROJECT, [('canaries', '\n'.join(SECRETS).encode())])['findings']])
