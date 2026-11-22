@@ -10561,6 +10561,11 @@ def cases():
         ['ac2/malformed-whole'])
     result[-1]['siblings'] = True
 
+    add(258, 'outside258-effect-observer-dropped', '58_veldo_0028_effects.py', 'control_effect_executor.py',
+        "observe=outside.effect_observer(config), dispatch=accepted.get('dispatch_id'))",
+        "observe=None, dispatch=accepted.get('dispatch_id'))",
+        ['effects/publication-call-observed'])
+
     # VELDO-0253: each criterion's declared falsifier, run through real Git and SQLite.
     install253 = '157_veldo_0253_configuration.py'
     add(253, 'install253-partial-commit', install253, 'control_installation_config.py',
