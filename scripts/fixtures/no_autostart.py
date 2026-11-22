@@ -566,8 +566,10 @@ def _qualify(root):
             rows[name] = dict(status=status, reason=reason)
         faults_ok = (sorted((c['identity'], c['fault']) for c in fault_cases) ==
                      sorted((c['identity'], fault) for c in measured for fault in faults) and all(
-            c['receipt']['status'] == 'INCOMPLETE'
-            and c['receipt']['qualification']['status'] == 'INCOMPLETE' and set(c['rows']) == set(ROWS)
+            # An injected fault must leave the receipt INCOMPLETE. Host qualification
+            # is a separate property: on a COMPLETE-qualified host most faults
+            # break capture, not qualification, and the rows must still stand down.
+            c['receipt']['status'] == 'INCOMPLETE' and set(c['rows']) == set(ROWS)
             and all(r['status'] == 'STANDS DOWN' and r['reason'] == 'census_incomplete'
                     for r in c['rows'].values()) for c in fault_cases))
         if not faults_ok or not all(controls.values()):
