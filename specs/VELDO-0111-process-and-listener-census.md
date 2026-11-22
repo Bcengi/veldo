@@ -132,3 +132,16 @@ Each of the four live family counterexamples must produce `escaped_reference`.
 A mutant ignoring SCM_RIGHTS must incorrectly pass those captures, and the
 named escape row must detect that falsifier. Protocol, configuration, async,
 race, implicit-address and ABI obligations within the four families remain.
+
+### Follow-up, 2026-11-22: close_range
+
+VELDO-0113 found that the collector refused close_range(2), which Python's
+subprocess issues before every exec, so most client runs ended INCOMPLETE.
+close_range is now accounted exactly like close on every descriptor in its
+range, read from the kernel table at the entry and exit stops. Release is still
+proven only by the file-release observer, so an SCM_RIGHTS reference already
+queued outside the scope remains `escaped_reference`. CLOSE_RANGE_CLOEXEC
+closes nothing until exec; exec then accounts each close-on-exec socket it
+closed. Flags outside UNSHARE|CLOEXEC, and a descriptor table shared with
+another live task, are refused as named `descriptor_operation`. Row:
+`census/close-range-accounted`.
