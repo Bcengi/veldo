@@ -267,7 +267,8 @@ def receive(config, contract, accepted):
 
 
 def identity_metrics(conn):
-    return dict(E.metrics(conn), identities=_git_process.identity_transport().metrics(conn))
+    return dict(E.metrics(conn), identities=_git_process.identity_transport().metrics(conn),
+                control_plane=E.organ('control_plane_calls').metrics())
 
 
 def execute(config, request, principal, challenge, signature):

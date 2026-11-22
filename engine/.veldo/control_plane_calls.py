@@ -53,6 +53,12 @@ def service(commit, observe=None, dispatch=None):
         state.pid, state.commit, state.observe, state.dispatch = previous
 
 
+def observe_service(commit, observe):
+    """Attach the serving authority's durable log and accepted-store provenance."""
+    require_service('service')
+    state.commit, state.observe = commit, observe
+
+
 def require_service(caller):
     not_run(caller)
     if state.pid != os.getpid():
