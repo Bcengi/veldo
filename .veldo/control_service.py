@@ -2404,6 +2404,7 @@ class Service:
                 'journal_head': head[1] if head else S.GENESIS_DIGEST, 'entities': entities,
                 'service': self.config['service'], 'unit': self.config['unit'],
                 'counts': dict(self.counts, refusals=dict(self.refusals)), 'pending': self.pending(),
+                'control_plane': _organ('control_plane_calls').metrics(),
                 'channel': self.channel_status(), 'api': self.api_status(), 'loop': self.loop_status(),
                 'receivers': receiver_status(self.config), 'instance': dict(self.instance),
                 'repositories': sorted(self.repositories)}
@@ -4461,6 +4462,9 @@ def serve(config_path):
             if previous is not None and not keep:
                 S.drop_previous_owners(conn, observe=lambda rows: observe_ownership(config, 'ownership_commit', rows))
             service = Service(config, conn)
+            _organ('control_plane_calls').observe_service(
+                lambda: _organ('installation').configuration_commit(conn),
+                lambda event: service._log(dict(event, kind='control_plane_call', at=time.time())))
             # VELDO-0323: what a space worker closes in itself. Nothing else it inherits is closed.
             service.space_owned.append(lock)
             # VELDO-0161: the repositories adopted before this instance started are served again, and one whose
