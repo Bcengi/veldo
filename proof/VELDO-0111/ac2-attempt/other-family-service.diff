@@ -1,4 +1,4 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -839,0 +840 @@
+@@ -1077,0 +1078 @@
 +                        self.expose(pid, obj, "implicit_receive_binding", address)

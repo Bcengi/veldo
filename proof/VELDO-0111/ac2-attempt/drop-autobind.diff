@@ -1,4 +1,4 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -574,0 +575 @@
+@@ -783,0 +784 @@
 +            return None

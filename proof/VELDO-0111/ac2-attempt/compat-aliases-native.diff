@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -912 +912 @@
+-                nr, args, abi = I386_SYSCALLS.get(nr, -1 - nr), [v & 0xffffffff for v in args], 'i386'
++                nr, args, abi = I386_SYSCALLS.get(nr, nr), [v & 0xffffffff for v in args], 'i386'

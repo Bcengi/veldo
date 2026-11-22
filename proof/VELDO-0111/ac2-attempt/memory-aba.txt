@@ -5,10 +5,10 @@
     {
       "scenario": "bind",
       "acknowledgement": {
-        "inode": "socket:[4223741224]",
+        "inode": "socket:[4266474738]",
         "kernel": [
           "127.0.0.2",
-          34281
+          56385
         ],
         "memory": "127.0.0.1"
       },
@@ -16,33 +16,33 @@
         {
           "phase": "entry",
           "nr": 49,
-          "pid": 2874413,
+          "pid": 2540579,
           "args": [
             3,
-            134143560288752,
+            124651718216176,
             16,
             0,
-            134143561393808,
-            140721044281632
+            124651719321232,
+            140720810285120
           ],
           "writes": 4
         },
         {
           "phase": "exit",
           "nr": 49,
-          "pid": 2874413,
+          "pid": 2540579,
           "args": [
             3,
-            134143560288752,
+            124651718216176,
             16,
             0,
-            134143561393808,
-            140721044281632
+            124651719321232,
+            140720810285120
           ],
           "writes": 4
         }
       ],
-      "kernel_sockaddr_hex": "020085e97f0000020000000000000000",
+      "kernel_sockaddr_hex": "0200dc417f0000020000000000000000",
       "sampled_sockaddr_hex": "020000007f0000010000000000000000",
       "passed": true,
       "failures": [
@@ -51,24 +51,6 @@
           "reason": "kernel-bound address differs from the sampled sockaddr",
           "category": "observation_incomplete",
           "state": "collecting"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "drained"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "drained"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
-          "category": "observation_incomplete",
-          "state": "drained"
         }
       ]
     },
@@ -88,24 +70,24 @@
           6
         ],
         "installed_inodes": [
-          "socket:[4223732286]",
-          "socket:[4223732287]"
+          "socket:[4266405436]",
+          "socket:[4266405437]"
         ],
         "older_inodes": [
-          "socket:[4223742415]",
-          "socket:[4223742416]"
+          "socket:[4266405434]",
+          "socket:[4266405435]"
         ]
       },
       "writes": [
         {
           "phase": "exit",
           "nr": 53,
-          "pid": 2881452,
+          "pid": 2547097,
           "args": [
             1,
             524289,
             0,
-            140727100571944,
+            140736712537848,
             0,
             0
           ],
@@ -114,14 +96,14 @@
         {
           "phase": "exit",
           "nr": 53,
-          "pid": 2881452,
+          "pid": 2547097,
           "args": [
             1,
             1,
             0,
-            124842606552480,
-            815322704,
-            124842614637920
+            125224883807520,
+            968590928,
+            125224891893088
           ],
           "writes": 8
         }
@@ -133,24 +115,6 @@
           "reason": "socketpair result memory differs from installed descriptors",
           "category": "observation_incomplete",
           "state": "collecting"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "drained"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "drained"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
-          "category": "observation_incomplete",
-          "state": "drained"
         }
       ]
     },
@@ -163,19 +127,19 @@
           4
         ],
         "inodes": [
-          "socket:[4223739276]"
+          "socket:[4266491923]"
         ]
       },
       "writes": [
         {
           "phase": "exit",
           "nr": 47,
-          "pid": 2887893,
+          "pid": 2553432,
           "args": [
             3,
-            140728614259080,
+            140730958952056,
             0,
-            138295839375680,
+            130078132486464,
             0,
             0
           ],
@@ -189,30 +153,12 @@
           "reason": "received out-of-scope socket",
           "category": "observation_incomplete",
           "state": "collecting"
-        },
-        {
-          "capability": "protocol_inventory_bounds",
-          "reason": "bounded protocol discovery does not fully qualify the four required families",
-          "category": "observation_incomplete",
-          "state": "drained"
-        },
-        {
-          "capability": "operation_configuration",
-          "reason": "available socket needs a qualified address or operation configuration",
-          "category": "observation_incomplete",
-          "state": "drained"
-        },
-        {
-          "capability": "io_uring_socket_effects",
-          "reason": "shared ring completions are not correlated to traced socket identities",
-          "category": "observation_incomplete",
-          "state": "drained"
         }
       ]
     }
   ],
-  "source_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
-  "instrumented_digest": "8144c6e2ae827dcdfd31e66ea300ef83dbb5a9c62a6e16cc7e9a29b8403a837d",
+  "source_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
+  "instrumented_digest": "e097ab8ba1fb367f6492b5aaa80f81564740a34246595fde18b8fe60a0be7542",
   "scheduling_only_instrumentation": true,
   "external_writer_is_ancestor": true
 }

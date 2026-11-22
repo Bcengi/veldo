@@ -1,8 +1,8 @@
 {
   "row": "census/escape-detected-despite-control-aba",
   "passed": true,
-  "source_digest": "70c9dde79aab1b7e873d57f30e9958cb910c7b2eeabe5bce58fcb1cbacf92d39",
-  "instrumented_digest": "d20a931e7eea04b675296131b7cd38150eda7496e2f618ea4a7fff9d27ce40a2",
+  "source_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
+  "instrumented_digest": "949b93cd0829fb309335db37f95ad74e5bab65071bb92bd720f2dbc6ee96f7be",
   "scheduling_only_instrumentation": true,
   "external_writer_is_ancestor": true,
   "unmodified_credentials_control": {
@@ -17,20 +17,20 @@
   "samples": [
     {
       "sequence": 7,
-      "time_ns": 2956196409487872,
+      "time_ns": 2972739286842005,
       "kind": "witness_sample",
       "phase": "entry",
-      "sample": "1c00000000000000010000000200000084732b00e8030000e803000000000000",
+      "sample": "1c000000000000000100000002000000a6772600e8030000e803000000000000",
       "entry_descriptors": [
         []
       ]
     },
     {
       "sequence": 8,
-      "time_ns": 2956196410087911,
+      "time_ns": 2972739287651374,
       "kind": "witness_sample",
       "phase": "exit",
-      "sample": "1c00000000000000010000000200000084732b00e8030000e803000000000000",
+      "sample": "1c000000000000000100000002000000a6772600e8030000e803000000000000",
       "entry_descriptors": [
         []
       ]
@@ -49,10 +49,10 @@
     }
   ],
   "acknowledgement": {
-    "inode": "socket:[4223683703]",
+    "inode": "socket:[4266409355]",
     "address": [
       "127.0.0.1",
-      33219
+      48191
     ]
   },
   "receipt": {
@@ -62,25 +62,25 @@
     "barriers": [
       {
         "name": "armed_before_exec",
-        "time_ns": 2956195583374994,
+        "time_ns": 2972738446593374,
         "sequence": 1
       },
       {
         "name": "call_returned",
-        "time_ns": 2956196423716429,
+        "time_ns": 2972739300598529,
         "sequence": 12
       },
       {
         "name": "descendants_drained",
-        "time_ns": 2956196423718296,
+        "time_ns": 2972739300602068,
         "sequence": 12
       }
     ],
     "processes": [
       {
-        "identity": "2847620:1",
-        "pid": 2847620,
-        "current_tid": 2847620,
+        "identity": "2520998:1",
+        "pid": 2520998,
+        "current_tid": 2520998,
         "parent": null,
         "root": true,
         "operation": "root",
@@ -95,26 +95,8 @@
     "failures": [
       {
         "capability": "escaped_reference",
-        "reason": "socket:[4223683703]:1 file is still referenced after descendant drain",
+        "reason": "socket:[4266409355]:1 file is still referenced after descendant drain",
         "category": "lifecycle_violation",
-        "state": "drained"
-      },
-      {
-        "capability": "protocol_inventory_bounds",
-        "reason": "bounded protocol discovery does not fully qualify the four required families",
-        "category": "observation_incomplete",
-        "state": "drained"
-      },
-      {
-        "capability": "operation_configuration",
-        "reason": "available socket needs a qualified address or operation configuration",
-        "category": "observation_incomplete",
-        "state": "drained"
-      },
-      {
-        "capability": "io_uring_socket_effects",
-        "reason": "shared ring completions are not correlated to traced socket identities",
-        "category": "observation_incomplete",
         "state": "drained"
       }
     ],

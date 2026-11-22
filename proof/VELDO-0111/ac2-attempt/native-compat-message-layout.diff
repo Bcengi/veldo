@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -939 +939 @@
+-                                                            'x86_64' if abi == 'x86_64' else 'i386')
++                                                            'x86_64')

@@ -1,6 +1,7 @@
 # VELDO-0111 open AC2 qualification
 
-REMAINING: full AC2 qualification within Unix, IPv4, IPv6 and netlink.
+REMAINING: independent review of AC2. The retained obligations within Unix,
+IPv4, IPv6 and netlink are addressed (see below); none is accepted yet.
 The owner approved the two acceptance amendments in Telegram 37442, answering
 Telegram 37440 item 1. They are applied under "Amendment, 2026-10-28" in the
 specification. Neither approval waives the obligations inside those families.
@@ -59,35 +60,38 @@ unchanged.
   well as preflight, arming, collecting and draining. The full fault row checks
   its capability, category and state and all consumer stand-downs.
 
-## Retained AC2 obligations
+## Retained AC2 obligations, addressed in continuation 2 (2026-11-21)
 
-These are implementation gaps, not missing owner decisions or claims that the
-kernel lacks the facilities. Local regression success is not full acceptance.
+One commit each, each with whole-suite falsifiers in the recheck
+([ac2-attempt](ac2-attempt/README.md); results in its receipt). Addressing
+them is not acceptance: AC2 needs independent review.
 
-* protocol_inventory_bounds: the current discovery table is bounded. Limiting
-  its family universe does not establish exhaustive protocols and paths inside
-  those families. exhaustive remains false, so no real receipt is yet COMPLETE.
-  Measured 2026-11-21 on the qualification host: socket(AF_INET or AF_INET6,
-  SOCK_STREAM, 256) succeeds (IPPROTO_SMC, registered as INET_SMC/SMC6 in
-  /proc/net/protocols) and lies outside the scanned range 0-255 plus 262. A
-  scan of 256-69999 found only 256 and 262. The bound is therefore demonstrably
-  not exhaustive. A candidate qualification: reconcile every registered entry in
-  /proc/net/protocols and every net-pf-{1,2,10,16} alias in modules.alias with a
-  discovered (family, type, protocol) cell, failing closed on any unexplained
-  entry. Not implemented yet.
-* operation_configuration: the available IPv6 datagram protocol 115 still needs
-  its specific address/configuration fixture. EINVAL on a generic address does
-  not qualify that protocol.
-* io_uring_socket_effects: the host probe witnesses an actual completed socket
-  creation. Shared rings, SQPOLL and completion-to-socket correlation remain
-  unqualified. A successful interface call causes an explicit capture failure.
-* compat_socketcall_message and compat_syscall: scalar socketcall probes work;
-  compat message/control layouts and other i386 entries remain unqualified.
-
-No obligation above was removed by the family amendment. Exact qualification
-within the four families needs further implementation and live evidence before
-AC2 can be marked complete. The existing ptrace event stream alone does not
-supply asynchronous completions or final socket-reference destruction events.
+* protocol_inventory_bounds: discovery bounds are Unix 0-15, IPv4/IPv6
+  0-1023 and netlink 0-63 (the old scan missed IPPROTO_SMC 256 and Unix
+  protocol 1), and every available cell records the kernel's own (domain,
+  type, protocol). The inventory is exhaustive only when every
+  /proc/net/protocols entry and every net-pf-{1,2,10,16} module alias lies
+  inside the bounds; unknown names and unreadable sources fail closed. A
+  measured socket whose kernel triple was not discovered is refused as
+  `protocol_inventory_bounds`. Row `census/protocol-inventory-covers-kernel`
+  also probes 0-4095 and extreme values independently.
+* operation_configuration: L2TP/IP (115) binds use its own sockaddr layout
+  with an exact connection id; each inventory operation qualifies only if
+  the collector's decoder names the endpoint from the kernel's getsockname,
+  which the collector also uses for protocols without a /proc table (SCTP,
+  UDP-Lite, SMC, L2TP/IP). Successful SCTP bindx, connectx and peeloff fail
+  closed.
+* io_uring_socket_effects: no ring may exist in measured scope. Rings are
+  refused at each task's first stop (inherited), on open/openat/openat2 and
+  pidfd_getfd results, on received rights, and on successful setup, enter or
+  register. Completions therefore need no correlation, and SQPOLL cannot
+  act for a measured task. For review: a ring owned and driven by an outside
+  process is treated as that outside process's effect, like a request to an
+  outside daemon.
+* compat_socketcall_message and compat_syscall: every inspected native call
+  has an i386 counterpart; unmapped i386 calls cannot alias native numbers;
+  socketcall and direct sendmsg/sendmmsg controls use the compat msghdr and
+  cmsghdr layouts. qualified_abis lists x86_64 and i386.
 
 Round 3 regressions, falsifiers, receipts and digests are in
 [round3](round3/README.md). The current attempt's compact receipt and logs are in

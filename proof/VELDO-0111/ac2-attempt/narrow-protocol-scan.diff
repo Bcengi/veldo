@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -244 +244 @@
+-PROTOCOL_BOUNDS = {1: 16, 2: 1024, 10: 1024, 16: 64}
++PROTOCOL_BOUNDS = {1: 1, 2: 256, 10: 256, 16: 32}

@@ -1,20 +1,7 @@
-External host_heavy.sh recheck (recheck.txt): exit 0.
-Baseline and final control: 17/17 suite rows green each.
-Whole-suite mutants killed (named row false in a completed run): 19, including
-ignore-scm-rights, ignore-release, skip-release-watch, ignore-sharers,
-ignore-seccomp-listener, drop-netlink-implicit and the retained AC1-AC4,
-round-3, swallowed-fault and CLONE_UNTRACED falsifiers; focused controls green.
-Escape witness, 3 modes x 4 families: green with both detectors; ignore-scm-rights
-and ignore-scm-rights-and-release red (the latter COMPLETE for owned/sendmmsg).
-Control-memory ABA: green; ignore-release red with capture COMPLETE.
-Memory ABA (bind, socketpair, recvmsg): green; each memory-trusting mutant
-loses exactly its own scenario.
-Named-gap replays (io_uring_socket_effects, operation_configuration,
-protocol_inventory_bounds): red when suppressed, green otherwise.
-Eight fault receipts: all eleven exact named stand-downs each.
-validate.py: digests, matrices, zero-context diff applicability, proof size
-(436547 bytes) and git diff --check: passed.
-scripts/check_personal_setup.py: 0 finding(s).
-The recheck's closing log line names shared_socket_memory; its wording predates
-the NEXT constant. receipt.json next_obligation (protocol_inventory_bounds) is
-authoritative.
+Receipt, source, suite, spec, witness and protected-declaration digests: valid
+Baseline/final: 22 green rows each, no qualification gaps; 13 continuation-2 mutants red; escape, release, control/memory-ABA matrices and eight fault receipts: valid
+Retained zero-context diffs: apply cleanly
+Proof bytes: 477401 (below 1 MB)
+personal setup: no installation found; ran the built-in shapes only
+personal setup: 0 finding(s)
+Whitespace check: passed
