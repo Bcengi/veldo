@@ -2,18 +2,18 @@
   "name": "autostart113-construction-outside-authority",
   "rows": {
     "unavailable/no-client-starts-the-authority": {
-      "status": "STANDS DOWN",
-      "reason": "census_incomplete",
+      "status": "PASS",
+      "reason": null,
       "inventory_digest": "e2e7fb2bfb5a3d3ed4be20ce0b9d7a8a92edfbc16266e1cea6d6adddcb5dd279"
     },
     "unavailable/no-client-hosts-a-listener": {
-      "status": "STANDS DOWN",
-      "reason": "census_incomplete",
+      "status": "PASS",
+      "reason": null,
       "inventory_digest": "e2e7fb2bfb5a3d3ed4be20ce0b9d7a8a92edfbc16266e1cea6d6adddcb5dd279"
     },
     "unavailable/no-auto-start-needs-census": {
-      "status": "STANDS DOWN",
-      "reason": "census_incomplete",
+      "status": "PASS",
+      "reason": null,
       "inventory_digest": "e2e7fb2bfb5a3d3ed4be20ce0b9d7a8a92edfbc16266e1cea6d6adddcb5dd279"
     },
     "unavailable/in-process-construction-boundary": {
@@ -26,7 +26,7 @@
       "status": "GAP",
       "reason": "no_process_specific_write_grant",
       "observation": {
-        "pid": 2143615,
+        "pid": 3001707,
         "writable": true
       }
     }
@@ -38,11 +38,11 @@
     "fault_cases": 176,
     "construction_cases": 20,
     "invocations_completed": 22,
-    "complete_censuses": 4,
+    "complete_censuses": 22,
     "forbidden_launches": 0,
-    "observation_failures": 18
+    "observation_failures": 0
   },
   "qualification": "INCOMPLETE",
   "faults_ok": true,
-  "receipt_sha256": "28c8b78f8622d9ee512c5feebcdc7489ea30d1c7b417e0cc77fceb77f545babf"
+  "receipt_sha256": "88daaf70208c8f74047befec7dcaf7fecbb565144c3cdd611e166793153c97d7"
 }

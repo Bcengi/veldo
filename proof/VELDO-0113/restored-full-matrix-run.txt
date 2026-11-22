@@ -1,3 +1,3 @@
-Diagnostic output; original SHA-256: 9af33003063b28d338d428620cdd6e8038cc22acb72cae070d206a5f24672b9b
+Diagnostic output; original SHA-256: db4e256d4b0a7ff2574ef5a6a8e51c759818ee3e55412e2a84e2f6065476739b
 work-client selftest 2
-restored-full-matrix {'unavailable/no-client-starts-the-authority': 'STANDS DOWN', 'unavailable/no-client-hosts-a-listener': 'STANDS DOWN', 'unavailable/no-auto-start-needs-census': 'STANDS DOWN', 'unavailable/in-process-construction-boundary': 'PASS', 'unavailable/store-write-grant': 'GAP'}
+restored-full-matrix {'unavailable/no-client-starts-the-authority': 'PASS', 'unavailable/no-client-hosts-a-listener': 'PASS', 'unavailable/no-auto-start-needs-census': 'PASS', 'unavailable/in-process-construction-boundary': 'PASS', 'unavailable/store-write-grant': 'GAP'}

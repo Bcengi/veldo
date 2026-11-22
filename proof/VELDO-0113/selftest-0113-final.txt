@@ -1,12 +1,13 @@
 Diagnostic output projection; routine runner inventory and fixture chatter omitted.
-Original stdout SHA-256: 31c927dd9cc5b886d836669835014dd154f3b54dfcfecab05c5984fa674007a5
+Original stdout SHA-256: 3f31a75d548a181ecc453ecb257827e29baed993c19b38ad7d1563e806dddf33
 Selected selftest only: no canonical unit or gate pass is claimed.
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
               produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
-  /tmp/tmpfni61yo2/proof4.json: criterion AC1 passed without evidence
-VELDO-0113 consumer unavailable/no-client-starts-the-authority: {"inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e", "reason": "census_incomplete", "status": "STANDS DOWN"}
-VELDO-0113 consumer unavailable/no-client-hosts-a-listener: {"inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e", "reason": "census_incomplete", "status": "STANDS DOWN"}
-VELDO-0113 consumer unavailable/no-auto-start-needs-census: {"inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e", "reason": "census_incomplete", "status": "STANDS DOWN"}
+  /tmp/tmpn1dve683/proof4.json: criterion AC1 passed without evidence
+VELDO-0113 consumer unavailable/no-client-starts-the-authority: {"inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e", "reason": null, "status": "PASS"}
+VELDO-0113 consumer unavailable/no-client-hosts-a-listener: {"inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e", "reason": null, "status": "PASS"}
+VELDO-0113 consumer unavailable/no-auto-start-needs-census: {"inventory_digest": "8a81458b8870c3632e673e6c777f57409b897cb43479d05beeb0bed6f68dfe4e", "reason": null, "status": "PASS"}
 VELDO-0113 consumer unavailable/in-process-construction-boundary: {"reason": [], "status": "PASS"}
-VELDO-0113 consumer unavailable/store-write-grant: {"observation": {"pid": 377390, "writable": true}, "reason": "no_process_specific_write_grant", "status": "GAP"}
-  114_veldo_0113_no_autostart                      9 passed  489.48s
-selftest (PARTIAL, 1 of 256 suites): 35 passed, 0 failed in 489.48s
+VELDO-0113 consumer unavailable/store-write-grant: {"observation": {"pid": 2702027, "writable": true}, "reason": "no_process_specific_write_grant", "status": "GAP"}
+  114_veldo_0113_no_autostart                      9 passed  497.35s
+selftest (PARTIAL, 1 of 256 suites): 35 passed, 0 failed in 497.35s

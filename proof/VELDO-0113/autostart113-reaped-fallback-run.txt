@@ -1,13 +1,4 @@
-Diagnostic output; original SHA-256: 16bffc2826dfe8f88bdeb03c3f4e5123a92f9a9e6180f74ddd2ae969d6ece5c4
-autostart113-reaped-fallback {'unavailable/no-client-starts-the-authority': 'STANDS DOWN', 'unavailable/no-client-hosts-a-listener': 'STANDS DOWN', 'unavailable/no-auto-start-needs-census': 'STANDS DOWN', 'unavailable/in-process-construction-boundary': 'PASS', 'unavailable/store-write-grant': 'GAP'}
-Traceback (most recent call last):
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 231, in <module>
-    main()
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 222, in main
-    run(case['name'], case, 'mutant')
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 160, in run
-    check_result(result, case if mode == 'mutant' else None)
-  File "<user-home>/projects/veldo-worktrees/veldo-0113/proof/VELDO-0113/run_checks.py", line 173, in check_result
-    assert result['rows'][row]['status'] == 'FAIL', (case['name'], row)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: ('autostart113-reaped-fallback', 'unavailable/no-client-starts-the-authority')
+Diagnostic output; original SHA-256: 8e3d6444d93ce63b90621552cb7233f1a04b0b72684fbcca68fe4bd9b14d103f
+host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-22T16:28:48Z
+autostart113-reaped-fallback {'unavailable/no-client-starts-the-authority': 'FAIL', 'unavailable/no-client-hosts-a-listener': 'PASS', 'unavailable/no-auto-start-needs-census': 'PASS', 'unavailable/in-process-construction-boundary': 'PASS', 'unavailable/store-write-grant': 'GAP'}
+exit: 0
