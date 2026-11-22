@@ -14,6 +14,11 @@ def load(name, path):
 
 def install(root, base, mods, fake):
     shutil.copytree(root / '.veldo/runtime', mods / 'runtime', dirs_exist_ok=True)
+    # VELDO-0253: the service ships the installation schema and template beside the modules
+    # (as proof/VELDO-0186/fixtures.py carries them since c90ddc9c).
+    for directory in ('installation_schema', 'installation_template'):
+        if (root / '.veldo' / directory).is_dir():
+            shutil.copytree(root / '.veldo' / directory, mods / directory, dirs_exist_ok=True)
     claude = load('v186_claude_fixture', mods / 'control_engine_claude.py')
     codex = load('v186_codex_fixture', mods / 'control_engine_codex.py')
     record = claude.qualification()
