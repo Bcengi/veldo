@@ -1,5 +1,5 @@
 {
-  "commit": "1cb5bcf1b1b36d613cbb242d2cad36e89ab897d7",
+  "commit": "647d1f42161486b3a52c226f733cb56a428971ec",
   "passed": true,
   "results": [
     {
@@ -8,13 +8,13 @@
       "failed_rows": [],
       "mode": "baseline",
       "passed": true,
-      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "source_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6",
       "targets": {
         "query/journey": [
           true
         ]
       },
-      "tested_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8"
+      "tested_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6"
     },
     {
       "case": "store359-events-dropped",
@@ -22,13 +22,13 @@
       "failed_rows": [],
       "mode": "noop",
       "passed": true,
-      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "source_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6",
       "targets": {
         "query/journey": [
           true
         ]
       },
-      "tested_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8"
+      "tested_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6"
     },
     {
       "case": "store359-switch-ignored",
@@ -36,20 +36,48 @@
       "failed_rows": [],
       "mode": "noop",
       "passed": true,
-      "source_sha256": "54b4bec7fc6471ecaa34015556d281944075d3363fed9108b2181d393cdd0694",
+      "source_sha256": "f323156eddecdd2dd4143bde8aaca03b20e8d8353afac6a23ed675f012948f60",
       "targets": {
         "switch/off": [
           true
         ]
       },
-      "tested_sha256": "54b4bec7fc6471ecaa34015556d281944075d3363fed9108b2181d393cdd0694"
+      "tested_sha256": "f323156eddecdd2dd4143bde8aaca03b20e8d8353afac6a23ed675f012948f60"
+    },
+    {
+      "case": "store359-floor-reload",
+      "failed_details": [],
+      "failed_rows": [],
+      "mode": "noop",
+      "passed": true,
+      "source_sha256": "e82c97c8c23cb835dc2b491e75d1c477bb6fbb791019cb352aa801a18aa783fe",
+      "targets": {
+        "query/cost": [
+          true
+        ]
+      },
+      "tested_sha256": "e82c97c8c23cb835dc2b491e75d1c477bb6fbb791019cb352aa801a18aa783fe"
+    },
+    {
+      "case": "store359-frontier-not-own-reader",
+      "failed_details": [],
+      "failed_rows": [],
+      "mode": "noop",
+      "passed": true,
+      "source_sha256": "8b1b2721fe8216425183c675b9ac8cb94cbf7f8d8ae42186ee1155acb082eae1",
+      "targets": {
+        "query/cost": [
+          true
+        ]
+      },
+      "tested_sha256": "8b1b2721fe8216425183c675b9ac8cb94cbf7f8d8ae42186ee1155acb082eae1"
     },
     {
       "case": "store359-events-dropped",
       "failed_details": [
         [
           "v359 query/journey",
-          "station selection; station claim; station direct_execution; station build; station review; station publication; station provider_request; missing dependency held; missing unit held; inline decision references; build admission; committed change and stale ticket; plan run-check; frontier claimable and offers; executor context and ticket; valid coordination; coordination stale ticket; missing cycle; frontier with stored handoff; frontier with stored returned"
+          "station selection; station claim; station direct_execution; station build; station review; station publication; station provider_request; missing dependency held; missing unit held; inline decision references; build admission; committed change and stale ticket; plan run-check; frontier claimable and offers; executor context and ticket; valid coordination; coordination stale ticket; missing cycle; "
         ]
       ],
       "failed_rows": [
@@ -57,13 +85,13 @@
       ],
       "mode": "mutant",
       "passed": true,
-      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "source_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6",
       "targets": {
         "query/journey": [
           false
         ]
       },
-      "tested_sha256": "8bbde221f1090f5e93444f5c550c13f71fef3daddbaa8ee937bb84cfa40bbe70"
+      "tested_sha256": "bcbd4286c574435ac63893adada55b206756a226c53912f9fa53487071ce63d0"
     },
     {
       "case": "store359-query-any-unit",
@@ -78,13 +106,13 @@
       ],
       "mode": "mutant",
       "passed": true,
-      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "source_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6",
       "targets": {
         "query/scope": [
           false
         ]
       },
-      "tested_sha256": "ae7fd948741c7babc79629a8b947bf01ba5cf4a577dca80a8204da0e13c01599"
+      "tested_sha256": "13fad47028cee4bbee9edf60ca2733fd534a3374177463b2035f9413fd51a209"
     },
     {
       "case": "store359-query-fallback",
@@ -104,20 +132,20 @@
       ],
       "mode": "mutant",
       "passed": true,
-      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "source_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6",
       "targets": {
         "query/scope": [
           false
         ]
       },
-      "tested_sha256": "cf6cb8d705872b9af33b53ead21557910ead58dc32524e05da72210e8680684c"
+      "tested_sha256": "f5dd77df0fa87ae87a3162e8c3df16bce601050ca967d36e63653bbc57b6c396"
     },
     {
       "case": "store359-query-leak",
       "failed_details": [
         [
           "v359 query/lifecycle",
-          "run endpoint removed; bind cleanup; listen cleanup; connection cleanup; ready cleanup"
+          "run endpoint removed; bind cleanup; listen cleanup; connection cleanup; ready cleanup; normal-end removed by the receiver before its end is recorded; killed-engine removed by the receiver before its end is recorded; later refusal: made, then removed by the receiver itself; stray file: end recorded, endpoint left and recorded [None 0 left:ENOTEMPTY ['dropped-by-run']]"
         ]
       ],
       "failed_rows": [
@@ -125,13 +153,13 @@
       ],
       "mode": "mutant",
       "passed": true,
-      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "source_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6",
       "targets": {
         "query/lifecycle": [
           false
         ]
       },
-      "tested_sha256": "5751488ff82b643c773c854f7af01c9b19a8d3cd414b97ceea2a45f92d4d1d60"
+      "tested_sha256": "76f5cc006dc27f7ced7eb92f38170d6997e3247315ed7559881feb0517efe2da"
     },
     {
       "case": "store359-query-startup-sweep",
@@ -146,13 +174,13 @@
       ],
       "mode": "mutant",
       "passed": true,
-      "source_sha256": "6798058082c3faea34ee2cc45448553b55de14030c6f63710c5a8b97d0b0fde8",
+      "source_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6",
       "targets": {
         "query/lifecycle": [
           false
         ]
       },
-      "tested_sha256": "b9eaef090a9edacfc1b1bf7951f17f35378a4b5f9f69bef2017abb102f8887d9"
+      "tested_sha256": "88883b0bd7ad83ac876310eae7d0180ce633f1d6d7644282d531277a1fae87d5"
     },
     {
       "case": "store359-switch-ignored",
@@ -167,15 +195,204 @@
       ],
       "mode": "mutant",
       "passed": true,
-      "source_sha256": "54b4bec7fc6471ecaa34015556d281944075d3363fed9108b2181d393cdd0694",
+      "source_sha256": "f323156eddecdd2dd4143bde8aaca03b20e8d8353afac6a23ed675f012948f60",
       "targets": {
         "switch/off": [
           false
         ]
       },
-      "tested_sha256": "9dd975856e0b10a3bf0c4bc404bf468e6d5c46d5d48fdec867621022405cf8db"
+      "tested_sha256": "ef466f956ab4cb1fdb98e605dd6e60b754429bbf3b5444d32f4454899c9550f6"
+    },
+    {
+      "case": "store359-floor-reload",
+      "failed_details": [
+        [
+          "v359 query/cost",
+          "direct floor entries reload nothing [['eligibility_frontier', 'veldo_validate_fr', 'veldo_yamlish', 'veldo_tracker']]; served floor entries, replication and entry gates reload nothing [['eligibility_frontier', 'veldo_validate_fr', 'veldo_yamlish', 'veldo_tracker']]"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/cost"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "e82c97c8c23cb835dc2b491e75d1c477bb6fbb791019cb352aa801a18aa783fe",
+      "targets": {
+        "query/cost": [
+          false
+        ]
+      },
+      "tested_sha256": "bdefd37def356d923e93f8fc01b1811e5df56b8a110cf90805a684f7929167da"
+    },
+    {
+      "case": "store359-frontier-not-own-reader",
+      "failed_details": [
+        [
+          "v359 query/cost",
+          "frontier pass over a direct gate loads no module [['eligibility_frontier', 'veldo_validate_fr', 'veldo_yamlish', 'veldo_tracker']]; direct floor entries reload nothing [['eligibility_frontier', 'veldo_validate_fr', 'veldo_yamlish', 'veldo_tracker']]; served floor entries, replication and entry gates reload nothing [['eligibility_frontier', 'veldo_validate_fr', 'veldo_yamlish', 'veldo_tracker']]"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/cost"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "8b1b2721fe8216425183c675b9ac8cb94cbf7f8d8ae42186ee1155acb082eae1",
+      "targets": {
+        "query/cost": [
+          false
+        ]
+      },
+      "tested_sha256": "6225dd7d4c31a20a8b161f77f557be27d433e89169c1b19aa97c87cee0e4f8e6"
+    },
+    {
+      "case": "store359-cleanup-raises",
+      "failed_details": [
+        [
+          "v359 query/lifecycle",
+          "stray file: end recorded, endpoint left and recorded [OSError 0 left:OSError ['dropped-by-run']]; stray file: removal reports, never raises"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/lifecycle"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6",
+      "targets": {
+        "query/lifecycle": [
+          false
+        ]
+      },
+      "tested_sha256": "7faa426a38ca1e4cb1314d032c01e2b923f78f6d93af3646218c88c70e933a9e"
+    },
+    {
+      "case": "store359-finish-cleanup-raises",
+      "failed_details": [
+        [
+          "v359 query/lifecycle",
+          "stray file: end recorded, endpoint left and recorded [None 3 left:ENOTEMPTY ['dropped-by-run']]"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/lifecycle"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "f323156eddecdd2dd4143bde8aaca03b20e8d8353afac6a23ed675f012948f60",
+      "targets": {
+        "query/lifecycle": [
+          false
+        ]
+      },
+      "tested_sha256": "4a43de9c5ed208acfc93b8e5f4c607d66f4876afed5fbca22e6233a3ff0d31ee"
+    },
+    {
+      "case": "store359-log-on-launch-pipe",
+      "failed_details": [
+        [
+          "v359 query/lifecycle",
+          "answers do not wait for the Runner to read [3000 ['run_query_created', 'run_query_created', 'run_query_created']]"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/lifecycle"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6",
+      "targets": {
+        "query/lifecycle": [
+          false
+        ]
+      },
+      "tested_sha256": "2294fd5428257b07a3a62bcd2cd0e3cc1f8c136df01f0a1c4fde7774fd77158d"
+    },
+    {
+      "case": "store359-receiver-keeps-server",
+      "failed_details": [
+        [
+          "v359 query/lifecycle",
+          "normal-end removed by the receiver before its end is recorded; killed-engine removed by the receiver before its end is recorded; later refusal: made, then removed by the receiver itself; stray file: end recorded, endpoint left and recorded [None 0 left:ENOTEMPTY ['dropped-by-run']]"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/lifecycle"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "f323156eddecdd2dd4143bde8aaca03b20e8d8353afac6a23ed675f012948f60",
+      "targets": {
+        "query/lifecycle": [
+          false
+        ]
+      },
+      "tested_sha256": "2524eb5278acbbbde4b24341dfece0146c938551d158ea56ddd92c6d785d83d6"
+    },
+    {
+      "case": "store359-invalid-marker-launches",
+      "failed_details": [
+        [
+          "v359 switch/off",
+          "symlink marker refuses the launch by name; directory marker refuses the launch by name"
+        ]
+      ],
+      "failed_rows": [
+        "v359 switch/off"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "f323156eddecdd2dd4143bde8aaca03b20e8d8353afac6a23ed675f012948f60",
+      "targets": {
+        "switch/off": [
+          false
+        ]
+      },
+      "tested_sha256": "c6b34f5df1a26c614a6898dc3fab9797241be8d35f16e8a49341086360e2c2cd"
+    },
+    {
+      "case": "store359-acceptance-own",
+      "failed_details": [
+        [
+          "v359 query/scope",
+          "launch scan: the query variable is own, the acceptance is not added [['VELDO_DISPATCH_ACCEPTANCE', 'VELDO_RUN_QUERY']]"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/scope"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "f323156eddecdd2dd4143bde8aaca03b20e8d8353afac6a23ed675f012948f60",
+      "targets": {
+        "query/scope": [
+          false
+        ]
+      },
+      "tested_sha256": "b964e2c31a6faaa66657b98c45aba50fde545893beaa09d2c33e9419b337b258"
+    },
+    {
+      "case": "store359-conversation-any-record",
+      "failed_details": [
+        [
+          "v359 query/scope",
+          "conversation serves no record: completion unbound; conversation serves no record: floor_entry unbound; conversation serves no record: decide unbound; conversation serves no record: decide unbound-cycle"
+        ]
+      ],
+      "failed_rows": [
+        "v359 query/scope"
+      ],
+      "mode": "mutant",
+      "passed": true,
+      "source_sha256": "67b5c8cac6af49c8f9d38e5c24b4f6988bfbb0bf6afd68713427659f0dce9ce6",
+      "targets": {
+        "query/scope": [
+          false
+        ]
+      },
+      "tested_sha256": "a9582c31212dedb24e0aa43505cfd779cfd47e1bdde249ba1df300b875e32a6a"
     }
   ],
   "schema": "veldo.b1_query_controls/v1",
-  "suite_sha256": "d850ba9aa2fe1e1223de12d0e10561516194b7c892bb1a7451a3e29b7c8114e9"
+  "suite_sha256": "5f67164fa8e213f8c0ee4f762faa6f656f83df5052aaea0b20c1247e222a2fac"
 }
