@@ -64,9 +64,16 @@ def endpoint(dispatch_id, environment=None):
     return Path(runtime) / ('veldo-query-' + hashlib.sha256(dispatch_id.encode()).hexdigest()[:32]) / 'query.sock'
 
 
-def remove(path):
+def remove(path, identity=None):
     """Only called for this dispatch after its owner is finished. Never recurse."""
     path = Path(path)
+    if identity is not None:
+        try:
+            info = path.parent.lstat()
+        except FileNotFoundError:
+            return
+        if (info.st_dev, info.st_ino) != tuple(identity):
+            return
     with contextlib.suppress(FileNotFoundError):
         path.unlink()
     with contextlib.suppress(FileNotFoundError):
@@ -291,8 +298,9 @@ def _answer(gate, request):
 
 
 class Server:
-    def __init__(self, config, dispatch_id, observe=None, environment=None):
+    def __init__(self, config, dispatch_id, observe=None, environment=None, created=None):
         self.config = config
+        self.created = created
         self.path = endpoint(dispatch_id, environment)
         self.observe = observe or (lambda event: None)
         self.counts = collections.Counter()
@@ -309,6 +317,9 @@ class Server:
         try:
             self.path.parent.mkdir(mode=0o700)  # exclusive, no startup sweep
             self.made = True
+            if self.created is not None:
+                info = self.path.parent.stat()
+                self.created((info.st_dev, info.st_ino))
             self.listener = socket.socket(socket.AF_UNIX)
             self.listener.bind(str(self.path))
             self.listener.listen(16)
@@ -494,6 +505,8 @@ def _remote_answer(gate, request):
     if gate._closed:
         raise Refused()
     response = _exchange(gate._path, request)
+    if not isinstance(response, dict) or set(response) != {'answer', 'events'} or not isinstance(response['events'], list):
+        raise Refused()
     answer = response['answer']
     name = request['operation']
     if not _valid_answer(name, answer) or not all(_valid_event(e) for e in response['events']):

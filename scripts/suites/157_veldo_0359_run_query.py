@@ -209,7 +209,8 @@ def _v359_query_suite():
                     rc = fn()
                 return rc, capture.getvalue()
 
-            compare('plan run-check', lambda gate: output(lambda: PL.cmd_run_check(str(plan), 'VELDO-9359', eligibility=gate)))
+            run_check = compare('plan run-check', lambda gate: output(lambda: PL.cmd_run_check(str(plan), 'VELDO-9359', eligibility=gate)))
+            check('query/journey', 'plan run-check reaches build', run_check[0] == 0)
             compare('plan bundle', lambda gate: output(lambda: PL.cmd_bundle(str(plan), 'VELDO-9359', eligibility=gate)))
             check('query/journey', 'plan hash', output(lambda: PL.cmd_hash(str(plan)))[0] == 0)
             compare('frontier claimable and offers', lambda gate: FR.claimable(repo_root=repo, eligibility=gate))
@@ -275,6 +276,71 @@ def _v359_query_suite():
               and set(remote.floor_entry('VELDO-9359', 'ready')) == set(Q.FLOOR)
               and set(remote.replication_status()) == set(Q.REPLICATION))
         check('query/scope', 'counts log only request and outcome', bool(logs) and all(set(v) == {'event', 'request', 'outcome'} for v in logs))
+        # Freeze every nested metadata projection; injected record bodies never cross.
+        real_decide = Q.EL.Gate.decide
+        def planted_decide(gate, *args, **kwargs):
+            answer = real_decide(gate, *args, **kwargs)
+            answer['private_body'] = {'sentinel': 'BODY_MUST_STAY_SERVER_SIDE'}
+            for item in answer['inputs'].values():
+                item['private_body'] = {'sentinel': 'BODY_MUST_STAY_SERVER_SIDE'}
+            if 'architecture' in answer:
+                architecture = answer['architecture']
+                architecture['private_body'] = {'sentinel': 'BODY_MUST_STAY_SERVER_SIDE'}
+                for item in architecture['validator'].values():
+                    item['private_body'] = {'sentinel': 'BODY_MUST_STAY_SERVER_SIDE'}
+                for key in ('artifact', 'accepted'):
+                    if isinstance(architecture[key], dict):
+                        architecture[key]['private_body'] = {'sentinel': 'BODY_MUST_STAY_SERVER_SIDE'}
+            return answer
+        before = remote.decide('selection', 'VELDO-9359')
+        with patch.object(Q.EL.Gate, 'decide', planted_decide):
+            after = remote.decide('selection', 'VELDO-9359')
+        check('query/scope', 'all approved metadata without planted bodies', stable(before) == stable(after)
+              and 'BODY_MUST_STAY_SERVER_SIDE' not in json.dumps(after))
+        for event in remote_events:
+            if event.get('schema') == Q.SCHEMA:
+                planted = dict(event, private_body={'sentinel': 'BODY_MUST_STAY_SERVER_SIDE'})
+                check('query/scope', 'frozen event including approved metadata', Q._event(planted) == event)
+        for malformed in ({}, {'answer': dict.fromkeys(Q.FACTS, 'false'), 'events': []},
+                          {'answer': dict(dict.fromkeys(Q.FACTS, False), extra='body'), 'events': []},
+                          {'answer': dict.fromkeys(Q.FACTS, False), 'events': [{'operation': 'build'}]}):
+            with patch.object(Q, '_exchange', return_value=malformed):
+                check('query/scope', 'malformed reply named', stopped(lambda: remote.completion('VELDO-9359')) == 'unavailable_service:run_query')
+
+        DSP = FR._floor_authority()
+        for state, extra in (('handoff', {'build': {'dispatch': 'build-dispatch'}, 'reviews': [{'dispatch': 'review-dispatch'}]}),
+                             ('returned', {'returned_to': 'ready'})):
+            put(DSP.floor_id('repo-one', 'VELDO-9359'), DSP.FLOOR_KIND, dict(state=state, **extra))
+            floor = compare('floor stored ' + state, lambda gate: gate.floor_entry('VELDO-9359', 'ready'))
+            check('query/journey', 'floor record metadata ' + state, floor['state'] == state and floor['version'] > 0)
+            compare('frontier with stored ' + state, lambda gate: FR.claimable(repo_root=repo, eligibility=gate))
+            compare('work floor join ' + state, lambda gate: FR.floor_station('VELDO-9359', repo_root=repo, eligibility=gate))
+        landing = {k: k + '/fixture' for k in ('implementation_commit', 'proof_digest', 'reviewed_source_digest',
+                   'old_remote_tip', 'candidate_commit', 'tested_tree', 'gate_invocation', 'remote_confirmation',
+                   'replication_receipt', 'dispatch_id')}
+        landing.update(unit_id='VELDO-9359', gate_output_location='outside/fixture')
+        receipts = {
+            'attempt_finished': dict(trusted_exit=True, accounting_observation='observation', containment_empty=True),
+            'artifact_accepted': dict(station='review', artifact_digests=['sha256:fixture'], acceptor='fixture'),
+            'revision_landed': dict(publication_receipt=landing, remote_confirmation='refs/heads/main',
+                                    replicated=True, spec_shipped_event='fixture-event'),
+            'objective_satisfied': dict(signed_assessment='assessment', accepted_objective_revision=1, assessor='fixture'),
+        }
+        for fact, data in receipts.items():
+            put('receipt:' + fact, 'completion_receipt', dict(fact=fact, subject={'id': 'VELDO-9359', 'revision': 1}, **data))
+        completed = compare('all completion facts', lambda gate: gate.completion('VELDO-9359'))
+        check('query/journey', 'all completion facts present and true', completed == dict.fromkeys(Q.FACTS, True))
+        compare('landed floor', lambda gate: gate.floor_entry('VELDO-9359', 'ready', gate.landed('VELDO-9359')))
+        # An actual local replica still opens outside the authority directory in query mode.
+        replica_path = Path(EL.E.git_common_dir(repo)) / S.DB_RELATIVE
+        replica = S.open_store(str(replica_path))
+        replica.close()
+        with patch.object(sqlite3, 'connect', no_client_store):
+            check('query/journey', 'status local replica present', RS._replication(repo, time.time(), eligibility=remote)['present'])
+            model = RS.status(root=repo, eligibility=remote, control_db=str(db))
+            check('query/journey', 'status model and text', model['replication']['present'] and model['store_guard']['state'] == 'on'
+                  and 'configuration for later launches' in RS.render_text(model))
+
         # Read-only connection, created on the serving thread; a request never leaves a transaction.
         probes = []
         real_answer = Q._answer
@@ -290,7 +356,7 @@ def _v359_query_suite():
         check('query/journey', 'zero client opens', not client_opens)
 
         # Dead endpoint and malformed/timeout transport never fall back to a store open.
-        with patch.object(sqlite3, 'connect', no_client_store):
+        with patch.object(sqlite3, 'connect', no_client_store), patch.dict(os.environ, {'VELDO_CONTROL_DB': str(db)}):
             server.close()
             check('query/scope', 'dead receiver', stopped(lambda: remote.completion('VELDO-9359')) == 'unavailable_service:run_query')
             check('query/lifecycle', 'run endpoint removed', not server.path.parent.exists())
@@ -386,13 +452,27 @@ def _v359_query_suite():
         # Production Receiver.launch and _spawn, with only prerequisite/engine seams replaced.
         # The payload is a tiny Python process; its stdin is the event that ends the run.
         payload = base / 'payload.py'
-        payload.write_text("""import json, os, sqlite3, sys
+        payload.write_text("""import importlib.util, json, os, sqlite3, sys
 from pathlib import Path
 query = os.environ.get('VELDO_RUN_QUERY')
-conn = sqlite3.connect(sys.argv[1])
-conn.execute('SELECT 1 FROM entities LIMIT 1').fetchone()
-conn.close()
-print(json.dumps({'query': query, 'store_open': True}), flush=True)
+opened = False
+built = False
+if query:
+    def forbidden(*args, **kwargs):
+        raise RuntimeError('run attempted a direct store open')
+    sqlite3.connect = forbidden
+    spec = importlib.util.spec_from_file_location('payload_eligibility', sys.argv[2])
+    EL = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(EL)
+    gate = EL.entry_gate(sys.argv[3])
+    built = gate.decide('direct_execution', 'VELDO-9359')['eligible']
+    gate.close()
+else:
+    conn = sqlite3.connect(sys.argv[1])
+    conn.execute('SELECT 1 FROM entities LIMIT 1').fetchone()
+    conn.close()
+    opened = True
+print(json.dumps({'query': query, 'store_open': opened, 'build_reached': built}), flush=True)
 sys.stdin.buffer.read(1)
 """)
         harness = base / 'receiver.py'
@@ -471,6 +551,8 @@ L.main()
                 while b'\n' in pending[0]:
                     line, _, pending[0] = pending[0].partition(b'\n')
                     value = json.loads(line)
+                    child.fixture_launch.pending = line + b'\n'
+                    child.fixture_launch._take()
                     pending[1].append(value)
                     if value.get('event') in wanted:
                         return value
@@ -482,7 +564,7 @@ L.main()
                 pending[0] += data
                 assert time.monotonic() < deadline, 'receiver event deadline'
         def run_fixture(label, **options):
-            cfg = dict(config, state_root=str(base / 'state'), adapters={'fixture': {'argv': [sys.executable, '-B', str(payload), str(db)]}})
+            cfg = dict(config, state_root=str(base / 'state'), adapters={'fixture': {'argv': [sys.executable, '-B', str(payload), str(db), str(mods / 'control_eligibility.py'), str(repo)]}})
             cfg.update(options)
             cfg_path = base / (label + '.json')
             contract = dict(dispatch_id=label, unit='VELDO-9359', station='build', capability={'adapter': 'fixture'},
@@ -491,6 +573,7 @@ L.main()
             cfg_path.write_text(json.dumps(cfg))
             with patch.object(L.subprocess, 'Popen', spawn_receiver), patch.object(L.Launch, 'start', lambda self, seconds: self):
                 launch = L.invoke(str(cfg_path), contract, None)
+            launch.child.fixture_launch = launch
             return launch, [b'', []]
         def reap(launch):
             launch.child.wait(timeout=30)
@@ -501,7 +584,7 @@ L.main()
             path = Q.endpoint(label)
             accepted_events = [e for e in pending[1] if e.get('event') == 'accept_probe']
             check('query/lifecycle', label + ' ready before acceptance', accepted_events and accepted_events[0]['ready']
-                  and seen['query'] == str(path) and Path(path).exists())
+                  and seen['query'] == str(path) and Path(path).exists() and seen['build_reached'] and not seen['store_open'])
             if ending == 'engine':
                 os.kill(seen['pid'], signal.SIGKILL)
                 launch.child.stdin.write(b'x'); launch.child.stdin.flush()
@@ -532,10 +615,10 @@ L.main()
             launch, pending = run_fixture(label, **change)
             refused = read_event(launch.child, pending, {'refused'})
             # No endpoint ownership was acquired on collision: preserve the existing directory.
-            launch.query_endpoint = None if not change else launch.query_endpoint
             reap(launch)
             check('query/lifecycle', label, refused['refusal'] == 'unavailable_service:run_query'
-                  and not any(e.get('event') in ('accepted', 'payload') for e in pending[1]))
+                  and not any(e.get('event') in ('accepted', 'payload') for e in pending[1])
+                  and (bool(change) or path.parent.exists()))
         # Sample once: changing the marker after acceptance never changes this run's query variable.
         launch, pending = run_fixture('sample-once', flip_after_sample=True)
         seen = read_event(launch.child, pending, {'payload'})

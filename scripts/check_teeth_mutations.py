@@ -16529,6 +16529,31 @@ def cases():
             "        if False:  # defect: a hooks path from an included file is used as the repository's own\n",
             ['space329/fix8/included-file'])
 
+    # VELDO-0359 B1: each declared query/switch falsifier is observed by its row.
+    query359 = '157_veldo_0359_run_query.py'
+    add(359, 'store359-events-dropped', query359, 'control_run_query.py',
+        '        gate.observe(event)\n', '        pass  # defect: local callbacks lost\n', ['query/journey'])
+    add(359, 'store359-query-any-unit', query359, 'control_run_query.py',
+        '        if not allowed:\n', '        if False:\n', ['query/scope'])
+    add(359, 'store359-query-fallback', query359, 'control_run_query.py',
+        '    response = _exchange(gate._path, request)\n',
+        "    try:\n        response = _exchange(gate._path, request)\n"
+        "    except Refused:\n        with contextlib.suppress(Exception):\n"
+        "            _organ('control_store').open_store(os.environ['VELDO_CONTROL_DB'], mode='r')\n"
+        "        raise\n", ['query/scope'])
+    add(359, 'store359-query-leak', query359, 'control_run_query.py',
+        '            remove(self.path)\n', '            pass  # defect: endpoint retained\n', ['query/lifecycle'])
+    add(359, 'store359-query-startup-sweep', query359, 'control_run_query.py',
+        '            self.path.parent.mkdir(mode=0o700)  # exclusive, no startup sweep\n',
+        "            for old in self.path.parent.parent.glob('veldo-query-*/query.sock'):\n"
+        "                try:\n                    with socket.socket(socket.AF_UNIX) as probe:\n"
+        "                        probe.connect(str(old))\n"
+        "                except ConnectionRefusedError:\n"
+        "                    with contextlib.suppress(OSError):\n                        remove(old)\n"
+        "            self.path.parent.mkdir(mode=0o700)  # exclusive, no startup sweep\n", ['query/lifecycle'])
+    add(359, 'store359-switch-ignored', query359, 'control_launch.py',
+        "        if self.store_guard['state'] == 'off':\n", "        if False:\n", ['switch/off'])
+
     return result
 
 
