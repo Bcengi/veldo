@@ -385,6 +385,32 @@ fixed (2c), and the record is written; open are the results of the first suite p
 66_0047, 71_0138, 71_0130), and the unit leg. Not run: finding 359 again (its store-guard baseline
 needs the owner's unconfined entry, 7a), the full mutation stage, verify.sh.
 
+Round 4, the unit leg at 711cebf0b CRASHED in every declared leg: `scripts/gate_legs.py` leg_run
+raised `NameError: name 'handed' is not defined`. The 0358 combine renamed leg_run's VELDO-0214 budget
+input from `handed` to `measured` at its assignment and print, and left the VELDO-0221 `_env(...,
+handed, claims)` call as it was. 1ade94f3 restores `handed` (both copies); 0358's per-shard
+`measured` dict after the run is unchanged. A check of every Python file changed in
+8656888f..4a97f346 (py_compile, and an undefined-global scan against each file's 8656888f version)
+finds no other lost name: the only new hits are names suites take from `scripts/suites/shared.py`.
+Then the leg suites, each run once through host_heavy (myday `research/claude-runs/cand-1122-r4fix-suites/`):
+
+| Suite | Result at 1ade94f3 |
+| - | - |
+| 111_0214 first-use budget | 12 passed |
+| 157_0221 suite shards | 25 passed, 1 failed (AC4 leg-runner-hands-claims: expected the pre-0358 descriptor-refusal text); fixed by the next commit, then 26 passed |
+| 104_0210 mutation workers | 7 passed, 1 failed (workers/gate-starting-suites-pass-confined-fresh): its control is 69_0058, which is red at the tip on its own (below) |
+| 160_0358 load leg | 32 passed, 1 failed (leg/record-taken-by-the-authority: the record beside the stamp is not the suites' real opens); OPEN, not traced here |
+| 101_0208 landing reuse (the unconfined-leg rows) | still running when this was committed; its log is in the folder above |
+
+OPEN, not fixed here: 69_veldo_0058_gate_output is red at the tip, 12 rows (green in round 3's
+unit-leg-3.txt). Every region raises in `land()`: `snapshot(record['workspace'])` runs `git
+rev-parse HEAD` in a workspace with no commit, i.e. the lander's gate workspace is not checked out
+after reconcile. Not traced to its round 4 commit; lander.py did not change in round 4, verify.sh
+(0358) and control_effect_executor.py (0258) did. 104_0210's worker row is red through it.
+
+The owner-approved wall-clock baseline (section 7b) is applied at 3a7cd8bd: `check_wallclock.py`
+pass (2865 sites, 2709 entries, 2829 sites in the baseline).
+
 ## 5. Open items for the lead
 
 Items 1, 2 and 4 are closed by round 2 (section 2a); their text below is the first record's.
@@ -578,5 +604,5 @@ other than 0358 (0111, 0113, 0114, 0124, 0127, 0175 to 0187, 0206, 0217, 0221, 0
 0258, 0316, 0317, 0334, 0347, 0359 and the e2e conversation files). The design lets the baseline
 grow only by an owner-approved change; `wallclock-baseline-proposal.json` is the baseline of what
 is found (2709 entries, 2829 sites): approving it as `scripts/suites/wallclock_baseline.json` makes
-the census green on this line. Not applied here.
+the census green on this line. Applied at 3a7cd8bd after the owner's approval (2026-11-22): pass.
 
