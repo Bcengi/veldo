@@ -111,3 +111,29 @@ Limits. The full verification script was not run, by instruction; nothing here i
 A foreign-owner and a stat-error marker are covered at the switch function only, since a fixture
 cannot create them without privilege. The per-request log is capped at 1 MiB per dispatch; after
 that the counts alone continue.
+
+## Fix round 2 (fix-check finding N1)
+
+N1, HIGH: the endpoint was <runtime directory>/veldo-query-<32 hex>/query.sock, 56 characters after the
+runtime directory, so a runtime directory over 51 characters exceeded the 107-byte socket path and
+every default local launch was refused. On pc2 (52 characters) 62_veldo_0039_dispatch had 12 rows red
+at the head that are green at base. The round 1 record above ("no row is red at head that is not red
+at base") was wrong for that suite; its line in b1-fix1-regression.txt is corrected.
+
+Fix (57b7c4c26): the directory is vq-<32 hex> (fits up to 60 characters). When the runtime directory
+is longer, the endpoint goes by a fixed rule under the first of /run/user/<uid> and /tmp/veldo-<uid>
+(made 0700 if absent) that is a real directory of this account with no group or other access: the
+same owner and mode as the runtime directory, checked on every use. Still a filesystem socket in a
+directory created exclusively; no abstract socket. With neither, the launch is refused as
+unavailable_service:run_query:no_short_private_directory. Design section 9.2 states the rule.
+
+Row query/place (suite 157): the 60-character boundary, the rule's order, the directories it passes
+over, the named refusal, and a real launch under a 70-character runtime directory. Before the fix that
+path is 126 characters and bind fails with "AF_UNIX path too long"; the falsifier
+store359-long-endpoint-path restores the long path and the launch row reads
+unavailable_service:run_query.
+
+On pc2 at 57b7c4c26, once each: suite 157, 33 passed, 0 failed; 62_veldo_0039_dispatch, 51 passed,
+0 failed; b1-mutation-controls.py exit 0, baseline and four no-ops pass, sixteen mutants each turn
+their own row red (b1-mutation-results.json). Nothing else was rerun, by instruction; the full
+verification script was not run.
