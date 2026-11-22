@@ -75,7 +75,7 @@ def main():
     record = dict(schema='veldo.v114-drive/v1',
                   baseline_rows={k: b.get('observations') for k, b in baselines.items()},
                   baseline_error={k: b.get('error') for k, b in baselines.items()}, cases=results,
-                  all_detected=all(r['detected'] for r in results) and len(results) == 4)
+                  all_detected=all(r['detected'] for r in results) and len(results) == 5)
     (OUT / 'results.json').write_text(json.dumps(record, indent=1, sort_keys=True) + '\n')
     for r in results:
         print(r['case'], 'detected' if r['detected'] else 'NOT DETECTED', r['mutant_targets'])

@@ -1,6 +1,6 @@
-host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-22T07:49:52Z
 v114-ipv4-listener-before-forwarding detected {'relay/no-listener-during-call': [False]}
 v114-endpoint-helper-forked detected {'relay/no-second-process': [False]}
 v114-snapshot-fallback detected {'relay/listener-proof-needs-census': [False], 'relay/stand-down-is-not-green': [False]}
 v114-stand-down-hides-failed-comparison detected {'relay/stand-down-never-hides-a-failed-comparison': [False]}
+v114-ordinary-row-runs-unconfined detected {'relay/rows-scoped-entry-moves-only-the-census-row': [False]}
 all detected
