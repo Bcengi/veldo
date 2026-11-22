@@ -1,2 +1,3 @@
-Diagnostic output; original SHA-256: 6a82efcac1ba49e600f4aa568cff50924607bba4b6dc9b8cd138fd99c76e1377
-autostart113-construction-outside-authority {'unavailable/no-client-starts-the-authority': 'STANDS DOWN', 'unavailable/no-client-hosts-a-listener': 'STANDS DOWN', 'unavailable/no-auto-start-needs-census': 'STANDS DOWN', 'unavailable/in-process-construction-boundary': 'FAIL', 'unavailable/store-write-grant': 'GAP'}
+Diagnostic output; original SHA-256: d6ae0942081c643dbbc955d344ab5ad76b274c433793d2dc68fe9dc799e6f41c
+autostart113-construction-outside-authority {'unavailable/no-client-starts-the-authority': 'PASS', 'unavailable/no-client-hosts-a-listener': 'PASS', 'unavailable/no-auto-start-needs-census': 'PASS', 'unavailable/in-process-construction-boundary': 'FAIL', 'unavailable/store-write-grant': 'GAP'}
+exit: 0

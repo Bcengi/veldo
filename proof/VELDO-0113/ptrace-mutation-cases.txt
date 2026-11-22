@@ -22,14 +22,18 @@ Owner options: (a) add 114_veldo_0113_no_autostart to the unconfined list with
 reason "ptrace: the VELDO-0111 observer traces every measured client"; or (b)
 keep it confined and accept these five as proved only by the direct runs below.
 
-Direct runs (2026-11-22, on VELDO-0111 bb0686b3, unconfined via the host-heavy
-wrapper; `run_checks.py --case <name>`, each on a temporary source copy):
-- 3: red for its stated reason. Named row FAIL incomplete_census_accepted, while
-  the mutant forces the two absence rows to PASS over 18 INCOMPLETE receipts.
+Direct runs (2026-11-22, on VELDO-0111 a41c2095a with close_range accounted,
+unconfined via the host-heavy wrapper; `run_checks.py --case <name>`, each on a
+temporary source copy; logs in autostart113-<name>-run.txt). In every run all 22
+external receipts are capture and status COMPLETE. Each case reddens only its
+named row:
+- 1: red. no-client-starts-the-authority FAIL forbidden_autostart; 18 terminal
+  forbidden births captured.
+- 2: red. no-client-hosts-a-listener FAIL forbidden_autostart; 18 service events.
+- 3: red. no-auto-start-needs-census FAIL incomplete_census_accepted.
 - 4: red. Construction FAIL outside_authority:.veldo/claim.py:62.
 - 5: red. Construction FAIL outside_authority:bin/veldo:307.
-- 1: NOT red. Forbidden births captured in 18 cases, but each of those receipts
-  is INCOMPLETE (unqualified syscall 436, close_range), so the row stands down.
-- 2: NOT red. Service events captured in 18 cases; same INCOMPLETE receipts.
-  Cases 1 and 2 remain blocked on the VELDO-0111 close_range gap (README).
-Restored control after all five: construction PASS, store-write GAP.
+Reason they ran directly: the declared unconfined leg does not include suite 114,
+and adding it requires editing the protected declaration, which is the owner's call.
+Restored control (restored-full-matrix): all three absence rows PASS, construction
+PASS, store-write GAP.

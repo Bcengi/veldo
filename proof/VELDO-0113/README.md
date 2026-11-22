@@ -1,11 +1,34 @@
 # VELDO-0113 implementation and evidence
 
-Rebased onto the completed and reviewed VELDO-0111 (`bb0686b3`) on 2026-11-22.
-Acceptance remains incomplete: the absence rows still stand down, now for a
-narrower, named dependency gap (below). No canonical gate, independent review or
-owner approval is claimed here.
+Rebased onto VELDO-0111 with close_range accounted (`a41c2095`, code `3d87f11c`)
+on 2026-11-22. Its independent review runs in parallel. The live AC1, AC2 and AC3
+rows now run on COMPLETE receipts and pass, and each falsifier turns its row red.
+No canonical gate, independent review or owner approval is claimed here.
 
-## Rerun on the COMPLETE VELDO-0111 (2026-11-22)
+## Rerun with close_range accounted (2026-11-22)
+
+`restored-full-matrix` completes all 42 cases, 22 external refusals and 176 fault
+drives (`faults_ok` true). All 22 external receipts are capture and status
+COMPLETE. The earlier 18 `unqualified syscall 436` failures are gone, and the
+consumer was not changed for this. `no-client-starts-the-authority`,
+`no-client-hosts-a-listener` and `no-auto-start-needs-census` PASS. Construction
+PASS with no exemption. The store-write grant stays GAP
+(`no_process_specific_write_grant`). This GAP is why the result's overall
+`qualification` field reads INCOMPLETE.
+
+Falsifiers were run directly and unconfined (`ptrace-mutation-cases.txt`). In each
+run all 22 receipts are COMPLETE, and only the named row fails:
+reaped fallback (FAIL `forbidden_autostart`, 18 terminal births), transient
+abstract listener (FAIL `forbidden_autostart`, 18 service events), incomplete as
+success (FAIL `incomplete_census_accepted`), claim.py construction
+(`.veldo/claim.py:62`) and CLI construction (`bin/veldo:307`). Selected selftests
+show suite 114 with 35 passed and suite 113 with 49 passed, 0 failed each. These
+are partial diagnostics. The five ptrace cases still have invalid baselines on the
+confined coordinator leg, and they are listed for the owner. The protected
+`scripts/gate_unconfined.json` is unchanged.
+
+## Earlier rerun on bb0686b3 (historical, superseded above)
+
 
 Host qualification is now COMPLETE (`gaps=[]`, x86_64 and i386). The restored
 full matrix completes all 42 cases, 22 external refusals and 176 fault drives

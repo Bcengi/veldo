@@ -184,3 +184,13 @@ in the History and ticket proof.
   PASS without exemption; store-write grant GAP. The five ptrace mutation cases
   are listed for the owner in `proof/VELDO-0113/ptrace-mutation-cases.txt`;
   `scripts/gate_unconfined.json` is unchanged.
+
+- 2026-11-22: Rebased onto VELDO-0111 with close_range accounted (`a41c2095`;
+  its review runs in parallel). All 22 external receipts are now COMPLETE, with no
+  consumer change. The three absence rows PASS. The five falsifiers, run directly
+  and unconfined, each turn only their named row red: reaped fallback and
+  transient listener `forbidden_autostart`, incomplete-as-success
+  `incomplete_census_accepted`, and the claim.py and CLI constructions
+  `outside_authority`. Construction PASS without exemption; store-write grant GAP.
+  The owner's landing decision on the five ptrace cases is still pending, and
+  `scripts/gate_unconfined.json` is unchanged.
