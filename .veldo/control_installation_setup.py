@@ -55,6 +55,9 @@ def export(conn, settings, files=None):
         elif kind == 'team' and data.get('team'):
             name = data['project']
             files['teams/%s.yaml' % name] = WF.canonical({'id': name, 'configuration': data['team']})
+        elif kind == 'default_team_head':
+            revision = WF._entity_row(conn, 'default-team:' + str(data['revision']))
+            files['teams/default.yaml'] = WF.canonical({'id': 'default', 'configuration': revision['data']['team']})
         elif kind == 'memory_store' and eid == 'memory:head':
             files['memory/manifest.yaml'] = WF.canonical({'manifest': organ('control_memory').manifest_of(data['definition'])})
         elif kind == 'account':

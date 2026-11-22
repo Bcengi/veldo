@@ -241,6 +241,17 @@ def _v253_suite():
                     parameters=dict(entity_id='account:primary', kind='account',
                         data={'id': 'primary', 'provider': 'codex', 'concurrency': 1})), 'setup', sign, 1)
                 settings['accounts']['primary']['binary'] = '/opt/example-engine'
+                capabilities = {'role': 'builder', 'engine': 'codex', 'native_tools': [{'name': 'shell', 'load': 'always'}],
+                                'mcp': [], 'skills': [], 'instructions': [], 'settings': {}}
+                imported_records = [
+                    ('agent_configuration:builder:head', 'agent_configuration_head', {'role': 'builder', 'revision': 1}),
+                    ('agent_configuration:builder:1', 'agent_configuration', capabilities),
+                    ('default-team:head', 'default_team_head', {'revision': 1}),
+                    ('default-team:1', 'default_team_revision', {'team': {'roles': {}}})]
+                for eid, kind, data in imported_records:
+                    S.execute(migration, dict(command_id='import-' + eid, principal='setup', operation='upsert_entity',
+                        nonce='import-' + eid, artifact_digests=[], expected_versions={eid: 0},
+                        parameters=dict(entity_id=eid, kind=kind, data=data)), 'setup', sign, 1)
                 legacy = WF.Workflows(S, migration, domain='domain', repository='repository', signer='setup', sign=sign)
                 legacy.save({'definition': definition}, principal='owner', base=0)
                 legacy.save({'definition': edited}, principal='owner', base=1)
@@ -255,7 +266,9 @@ def _v253_suite():
                       and imported['commit'] == repeated['commit'] and legacy.history('example') == before
                       and legacy.load('example')['source']['commit'] == imported['commit']
                       and migration.installation_loader.live['installation.yaml']['accounts']['primary'] == {
-                          'label': 'Example', 'binary': '/opt/example-engine', 'provider': 'codex', 'concurrency': 1})
+                          'label': 'Example', 'binary': '/opt/example-engine', 'provider': 'codex', 'concurrency': 1}
+                      and migration.installation_loader.live['roles/builder.yaml']['configuration'] == capabilities
+                      and migration.installation_loader.live['teams/default.yaml']['configuration'] == {'roles': {}})
                 check('ac4/migrated-pins', WU.pinned(S, migration, 'domain', 'repository', pinned) == definition
                       and WF._entity_row(migration, 'workflow-definition:' + WF.definition_digest(definition)) is not None)
                 reader = S.open_store(root / 'migration' / 'authority.sqlite3')
