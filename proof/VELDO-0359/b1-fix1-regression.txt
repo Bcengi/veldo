@@ -10,8 +10,10 @@ The head total also counts suite 157 (32 passed, 0 failed), which does not exist
 04_run_status_reader_veldo               base 1150/2 rc1 83.86s | head 1150/2 rc1 70.0s | new red 0
 37_veldo_0024_replica                    base 42/0 rc2 1.49s | head 42/0 rc2 1.49s | new red 0
 60_veldo_0052_eligibility                base 80/0 rc2 5.24s | head 80/0 rc2 5.06s | new red 0
-62_veldo_0039_dispatch                   base 38/13 rc1 14.12s | head 38/13 rc1 14.36s | new red 1
-    NEW RED: VELDO-0039 dispatch/observations: unknown dispatches differ from the t ...
+62_veldo_0039_dispatch                   base 51/0 rc2 (fix-check, 3 runs) | head 57b7c4c26 51/0 rc2 23.71s | new red 0
+    CORRECTED in fix round 2. The line recorded here was base 38/13, head 38/13, new red 1. The fix-check found
+    base 51/0 and head 647d1f421 39/12 on pc2: 12 rows red at head only, because pc2's runtime directory (52
+    characters) made the run query endpoint too long for a socket path (finding N1). Fixed at 57b7c4c26.
 62_veldo_0054_decisions                  base 65/0 rc2 19.86s | head 65/0 rc2 12.28s | new red 0
 63_veldo_0049_floor                      base 33/13 rc1 13.19s | head 33/13 rc1 9.79s | new red 0
 67_veldo_0135_offers                     base 30/5 rc1 11.36s | head 30/5 rc1 8.75s | new red 0
@@ -32,3 +34,4 @@ The head total also counts suite 157 (32 passed, 0 failed), which does not exist
 143_veldo_0305_space_census              base 52/0 rc2 3.22s | head 52/0 rc2 2.11s | new red 0
 150_veldo_0350_end_write                 base 37/0 rc2 6.12s | head 37/0 rc2 4.66s | new red 0
 TOTAL base 3556 passed 151 failed; head 3588 passed 151 failed; new red rows 2
+The TOTAL line is as recorded in fix round 1 and still counts the superseded 62_veldo_0039_dispatch line (38/13 at both).
