@@ -358,3 +358,11 @@ Python modules, and since this spec the service install requires the shipped ins
 template (missing_evidence:runtime_asset). The fixture now copies those two directories as well. It
 changes no assertion. The host run that found this is recorded in the proof; the owner approves this
 together with the footprint item above.
+
+2026-11-22: fix round 2 after the fix-check (FIX, N1). The installation's space section is classified:
+a change that lets Veldo remove more or protect less waits for the owner (removals turned on, a
+protect entry dropped, an engine, root, plain repository or client account added, a changed session
+pattern, time zone or process reader, a pool dropped or its floor or needs lowered). Narrowing
+applies directly. Like the round 1 items, this is classified as widening pending the owner's ruling.
+Suite 157 gains one row per kind of widening change and a narrowing row; the falsifier
+install253-space-protect-direct lets a dropped protect entry through and must turn its row red.

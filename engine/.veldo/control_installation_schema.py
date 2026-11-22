@@ -260,6 +260,53 @@ def unread_secrets(files):
     return problems
 
 
+def space_widening(old, new):
+    """The space keys whose change lets Veldo remove more or protect less (VELDO-0253).
+
+    Narrowing applies directly: removals turned off, a protect entry added, an engine, root, repository
+    or client account removed, a pool added or its floor or needs raised. Everything below widens:
+    removals turned on, a protect entry dropped, an engine, root, repository or client account added,
+    a changed session pattern, time zone or process reader, a pool dropped or its floor or needs lowered.
+    A section removed reads as space management off, which narrows."""
+    if new is None or old == new:
+        return []
+    space = organ('control_space_config')
+    try:
+        b = space.check(new)
+    except Exception:
+        return ['$']
+    try:
+        a = space.check(old) if old is not None else {}
+    except Exception:
+        a = {}
+    found = []
+    added = lambda before, after: any(item not in (before or []) for item in (after or []))
+    if b['enabled'] and not a.get('enabled'):
+        found.append('enabled')
+    if a.get('time_zone') is not None and a['time_zone'] != b['time_zone']:
+        found.append('time_zone')
+    if b['process_reader'] != a.get('process_reader', space.NO_READER) and b['process_reader'] != space.NO_READER:
+        found.append('process_reader')
+    for name, pool in sorted((a.get('pools') or {}).items()):
+        now = b['pools'].get(name)
+        if (now is None or now['floor'] < pool['floor']
+                or any(now['needs'][station] < pool['needs'][station] for station in space.STATIONS)):
+            found.append('pools.' + name)
+    for key in ('engines', 'build_roots', 'client_accounts', 'plain_repositories'):
+        if added(a.get(key), b[key]):
+            found.append(key)
+    held = a.get('scratch_roots') or {}
+    if added(held.get('roots'), b['scratch_roots']['roots']):
+        found.append('scratch_roots.roots')
+    if held and held['session_pattern'] != b['scratch_roots']['session_pattern']:
+        found.append('scratch_roots.session_pattern')
+    kept = {(entry['type'], entry['value']) for entry in b['protect']}
+    for name, kind in space.PROTECT_KEYS:
+        if any(entry['type'] == kind and (kind, entry['value']) not in kept for entry in a.get('protect', [])):
+            found.append('protect.' + name)
+    return found
+
+
 def widening(previous, current):
     """Every schema-marked widening, with stable kind/key identities and plain descriptions."""
     found = []
@@ -314,6 +361,9 @@ def widening(previous, current):
                             or any(held.get('profiles', {}).get(host) != profile for host, profile in profiles.items())
                             or value.get(limit, 0) > held.get(limit, 0)):
                         add(path, key + '.' + name, kind)
+            elif mode == 'space_authority':
+                for name in space_widening(a, b):
+                    add(path, key + '.' + name, kind)
             elif mode == 'role_grants' and b is not None:
                 prior = a or {}
                 grants = {item['name'] for item in prior.get('native_tools', [])}

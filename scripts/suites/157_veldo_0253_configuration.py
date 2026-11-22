@@ -39,7 +39,10 @@ def _v253_suite():
             # in one row fails that row only and never hides a later one.
             'ac2/binding-removed', 'ac2/connector-removal', 'ac2/memory-server', 'ac2/project-remote',
             'ac2/other-widening', 'ac2/narrowing-direct', 'ac1/cross-references', 'ac1/plain-credential',
-            'ac1/unread-secret-import', 'ac3/working-copy-follows')
+            'ac1/unread-secret-import', 'ac3/working-copy-follows',
+            # Fix round 2: the installation's space section. One row per kind of widening change.
+            'ac2/space-enabled', 'ac2/space-protect-removed', 'ac2/space-engine-added', 'ac2/space-root-added',
+            'ac2/space-narrowing-direct')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -621,6 +624,41 @@ def _v253_fix_rows(root, mods, load, check, errors):
         and direct({'memory/m.yaml': {'servers': {'s': server}}}, {'memory/m.yaml': {'servers': {}}})
         and direct({'services/s.yaml': service}, {'services/s.yaml': dict(service, body_limit=512)})
         and direct({'services/s.yaml': service}, {'services/s.yaml': None})))
+    # The space section decides what Veldo may remove. A change that lets it remove more or protect less
+    # waits for the owner; a change that removes less applies at once.
+    mb = 1 << 20
+    space = {'enabled': False, 'time_zone': 'UTC',
+             'pools': {'host': {'floor': 2000 * mb, 'needs': {'build': 400 * mb, 'review': 100 * mb, 'gate': 600 * mb}}},
+             'engines': ['default'],
+             'scratch_roots': {'roots': ['/srv/example/scratch'], 'session_pattern': 'sessions/{session_id}'},
+             'build_roots': ['/srv/example/build'], 'plain_repositories': [], 'client_accounts': [],
+             'protect': {'paths': ['/srv/example/precious'], 'volumes': ['prod_db_*'], 'containers': ['prod-*'],
+                         'images': ['base-*'], 'networks': ['prod-net'], 'compose_projects': ['prod']}}
+    with_space = lambda section: {'installation.yaml': dict(settings, space=section)}
+    spaced = lambda **keys: with_space(dict(space, **keys))
+    protect = lambda **keys: spaced(protect=dict(space['protect'], **keys))
+    isolated('ac2/space-enabled', lambda: (
+        waits(with_space(space), spaced(enabled=True), 'installation.yaml:space.enabled')
+        and waits({}, spaced(enabled=True), 'installation.yaml:space.enabled')))
+    isolated('ac2/space-protect-removed', lambda: all(
+        waits(with_space(space), protect(**{name: []}), 'installation.yaml:space.protect.' + name)
+        for name in ('paths', 'volumes', 'containers', 'images', 'networks', 'compose_projects')))
+    isolated('ac2/space-engine-added', lambda: (
+        waits(with_space(space), spaced(engines=['default', 'prod-engine']), 'installation.yaml:space.engines')))
+    repository = {'repository': '/srv/example/plain', 'worktree_root': '/srv/example/plain-worktrees'}
+    isolated('ac2/space-root-added', lambda: (
+        waits(with_space(space), spaced(build_roots=['/srv/example/build', '/srv']), 'installation.yaml:space.build_roots')
+        and waits(with_space(space), spaced(scratch_roots=dict(space['scratch_roots'], roots=['/srv/example/scratch', '/srv'])),
+                  'installation.yaml:space.scratch_roots.roots')
+        and waits(with_space(space), spaced(plain_repositories=[repository]), 'installation.yaml:space.plain_repositories')
+        and waits(with_space(space), spaced(client_accounts=['/srv/example/client']), 'installation.yaml:space.client_accounts')))
+    wider = dict(space, enabled=True, engines=['default', 'spare'], build_roots=['/srv/example/build', '/srv/example/old'])
+    isolated('ac2/space-narrowing-direct', lambda: (
+        direct(with_space(wider), with_space(dict(wider, enabled=False)))
+        and direct(with_space(wider), with_space(dict(wider, engines=['default'])))
+        and direct(with_space(wider), with_space(dict(wider, build_roots=['/srv/example/build'])))
+        and direct(with_space(wider), with_space(dict(wider, protect=dict(space['protect'], volumes=['prod_db_*', 'keep_*']))))
+        and direct(with_space(wider), {'installation.yaml': settings})))
     references = [
         ({'schedules/s.yaml': {'when': 'daily', 'workflow': 'nosuch'}},
          'installation_invalid:schedules/s.yaml:workflow:unknown_reference'),
