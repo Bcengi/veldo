@@ -90,7 +90,7 @@ def _v138_suite():
         """The wall time now, as data (a record's time, an expiry the product judges): the support stamp's."""
         return datetime.datetime.fromisoformat(WAITS.stamp().iso().replace('Z', '+00:00')).timestamp()
 
-    def wait(what, predicate, sources):
+    def wait(what, predicate, sources, terminal=None):
         """Wait until `predicate` holds and return its value, waking only on `sources`; None when the running
         service process ended first (impossible: the row fails on that evidence). Past the wait hang bound the
         row is hung, never read as false."""
@@ -103,7 +103,7 @@ def _v138_suite():
         sources = list(sources)
         if proc is not None and proc.poll() is None:
             sources.append(WAITS.Pidfd(proc))
-        ended = (lambda: proc.poll() is not None) if proc is not None else None
+        ended = lambda: (proc is not None and proc.poll() is not None) or (terminal is not None and terminal())
         result = WAITS.wait(what, done, ended, sources, _depth=2)
         return seen.get('value') if result.done else None
 
@@ -455,8 +455,17 @@ def _v138_suite():
                              [manager.notified(unit)]))
 
         def store_shows(what, predicate):
-            """Wait for what the running service writes to the store, woken by the store's write-ahead file."""
-            return wait(what, predicate, [WAITS.Store(A.db)])
+            """The next complete channel pass has seen all inputs supplied before this call.
+            A missing result then is evidence, even if the service stays alive. STATUS is emitted
+            after that pass; inspect runs on the same service thread and cannot observe half a pass."""
+            first = status()
+
+            def completed():
+                manager.drain(unit)
+                now = status()
+                return (not now.get('available') or
+                        (now.get('passes') or 0) > (first.get('passes') or 0)) and not predicate()
+            return wait(what, predicate, [WAITS.Store(A.db), manager.notified(unit)], completed)
 
         def veldo(action, who='owner', *extra):
             """The owner's command path: bin/veldo channel, a separate process signing with `who`'s key."""
