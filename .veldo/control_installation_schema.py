@@ -53,6 +53,16 @@ def check(value, rule, definitions, path, key, problems):
         rule = definitions[rule]
     def bad(reason):
         problems.append('installation_invalid:%s:%s:%s' % (path, key, reason))
+    if rule.get('validator') == 'role_configuration':
+        try:
+            organ('control_agent_config').validate(value)
+        except Exception as error:
+            bad(getattr(error, 'code', 'schema'))
+        return
+    if rule.get('validator') == 'team_configuration':
+        for reason in organ('control_team').schema_problems(value):
+            bad(reason)
+        return
     kind = rule.get('type')
     types = {'object': dict, 'array': list, 'string': str, 'integer': int, 'boolean': bool}
     if kind in types and type(value) is not types[kind]:

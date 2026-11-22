@@ -283,6 +283,9 @@
         },
         "digest": {
           "type": "string"
+        },
+        "configuration": {
+          "validator": "role_configuration"
         }
       },
       "required": []
@@ -302,6 +305,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "configuration": {
+          "validator": "team_configuration"
         }
       },
       "required": []
@@ -540,6 +546,112 @@
         },
         "session_history_sink": {
           "type": "string"
+        },
+        "manifest": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "type": "string"
+            },
+            "assistant_mcp": {
+              "type": "string"
+            },
+            "parts": {
+              "type": "object",
+              "properties": {
+                "file_memory": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                },
+                "knowledge_graph": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "interpreter": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "interpreter"
+                  ]
+                },
+                "ava_memory": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "interpreter": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "interpreter"
+                  ]
+                },
+                "claude_mem": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "command": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "data": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "command",
+                    "data"
+                  ]
+                },
+                "memory_kb": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "interpreter": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "interpreter"
+                  ]
+                }
+              },
+              "required": [
+                "file_memory",
+                "knowledge_graph",
+                "ava_memory",
+                "claude_mem",
+                "memory_kb"
+              ]
+            }
+          },
+          "required": [
+            "host",
+            "assistant_mcp",
+            "parts"
+          ]
         }
       },
       "required": []
@@ -801,10 +913,12 @@
     },
     "role": {
       "capabilities": "added",
-      "tools": "added"
+      "tools": "added",
+      "configuration": "changed"
     },
     "team": {
-      "roles": "added"
+      "roles": "added",
+      "configuration": "changed"
     },
     "service": {
       "base_url": "changed",

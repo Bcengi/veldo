@@ -780,6 +780,8 @@ class Projects:
         execution repository, read on the transaction's connection (missing_workflow otherwise), and the change's
         record: the kind of work, the old and the new revision, the owner and his command id. The lifecycle state is
         not touched."""
+        if getattr(conn, 'installation_loader', None) is not None:
+            raise Refused('installation_managed')
         try:
             found, _definition = WU.bound_revision(self.store, conn, self.ids['domain_uuid'],
                                                    data.get('execution_repository'), params['workflow'],

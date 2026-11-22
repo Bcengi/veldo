@@ -1,6 +1,7 @@
 """Service wiring for the installation loader and its OS reference subscription."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 
 
@@ -15,11 +16,17 @@ I = organ('installation')
 C = organ('control_installation_config')
 
 
+def setup_module():
+    """Setup uses the installed loader's module identities and ownership bindings."""
+    return organ('control_installation_setup')
+
+
 def start(service, store):
     folder = service.config.get('installation')
     if not folder:
         return None, None
     repo = I.Repository(folder, service.config.get('installation_branch', 'main'))
+    os.environ[I.ENVIRONMENT] = repo.folder
     watch = I.RefChanges(repo)
     channel = service.channel
     decisions = None
