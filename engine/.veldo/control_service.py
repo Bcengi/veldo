@@ -4439,6 +4439,7 @@ def close_socket(path, identity):
             os.unlink(path)
 
 
+@_organ('control_plane_calls').service_entry
 def serve(config_path):
     """What the unit runs: the configuration, the lock, then the store and the socket, serving until
     SIGTERM. The lock comes first, so a second instance changes nothing."""

@@ -2185,6 +2185,15 @@
    ],
    "regions": "VELDO-0253: whole committed trees, widening decisions, canvas commits and immutable workflow pins.",
    "requires_note": "Only ROOT and expect. Real Git, SQLite, OpenSSH journal signatures, OS file notifications. Owner-decision seam is an explicit fixture; no sleeps or speed assertions."
+  },
+  {
+   "name": "158_veldo_0258_outside_calls",
+   "file": "158_veldo_0258_outside_calls.py",
+   "requires": [
+    "158_veldo_0258_outside_calls"
+   ],
+   "regions": "VELDO-0258 AC1 to AC3: keystore-only authentication, accepted installation routing, registered service-only calls and landing.",
+   "requires_note": "Only ROOT and expect. Loopback HTTP, fixture Secret Service executable, real Git and signed SQLite. Event and completion synchronization."
   }
  ],
  "resource_capacities": {

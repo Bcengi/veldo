@@ -125,3 +125,19 @@ def http(caller, request, timeout=120):
                 yield response
         except Exception:
             raise Refused('unavailable_service:control_plane_call:' + caller) from None
+
+
+def accepted_commit():
+    installation = organ('installation').load()
+    remembered = organ('installation')._accepted_state.settings.get(str(Path(installation.folder).resolve()))
+    return remembered[0] if remembered else None
+
+
+def service_entry(function):
+    """A trusted service entry, never a run. Its children must bind their own lifetime."""
+    import functools
+    @functools.wraps(function)
+    def entered(*args, **kwargs):
+        with service(accepted_commit):
+            return function(*args, **kwargs)
+    return entered

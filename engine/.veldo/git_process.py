@@ -132,6 +132,7 @@ def _options(args, kwargs, private_home=None):
         kwargs["env"]["GIT_COMMON_DIR"] = str(common_dir)
     if profile == "identity":
         transport = identity_transport()
+        transport.organ("control_plane_calls").require_service("landing_push")
         kwargs['env'].update(HOME=private_home, XDG_CONFIG_HOME=private_home)
         prefix, command = transport.checked_argv(args, remote)
         # With global/system files disabled, the default config scope covers local config,
@@ -152,7 +153,14 @@ def _invoke(invoke, args, kwargs):
     context = tempfile.TemporaryDirectory(prefix='veldo-git-home-') if kwargs.get('profile') == 'identity' else nullcontext()
     with context as private_home:
         args = list(args)
-        return invoke(args, **_options(args, kwargs, private_home))
+        identity_profile = kwargs.get('profile') == 'identity'
+        destination = kwargs.get('remote_url')
+        options = _options(args, kwargs, private_home)
+        if identity_profile:
+            outside = identity_transport().organ('control_plane_calls')
+            with outside.outside('landing_push', destination, 'git_transport'):
+                return invoke(args, **options)
+        return invoke(args, **options)
 
 
 def run(args, **kwargs):

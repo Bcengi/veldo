@@ -139,6 +139,7 @@ def load_config(path):
     return config
 
 
+@organ('control_plane_calls').service_entry
 def provision(config, decision, *, clock=time.time, signer=None, client=None, send=None):
     """Run the provisioning the settled decision `decision` names (module docstring). Returns {ok, reason,
     repository, state, step, ...} and the observations made; never raises for a named refusal. ok is the

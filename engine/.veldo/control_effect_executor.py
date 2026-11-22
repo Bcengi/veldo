@@ -296,7 +296,9 @@ def execute(config, request, principal, challenge, signature):
         contract = accepted
         config = dict(config, _identity_events=[])
         try:
-            observation = receive(config, contract, accepted)
+            with E.organ('control_plane_calls').service(
+                    lambda: E.organ('installation').configuration_commit(conn)):
+                observation = receive(config, contract, accepted)
             if isinstance(observation, dict) and observation.get('status') == 'refused':
                 # A receiver that ran may already have acted, so its own "refused" is not
                 # conclusive and its text is not repeated: recorded as unknown, a stop owed.

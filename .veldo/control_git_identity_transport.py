@@ -66,6 +66,9 @@ def check_remote(record, remote, *, operation='push', repository=None, request=N
 
 
 def credential(record):
+    outside = organ('control_plane_calls')
+    outside.reference('landing_push', (record.get('push_credential') or {}).get('reference'))
+    outside.not_run('landing_push')
     try:
         push = record['push_credential']
         reference = push['reference']
