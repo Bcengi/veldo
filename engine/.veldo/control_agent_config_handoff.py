@@ -411,7 +411,15 @@ def codex_store_guard(extra, sample):
     """The receiver's sampled decision wins after every role setting, including no-role runs."""
     if sample and sample.get('state') == 'on':
         override = 'sandbox_mode="danger-full-access"'
-        extra['argv'] += ['-c', override]
+        argv, kept, at = extra['argv'], [], 0
+        while at < len(argv):
+            # The role's own pair goes: one setting on the command line, whatever a reader does with two.
+            if argv[at] in ('-c', '--config') and at + 1 < len(argv) and argv[at + 1].split('=', 1)[0].strip() == 'sandbox_mode':
+                at += 2
+                continue
+            kept.append(argv[at])
+            at += 1
+        extra['argv'] = kept + ['-c', override]
         for name, data in list(extra['files'].items()):
             if name == X.GENERATED_FILE:
                 text = data.decode()

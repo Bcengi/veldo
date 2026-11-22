@@ -31,8 +31,15 @@ def _v359_guard_suite():
         'control_launch.py': ROOT / ".veldo" / "control_launch.py",
         'control_clone.py': ROOT / ".veldo" / "control_clone.py",
         'control_agent_config_handoff.py': ROOT / ".veldo" / "control_agent_config_handoff.py",
+        'control_execution_record.py': ROOT / ".veldo" / "control_execution_record.py",
     }
     HANG = 120
+    # Owner decision 2026-11-22 (Telegram 43030): a host that cannot make the real fixture records the
+    # case as deferred. A deferred case is printed and is never an assertion, so it never counts as passed.
+    DEFERRAL = ('deferred by owner approval 2026-11-22; follow-up: '
+                'research/specs-pending/VELDO-0359-follow-up-real-mount-fixture.md')
+    def deferred(row, case, why):
+        print('   v359 %s: DEFERRED, recorded and not passed: %s (%s); %s' % (row, case, why, DEFERRAL))
     names = ('launch/guard-default', 'ruleset/primitive-symlink-out', 'launch/guard-read',
              'launch/enforce-fail', 'launch/descriptors-early', 'launch/descriptors-leaked',
              'launch/ack', 'launch/receiver-memory', 'launch/abi', 'layout/entries',
@@ -323,12 +330,13 @@ L.wrap(argv)
                     worker.group.close()
         counter = [0]
         real_popen = subprocess.Popen
-        def launch(mode='simple', *, off=False, kind='project', injection=None, descriptor=None, risky=False, extra=(), receiver_probe=None, client_name=None, filter_errno=None):
+        def launch(mode='simple', *, off=False, kind='project', injection=None, descriptor=None, risky=False, extra=(), receiver_probe=None, client_name=None, filter_errno=None, runs_fallback=False):
             counter[0] += 1
             marker = store / 'store-guard.off'
             if off: marker.write_text('fixture recovery')
             else: marker.unlink(missing_ok=True)
             settings = copy.deepcopy(config)
+            if runs_fallback: settings.pop('runs')
             settings['receiver_kind'] = 'conversation' if kind == 'conversation' else 'project'
             settings['adapters'] = {'fixture': {'argv': [sys.executable, '-B', str(payload), str(store), str(work), mode, *map(str, extra)]}}
             if risky:
@@ -414,6 +422,24 @@ L.wrap(argv)
             return receiver, held_events
 
         def outcome(receiver): return (receiver.store_guard or {}).get('outcome')
+        def accepted_in(observed): return any(e['event'] == 'accepted' for e in observed)
+        def reached(receiver, label, *labels):
+            """The explicit observation that the payload ran and answered; {} when it did not."""
+            text = receiver.payload_output.strip()
+            for row in labels:
+                check(row, label + ': payload reached', bool(text))
+            return json.loads(text) if text else {}
+        def kept(receiver):
+            """(header guard decision, guard outcomes on the record's lines) of the launch's execution record."""
+            try:
+                page = L.ER.read(L.ER.directory(receiver.config), receiver.contract['dispatch_id'], 0, 4096)
+            except L.ER.Refused as error:
+                return {'missing': error.code}, []
+            lines = []
+            for line in page['lines']:
+                if line['stream'] == 'wrapper' and '"store_guard"' in line['payload']:
+                    lines.append(json.loads(line['payload'])['store_guard'].get('outcome'))
+            return page['header'].get('store_guard') or {}, lines
         def state_unchanged(): return digest() == before
         def prepare_attacks():
             for name in ('truncate-ro', 'truncate', 'unlink', 'rename', 'link'):
@@ -465,7 +491,7 @@ L.wrap(argv)
                     try:
                         os.mknod(device, __import__('stat').S_IFCHR | 0o600, os.makedev(1, 3))
                     except PermissionError as error:
-                        print('NOT RUN layout/entries device: errno=' + str(error.errno))
+                        deferred('layout/entries', 'a device entry in the store directory', 'mknod errno=%d' % error.errno)
                     else:
                         check('layout/entries', 'device', preflight().get('reason') == 'invalid_input:layout:entry')
                         device.unlink()
@@ -524,6 +550,17 @@ L.wrap(argv)
                     for abi in (3, 8):
                         receiver, observed = launch(receiver_probe=dict(platform='x86_64', abi=abi, reason=None))
                         check('launch/abi', 'actual launch supported ABI ' + str(abi), outcome(receiver) == 'applied')
+            if needed('layout/placement'):
+                with section('layout/placement'):
+                    # The runs fallback (neither runs nor state_root) puts every run beneath the store directory.
+                    refused, observed = launch(runs_fallback=True)
+                    check('layout/placement', 'runs fallback launch is not accepted: ' + repr(refused.store_guard.get('reason')),
+                          not accepted_in(observed) and refused.dispatches.state == 'refused' and not refused.payload_output)
+                    control, observed = launch(runs_fallback=True, off=True)
+                    check('layout/placement', 'runs fallback with the marker launches on its old path',
+                          accepted_in(observed) and outcome(control) == 'off' and reached(control, 'fallback off', 'layout/placement').get('read') == 0)
+                    (store / 'store-guard.off').unlink(missing_ok=True)
+                    shutil.rmtree(store / 'runs', ignore_errors=True)
             if needed('launch/guard-default', 'launch/ack', 'switch/run-cannot-flip', 'layout/entries'):
                 with section('launch/guard-default', 'launch/ack', 'switch/run-cannot-flip', 'layout/entries'):
                     for reason, metric in (
@@ -544,7 +581,8 @@ L.wrap(argv)
                     for kind in ('project', 'conversation', 'workflow'):
                         prepare_attacks()
                         receiver, observed = launch('attacks', kind=kind)
-                        result = json.loads(receiver.payload_output)
+                        result = reached(receiver, kind + ' guarded attacks', 'launch/guard-default', 'layout/entries')
+                        if not result: continue
                         for child, answers in (('parent', result), ('child', result.get('child', {}))):
                             for name, code in answers.items():
                                 if name in ('child', 'socket-refusal'): continue
@@ -557,6 +595,9 @@ L.wrap(argv)
                         accepted = next(i for i, e in enumerate(observed) if e['event'] == 'accepted')
                         applied = next(i for i, e in enumerate(observed) if e.get('store_guard', {}).get('outcome') == 'applied')
                         check('launch/ack', kind + ' pending at acceptance then applied', observed[accepted]['store_guard']['outcome'] == 'pending' and applied > accepted)
+                        header, lines = kept(receiver)
+                        check('launch/ack', kind + ' execution record: pending in its header, then applied on a line: ' + repr((header, lines)),
+                              header.get('state') == 'on' and header.get('outcome') == 'pending' and lines == ['applied'])
                         check('launch/guard-default', 'database bytes unchanged', state_unchanged())
                         control, _ = launch('attacks', kind=kind, off=True)
                         allowed = json.loads(control.payload_output)
@@ -583,6 +624,9 @@ L.wrap(argv)
                     check('launch/guard-read', 'read-only flock denied before flock', json.loads(on.payload_output)['lock'] == errno.EACCES)
                     check('launch/guard-read', 'unguarded no competing lock holder', json.loads(off.payload_output)['lock'] == 0)
                     check('switch/off', 'off opens fixture lock', outcome(off) == 'off' and json.loads(off.payload_output)['lock'] == 0)
+                    header, lines = kept(off)
+                    check('switch/off', 'execution record header: off with the marker path: ' + repr(header),
+                          header.get('state') == 'off' and header.get('outcome') == 'off' and header.get('path') == str(store / 'store-guard.off'))
                     (store / 'store-guard.off').unlink()
                     outside = work / 'defective-hardlink'; os.link(db, outside)
                     probe = dict(platform='x86_64', abi=2, reason='abi_below_3')
@@ -590,6 +634,10 @@ L.wrap(argv)
                     check('switch/off', 'actual launch with ABI 2 and hardlink while off', outcome(off) == 'off' and json.loads(off.payload_output)['read'] == 0)
                     on, observed = launch(receiver_probe=probe)
                     check('switch/off', 'removing marker restores named refusal', on.store_guard.get('reason', '').endswith('abi_below_3') and not any(e['event'] == 'accepted' for e in observed))
+                    header, lines = kept(on)
+                    check('switch/off', 'execution record of a refusal before acceptance: reason and fix in its header, no line: ' + repr(header),
+                          header.get('outcome') == 'refused' and header.get('reason', '').endswith('abi_below_3')
+                          and 'store-guard.off' in header.get('recovery', '') and lines == [])
                     outside.unlink()
             if needed('launch/enforce-fail', 'launch/ack'):
                 with section('launch/enforce-fail', 'launch/ack'):
@@ -626,9 +674,14 @@ L.wrap(argv)
                 with section('launch/engines'):
                     H = load('v359_handoff', mods / 'control_agent_config_handoff.py')
                     for state, expected in (('on', 'danger-full-access'), ('off', 'workspace-write')):
-                        extra = {'argv': ['-c', 'sandbox_mode="workspace-write"'], 'files': {H.X.GENERATED_FILE: b'sandbox_mode = "workspace-write"\n'}}
+                        extra = {'argv': ['exec', '-c', 'model="fixture"', '-c', 'sandbox_mode="workspace-write"', '-c', 'approval_policy="never"'],
+                                 'files': {H.X.GENERATED_FILE: b'sandbox_mode = "workspace-write"\n'}}
                         H.codex_store_guard(extra, {'state': state})
-                        check('launch/engines', state + ' sampled setting wins', extra['argv'][-1] == 'sandbox_mode="%s"' % expected)
+                        settings = [value for flag, value in zip(extra['argv'], extra['argv'][1:]) if flag == '-c' and value.startswith('sandbox_mode')]
+                        check('launch/engines', state + ' exactly one sandbox setting, the sampled one: ' + repr(settings), settings == ['sandbox_mode="%s"' % expected])
+                        kept_order = ['exec', '-c', 'model="fixture"', '-c', 'approval_policy="never"', '-c', 'sandbox_mode="danger-full-access"']
+                        role_order = ['exec', '-c', 'model="fixture"', '-c', 'sandbox_mode="workspace-write"', '-c', 'approval_policy="never"']
+                        check('launch/engines', state + ' final argument list: ' + repr(extra['argv']), extra['argv'] == (kept_order if state == 'on' else role_order))
                         check('launch/engines', state + ' generated setting', expected.encode() in extra['files'][H.X.GENERATED_FILE])
             if needed('launch/receiver-memory'):
                 with section('launch/receiver-memory'):
@@ -706,7 +759,7 @@ print(json.dumps({'results': results}))
                     tested = subprocess.run([sys.executable, '-B', str(mount_probe), str(mods / 'control_launch.py'), json.dumps(config)], capture_output=True, text=True, timeout=HANG)
                     observed = json.loads(tested.stdout) if tested.returncode == 0 else {'not_run': tested.stderr[-500:]}
                     if observed.get('not_run'):
-                        check('layout/mounts', 'NOT RUN actual bind namespace: ' + str(observed), False)
+                        deferred('layout/mounts', 'real directory, ancestor, database and lock bind mounts in the enforcement namespace', str(observed))
                     else:
                         check('layout/mounts', 'actual directory, ancestor, database and lock binds', observed['results'] == ['invalid_input:layout:mount'] * 4)
             if needed('switch/transitions'):
@@ -825,19 +878,21 @@ print(json.dumps({'results': results}))
                         body = copy.deepcopy(source_config); body['read_roots'].append(str(base / 'required-missing'))
                         risky_config.write_text(json.dumps(body))
                         refused, observed = launch(risky=True)
-                        check('launch/risky-census', 'unresolvable root before acceptance', refused.store_guard.get('reason') == 'confined_runner_unavailable:store_reachable' and not any(e['event'] == 'accepted' for e in observed))
+                        check('launch/risky-census', 'unresolvable root before acceptance', refused.store_guard.get('reason') == 'confined_runner_unavailable:census_failed:missing_item' and not any(e['event'] == 'accepted' for e in observed))
+                        check('launch/risky-census', 'unresolvable root is named, never read as store reachability: ' + repr(refused.store_guard.get('element_path')),
+                              'store_reachable' not in refused.store_guard.get('reason', '') and refused.store_guard.get('element_path') == str(base / 'required-missing'))
                         companion, observed = launch(risky=True, off=True)
                         check('launch/risky-census', 'unresolvable root companion accepted then runner fails', any(e['event'] == 'accepted' for e in observed) and not companion.payload_output)
                         risky_config.write_text(json.dumps(source_config))
                         receiver, observed = launch(risky=True)
-                        result = json.loads(receiver.payload_output)
+                        result = reached(receiver, 'real risky runner', 'launch/risky-real')
                         check('launch/risky-real', 'real runner reaches fixture', outcome(receiver) == 'runner_started' and result == {'read': errno.EACCES, 'lock': errno.EACCES})
                         attempts, _ = launch('switch-attempts', risky=True)
-                        refused = json.loads(attempts.payload_output)
+                        refused = reached(attempts, 'risky switch attempts', 'switch/run-cannot-flip')
                         for name, code in refused.items():
                             check('switch/run-cannot-flip', 'risky ' + name, code in (errno.EACCES, errno.EXDEV))
                         following, _ = launch(risky=True)
-                        check('switch/run-cannot-flip', 'next risky launch stays guarded', outcome(following) == 'runner_started' and json.loads(following.payload_output)['read'] == errno.EACCES)
+                        check('switch/run-cannot-flip', 'next risky launch stays guarded', outcome(following) == 'runner_started' and reached(following, 'next risky launch', 'switch/run-cannot-flip').get('read') == errno.EACCES)
             if needed('layout/entries', 'launch/guard-default'):
                 with section('layout/entries', 'launch/guard-default'):
                     stopped.set()
@@ -851,7 +906,8 @@ print(json.dumps({'results': results}))
                             if not socket_path.exists():
                                 with socket.socket(socket.AF_UNIX) as bound: bound.bind(str(socket_path))
                             receiver, _ = launch('socket-unlink', off=off, extra=(role,))
-                            check('launch/guard-default', role + '/socket-unlink/' + str(off), json.loads(receiver.payload_output)['unlink'] == (0 if off else errno.EACCES))
+                            answer = reached(receiver, role + '/socket-unlink/' + str(off), 'launch/guard-default', 'layout/entries')
+                            check('launch/guard-default', role + '/socket-unlink/' + str(off), answer.get('unlink') == (0 if off else errno.EACCES))
         finally:
             stopped.set()
             with contextlib.suppress(OSError), socket.socket(socket.AF_UNIX) as wake:
@@ -862,7 +918,7 @@ print(json.dumps({'results': results}))
             with section('query/journey'):
                 environment = dict(os.environ, VELDO_0359_GUARDED_JOURNEY='1')
                 tested = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/selftest.py'), '--suite', '157_veldo_0359_run_query'], cwd=ROOT, env=environment, capture_output=True, text=True, timeout=HANG)
-                check('query/journey', 'B1 differential client journey under actual ruleset: ' + tested.stderr[-1000:], tested.returncode == 2 and '32 passed, 0 failed' in tested.stdout)
+                check('query/journey', 'B1 differential client journey under actual ruleset: ' + tested.stderr[-1000:], tested.returncode == 2 and '33 passed, 0 failed' in tested.stdout)
         for name in PRODUCTION:
             check('paths/canon', name, (ROOT / '.veldo' / name).read_bytes() == (ROOT / 'engine/.veldo' / name).read_bytes())
     for row, checks in rows.items():
