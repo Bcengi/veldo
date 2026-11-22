@@ -282,7 +282,7 @@ def _answer(gate, request):
             raise Refused('coordinate_not_served')
     if name == 'decision_blockers' and not isinstance(request['references'], list):
         raise Refused('coordinate_not_served')
-    if name == 'floor_entry' and (not isinstance(request['word'], str) or type(request['landed']) is not bool):
+    if name == 'floor_entry' and (request['word'] is not None and not isinstance(request['word'], str) or type(request['landed']) is not bool):
         raise Refused('coordinate_not_served')
     _scope(gate, request)
     unit = request['unit']
@@ -334,25 +334,29 @@ class Server:
             raise Refused() from error
 
     def _gate(self):
-        if self.config.get('receiver_kind') == 'conversation':
-            # This trusted receiver has no repository. No enrolled checkout can match its hello.
-            store = _organ('control_store')
-            return EL.Gate(store, store.open_store(self.config['store'], mode='r'),
-                           domain_uuid=self.config['domain'], repository_uuid=None,
-                           authority_generation=self.config.get('authority_generation', 1))
-        trust = EL.load_host_trust(self.config.get('host_trust'))
-        if trust is None:
-            raise Refused()
-        workspace = self.config['workspace']
-        binding = EL.E.read_binding(workspace)
-        if not binding or os.path.realpath(EL.E.store_path_for(binding)) != os.path.realpath(self.config['store']):
-            raise Refused()
-        gate = EL.enrolled_gate(workspace, trust)
-        if (gate.domain_uuid, gate.repository_uuid, gate.authority_generation) != (
-                self.config['domain'], self.config['repository'], self.config.get('authority_generation', 1)):
-            gate.close()
-            raise Refused()
-        return gate
+        # The installed receiver configuration is the verified launch binding, as
+        # in Receiver._recheck. Never take workspace, store or trust from a request.
+        store = _organ('control_store')
+        workspace = self.config.get('workspace')
+        conversation = self.config.get('receiver_kind') == 'conversation'
+        settlements = None
+        if not conversation:
+            trust_path = self.config.get('host_trust')
+            if not trust_path:
+                raise Refused()
+            trust = EL.load_host_trust(trust_path)
+            if trust is None:
+                raise Refused()
+            settlements = trust.settlement_trust(workspace)
+        conn = store.open_store(self.config['store'], mode='r')
+        try:
+            return EL.Gate(store, conn, domain_uuid=self.config['domain'],
+                           repository_uuid=None if conversation else self.config['repository'],
+                           authority_generation=self.config.get('authority_generation', 1),
+                           workspace=workspace, settlement_trust=settlements)
+        except Exception:
+            conn.close()
+            raise
 
     def _serve(self):
         gate = None

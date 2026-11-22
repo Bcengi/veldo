@@ -1998,6 +1998,7 @@ class Launch:
         self.receiver_log = None
         self.query_endpoint = None
         self.query_identity = None
+        self.query_counts = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -2062,6 +2063,8 @@ class Launch:
         self.messages.append(message)
         if not isinstance(message, dict):
             return {}
+        if message.get('event') == 'run_query_end':
+            self.query_counts = message['counts']
         if message.get('event') == 'run_query_created':
             self.query_identity = message['identity']
         if isinstance(message.get('group'), dict):
@@ -2090,6 +2093,23 @@ class Launch:
             self.child.kill()
         self.child.wait(timeout=10)
         self.returncode = self.child.returncode
+        # The exit line can precede the receiver's final query counts. Drain only
+        # this reaped child's pipe, including any creation notice not yet pumped.
+        stream = getattr(self.child, 'stdout', None)
+        if stream is not None:
+            with contextlib.suppress(OSError, ValueError):
+                fd = stream.fileno()
+                os.set_blocking(fd, False)
+                while True:
+                    try:
+                        chunk = os.read(fd, 65536)
+                    except BlockingIOError:
+                        break
+                    if not chunk:
+                        break
+                    self.pending += chunk
+                while b'\n' in self.pending:
+                    self._take()
         if self.query_endpoint is not None and self.query_identity is not None:
             RQ.remove(self.query_endpoint, self.query_identity)
         with contextlib.suppress(OSError, ValueError):
@@ -2514,7 +2534,7 @@ class Receiver:
         return self.qualification['refusal']
 
     def _close_query(self):
-        server, self.query_server = self.query_server, None
+        server, self.query_server = getattr(self, 'query_server', None), None
         if server is not None:
             server.close()
             self.emit({'event': 'run_query_end', 'counts': dict(server.counts)})
@@ -2702,6 +2722,7 @@ class Receiver:
                 self._exit_group = None
 
     def _finish(self, termination, contract, contract_digest, process, remote):
+        self._close_query()
         dispatch_id = contract['dispatch_id']
         if self.metering is not None:
             # The invocation settles before its end is recorded, so the slot's accounting is complete.
@@ -3134,7 +3155,7 @@ class Receiver:
         environment = _organ('control_git_identity').environment(environment)
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
         environment.pop(RQ.VARIABLE, None)
-        if self.query_server is not None:
+        if getattr(self, 'query_server', None) is not None:
             environment[RQ.VARIABLE] = str(self.query_server.path)
         cwd = (self.conversation_directory
                if (getattr(self, 'contract', None) or {}).get('subject_kind') == 'conversation' else None)
