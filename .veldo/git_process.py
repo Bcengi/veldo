@@ -186,16 +186,21 @@ def _outside_caller(args, options):
     if found is None:
         return None
     prefix, verb, destination = found
-    if not outside_destination(destination) and destination and verb != 'clone':
+    if outside_destination(destination) or not destination or verb == 'clone':
+        return destination if outside_destination(destination) else None
+    # A push goes to every push URL of a remote (pushurl, pushInsteadOf); anything else to its URL.
+    queries = ([['remote', 'get-url', '--push', '--all', '--', destination]] if verb == 'push' else []) + [
+        ['ls-remote', '--get-url', '--', destination]]
+    for query in queries:
         try:
-            resolved = subprocess.run([*prefix, 'ls-remote', '--get-url', '--', destination],
-                                      cwd=options.get('cwd'), env=options['env'], capture_output=True,
-                                      text=True, timeout=15, stdin=subprocess.DEVNULL)
-            destination = resolved.stdout.strip() if resolved.returncode == 0 else destination
+            resolved = subprocess.run([*prefix, *query], cwd=options.get('cwd'), env=options['env'],
+                                      capture_output=True, text=True, timeout=15, stdin=subprocess.DEVNULL)
         except (OSError, subprocess.SubprocessError):
-            pass
-    if outside_destination(destination):
-        return destination
+            continue
+        if resolved.returncode == 0:
+            outside = [url for url in resolved.stdout.splitlines() if outside_destination(url.strip())]
+            if outside:
+                return outside[0].strip()
     return None
 
 

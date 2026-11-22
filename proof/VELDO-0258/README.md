@@ -20,7 +20,10 @@ The registry distinguishes the service destinations from exact local-only and
 project-call functions. Project MCP inventory and project runner HTTP are outside
 this ticket's service-call set. The AST census examines every engine Python file,
 including files absent from the registry; it recognizes the repository's direct
-HTTP/socket/Git call conventions, not arbitrary dynamically synthesized Python.
+HTTP/socket/Git call conventions, including its `_git`/`git` wrappers, Git's network
+and identity profiles, an opener held in a variable and network tools given to a
+process call, not arbitrary dynamically synthesized Python. Fix round 1 below
+records what the first census missed.
 
 ## Registered mutation checks
 
@@ -156,3 +159,15 @@ setup (18), UI location (7), receiver trust (12), memory (127), conversations
 (38) and standing delegation (9) also pass. The raw-log hashes and selected-run
 summaries are in `developer-checks.txt`. No test process remains queued for this
 ticket. The canonical gate and independent review remain with the lead.
+
+## Fix round 1 (review FIX at 4823c6d30)
+
+| Finding | Fix | Rows | Registered falsifier (red row) |
+| --- | --- | --- | --- |
+| F1: the OAuth mode crashed with `NameError` in `_accessible_resources`. | `tracker_mirror_runner.py` no longer names `self` in the module-level resolver. | `ac1/oauth-end-to-end`: keystore client credential, token grant, cloud id resolved from accessible resources (no `cloud_id`), gateway call. A test double reroutes only the opener's wire to the loopback fixture; observations name `auth.atlassian.com`/`api.atlassian.com` and hold no canary. | `outside258-oauth-self-unit` (`ac1/oauth-end-to-end`) |
+| F2: five unregistered modules made remote Git calls the census could not see. | The census recognizes `_git`/`git` wrappers, Git `network`/`identity` profiles, `build_opener` anywhere and network tools in process calls. `control_batch`, `control_landing`, `lander` (landing_push), `control_replica` (audit_replica) and `installation` (installation_repository) are registered. Every local-only exemption states its reason. At run time `git_process` refuses Git transport to an off-host destination (URL, `host:path`, or a remote name resolving to one) outside the service, whatever the profile, so the isolated batch land-and-push now runs under `outside('landing_push')`. | `ac3/planted-{git-wrapper,git-function,git-profile,opener-variable,process-tool}` each red until `ac3/registered-*` registers it; `ac3/exemption-needs-reason`; `ac3/registered-engine-callers`; `ac3/outside-git-service-required`, `-remote-name`, `-run-refused`; `ac3/local-git-not-outside`; `ac3/batch-isolated-push-needs-service`, `ac3/replica-needs-service`, `ac3/installation-push-needs-service`; `ac3/batch-isolated-push-observed` (real push through a local insteadOf to a bare remote, observed with the dispatch). | `outside258-git-wrapper-unseen` (`ac3/planted-git-wrapper`), `outside258-reasonless-exemption` (`ac3/exemption-needs-reason`), `outside258-outside-git-unbound` (`ac3/outside-git-service-required`) |
+| F3: suite 09's CLI rows proved only exit code 2; nothing drove the service's init and snapshot previews. | The tracker CLI names each refusal (`invalid_input:tracker_command:owner_identity`, `:override`, `missing_authority:enrollment:not_enrolled`), so a crash cannot pass for one. | Suite 09 `tracker-cli/{init,snapshot}-{unsigned,unenrolled}-named` assert the code; suite 06's mirror row asserts the new code; suite 158 `ac3/signed-init-preview` and `ac3/signed-snapshot-preview` sign and run both previews over the accepted routing with no outside call. | `outside258-tracker-cli-unnamed` (suite 09 `tracker-cli/init-unsigned-named`), `outside258-init-preview-mirrors` (`ac3/signed-init-preview`), `outside258-snapshot-preview-bootstraps` (`ac3/signed-snapshot-preview`) |
+
+The observation stands: the service binding is a process convention; what keeps
+these calls out of a run is that a run holds no credential (VELDO-0254 AC1) and
+the run marker refusal. `fix-round-1.txt` records the runs.

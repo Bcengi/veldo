@@ -101,6 +101,10 @@ def cli(action, args):
             trust.verifier(binding.get('enrolled_by'), workspace), sign, trust.host_identity, timeout=300)
         result = response.get('result') if response.get('accepted') else response
     except Exception as error:
-        result = {'ok': False, 'reason': getattr(error, 'code', 'unavailable_service:tracker_command')}
+        # An enrollment refusal keeps its own reason; anything else unnamed is the service unavailable.
+        enrollment = getattr(error, 'reason', None)
+        result = {'ok': False, 'reason': getattr(error, 'code', None) or (
+            'missing_authority:enrollment:' + enrollment if isinstance(enrollment, str)
+            else 'unavailable_service:tracker_command')}
     print(json.dumps(result, sort_keys=True))
     return 0 if result.get('ok') else 2

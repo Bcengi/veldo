@@ -841,5 +841,6 @@ def _v57_suite():
 
 
 _v57_started = __import__('time').monotonic()
-_v57_suite()
+# VELDO-0258: the landing's outside Git transport is the service's call; this suite plays the service.
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v57_suite)
 _V57_SECONDS = __import__('time').monotonic() - _v57_started
