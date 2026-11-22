@@ -3,6 +3,7 @@
 This does not replace the confined gate mutation driver or produce gate evidence.
 It can run on compute nodes whose Python has no pidfd support.
 """
+import argparse
 import json
 from pathlib import Path
 import runpy
@@ -13,10 +14,15 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[2]
 driver = ROOT / 'scripts/check_teeth_mutations.py'
 registry = runpy.run_path(str(driver))
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--case', action='append', help='registered case name (default: finding 258)')
+args = parser.parse_args()
+selected = [case for case in registry['cases']()
+            if case['name'] in args.case] if args.case else [case for case in registry['cases']() if case['finding'] == 258]
+if args.case and {case['name'] for case in selected} != set(args.case):
+    parser.error('unknown registered case')
 failed = False
-for case in registry['cases']():
-    if case['finding'] != 258:
-        continue
+for case in selected:
     for mode in ('baseline', 'noop', 'mutant'):
         with tempfile.TemporaryDirectory(prefix='outside-teeth-') as directory:
             material = registry['materialize'](case, mode, directory, root=ROOT)
