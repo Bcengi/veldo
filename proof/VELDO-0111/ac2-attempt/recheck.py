@@ -270,7 +270,7 @@ def main():
     # protocol must be refused.
     PROTOCOL = (
         ('narrow-protocol-scan', 'PROTOCOL_BOUNDS = {1: 16, 2: 1024, 10: 1024, 16: 64}',
-         'PROTOCOL_BOUNDS = {2: 256, 10: 256, 16: 32}', 'census/protocol-inventory-covers-kernel'),
+         'PROTOCOL_BOUNDS = {1: 1, 2: 256, 10: 256, 16: 32}', 'census/protocol-inventory-covers-kernel'),
         ('trust-registry', '    return dict(registered=registered, aliases=aliases, unexplained=unexplained)',
          '    return dict(registered=registered, aliases=aliases, unexplained=[])',
          'census/protocol-inventory-covers-kernel'),
