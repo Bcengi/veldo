@@ -1,4 +1,4 @@
-# VELDO-0221: the legs that were run, fix round 1, 2026-11-21
+# VELDO-0221: the legs that were run, fix rounds 1 and 2, 2026-11-21
 
 None of these is the canonical gate. The whole-leg runs went through the lead's heavy-run wrapper,
 from a second, detached worktree of this repository frozen at the commit named, at 12 cores
@@ -112,3 +112,38 @@ directory, were told apart and only noted, and 106 units of other sessions were 
 judged. So in three whole runs of this leg on this host the shards were green three times (after
 the fixes) and the isolation check was red each time it ran to its end, each time for another
 session's file in /tmp.
+
+## Fix round 2: the whole unconfined leg as shards under the revised /tmp rule
+
+`run-fix2-sharded-unconfined.txt`, `run-fix2-job.txt`: one run, through the lead's heavy-run wrapper,
+from a detached worktree frozen at commit dacb4e00 (the code of fix round 2), at 12 cores, through
+the authority's leg runner as in the paired run, started 2026-11-22T00:05:27Z with the host's load
+average about 2 to 5. It is not the canonical gate, and it was not paired with a new ordered run.
+
+**Green.** 50 shards against the real user manager, peak 12 running, 1,107 passed, 0 failed, the
+isolation check held, the leg runner's verdict `unconfined leg: pass (274.0s)`. Wall 273.8 s, of
+which the isolation check took 0.1 s: nothing was waited for. Critical shard
+`101_veldo_0208_landing_reuse`, 260.3 s. The dispatcher used 7.1 s of CPU and 51 MiB. 44 shards
+with their instance names and the six of `run_scope.UNNAMED` without.
+
+What the check saw and did not charge, all printed in the excerpt:
+
+- One entry at the top of /tmp that nothing ties to a shard, RECORDED under the revised rule:
+  `/tmp/tmpvph1h7ph`, first seen while only suite 101 was still running. Under the round 1 rule it
+  would have been waited on for 300 seconds and, had it stayed, would have failed the leg. Whose
+  it was is not known: it carried no instance name, named no shard's roots, and no process of a
+  shard's tree held it at a reading; it was gone when it was looked for by hand some minutes
+  after the leg. That is the floor `open.md` item 5 describes, seen once.
+- Two entries held by a live process of another tree (one in /dev/shm, one in /tmp), noted.
+- 68 units of other sessions and the desktop, named and not judged.
+
+Against the ordered unconfined run of fix round 1 (1,348.4 s, another commit, another load) the
+273.8 s would be a ratio of 0.20; that is an indication, not AC4's paired measurement, which stays
+the round 1 pair (0.148 and 0.448, against the lead's 1/3 and 1/2).
+
+The confined leg was not run again in fix round 2: its places keep the strict rule, and the
+change reaches it only through the process-tree tie, which can move a charge from the leg to a
+shard and cannot add one. Suite 157's confined fixture legs ran with the new code (`suite-green.txt`).
+
+A first attempt to start this run ended at once with the leg runner's usage message (the command
+lacked its required arguments); no suite ran in it and it is not a result.
