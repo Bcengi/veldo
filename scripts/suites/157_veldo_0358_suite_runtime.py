@@ -855,3 +855,50 @@ _v358_f10 = _v358_declared()
 expect("waits/declared-rows-not-run: %r" % (_v358_f10,),
        _v358_f10 == {"rc": 1, "hung": ["SELFTEST HUNG an end nobody makes"],
                      "not_run": ["fx/second", "fx/third", "fx/later-suite-row"]})
+
+
+# --------------------- wave 1: a module read from its cache is claimed as its source (brief F's lead item 2)
+
+_v358_CACHED = '''import importlib.util as _fx_iu
+_fx_spec = _fx_iu.spec_from_file_location("v358_cached", str(ROOT / "scripts" / "suites" / "support" / "v358_cached.py"))
+_fx_module = _fx_iu.module_from_spec(_fx_spec)
+_fx_spec.loader.exec_module(_fx_module)
+expect("fx/cached", _fx_module.V358_CACHED == 1 and bool(_fx_module.__cached__))
+'''
+
+
+def _v358_cached():
+    """The fixture's module has a fresh cache file, so the interpreter opens that file and never the source."""
+    import os as _o
+    import py_compile as _pc
+    with _v358_tempfile.TemporaryDirectory(prefix="v358-cached-") as d:
+        base = _v358_tree(_v358_Path(d) / "repo", {"fx_cached": _v358_CACHED})
+        source = base / "scripts" / "suites" / "support" / "v358_cached.py"
+        source.write_text("V358_CACHED = 1\n")
+        compiled = _pc.compile(str(source), doraise=True)
+        ledger = _v358_Path(d) / "ledger"
+        fd = _o.open(str(ledger), _o.O_WRONLY | _o.O_CREAT | _o.O_APPEND | _o.O_CLOEXEC, 0o600)
+        try:
+            run = _v358_subprocess.run(
+                [_v358_sys.executable, str(base / "scripts" / "selftest.py"), "--suite", "fx_cached"], cwd=str(base),
+                capture_output=True, text=True, stdin=_v358_subprocess.DEVNULL,
+                env=_v358_clean_env(VELDO_OPENED_LEDGER_FD=str(fd)), pass_fds=(fd,))
+        finally:
+            _o.close(fd)
+        claims = {}
+        try:
+            for line in ledger.read_text().splitlines():
+                item = _v358_json.loads(line)
+                claims.setdefault(item["suite"], []).extend(item["paths"])
+        except (OSError, ValueError, KeyError) as error:
+            claims = {"error": str(error)}
+        return {"rc": run.returncode, "compiled": _o.path.basename(_o.path.dirname(compiled)),
+                "claims": claims.get("fx_cached"),
+                "cache_paths": [p for paths in claims.values() if isinstance(paths, list) for p in paths if "__pycache__" in p]}
+
+
+_v358_f11 = _v358_cached()
+expect("record/cached-module-is-its-source: %r" % (_v358_f11,),
+       _v358_f11 == {"rc": _v358_PASSED, "compiled": "__pycache__",
+                     "claims": ["scripts/suites/fx_cached.py", "scripts/suites/support/v358_cached.py"],
+                     "cache_paths": []})

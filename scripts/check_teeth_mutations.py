@@ -16899,6 +16899,11 @@ def cases():
             "    return [name for name in declared_rows(path) if name not in reached]\n",
             "    return []  # defect: only rows stated as literals are read\n",
             ['waits/declared-rows-not-run'], 'scripts/suites/support')
+    # A module a suite loads from a fresh cache file is claimed by nobody (brief F's lead item 2).
+    lead358('opened358-cached-module-unclaimed', runtime358, 'selftest.py',
+            "            if os.path.basename(cache) != \"__pycache__\" or not os.path.isfile(_REPO + rel):\n",
+            "            if True:  # defect: a module read from its cache is no file of the suite's\n",
+            ['record/cached-module-is-its-source'], 'scripts')
     # The census stops reading AbortSignal.timeout(n) (brief H's finding 4).
     lead358('wall358-abort-signal-ignored', '158_veldo_0358_census.py', 'check_wallclock.py',
             "            values += [('AbortSignal.timeout argument 0', m.group(1)) for m in re.finditer(\n",
