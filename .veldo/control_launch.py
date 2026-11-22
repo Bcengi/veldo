@@ -833,6 +833,12 @@ def guard_census(program, configuration, worktree, client, directory, scratch=No
     store = Path(config['store']).resolve(strict=True)
     protected = [expand(p) for p in config['deny_write']] + [authority, Path(program).resolve()]
     writes = [expand(p) for p in config['write_roots']]
+    for target in writes:
+        if (not any(guard_beneath(target, p) for p in (worktree, scratch))
+                or any(guard_overlap(target, p) for p in (store, *protected))):
+            raise ValueError('unsafe writable path: ' + str(target))
+    if not worktree.is_dir() or worktree == scratch or any(guard_beneath(store, p) for p in (authority, worktree, scratch)):
+        raise ValueError('runner layout qualification refused')
     blocked = [store, Path('/proc'), Path('/run'), Path('/sys'), Path('/dev')]
     blocked += [Path(p).expanduser().resolve() for p in config['deny_read']]
     grants = []
@@ -876,7 +882,7 @@ def guard_census(program, configuration, worktree, client, directory, scratch=No
     grants += runner.resolver_grants()
     copies = [Path(p).expanduser() for p in config.get('seed_files', {})]
     copies += [p for kind in ('seed_files', 'credentials') for p, _ in files.get(kind, [])]
-    copies = [p.resolve(strict=True) for p in copies if p.exists()]
+    copies = [p.resolve(strict=True) for p in copies if p.is_file()]
     for source in copies:
         if guard_beneath(source, directory):
             return {'reason': 'confined_runner_unavailable:store_source', 'element_path': str(source)}
@@ -893,10 +899,11 @@ def guard_census(program, configuration, worktree, client, directory, scratch=No
                 if guard_overlap(real, directory):
                     return {'reason': 'confined_runner_unavailable:store_reachable', 'element_path': str(real)}
                 if (real_home not in real.parents or any(guard_overlap(real, p) for p in refused)
-                        or (source.exists() and (source.is_symlink() or source.is_dir() != is_directory))):
+                        or source.is_symlink() or (source.exists() and source.is_dir() != is_directory)):
                     raise ValueError('client state qualification refused: ' + str(source))
                 # Every existing ancestor must be plain, as scratch_directory requires.
-                if any(p.is_symlink() for p in [source, *source.parents] if p != home and home in p.parents):
+                if any(p.is_symlink() or (p.exists() and not p.is_dir())
+                       for p in source.parents if p != home and home in p.parents):
                     raise ValueError('client state ancestor is a link')
                 grants.append((real, runner.READ | runner.WRITE))
     for target, _ in grants:
