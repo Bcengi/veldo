@@ -69,7 +69,11 @@ previews. Site/email/event-file overrides cannot choose service authority.
 The owner's standing channel activation still applies, without per-call approval.
 Factory setup accepts a keychain reference; its explicitly requested legacy token
 file input is a one-time keystore import. Runtime ingress rejects file references.
-An existing file-based ingress must be migrated before restarting it.
+An explicit setup rerun migrates both existing channel configurations as part of
+the existing engine upgrade. Original configuration backups are persisted before
+writes; interrupted/resumed upgrade rollback retains the earlier engine's channel.
+The fixtures verify that only the credential reference changes, the keystore
+resolves the original canary, and all other owner configuration stays intact.
 
 ## Developer checks and known baseline failures
 
@@ -127,3 +131,12 @@ home-boundary assertion fails under the nested remote home. The earlier seven-su
 run also has the parent's setup-assets count failure. These baseline discrepancies
 remain visible; no passing gate is claimed. The remaining sandbox-dependent
 compatibility suites are queued through the host wrapper; their results remain pending.
+
+The broad host compatibility run exposed the legacy channel migration gap. Its
+parent comparison had 284 passes and 17 dispatch-fixture failures caused by missing
+installation assets; the fixture now includes those shipped directories. After
+migration, six host suites reached 129 passes with three remaining failures:
+a stopped-host restart flag prevented identity provisioning, and two historical
+assertions still required byte-identical file-based channel configuration. The
+flag now applies only when the installed engine is current; the assertions verify
+the exact credential import and retain their other invariants. Final reruns follow.

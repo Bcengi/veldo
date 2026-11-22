@@ -122,7 +122,10 @@ this command path. The service chooses the enrolled repository.
 Setup accepts an owner-channel `--token-ref keychain:<name>`. The older
 `--token-file` setup input performs a one-time import into the keystore; the
 installed ingress contains only the resulting reference and never reads that
-file. An old ingress configuration naming a file must be migrated before restart.
+file. Re-running setup with the explicit legacy input migrates both channel
+configurations during the existing engine-upgrade transaction. It persists their
+original contents before writing, so an interrupted upgrade can still restore
+the earlier engine and its matching configuration. No runtime file fallback is used.
 
 `control_plane_calls.json` registers the service network modules and their
 destination kinds. The same register names exact local-only and project-call
