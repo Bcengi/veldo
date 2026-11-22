@@ -401,6 +401,8 @@ def _v234_suite():
         ts.clear()
         log_before = step_log.read_bytes() if step_log.exists() else b''
         (before, record_before), head, served = held_files(), journal(store0), status()
+        channel_paths = [root / 'host/ingress.json', home0 / 'config/channel-ingress.json']
+        channel_before = {str(p): json.loads(p.read_text()) for p in channel_paths}
         code, rerun = h['setup'](*args)
         (after, record_after) = held_files()
         log_after = step_log.read_bytes() if step_log.exists() else b''
@@ -416,10 +418,22 @@ def _v234_suite():
         # difference allowed, with that exact value; state_root is not an engine key, so once held it is compared.
         state_root_gained = ({} if 'state_root' in record_before[0]
                              else {'state_root': os.path.realpath(str(root))})
-        check(PC, 'every file outside the installed engine is byte for byte the same, the store\'s dump too, and the '
+        custody = load('v234_custody', h['mods'] / 'control_credential_keystore.py').SecretService()
+        for path in channel_paths:
+            previous, current = channel_before[str(path)], json.loads(path.read_text())
+            bot = current.get('bot_api') or {}
+            reference = bot.get('token_ref') or ''
+            check(PC, 'channel migration changes only credential custody and retains the original token',
+                  previous.get('bot_api') == {'origin': bot.get('origin'), 'token_file': str(h['token_file'])}
+                  and set(bot) == {'origin', 'token_ref'} and reference.startswith('keychain:')
+                  and custody.get('keychain', reference.split(':', 1)[1]) == h['token']
+                  and dict(previous, bot_api=bot) == current)
+        check(PC, 'apart from the verified channel import, every file outside the installed engine is byte for byte '
+              'the same, the store\'s dump too, and the '
               'service record apart from its engine keys and the state root the upgrade adds as this host\'s root '
               '[%s %s]' % ((changed + added + removed)[:4], sorted(set(record_after[0]) ^ set(record_before[0]))),
-              not (changed or added or removed) and record_after[1] == record_before[1]
+              set(changed) == set(channel_before) and not (added or removed)
+              and record_after[1] == record_before[1]
               and record_after[0] == dict(record_before[0], **state_root_gained))
         try:
             appended = [json.loads(line) for line in log_after[len(log_before):].decode().splitlines() if line.strip()]
@@ -428,12 +442,13 @@ def _v234_suite():
         points = [e.get('point') for e in appended or []]
         upgraded = steps_of(rerun).get('engine_upgrade')
         # The step log is the upgrade's own: unchanged when no upgrade ran; otherwise its earlier bytes are kept, and
-        # what it gained is one upgrade run from begin to done whose only file write is the service record.
-        check(PC, 'the upgrade\'s step log %s only gained one engine upgrade\'s lines, writing no file but the '
-              'service record [%s, upgrade %s]' % (step_log.name, points, upgraded),
+        # what it gained is one upgrade run writing only the record and the verified channel migration.
+        check(PC, 'the upgrade\'s step log %s only gained one engine upgrade\'s lines, writing only the '
+              'service record and both channel configurations [%s, upgrade %s]' % (step_log.name, points, upgraded),
               log_after.startswith(log_before) and appended is not None
               and (not appended or (points[0] == 'begin' and points[-1] == 'done'
-                                    and all(e.get('path') in (None, service_json) for e in appended)
+                                    and {e.get('path') for e in appended if e.get('path')}
+                                    == {service_json, *channel_before}
                                     and upgraded == 'done')))
         check(PC, 'the journal head and the Serve status are unchanged and no Serve write ran [%s]'
               % [c for c in ts.invocations() if c not in READS],

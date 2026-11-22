@@ -919,18 +919,27 @@ def _v189_suite():
               before['entities'] and set(moved) <= written
               and all('api-edge' in str(r.get('command_id')) for r in new))
         lost = []
+        custody = load('v189_kept_custody', mods / 'control_credential_keystore.py').SecretService()
         for name, value in before['configs'].items():
             now = after['configs'].get(name)
             if isinstance(value, dict) and isinstance(now, dict):
                 for key, held in value.items():
                     if key in ('closure', 'runtime_assets', 'template') and name == 'service.json':
                         continue
+                    if name == 'channel-ingress.json' and key == 'bot_api':
+                        bot = now.get(key) or {}
+                        reference = bot.get('token_ref') or ''
+                        if (held == {'origin': bot.get('origin'), 'token_file': str(token_file)}
+                                and set(bot) == {'origin', 'token_ref'} and reference.startswith('keychain:')
+                                and custody.get('keychain', reference.split(':', 1)[1]) == token):
+                            continue
                     if now.get(key) != held and not (held is None and key in now):
                         lost.append('%s:%s' % (name, key))
             elif now != value:
                 lost.append(name)
         check(row, '%s: every value in every configuration file under the installation\'s config directory keeps what '
-              'was there, the only changes a key the file lacked or held as null and the record\'s engine keys [%s]'
+              'was there except the verified channel credential import, a key the file lacked or held as null, '
+              'and the record\'s engine keys [%s]'
               % (label, lost[:4]), not lost and before['configs'])
         for path, adapters in owner_set.items():
             check(row, '%s: the receiver configuration keeps the owner-set adapters [%s]'
