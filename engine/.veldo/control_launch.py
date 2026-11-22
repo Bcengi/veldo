@@ -368,7 +368,16 @@ def receiver_space(receiver):
             or config.get('repository') not in service.get('repositories', {})):
         raise D.Refused('binding_mismatch:space_service')
     declarations = _organ('control_space_config')
-    section = declarations.read(environ=_organ('installation').child_environment(service.get('installation')))
+    installation = _organ('installation')
+    environment = installation.child_environment(service.get('installation'))
+    try:
+        section = declarations.read(environ=environment)
+    except installation.InstallationError:
+        # No installation at all has no space section either: the receiver runs unwired, as one whose
+        # installation has no space section does. An installation that is there and refuses still refuses.
+        if installation.resolve(environment)['found']:
+            raise
+        return None
     if not section.get('present'):
         return None
     projects = []
