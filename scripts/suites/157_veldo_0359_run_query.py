@@ -764,8 +764,9 @@ L.main()
         # _finish still records the end, the receiver exits cleanly and the Runner's removal does not raise.
         launch, pending = run_fixture('stray-file', payload_args=['stray'])
         seen = read_event(launch.child, pending, {'payload'})
-        ended = read_event(launch.child, pending, {'end_probe'})
-        exited = read_event(launch.child, pending, {'exited'})
+        read_event(launch.child, pending, {'closed'})  # the receiver's last line, whatever came before it
+        ended = next((e for e in pending[1] if e.get('event') == 'end_probe'), {'directory': None, 'socket': None})
+        exited = next((e for e in pending[1] if e.get('event') in ('exited', 'failed')), {'event': None})
         raised = stopped(lambda: reap(launch))
         stray = Q.endpoint('stray-file').parent
         receiver_log = Path(launch.receiver_log).read_text() if launch.receiver_log else ''
