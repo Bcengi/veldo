@@ -87,3 +87,11 @@ raw_sha256=b43a2d9154a94aac6574d13cd83bc1f77c38ee60971ab7923b95007791d4e531
   110_veldo_0143_new_project                     106 passed   72.68s
 selftest (PARTIAL, 3 of 237 suites): 210 passed, 3 failed in 187.40s
 remote_run[pc2 c65fcc2c7427 04:21:29]: rc=1 in 194s (run rr20261122041815-06cc)
+
+v258-handoff-checks
+raw_sha256=b4ace10eedac356c45e6060064e6cf97c1672bb0d592fe15899df2b9dde2907f
+lint: pass (1274 python, 40 shell, 5.01s)
+template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
+docs hygiene: pass
+personal setup: 0 finding(s)
+remote_run[pc2 97a24067615d 04:23:44]: rc=0 in 44s (run rr20261122042300-b41a)
