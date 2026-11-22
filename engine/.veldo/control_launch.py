@@ -364,20 +364,15 @@ def receiver_space(receiver):
         return None
     service = json.loads(service_path.read_text())
     config = receiver.config
-    if (service.get('store_path') != config['store'] or service.get('domain_uuid') != config['domain']
-            or config.get('repository') not in service.get('repositories', {})):
+    if service.get('store_path') != config['store'] or service.get('domain_uuid') != config['domain']:
         raise D.Refused('binding_mismatch:space_service')
-    declarations = _organ('control_space_config')
-    installation = _organ('installation')
-    environment = installation.child_environment(service.get('installation'))
-    try:
-        section = declarations.read(environ=environment)
-    except installation.InstallationError:
-        # No installation at all has no space section either: the receiver runs unwired, as one whose
-        # installation has no space section does. An installation that is there and refuses still refuses.
-        if installation.resolve(environment)['found']:
-            raise
+    if config.get('repository') not in service.get('repositories', {}):
+        # A project line made after installation (VELDO-0143, VELDO-0161, VELDO-0188) has a receiver beside
+        # the service's configuration but no entry of its own there: it runs without the central wiring, as
+        # every receiver did before VELDO-0317, rather than being refused at every launch.
         return None
+    declarations = _organ('control_space_config')
+    section = declarations.read(environ=_organ('installation').child_environment(service.get('installation')))
     if not section.get('present'):
         return None
     projects = []
