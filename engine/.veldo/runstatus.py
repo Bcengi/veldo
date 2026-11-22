@@ -296,6 +296,8 @@ def _store_guard(root):
         binding = EL.E.read_binding(str(root))
         if binding is None:
             return None
+        if EL.E.binding_problems(binding):
+            return {'state': 'invalid', 'reason': 'enrollment_refused:malformed_binding'}
         return EL._organ('control_run_query').switch(EL.E.store_path_for(binding))
     except (EL.E.EnrollmentRefused, OSError):
         return {'state': 'invalid', 'reason': 'enrollment_unanswerable'}
@@ -323,7 +325,7 @@ def _replication(root, now, db_path=None, eligibility=None):
             if store is not None and resolved.is_relative_to(store.parent):
                 if resolved != store:
                     return {"present": False, "reason": "coordinate_not_served:store_override"}
-                own = eligibility is None
+                own = eligibility is None or not hasattr(eligibility, 'replication_status')
                 gate = EL.entry_gate(root) if own else eligibility
                 try:
                     st = gate.replication_status()
