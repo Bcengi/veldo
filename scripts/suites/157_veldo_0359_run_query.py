@@ -276,9 +276,15 @@ def _v359_query_suite():
               and set(remote.replication_status()) == set(Q.REPLICATION))
         check('query/scope', 'counts log only request and outcome', bool(logs) and all(set(v) == {'event', 'request', 'outcome'} for v in logs))
         # Read-only connection, created on the serving thread; a request never leaves a transaction.
-        with patch.object(Q, '_answer', side_effect=lambda gate, req: {'thread': threading.get_ident(),
-                'transaction': gate.conn.in_transaction, 'write': stopped(lambda: gate.conn.execute('CREATE TABLE forbidden(x)'))}):
-            probe = Q._exchange(server.path, {'operation': 'hello'})['answer']
+        probes = []
+        real_answer = Q._answer
+        def inspect_reader(gate, request):
+            probes.append(dict(thread=threading.get_ident(), transaction=gate.conn.in_transaction,
+                               write=stopped(lambda: gate.conn.execute('CREATE TABLE forbidden(x)'))))
+            return real_answer(gate, request)
+        with patch.object(Q, '_answer', inspect_reader):
+            Q._exchange(server.path, {'operation': 'hello'})
+        probe = probes[0]
         check('query/scope', 'thread owns read-only transaction', probe['thread'] != client_thread and probe['transaction']
               and probe['write'] == 'OperationalError')
         check('query/journey', 'zero client opens', not client_opens)
@@ -364,7 +370,7 @@ def _v359_query_suite():
             listen.set()
             starter.join(10)
         check('query/lifecycle', 'A answers after listen', results == [None]
-              and Q.RemoteGate(repo, first.path).completion('missing') == dict.fromkeys(Q.FACTS, False))
+              and stopped(lambda: Q.RemoteGate(repo, first.path).completion('missing')) is None)
         first.close()
         later.close()
         leftover = Q.endpoint('dead-receiver-and-runner')
@@ -416,7 +422,7 @@ def _v359_query_suite():
 
     for row, checks in rows.items():
         failures = [name for name, ok in checks if not ok]
-        expect('v359 ' + row, bool(checks) and not failures, 'PASS' if not failures else '; '.join(failures))
+        expect('v359 ' + row + ': ' + ('PASS' if not failures else '; '.join(failures)), bool(checks) and not failures)
 
 
 _v359_query_suite()

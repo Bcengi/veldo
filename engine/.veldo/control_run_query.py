@@ -124,6 +124,89 @@ def _event(value):
     return out
 
 
+def _strings(value, nullable=False):
+    return isinstance(value, list) and all(isinstance(v, str) or (nullable and v is None) for v in value)
+
+
+def _flat(value, fields):
+    return isinstance(value, dict) and set(value) <= set(fields) and all(
+        v is None or type(v) in (str, int, bool, float) for v in value.values())
+
+
+def _valid_identity(value):
+    if not isinstance(value, dict):
+        return False
+    if set(value) == {'members', 'digest'}:
+        return isinstance(value['digest'], str) and isinstance(value['members'], list) and all(
+            isinstance(m, list) and len(m) == 3 and isinstance(m[0], str) and type(m[1]) is int
+            and isinstance(m[2], str) for m in value['members'])
+    return set(value) in ({'id', 'digest'}, {'id', 'version', 'digest'}, {'id', 'version', 'digest', 'definition'}) and _flat(
+        value, ('id', 'version', 'digest', 'definition'))
+
+
+def _valid_architecture(value, event=False):
+    if not isinstance(value, dict):
+        return False
+    fields = ('basis', 'kind', 'artifact_digest', 'validator', 'error') if event else (
+        'basis', 'kind', 'state', 'required', 'accepted', 'artifact', 'validator', 'refusals', 'problems', 'error')
+    required = set(fields) - ({'error'} if event else {'error', 'problems'})
+    if not required <= set(value) <= set(fields):
+        return False
+    if not _flat({k: v for k, v in value.items() if k not in ('validator', 'accepted', 'artifact', 'refusals', 'problems')}, fields):
+        return False
+    validators = value['validator']
+    if not isinstance(validators, dict) or not all(isinstance(k, str) and (
+            isinstance(v, str) if event else isinstance(v, dict) and set(v) == {'module', 'role', 'path', 'digest'}
+            and _flat(v, ('module', 'role', 'path', 'digest'))) for k, v in validators.items()):
+        return False
+    return event or ((value['accepted'] is None or _flat(value['accepted'], ('id', 'version', 'digest')))
+                     and (value['artifact'] is None or _flat(value['artifact'], ('path', 'type', 'digest')))
+                     and _strings(value['refusals']) and ('problems' not in value or _strings(value['problems'])))
+
+
+def _valid_event(event):
+    if not isinstance(event, dict):
+        return False
+    fields = set(EVENT) - {'architecture', 'entity', 'references'}
+    if event.get('operation') == 'invalid_record':
+        fields.add('entity')
+    if event.get('operation') == 'decision_dependency':
+        fields.add('references')
+    return (fields <= set(event) <= fields | {'architecture'}
+            and _flat({k: v for k, v in event.items() if k not in ('accepted_inputs', 'references', 'refusals', 'taxonomy', 'architecture')}, EVENT)
+            and isinstance(event['accepted_inputs'], dict)
+            and all(type(v) in (int, str) or v is None for v in event['accepted_inputs'].values())
+            and _strings(event['refusals']) and _strings(event['taxonomy'])
+            and ('references' not in event or _strings(event['references']))
+            and ('architecture' not in event or _valid_architecture(event['architecture'], event=True)))
+
+
+def _valid_answer(name, answer):
+    if name == 'decision_blockers':
+        return _strings(answer)
+    if not isinstance(answer, dict):
+        return False
+    if name == 'hello':
+        return set(answer) == set(COORDINATES) and isinstance(answer['domain_uuid'], str) and (
+            answer['repository_uuid'] is None or isinstance(answer['repository_uuid'], str)) and type(answer['authority_generation']) is int
+    if name == 'decide':
+        return (set(DECISION) - {'architecture'} <= set(answer) <= set(DECISION)
+                and _flat({k: v for k, v in answer.items() if k not in ('inputs', 'pending', 'refusals', 'architecture')}, DECISION)
+                and isinstance(answer['inputs'], dict) and all(_valid_identity(v) for v in answer['inputs'].values())
+                and _strings(answer['pending']) and _strings(answer['refusals']) and type(answer['eligible']) is bool
+                and ('architecture' not in answer or _valid_architecture(answer['architecture'])))
+    if name == 'completion':
+        return set(answer) == set(FACTS) and all(type(v) is bool for v in answer.values())
+    if name == 'floor_entry':
+        return (set(answer) == set(FLOOR) and _flat({k: v for k, v in answer.items() if k not in ('detail', 'review_dispatches')}, FLOOR)
+                and _strings(answer['detail']) and _strings(answer['review_dispatches'], nullable=True))
+    if name == 'replication_status':
+        return (set(answer) == set(REPLICATION) and _flat({k: v for k, v in answer.items() if k != 'pending'}, REPLICATION)
+                and isinstance(answer['pending'], list) and all(isinstance(p, dict) and set(p) == {'seq', 'command_id', 'state'}
+                and _flat(p, ('seq', 'command_id', 'state')) for p in answer['pending']))
+    return False
+
+
 def _receive(sock, deadline):
     data = bytearray()
     while b'\n' not in data:
@@ -156,7 +239,7 @@ def _scope(gate, request):
     item = gate._entity(unit)
     data = gate._data(item) or {}
     coordination = request.get('station') == 'coordination'
-    if item is not None:
+    if item is not None and item['value'] is not None:
         kind = item['value']['kind']
         allowed = (kind == 'pm_cycle' and data.get('domain') == gate.domain_uuid
                    and data.get('repository') == gate.repository_uuid) if coordination else (
@@ -167,7 +250,7 @@ def _scope(gate, request):
         if not isinstance(ref, str):
             raise Refused('coordinate_not_served')
         record = gate._entity(ref)
-        if record is not None:
+        if record is not None and record['value'] is not None:
             body = gate._data(record) or {}
             # A reference may not turn an unrelated record into a governing decision.
             if record['value']['kind'] != 'decision' or not EL.DD.governs(body, unit, data.get('plan')):
@@ -240,6 +323,12 @@ class Server:
             raise Refused() from error
 
     def _gate(self):
+        if self.config.get('receiver_kind') == 'conversation':
+            # This trusted receiver has no repository. No enrolled checkout can match its hello.
+            store = _organ('control_store')
+            return EL.Gate(store, store.open_store(self.config['store'], mode='r'),
+                           domain_uuid=self.config['domain'], repository_uuid=None,
+                           authority_generation=self.config.get('authority_generation', 1))
         trust = EL.load_host_trust(self.config.get('host_trust'))
         if trust is None:
             raise Refused()
@@ -291,6 +380,8 @@ class Server:
                 name = request['operation']
             with gate._reading():
                 answer = _answer(gate, request)
+            if not _valid_answer(name, answer) or not all(_valid_event(e) for e in events):
+                raise ValueError('response schema')
             response = {'answer': answer, 'events': events}
             outcome = 'ok'
         except Refused as error:
@@ -358,7 +449,7 @@ class RemoteGate:
         self.observe = observe or (lambda event: None)
         hello = _exchange(path, {'operation': 'hello'})
         answer = hello['answer']
-        if not isinstance(answer, dict) or set(answer) != set(COORDINATES):
+        if not _valid_answer('hello', answer) or hello['events']:
             raise Refused()
         binding = EL.E.read_binding(workspace)
         if not binding or binding.get('repository_uuid') != answer['repository_uuid']:
@@ -405,15 +496,10 @@ def _remote_answer(gate, request):
     response = _exchange(gate._path, request)
     answer = response['answer']
     name = request['operation']
-    fields = {'decide': DECISION, 'completion': FACTS, 'floor_entry': FLOOR, 'replication_status': REPLICATION}
-    if name in fields:
-        required = set(fields[name]) - ({'architecture'} if name == 'decide' else set())
-        if not isinstance(answer, dict) or not required <= set(answer) <= set(fields[name]):
-            raise Refused()
-    elif not isinstance(answer, list) or not all(isinstance(v, str) for v in answer):
+    if not _valid_answer(name, answer) or not all(_valid_event(e) for e in response['events']):
+        raise Refused()
+    if name not in ('decide', 'decision_blockers') and response['events']:
         raise Refused()
     for event in response['events']:
-        if not isinstance(event, dict) or not set(event) <= set(EVENT):
-            raise Refused()
         gate.observe(event)
     return answer
