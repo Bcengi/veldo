@@ -337,3 +337,17 @@ credential is served behind the outside gate, and runs keep today's access to lo
 unchanged.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156).
+
+2026-11-22: fix round 1 after independent review (FIX). Criteria unchanged; two items need the
+owner's approval and are recorded here for it. (1) The build widened `footprint` beyond the approved
+list, to control_api*, the credential keystore, control_dispatch and control_assignment, the
+workflow canvas feature, docs/installation.md, setup_runtime and the VELDO-0186 fixtures; the
+criteria are unchanged and no assertion was weakened, but the wider footprint is the owner's to
+approve. (2) The fix classifies a project's remote, landing destination, repository and trunk as
+widening (redirecting where a project's code is sent, the same exposure as the installation's own
+remote), together with removed bindings, connector arguments and environment, memory servers, the bot
+token reference, trackers, hosts, the publisher, and raised inbound file and body limits. AC2's list
+does not name these explicitly; they are classified as widening because each alters what Veldo may do,
+pending the owner's ruling. Removing a project file that declares bindings is widening (its work falls
+back to the default workflow); removing one with no bindings stays narrowing, as the open question
+above drafts it.

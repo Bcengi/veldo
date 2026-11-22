@@ -25,6 +25,8 @@ def _v253_suite():
         'control_workflow.py': ROOT / ".veldo" / "control_workflow.py",
         'control_workflow_unit.py': ROOT / ".veldo" / "control_workflow_unit.py",
         'control_project.py': ROOT / ".veldo" / "control_project.py",
+        'control_installation_setup.py': ROOT / ".veldo" / "control_installation_setup.py",
+        'installation_schema/schema.json': ROOT / ".veldo" / "installation_schema/schema.json",
     }
     rows = ('ac1/whole-commit', 'ac1/committed-only', 'ac1/schema', 'ac1/notification',
             'ac2/widening-waits', 'ac2/exact-decision', 'ac2/superseded', 'ac2/classification',
@@ -32,7 +34,12 @@ def _v253_suite():
             'ac4/pinned-survives', 'ac2/signed-settlement', 'ac2/forged-settlement',
             'ac1/setup-import', 'ac4/migrated-pins', 'ac3/signed-owner-save', 'ac1/service-documents',
             'ac3/no-store-writer', 'ac1/private-template', 'ac2/signed-stale', 'ac1/approval-validation',
-            'ac4/installation-bindings', 'ac1/last-good-reader')
+            'ac4/installation-bindings', 'ac1/last-good-reader',
+            # Fix round 1. Each row below runs on its own installation and its own store, so an exception
+            # in one row fails that row only and never hides a later one.
+            'ac2/binding-removed', 'ac2/connector-removal', 'ac2/memory-server', 'ac2/project-remote',
+            'ac2/other-widening', 'ac2/narrowing-direct', 'ac1/cross-references', 'ac1/plain-credential',
+            'ac1/unread-secret-import', 'ac3/working-copy-follows')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -450,11 +457,274 @@ def _v253_suite():
             errors.append(type(error).__name__ + ': ' + str(error))
         finally:
             conn.close()
+        _v253_fix_rows(root, mods, load, check, errors)
     for row in rows:
         if row not in emitted:
             check(row, False)
     if errors:
         print('VELDO-0253 fixture errors:', errors)
+
+
+def _v253_fix_rows(root, mods, load, check, errors):
+    """Fix round 1: authority changes that wait, cross references, plain credentials, Veldo-made commits."""
+    import json
+    import os
+    import subprocess
+
+    S = load('v253f_store', mods / 'control_store.py')
+    C = load('v253f_config', mods / 'control_installation_config.py')
+    WF = load('v253f_workflow', mods / 'control_workflow.py')
+    WU = load('v253f_unit', mods / 'control_workflow_unit.py')
+    SIG = load('v253f_signer', mods / 'control_signer.py')
+    setup = load('v253f_setup', mods / 'control_installation_setup.py')
+    private = root / 'fix-journal'
+    subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(private)],
+                   check=True, capture_output=True, timeout=120)
+    sign = lambda data: SIG.sign_bytes(private, data, 'veldo-journal')
+    member = dict(command_id='member', principal='setup', operation='upsert_entity', nonce='member',
+        artifact_digests=[], expected_versions={'owner': 0}, parameters=dict(entity_id='owner', kind='membership',
+        data=dict(principal_type='person', roles=['project_owner'], scope='*', revoked_at=None, expires_at=None)))
+    identity = {'name': 'Example Owner', 'email': 'owner@example.com'}
+    settings = {'schema': 'veldo.installation/v1', 'owner': {'display_name': 'Example Owner', 'role_id': 'owner'},
+                'git_identities': {'owner': identity}, 'git': {'branch': 'main'},
+                'accounts': {'primary': {'label': 'Example'}}, 'ports': {'api': 8080, 'web': 8443}}
+    gated = WU.shipped()
+    gated['id'] = 'gated'
+    connector = {'command': 'local-tools', 'args': ['--read-only'], 'environment': {'LOG_LEVEL': 'info'},
+                 'tools': ['read', 'write'], 'allowed_tools': ['read', 'write'], 'never': []}
+    service = {'schema': 'veldo.outside_service/v1', 'base_url': 'https://service.example', 'body_limit': 1024}
+    opened, serial, notices = [], [0], []
+    # Built at run time so no credential-format literal is ever committed with this suite.
+    plain = 'gh' + 'p_' + 'Q7' * 18
+
+    class Pending:
+        """No owner decision ever arrives: whatever waits for one must stay out of the live configuration."""
+        def __init__(self):
+            self.requests = []
+        def request(self, proposal):
+            self.requests.append(proposal)
+        def approved(self, proposal):
+            return None
+        def stale(self, proposal):
+            pass
+
+    def store(place):
+        conn = S.open_store(place / 'authority.sqlite3')
+        opened.append(conn)
+        S.execute(conn, member, 'setup', sign, 1)
+        return conn
+
+    def installation(extra):
+        serial[0] += 1
+        place = root / ('fix-%d' % serial[0])
+        conn = store(place)
+        repo = C.I.Repository.create(place / 'installation')
+        tree = {'installation.yaml': WF.canonical(settings)}
+        tree.update({path: WF.canonical(value) for path, value in extra.items()})
+        first = repo.commit(tree, None, identity, 'Initial installation')
+        repo.publish(first, None)
+        loader = C.Loader(S, conn, repo, domain='domain', workflow_repository='repository', signer='setup',
+            sign=sign, secret_exists=lambda name: name == 'present', decisions=Pending(), notify=notices.append,
+            observe=lambda event: None)
+        started = loader.reconcile(bootstrap=True)
+        if started['outcome'] != 'accepted':
+            raise AssertionError(('fixture', started))
+        return loader, place
+
+    def change(loader, changes):
+        repo = loader.repo
+        parent = repo.head()
+        tree = dict(repo.snapshot(parent)['files'])
+        for path, value in changes.items():
+            if value is None:
+                tree.pop(path)
+            else:
+                tree[path] = WF.canonical(value)
+        made = repo.commit(tree, parent, identity, 'Change installation')
+        repo.publish(made, parent)
+        return made, loader.reconcile()
+
+    def live(loader):
+        return json.dumps(loader.live, sort_keys=True)
+
+    def waits(start, changes, key):
+        """The commit waits for the owner, names the widening key, and nothing of it is live."""
+        loader, _ = installation(start)
+        before, held = loader.accepted_commit, live(loader)
+        made, result = change(loader, changes)
+        return (result['outcome'] == 'waiting' and loader.accepted_commit == before and live(loader) == held
+                and key in [item['key'] for item in result['widening']]
+                and loader.decisions.requests[-1]['commit'] == made)
+
+    def direct(start, changes):
+        """Allowed directly by the spec: valid and live at once, with no owner decision requested."""
+        loader, _ = installation(start)
+        made, result = change(loader, changes)
+        return (result['outcome'] == 'accepted' and loader.accepted_commit == made and result['widening'] == []
+                and loader.decisions.requests == [] and loader.record()['classification'] == 'non_widening')
+
+    def refused(start, changes, problem):
+        """The whole commit is refused with the problem named, and the last good configuration stays."""
+        loader, _ = installation(start)
+        before, held = loader.accepted_commit, live(loader)
+        _, result = change(loader, changes)
+        return (result['outcome'] == 'refused' and problem in result['problems']
+                and loader.accepted_commit == before and live(loader) == held)
+
+    def isolated(row, body):
+        try:
+            check(row, body())
+        except Exception as error:
+            errors.append(row + ': ' + type(error).__name__ + ': ' + str(error))
+            check(row, False)
+
+    # Authority changes that must wait for the owner's decision.
+    with_gated = {'workflows/gated.json': gated, 'projects/p.yaml': {'workflows': {'default': {'workflow': 'gated'}}}}
+    code = WU.shipped()
+    code['budget']['steps'] -= 1
+    isolated('ac2/binding-removed', lambda: (
+        waits(with_gated, {'projects/p.yaml': {}}, 'projects/p.yaml:workflows')
+        and waits(with_gated, {'projects/p.yaml': None}, 'projects/p.yaml:workflows')
+        and waits({'workflows/code.json': code}, {'workflows/code.json': None}, 'workflows/code.json:$')))
+    without = lambda field: {key: value for key, value in connector.items() if key != field}
+    isolated('ac2/connector-removal', lambda: (
+        waits({'connectors/c.yaml': connector}, {'connectors/c.yaml': without('args')}, 'connectors/c.yaml:args')
+        and waits({'connectors/c.yaml': connector}, {'connectors/c.yaml': without('environment')},
+                  'connectors/c.yaml:environment')))
+    server = {'command': '/opt/example/memory-server', 'args': ['--data', 'memory']}
+    isolated('ac2/memory-server', lambda: (
+        waits({}, {'memory/m.yaml': {'servers': {'s': server}}}, 'memory/m.yaml:servers')
+        and waits({'memory/m.yaml': {'servers': {'s': server}}},
+                  {'memory/m.yaml': {'servers': {'s': dict(server, args=['--data', 'other'])}}}, 'memory/m.yaml:servers')))
+    landing = {'landing_destination': 'land_locally', 'remote': 'git@example.com:team/project.git',
+               'repository': 'team/project', 'trunk': 'main'}
+    isolated('ac2/project-remote', lambda: all(
+        waits({'projects/p.yaml': landing}, {'projects/p.yaml': dict(landing, **{field: value})}, 'projects/p.yaml:' + field)
+        for field, value in (('landing_destination', 'land_and_push'), ('remote', 'git@other.example:x/project.git'),
+                             ('repository', 'other/project'), ('trunk', 'release'))))
+    isolated('ac2/other-widening', lambda: (
+        waits({}, {'installation.yaml': dict(settings, bot={'token': {'secret': 'present'}})}, 'installation.yaml:bot')
+        and waits({}, {'installation.yaml': dict(settings, trackers={'t': {'site': 'https://tracker.example'}})},
+                  'installation.yaml:trackers')
+        and waits({}, {'installation.yaml': dict(settings, receiver={'inbound_file_cap': 10 ** 9})},
+                  'installation.yaml:receiver.inbound_file_cap')
+        and waits({'services/s.yaml': service}, {'services/s.yaml': dict(service, body_limit=10 ** 9)},
+                  'services/s.yaml:body_limit')))
+    # Changes the spec allows directly: narrowing.
+    isolated('ac2/narrowing-direct', lambda: (
+        direct({'connectors/c.yaml': connector}, {'connectors/c.yaml': dict(connector, allowed_tools=['read'])})
+        and direct({'connectors/c.yaml': connector}, {'connectors/c.yaml': dict(connector, never=['write'])})
+        and direct({}, {'installation.yaml': dict(settings, ports={'api': 8080})})
+        and direct({'connectors/c.yaml': connector}, {'connectors/c.yaml': None})
+        and direct({'projects/q.yaml': {'account': 'primary'}}, {'projects/q.yaml': None})
+        and direct({'schedules/s.yaml': {'when': 'daily'}}, {'schedules/s.yaml': None})
+        and direct({'memory/m.yaml': {'servers': {'s': server}}}, {'memory/m.yaml': {'servers': {}}})
+        and direct({'services/s.yaml': service}, {'services/s.yaml': dict(service, body_limit=512)})
+        and direct({'services/s.yaml': service}, {'services/s.yaml': None})))
+    references = [
+        ({'schedules/s.yaml': {'when': 'daily', 'workflow': 'nosuch'}},
+         'installation_invalid:schedules/s.yaml:workflow:unknown_reference'),
+        ({'schedules/s.yaml': {'when': 'daily', 'project': 'nosuch'}},
+         'installation_invalid:schedules/s.yaml:project:unknown_reference'),
+        ({'projects/p.yaml': {'deploy_targets': {'site': {'service': 'nosuch'}}}},
+         'installation_invalid:projects/p.yaml:deploy_targets.site.service:unknown_reference'),
+        ({'memory/m.yaml': {'servers': {'s': {'service': 'nosuch'}}}},
+         'installation_invalid:memory/m.yaml:servers.s.service:unknown_reference'),
+        ({'memory/m.yaml': {'stores': {'notes': {'server': 'nosuch', 'path': 'notes'}}}},
+         'installation_invalid:memory/m.yaml:stores.notes.server:unknown_reference')]
+    valid = {'installation.yaml': settings, 'services/s.yaml': service,
+             'projects/p.yaml': {'deploy_targets': {'site': {'service': 's'}}},
+             'schedules/n.yaml': {'when': 'daily', 'workflow': 'code', 'project': 'p'},
+             'memory/m.yaml': {'servers': {'s': {'service': 's'}}, 'stores': {'notes': {'server': 's', 'path': 'notes'}}}}
+    isolated('ac1/cross-references', lambda: (
+        all(refused({}, changes, problem) for changes, problem in references)
+        and installation({})[0].validate({path: WF.canonical(value) for path, value in valid.items()})[1] == []))
+
+    def credentials():
+        loader, place = installation({'connectors/c.yaml': connector})
+        before, held = loader.accepted_commit, live(loader)
+        values = ('hunter2hunter2', 'plainvalue123456', 'plainvalue654321', 'plainvalue000000', plain)
+        environment = dict(zip(('DB_PASSWORD', 'GITHUB_TOKEN', 'SSH_KEY', 'CLIENT_SECRET'), values), LOG_LEVEL='info')
+        _, result = change(loader, {'connectors/c.yaml': dict(connector, environment=environment)})
+        named = all('installation_secret_inline:connectors/c.yaml:$.environment.' + key in result['problems']
+                    for key in ('DB_PASSWORD', 'GITHUB_TOKEN', 'SSH_KEY', 'CLIENT_SECRET'))
+        _, reference = change(loader, {'connectors/c.yaml': dict(connector, environment={'API_TOKEN': {'secret': 'present'}})})
+        _, inline = change(loader, {'connectors/c.yaml': dict(connector, environment={'LOG_LEVEL': plain})})
+        loader.conn.commit()
+        stored = b''.join(path.read_bytes() for path in place.glob('authority.sqlite3*'))
+        told = json.dumps(notices)
+        leaked = any(value in told or value.encode() in stored for value in values)
+        return (result['outcome'] == reference['outcome'] == inline['outcome'] == 'refused' and named
+                and any(p.startswith('installation_invalid:connectors/c.yaml:$.environment.API_TOKEN:')
+                        for p in reference['problems'])
+                and 'installation_secret_inline:connectors/c.yaml:$.environment.LOG_LEVEL' in inline['problems']
+                and loader.accepted_commit == before and live(loader) == held and not leaked)
+    isolated('ac1/plain-credential', credentials)
+
+    def unread_import():
+        folder = root / 'fix-import'
+        repo = C.I.Repository.create(folder)
+        (folder / 'notes').mkdir()
+        (folder / 'notes' / 'call.txt').write_text('The token is ' + plain + '\n')
+        (folder / 'installation.yaml').write_text(json.dumps(settings))
+        remote = root / 'fix-import-remote.git'
+        subprocess.run(['git', 'init', '--bare', str(remote)], check=True, capture_output=True, timeout=120)
+        conn = store(root / 'fix-import-store')
+        try:
+            setup.create(S, conn, folder, settings=dict(settings, git={'branch': 'main', 'remote': str(remote)}),
+                identity=identity, domain='domain', repository='repository', signer='setup', sign=sign,
+                secret_exists=lambda name: False, observe=notices.append)
+            seen = None
+        except Exception as error:
+            seen = getattr(error, 'code', None)
+        try:
+            repo.head()
+            committed = True
+        except C.I.InstallationError:
+            committed = False
+        sent = subprocess.run(['git', '--git-dir', str(remote), 'for-each-ref'], capture_output=True, text=True,
+                              timeout=120).stdout
+        return seen == 'installation_secret_inline:notes/call.txt:$' and not committed and sent == ''
+    isolated('ac1/unread-secret-import', unread_import)
+
+    def working_copy():
+        conn = store(root / 'fix-checkout-store')
+        folder = root / 'fix-checkout'
+        first = setup.create(S, conn, folder, settings=settings, identity=identity, domain='domain',
+            repository='repository', signer='setup', sign=sign, secret_exists=lambda name: False,
+            observe=lambda event: None)
+        loader = conn.installation_loader
+        workflows = WF.Workflows(S, conn, domain='domain', repository='repository', signer='setup', sign=sign)
+        definition = {'schema': 'veldo.workflow/v1', 'id': 'example', 'entry': 'build', 'terminal': ['done'],
+            'nodes': {'build': {'kind': 'build', 'config': {}}, 'done': {'kind': 'end', 'config': {}}},
+            'transitions': [{'id': 'built', 'from': 'build', 'port': 'done', 'to': 'done'}],
+            'references': {}, 'budget': {'steps': 8}}
+        saved = workflows.save({'definition': definition, 'layout': {}}, principal='owner', base=0,
+                               base_commit=first['commit'], command_id='checkout-save')
+        clean = loader.repo.git('status', '--porcelain') == ''
+        followed = (folder / 'workflows' / 'example.json').read_bytes() == WF.canonical(definition)
+        # The owner's ordinary `git commit -a` after the save keeps the save.
+        (folder / 'notes').mkdir(exist_ok=True)
+        (folder / 'notes' / 'owner.txt').write_text('An owner note\n')
+        environment = dict(GIT_AUTHOR_NAME='Example Owner', GIT_AUTHOR_EMAIL='owner@example.com',
+                           GIT_COMMITTER_NAME='Example Owner', GIT_COMMITTER_EMAIL='owner@example.com',
+                           GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL=os.devnull, HOME=str(root),
+                           PATH=os.environ['PATH'])
+        for command in (['add', 'notes/owner.txt'], ['commit', '-q', '-a', '-m', 'Owner note']):
+            subprocess.run(['git', '-C', str(folder), *command], check=True, capture_output=True, timeout=120,
+                           env=environment)
+        kept = loader.repo.snapshot()['files'].get('workflows/example.json') == WF.canonical(definition)
+        loader.reconcile()
+        # A dirty checkout is never touched by a save: the owner's edit stays exactly as written.
+        (folder / 'installation.yaml').write_text('owner edit in progress\n')
+        workflows.save({'definition': dict(definition, budget={'steps': 9}), 'layout': {}}, principal='owner',
+                       base=1, base_commit=loader.accepted_commit, command_id='dirty-save')
+        untouched = ((folder / 'installation.yaml').read_text() == 'owner edit in progress\n'
+                     and (folder / 'workflows' / 'example.json').read_bytes() == WF.canonical(definition))
+        return saved['commit'] != first['commit'] and clean and followed and kept and untouched
+    isolated('ac3/working-copy-follows', working_copy)
+    for conn in opened:
+        conn.close()
 
 
 _v253_suite()

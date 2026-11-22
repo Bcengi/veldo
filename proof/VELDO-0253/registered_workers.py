@@ -40,7 +40,7 @@ def main():
               'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip(),
               'results': results}
     print(json.dumps(report, sort_keys=True, indent=2))
-    return 0 if len(results) == 4 and all(result['expected_red_green'] for result in results) else 1
+    return 0 if len(results) == len(cases) and results and all(result['expected_red_green'] for result in results) else 1
 
 
 if __name__ == '__main__':

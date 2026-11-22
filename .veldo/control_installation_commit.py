@@ -12,6 +12,7 @@ def organ(name):
 
 WF = organ('control_workflow')
 I = organ('installation')
+V = organ('control_installation_schema')
 Refused = WF.Refused
 
 
@@ -47,6 +48,7 @@ def save(loader, document, *, principal, base, command_id, base_commit, approval
         files['workflows/%s.json' % workflow] = WF.canonical(definition)
         files['workflows/%s.layout.json' % workflow] = WF.canonical(layout)
         _, problems = loader.validate(files)
+        problems += V.unread_secrets(files)
         if problems:
             raise Refused(problems[0], codes=problems)
         head = WF._entity_row(loader.conn, WF.head_id(loader.domain, loader.workflow_repository, workflow))
@@ -62,6 +64,7 @@ def save(loader, document, *, principal, base, command_id, base_commit, approval
         event.update(commit=commit, author=identity)
         if not retry:
             loader.repo.publish(commit, base_commit)
+            loader.repo.follow(base_commit, commit)
         result = loader.reconcile(made=True)
         if approval is not None:
             if loader.decisions is None or principal != loader.decisions.owner:

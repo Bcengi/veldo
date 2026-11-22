@@ -83,10 +83,15 @@ def create(store, conn, folder, *, settings, identity, domain, repository, signe
     settings = dict(template, **settings)
     files = export(conn, settings, files)
     _, problems = loader.validate(files)
+    # Setup imports files from disk unreviewed and sends the commit to the remote: a credential lying in
+    # an ignored, history or check-only file refuses the import, before anything is committed.
+    problems = sorted(set(problems + C.V.unread_secrets(files)))
     if problems:
         raise C.Refused(problems[0], codes=problems)
     commit = repo.commit(files, parent, identity, 'Import live installation configuration')
     repo.publish(commit, parent)
+    if parent is not None:
+        repo.follow(parent, commit)
     result = loader.reconcile(bootstrap=True, made=True)
     if result['outcome'] != 'accepted':
         raise C.Refused(result['problems'][0], codes=result['problems'])

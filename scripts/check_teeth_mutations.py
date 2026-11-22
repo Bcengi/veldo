@@ -10492,6 +10492,65 @@ def cases():
         "        body = content['data'].get('canonical', '').encode('ascii')\n",
         "        body = conn.installation_loader.repo.git('show', data['source']['commit'] + ':' + data['source']['path']).encode('ascii')\n",
         ['ac4/pinned-survives'])
+    # Fix round 1 (review F1-F7): each finding's row goes red when its fix is taken back out.
+    schema253 = 'installation_schema/schema.json'
+    # F1: a `changed` field whose key is removed is not a change, so a removed binding or argument goes live.
+    add(253, 'install253-removal-not-widening', install253, 'control_installation_schema.py',
+        "            elif mode == 'changed':\n",
+        "            elif mode == 'changed' and b is not None:\n",
+        ['ac2/binding-removed', 'ac2/connector-removal'])
+    # F1: deleting a project file drops its bindings to the default workflow with no owner decision.
+    add(253, 'install253-deleted-binding-narrows', install253, 'control_installation_schema.py',
+        "        if rule == 'bindings' and old.get('workflows'):\n",
+        "        if False:\n",
+        ['ac2/binding-removed'])
+    # The spec allows narrowing directly: a classifier that makes every deletion wait is caught too.
+    add(253, 'install253-deletion-widens', install253, 'control_installation_schema.py',
+        "        elif rule == 'product_default' and Path(path).stem in PRODUCT_DEFAULTS.get(entry.get('kind'), ()):\n",
+        "        elif True:\n",
+        ['ac2/narrowing-direct'])
+    # F2: memory servers unclassified, so a new locally executed server goes live with no owner decision.
+    add(253, 'install253-memory-unclassified', install253, schema253,
+        '    "memory": {\n      "servers": "added",\n',
+        '    "memory_unclassified": {\n      "servers": "added",\n',
+        ['ac2/memory-server'])
+    # F2: a memory server's service and a store's server name nothing and the commit is accepted.
+    add(253, 'install253-memory-references', install253, 'control_installation_schema.py',
+        "        elif path.startswith('memory/'):\n",
+        "        elif False:\n",
+        ['ac1/cross-references'])
+    # F3: a schedule's workflow and project name nothing and the commit is accepted.
+    add(253, 'install253-schedule-references', install253, 'control_installation_schema.py',
+        "        elif path.startswith('schedules/'):\n",
+        "        elif False:\n",
+        ['ac1/cross-references'])
+    # F3: a deploy target's service names nothing and the commit is accepted.
+    add(253, 'install253-deploy-references', install253, 'control_installation_schema.py',
+        "                if 'service' in target and 'services/%s.yaml' % target['service'] not in config:\n",
+        "                if False:\n",
+        ['ac1/cross-references'])
+    # F4: a project's remote is redirected and goes live with no owner decision.
+    add(253, 'install253-project-remote', install253, schema253,
+        '      "remote": "changed",\n', '',
+        ['ac2/project-remote'])
+    # Probe items beside F1-F5: a bot token reference change goes live with no owner decision.
+    add(253, 'install253-bot-not-widening', install253, schema253,
+        '      "bot": "changed",\n', '',
+        ['ac2/other-widening'])
+    # F5: a plain credential under DB_PASSWORD, GITHUB_TOKEN... in a connector environment is accepted.
+    add(253, 'install253-plain-credential', install253, 'control_installation_schema.py',
+        "and CREDENTIAL_KEY.search(field) and",
+        "and False and",
+        ['ac1/plain-credential'])
+    # F6: setup commits and sends a credential lying in notes/.
+    add(253, 'install253-unread-import', install253, 'control_installation_setup.py',
+        "    problems = sorted(set(problems + C.V.unread_secrets(files)))\n",
+        "    problems = sorted(set(problems))\n",
+        ['ac1/unread-secret-import'])
+    # F7: a canvas save leaves a clean checkout behind, so the owner's `git commit -a` reverts it.
+    add(253, 'install253-checkout-left-behind', install253, 'control_installation_commit.py',
+        "            loader.repo.follow(base_commit, commit)\n", "",
+        ['ac3/working-copy-follows'])
 
     # VELDO-0241: each criterion's declared falsifier, against the suite 127 row it names.
     def unit_workflow(name, module, old, new, row):
