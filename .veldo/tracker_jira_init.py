@@ -35,7 +35,7 @@ provisioner in production):
      skips, projected as top-level tasks). Reuses the mirror's readers, keys epics/children the SAME
      way (converge, never fork), one-way and idempotent. The snapshot half of snapshot-then-subscribe.
 
-GENERIC, NOTHING HARDCODED. Every input is read BY REFERENCE from .veldo/trackers.json: base URL, project
+GENERIC, NOTHING HARDCODED. Every input is read BY REFERENCE from accepted installation tracker_routing: base URL, project
 key, token as a SECRET REFERENCE (never a raw credential, C4), status names + categories, epic/child issue-
 type names, the fence groups + agent accountId + terminal states, intake JQL, and assignee. No company- or
 board-specific value in this module; an adopter drops in their own bootstrap block and runs the same command.
@@ -393,14 +393,14 @@ def snapshot_from_repo(provisioner, config=None, repo_root=None, spec_index=None
     Injection mirrors bootstrap()/run_from_repo so the gate drives it offline: config and the spec/plan
     indices may be injected (the gate injects them); when omitted they are read from the repository the
     same way run_from_repo resolves them (specs/ and plans/ under the repo root). A repo not wired for the
-    tracker (no .veldo/trackers.json) is a clean no-op reported honestly, never an error. Returns a report
+    tracker (no accepted installation tracker_routing) is a clean no-op reported honestly, never an error. Returns a report
     counting exactly what one reconcile pass did (epics/children created vs reused, standalone top-level
     tasks, status transitions, items left unset for want of a mapping, and everything skipped by reason)."""
     if config is None:
         config = load_tracker_config(repo_root=repo_root)
     if not config:
         return {"reconciled": False,
-                "reason": "no tracker config (.veldo/trackers.json); nothing to reconcile"}
+                "reason": "no tracker config (accepted installation tracker_routing); nothing to reconcile"}
 
     # Resolve the default source dirs the SAME way run_from_repo does (specs/ and plans/ under the repo
     # root), so the snapshot reads the identical repository the event mirror reads; do NOT hardcode.
@@ -497,7 +497,7 @@ def bootstrap(provisioner, config=None, repo_root=None, read_events=None, spec_i
     if config is None:
         config = load_tracker_config(repo_root=repo_root)
     if not config:
-        return {"wired": False, "reason": "no tracker config (.veldo/trackers.json); nothing to bootstrap"}
+        return {"wired": False, "reason": "no tracker config (accepted installation tracker_routing); nothing to bootstrap"}
     provision = provision_board(provisioner, config)
     # AFTER provisioning and before the board is active; a no-op when no bootstrap.fence block is wired.
     fence = provision_fence(provisioner, config)
@@ -532,7 +532,7 @@ def build_live_provisioner(config, tracker_id=None, email=None, resolve_secret=N
                           if isinstance(e, dict) and e.get("kind") == "jira-cloud"), None)
     if candidate is None or candidate[1].get("kind") != "jira-cloud":
         raise BootstrapError(
-            "no jira-cloud tracker configured in .veldo/trackers.json 'trackers'; wire base_url + "
+            "no jira-cloud tracker configured in accepted installation tracker_routing 'trackers'; wire base_url + "
             "token_ref (a secret reference) before running the live bootstrap")
     tid, entry = candidate
     base_url = entry.get("base_url")
@@ -605,7 +605,7 @@ def _cli(argv=None):
     ap.add_argument("--repo-root", default=None, dest="repo_root",
                     help="repository root (default: this repo)")
     ap.add_argument("--tracker", default=None,
-                    help="the tracker id in .veldo/trackers.json 'trackers' to write to (default: the sole "
+                    help="the tracker id in accepted installation tracker_routing 'trackers' to write to (default: the sole "
                          "jira-cloud tracker)")
     ap.add_argument("--email", default=None,
                     help="the Jira account email for Basic auth (else the tracker entry's 'email')")
@@ -635,7 +635,7 @@ def _snapshot_cli(argv=None):
     ap.add_argument("--repo-root", default=None, dest="repo_root",
                     help="repository root (default: this repo)")
     ap.add_argument("--tracker", default=None,
-                    help="the tracker id in .veldo/trackers.json 'trackers' to write to (default: the sole "
+                    help="the tracker id in accepted installation tracker_routing 'trackers' to write to (default: the sole "
                          "jira-cloud tracker)")
     ap.add_argument("--email", default=None,
                     help="the Jira account email for Basic auth (else the tracker entry's 'email')")

@@ -23,7 +23,7 @@ reads the stream through the injected reader, loads the tracker config and the s
 the repository (the source of truth, via build_spec_index / build_plan_index), and calls reconcile.
 
 THE LIVE EDGE IS REFERENCE. build_live_adapter() constructs the JiraCloudAdapter from the tracker
-connection block in .veldo/trackers.json (kind jira-cloud: base_url, token_ref, optional email). The
+connection block in accepted installation tracker_routing (kind jira-cloud: base_url, token_ref, optional email). The
 token is a SECRET REFERENCE resolved from the environment or a secrets store, never a raw credential,
 and the adapter FAILS CLOSED (TrackerAdapterError) when no token resolves. This live path needs a real
 Jira, so it is NEVER run in the gate; the FakeTracker path is what the gate runs, the same honesty as
@@ -308,7 +308,7 @@ def build_live_adapter(config, tracker_id=None, email=None, resolve_secret=None)
     jira = next(((tid, e) for tid, e in candidates if e.get("kind") == "jira-cloud"), None)
     if jira is None:
         raise MirrorRunnerError(
-            "no jira-cloud tracker configured in .veldo/trackers.json 'trackers'; wire base_url + "
+            "no jira-cloud tracker configured in accepted installation tracker_routing 'trackers'; wire base_url + "
             "an auth mode before running the live mirror")
     _tid, entry = jira
     auth = (entry.get("auth") or "basic").strip().lower()
@@ -383,7 +383,7 @@ def _cli(argv=None):
     they run it again, never a background mechanism. --dry-run reconciles over an in-memory FakeTracker
     (no network, no token) so an operator can preview the desired writes locally; without it the runner
     builds the live JiraCloud adapter and FAILS CLOSED when no token resolves. A repo not wired for
-    mirroring (no .veldo/trackers.json) is a clean no-op, reported honestly."""
+    mirroring (no accepted installation tracker_routing) is a clean no-op, reported honestly."""
     ap = argparse.ArgumentParser(
         prog="veldo mirror",
         description="Opt-in, off-by-default live mirror runner: apply the one-way mirror (status, "
@@ -395,7 +395,7 @@ def _cli(argv=None):
     ap.add_argument("--events-path", default=None, dest="events_path",
                     help="event stream to read (default: .veldo/events.jsonl under the repo root)")
     ap.add_argument("--tracker", default=None,
-                    help="the tracker id in .veldo/trackers.json 'trackers' to write to (default: the "
+                    help="the tracker id in accepted installation tracker_routing 'trackers' to write to (default: the "
                          "sole jira-cloud tracker)")
     ap.add_argument("--email", default=None,
                     help="the Jira account email for Basic auth (else the tracker entry's 'email')")
