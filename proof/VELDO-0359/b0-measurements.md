@@ -184,8 +184,8 @@ turns and workflow steps go through the same Receiver.launch and _spawn.
 
 The authority unit has XDG_RUNTIME_DIR. The template (.veldo/services/veldo-authority.service) sets no
 Environment=, and the unit inherits the user manager's environment:
-`systemctl --user show-environment` has XDG_RUNTIME_DIR=/run/user/1000, and a running user-manager
-service on this host (concierge-gateway.service) has exactly XDG_RUNTIME_DIR=/run/user/1000 in its
+`systemctl --user show-environment` has XDG_RUNTIME_DIR=/run/user/<uid>, and a running user-manager
+service on this host (concierge-gateway.service) has exactly XDG_RUNTIME_DIR=/run/user/<uid> in its
 /proc environ. control_service.worker_writable also lists /run/user/<uid> (control_service.py:828).
 
 The Runner can observe receiver exit. control_launch.invoke spawns the receiver with subprocess.Popen
@@ -276,7 +276,7 @@ Client environment (this host, logins used):
 - CODEX_HOME is unset in the account environment, so codex1 is the default ~/.codex.
 - CLAUDE_CONFIG_DIR is set per session to a login under ~/.claude-accounts (acct1 to acct7; this
   runner's own session uses another one). ~/.claude also exists.
-- XDG_STATE_HOME and TMPDIR are unset. XDG_RUNTIME_DIR is /run/user/1000.
+- XDG_STATE_HOME and TMPDIR are unset. XDG_RUNTIME_DIR is /run/user/<uid>.
 - read_link sources and their resolved targets: every existing source resolves to itself, with no
   link out:
   - codex: ~/.codex/skills, ~/.codex/rules, ~/.codex/plugins/cache.

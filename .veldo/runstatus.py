@@ -282,14 +282,26 @@ def status(root=None, runs_root=None, events_path=None, tail=DEFAULT_TAIL,
         "events_tail": [_project_event(e) for e in tail_events],
         "recent_verdicts": verdicts,
         "tripwires": _tripwires(root),
-        "replication": _replication(root, now, db_path=control_db),
+        "replication": _replication(root, now, db_path=control_db, eligibility=eligibility),
+        "store_guard": _store_guard(root),
     }
     if stopped:
         model["burndown_stopped"] = stopped
     return model
 
 
-def _replication(root, now, db_path=None):
+def _store_guard(root):
+    EL = _load("veldo_runstatus_plan", ".veldo/plan.py").EL
+    try:
+        binding = EL.E.read_binding(str(root))
+        if binding is None:
+            return None
+        return EL._organ('control_run_query').switch(EL.E.store_path_for(binding))
+    except (EL.E.EnrollmentRefused, OSError):
+        return {'state': 'invalid', 'reason': 'enrollment_unanswerable'}
+
+
+def _replication(root, now, db_path=None, eligibility=None):
     """The R23 replication surface (VELDO-0024): last durable (acknowledged) sequence, local
     committed sequence, pending export count, oldest pending age and PAUSED_PUBLICATION, read
     through a READ-ONLY store handle. Absent store: {"present": False}. A pending command is
@@ -302,6 +314,25 @@ def _replication(root, now, db_path=None):
         if not common:
             return {"present": False, "reason": "no git common dir"}
         path = str(Path(common if os.path.isabs(common) else str(root / common)).resolve() / CS.DB_RELATIVE)
+    if os.environ.get('VELDO_RUN_QUERY'):
+        EL = _load("veldo_runstatus_plan", ".veldo/plan.py").EL
+        try:
+            binding = EL.E.read_binding(str(root))
+            store = Path(EL.E.store_path_for(binding)).resolve() if binding else None
+            resolved = Path(path).resolve()
+            if store is not None and resolved.is_relative_to(store.parent):
+                if resolved != store:
+                    return {"present": False, "reason": "coordinate_not_served:store_override"}
+                own = eligibility is None
+                gate = EL.entry_gate(root) if own else eligibility
+                try:
+                    st = gate.replication_status()
+                finally:
+                    if own:
+                        gate.close()
+                return _replication_model(st)
+        except (EL.Stopped, EL.E.EnrollmentRefused, OSError) as error:
+            return {"present": False, "reason": getattr(error, 'reason', 'unavailable_service:run_query')}
     if not os.path.exists(path):
         return {"present": False, "reason": "no control store at %s" % path}
     try:
@@ -312,6 +343,10 @@ def _replication(root, now, db_path=None):
         st = CP.replication_status(conn, CS, now)
     finally:
         conn.close()
+    return _replication_model(st)
+
+
+def _replication_model(st):
     st["present"] = True
     st["condition"] = "PAUSED_PUBLICATION" if st["paused_publication"] else ("PENDING_PUBLICATION" if st["pending_exports"] else "CAUGHT_UP")
     return st
@@ -343,6 +378,13 @@ def render_text(model):
         repo.get("branch", "unknown"), head[:12], len(model.get("runs", [])),
         model.get("at", "")))
 
+    guard = model.get("store_guard")
+    if guard:
+        state = guard['state']
+        detail = ('OFF (%s, modified %s; %s)' % (guard['path'], guard['modified_at'], guard['recovery'])
+                  if state == 'off' else ('invalid (%s, %s)' % (guard.get('path', ''), guard['reason'])
+                                         if state == 'invalid' else 'on'))
+        lines.append('store guard: %s; configuration for later launches' % detail)
     rp = model.get("replication") or {}
     if rp.get("present"):
         oldest = rp.get("oldest_pending_age_seconds")

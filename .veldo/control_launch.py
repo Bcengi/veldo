@@ -231,6 +231,7 @@ D = _organ('control_dispatch')
 S = D.S
 C = _organ('control_containment')
 HB = _organ('control_heartbeat')
+RQ = _organ('control_run_query')
 RT = _organ('control_retirement')
 ER = _organ('control_execution_record')
 CFG = _organ('control_agent_config')
@@ -1995,6 +1996,7 @@ class Launch:
         self.returncode = None
         self.closed = False
         self.receiver_log = None
+        self.query_endpoint = None
 
     def stop(self, reason='requested'):
         """Ask the receiver to stop this dispatch: R44's cooperative stop, then the group's escalation.
@@ -2085,6 +2087,8 @@ class Launch:
             self.child.kill()
         self.child.wait(timeout=10)
         self.returncode = self.child.returncode
+        if self.query_endpoint is not None:
+            RQ.remove(self.query_endpoint)
         with contextlib.suppress(OSError, ValueError):
             if self.child.stdin is not None:
                 self.child.stdin.close()
@@ -2218,6 +2222,7 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
         os.close(errors)  # the receiver holds its own
     launch = Launch(child, contract, dispatches, clock or time.time, records=records)
     launch.receiver_log = place
+    launch.query_endpoint = RQ.endpoint(contract['dispatch_id'], environment)
     try:
         # The receiver's stdin stays open as its control channel: Launch.stop writes a stop request on it.
         child.stdin.write((json.dumps({'contract': contract}) + '\n').encode())
@@ -2295,6 +2300,8 @@ class Receiver:
         self.resolved = None
         self.recorder = None
         self.committed = None
+        self.query_server = None
+        self.store_guard = None
 
     def _unstage_skills(self):
         """The role skills staged into the clone's discovery directory are links into the run's own configuration:
@@ -2305,6 +2312,7 @@ class Receiver:
                 path.unlink()
 
     def close(self):
+        self._close_query()
         self._unstage_skills()
         if self.recorder is not None:
             self.recorder.close()
@@ -2502,7 +2510,36 @@ class Receiver:
         self.qualification = C.qualify(self.profile)
         return self.qualification['refusal']
 
+    def _close_query(self):
+        server, self.query_server = self.query_server, None
+        if server is not None:
+            server.close()
+            self.emit({'event': 'run_query_end', 'counts': dict(server.counts)})
+
+    def _prepare_query(self, contract, adapter):
+        if adapter.get('identity', 'local') == 'reported':
+            return None
+        self.store_guard = RQ.switch(self.config['store'])
+        self.emit({'event': 'store_guard', 'store_guard': self.store_guard})
+        if self.store_guard['state'] == 'invalid':
+            return self.store_guard['reason']
+        if self.store_guard['state'] == 'off':
+            return None
+        try:
+            self.query_server = RQ.Server(self.config, contract['dispatch_id'], observe=self.emit)
+            self.query_server.start()
+        except RQ.Refused:
+            self._close_query()
+            return 'unavailable_service:run_query'
+        return None
+
     def launch(self, contract):
+        try:
+            return self._launch(contract)
+        finally:
+            self._close_query()
+
+    def _launch(self, contract):
         dispatch_id = contract['dispatch_id']
         record = self.dispatches.record(dispatch_id)
         self.contract = contract
@@ -2547,6 +2584,8 @@ class Receiver:
             if not refusal and self.runner['runner'] == 'confined' and adapter.get('identity', 'local') == 'reported':
                 # The confined runner is this host's; another host's engine cannot be started in it from here.
                 refusal = 'confined_runner_unavailable:remote_host'
+        if not refusal:
+            refusal = self._prepare_query(contract, adapter)
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
@@ -2573,7 +2612,8 @@ class Receiver:
             self.emit({'event': 'refused', 'refusal': error.code})
             return
         acceptance = self.dispatches.receipt(dispatch_id, 'accept')
-        self.emit({'event': 'accepted', 'acceptance': acceptance, 'runner': self.runner})
+        self.emit({'event': 'accepted', 'acceptance': acceptance, 'runner': self.runner,
+                   'store_guard': self.store_guard})
         try:
             worker = self._invoke(contract, acceptance, adapter)
         except SC.SpaceCreationError as error:
@@ -3089,6 +3129,9 @@ class Receiver:
         environment['VELDO_DISPATCH_ID'] = dispatch_id
         environment = _organ('control_git_identity').environment(environment)
         environment['VELDO_DISPATCH_ACCEPTANCE'] = acceptance or ''
+        environment.pop(RQ.VARIABLE, None)
+        if self.query_server is not None:
+            environment[RQ.VARIABLE] = str(self.query_server.path)
         cwd = (self.conversation_directory
                if (getattr(self, 'contract', None) or {}).get('subject_kind') == 'conversation' else None)
         if cwd is not None:
@@ -3109,7 +3152,8 @@ class Receiver:
                                RUNNER_CLIENTS.get((self.binding or {}).get('engine')))
         # VELDO-0254 AC1: what the run starts with, scanned before it starts; a credential refuses the launch.
         project = _project(getattr(self, 'contract', None) or {})
-        own = [getattr(self, 'token', None)] + list((getattr(self, 'delivered', None) or {}).values())
+        own = [getattr(self, 'token', None), environment.get(RQ.VARIABLE),
+               environment.get('VELDO_DISPATCH_ACCEPTANCE')] + list((getattr(self, 'delivered', None) or {}).values())
         refusal = launch_scan(config, dispatch_id, project, environment, argv, own=own)
         if refusal:
             raise C.Refused(refusal)
