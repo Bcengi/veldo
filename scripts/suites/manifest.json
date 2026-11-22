@@ -2184,7 +2184,7 @@
     "157_veldo_0359_run_query"
    ],
    "regions": "VELDO-0359 B1: query/journey, query/scope, query/lifecycle, query half of switch/off.",
-   "requires_note": "Only ROOT and expect. Signed fixture bindings, SQLite, sockets and child processes; no sandbox, pidfd, systemd or live engine."
+   "requires_note": "Only ROOT, expect and fast_temp. Signed fixture bindings, SQLite, sockets and child processes; no sandbox, pidfd, systemd or live engine."
   }
  ],
  "resource_capacities": {

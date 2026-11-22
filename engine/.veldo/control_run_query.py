@@ -81,16 +81,21 @@ def remove(path, identity=None):
 
 
 def switch(store):
-    path = Path(store).resolve().parent / 'store-guard.off'
+    path = Path(store).parent / 'store-guard.off'
+    recovery = 'delete it to keep the guard on, or replace it with a regular file to turn it off'
+    try:
+        path = Path(store).resolve().parent / 'store-guard.off'
+    except (OSError, RuntimeError):
+        return {'state': 'invalid', 'path': str(path), 'reason': 'invalid_input:layout:switch', 'recovery': recovery}
     result = {'state': 'on', 'path': str(path)}
     try:
         info = path.lstat()
     except FileNotFoundError:
         return result
     except OSError:
-        return dict(result, state='invalid', reason='invalid_input:layout:switch')
+        return dict(result, state='invalid', reason='invalid_input:layout:switch', recovery=recovery)
     if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid():
-        return dict(result, state='invalid', reason='invalid_input:layout:switch')
+        return dict(result, state='invalid', reason='invalid_input:layout:switch', recovery=recovery)
     return dict(result, state='off', modified_at=info.st_mtime,
                 recovery='delete it to turn the guard back on')
 
@@ -317,11 +322,13 @@ class Server:
         try:
             self.path.parent.mkdir(mode=0o700)  # exclusive, no startup sweep
             self.made = True
+            self.path.parent.chmod(0o700)
             if self.created is not None:
                 info = self.path.parent.stat()
                 self.created((info.st_dev, info.st_ino))
             self.listener = socket.socket(socket.AF_UNIX)
             self.listener.bind(str(self.path))
+            self.path.chmod(0o600)
             self.listener.listen(16)
             self.wake = socket.socketpair()
             self.thread = threading.Thread(target=self._serve, daemon=True, name='run-query')
