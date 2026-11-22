@@ -364,13 +364,21 @@ acceptance_criteria:
       processes are gone when the leg ends on any path. Set: the generator run for sixty seconds beside a
       fixture leg; the same with one spinner killed midway; the same ended by a kill of the leg; and the
       canary suite (a child does a tenth of a CPU-second of work and writes a marker, the parent sleeps 0.2
-      seconds and reads it), alone and in the fixture leg. Completeness: row load/level-by-construction
-      requires the load record with every generator alive, then load_not_applied, then no generator process
-      left, and the canary green alone and red in the leg.
+      seconds and reads it), with the parent's read waiting for the child's completion event as the control,
+      and in its ordinary sleep-synchronized form under the generator's load. Completeness: row
+      load/level-by-construction requires the load record with every generator alive, then load_not_applied,
+      then no generator process left, and the event-synchronized canary control green. The ordinary canary's
+      result under the generator is recorded as proof that the load reaches a sleep-synchronized test;
+      its color is data, not a verdict. No green-alone control or quiet machine is required.
     falsified_by: >
       Start the generator with no spinners and report them alive: registered mutant load358-no-spinners
       must fail load/level-by-construction. Leave the leg's suites unbound from the spinners' CPUs:
-      registered mutant load358-affinity-dropped must fail the same row through the canary.
+      registered mutant load358-affinity-dropped must fail the same row through the fixture leg's actual
+      CPU affinity. Invert the canary's marker reading: registered mutant load358-canary-read-inverted must
+      turn the event-synchronized control red. Remove that control's event wait: registered mutant
+      load358-canary-event-wait-removed must fail the same row by assertion; its child is held until the
+      wait releases it, or until after the marker read if the wait is absent, so no schedule can hide the
+      missing wait and the child is still reaped.
   - id: AC13
     text: >
       Claim: the gate has a load-proof leg after the unit and integration stages and before the mutation
@@ -528,7 +536,7 @@ and not as voided cases after two hours.
   from the authority only, and the candidate's baseline must be the required subset of the authority's.
   Code in an unconfined suite already runs with the owner's authority and is not defended against here.
 - What to drive, not read: each falsifier above (apply the mutant, show by diff that it landed, see the
-  named row go red, revert). The canary under the real generator: green without load, red with it. One
+  named row go red, revert). The canary: green with its event-synchronized control; its ordinary result recorded under the real generator. One
   suite of AC10 run fifty times under the generator with no failed and no hung row. A leg run in one
   interpreter under the generator, longer than 3600 seconds in total, not ended.
 - Out of review scope, filed as later tickets: a timing assertion that evades R4 by its naming (the stamp
@@ -575,3 +583,4 @@ A finding inside this section is fixed before landing. A real defect under norma
   of the timers table; it was the cause of the loaded red of suite 83's loop/reset-timer-wake
   (proof/VELDO-0358/integration-wave1.md). protected_paths now also names scripts/check_first_use.py and
   scripts/suites/shared.py, which wave 0 changed.
+- 2026-11-22 lead: the canary's green-alone control replaced by an event-synchronized control; green alone on a shared host depends on load (owner rule 42829)
