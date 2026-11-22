@@ -2,7 +2,8 @@
 
 Base: main 23318512. Each ready branch was brought on with `git cherry-pick` of its own commits
 (`git log <base>..<branch>`), in dependency order. Conflicts were resolved keeping both intents.
-Not brought (the lead adds them later): VELDO-0358, 0253, 0258, the veldo-0111-complete branch, 0147.
+Not brought (the lead adds them later): VELDO-0358, 0258, 0113, 0147. Round 3 (sections 1.11 to 1.13,
+2b) added VELDO-0253, the VELDO-0111 completion and VELDO-0114.
 `scripts/verify.sh` was not run (the lead queues the gate). Suite and falsifier results: section 3.
 
 ## 1. Tickets, commits, conflicts
@@ -110,6 +111,38 @@ Combine fix 1871c20f: the crossing-state report regenerated from the combined di
 space333-read-bound-dropped re-anchored on the resource reader's own age condition, because 0221's
 `read_shard_claims` repeats it (anchor found twice, already so at 0221's tip).
 
+### 1.11 VELDO-0253 (199d0b6f, then 199d0b6f..406993c17; 34 commits, round 3)
+
+199d0b6f (the spec, its 0241 amendment note and the index line; not on main 23318512) first, then the
+build and its three fix rounds. Conflicts:
+- `.veldo/control_service.py` (both copies), in 1d70a6a1 (from e223d668): `hint_after` keeps the
+  line's `space_pass()` and 0253's waiting-loader `reconcile()` (at the end of that block since
+  9693c8c5, so the anchors of findings 143 and 334 stay whole); in `serve`, 0253 moves
+  `space_start()` after its installation loader starts, and the candidate's `authority_for(...)`
+  (VELDO-0117 registry) replaces 0253's inline `CC.Authority(...)`, which predates it.
+- `.veldo/control_api_assertion.py` (both copies), `shape_problems`: VELDO-0175's optional parameters
+  (may be absent) and 0253's `base_commit` and `approval` extras on `save_workflow` in one condition:
+  no name outside the spec's parameters (plus the two extras for save_workflow), and every
+  non-optional parameter present.
+- `.veldo/control_api.py` (both copies), in 3eb33166 (from 82bb10e5): the answer's kept fields are
+  the union (the line's `conversation`, `status`, `route`, `routed_to`; 0253's `commit`,
+  `configuration_commit`, `reason`, `push_refusal`).
+- manifest/requires: both appended.
+
+### 1.12 VELDO-0111 completion (veldo-0111-complete, 805c3082..bb0686b3, 10 commits, round 3)
+
+805c3082 is an ancestor of 64199803, so the line already carries the base. No conflict.
+13e5736c records in the spec History the caveat the completion review named: the io_uring
+equivalence rests on the descriptor refusal and on Yama ptrace scope 1; process_vm_writev,
+process_vm_readv and ptrace are not inspected, so inducing a cooperating outside process belongs to
+the consumer tickets (0113, 0114); on a host with Yama scope 0 the io_uring claim covers only rings
+whose descriptor the scope could hold.
+
+### 1.13 VELDO-0114 (veldo-0114, bb0686b3..a74ca9b96, 9 commits, round 3)
+
+No conflict. `scripts/gate_unconfined.json` is not edited (the owner decides 0114's and 0111's
+entries at landing, section 7).
+
 ## 2. Combine fixes found by the re-runs (after all ten were picked)
 
 Each is its own commit, each confirmed by the suites and falsifiers named in section 3.
@@ -176,9 +209,25 @@ wait in 137_0181 now ends when the turn ends, or when the request is unsettled a
 quiet. Mutants now red in 3.3 s, 8.8 s and 11.6 s with the real 120 s detector; in the stage each
 was rejected on its rows with full output.
 
+## 2b. Combine fixes, round 3 (found by the full unit leg after 0253, 0111 and 0114)
+
+| Commit | Ticket pair | What was red | Fix |
+| - | - | - | - |
+| 58a08f0f | 0253 with older service fixtures | 71_0138 (suite stopped, so the leg ended there), 66_0047 (10 rows) | seven fixtures that copy `.veldo/*.py` and `runtime/` also copy `installation_schema/` and `installation_template/`, as 0253's b0112c68 did for 71_0130 (66_0047, 71_0138, 83_0154, 86_0148, 103_0142, 127_0254, 128_0247); no assertion changes |
+| 246167d6 | 0253 with 0047 | 66_0047 authority/installed-fixed-and-protected | the row took every bin/ entry but runtime/ for a closure module and every runtime asset to live under runtime/; the asset folders are now the top-level folders the runtime_assets record names (runtime/ always), and the record must still equal exactly the files under them |
+| 4a19fa62, corrected by af2f3d2e | 0114 with suite 01 | 01_warp_0101 "suite attr check ANTI-VACUITY", and WARP-0717 AC3 through its --upto run of suite 01 | 113_0114 bound a module-level ROOT in its direct-run block, so ROOT had two bindings and scripts/suite_attr_check.py checked 0 references. 4a19fa62 renamed the uses, which broke the mutation worker's literal `ROOT / ".veldo" / "<module>"` substitution (3 of 0114's 5 cases crashed); af2f3d2e restores the uses and sets ROOT through `globals()` when run directly (5630 references checked again) |
+| 7f8c07e8 | 0253 with 0168, 0186, 0162 | 86_0168 inventory/sends-and-assets, 86_0186 runtime/assets, 94_0162 (25 rows) | 0253's owner notice (`control_installation_service` `start.tell`) sent `json.dumps(event)` unrendered; it now goes through `TEXT.message(..., free_text=False)` like `Channel.tell_renewal` (same bytes for its ASCII JSON), and 0168's inventory names it and the installation repository's git `send`; 0186 expects the two new installed assets; 0162's base fixture copies them |
+| c18b9188 | 0253 with 0162's helper | 95_0203 (35 rows, "the ingress configuration is absent"), 106_0185 (17 rows) | `proof/VELDO-0162/setup_assets.py`, which stands in for 0186's fixture in those suites, copies the schema and template as 0253's c90ddc9c taught 0186's |
+| 7aac081b | 0253 with 0145, 0304, 0315, 0117, 0188 | 113_0145 ui/route-trace, 155_0304 service/unique-work, 156_0315 ac7/serve-order, 113_0117 (1 row), 116_0188 (4 rows) | the UI route table lists workflows.save's optional `base_commit` and `approval` (routes.ts refuses an unlisted body field, so 0253's UI save was refused before it was sent); 0304's replay of serve()'s shutdown block names `installation_watch` None; 0315's serve-order row starts the installation service as with no installation configured (its fixture's installation is a plain folder); 113_0117 and the 0088 and 0152 fixtures copy the schema and template |
+| 60e50380 | 0253 with every case on init_scaffold.py | the falsifier stage stopped (driver_error, finding 145's no-op worker) | 0253 made init_scaffold.py load installation.py beside itself at import (and that loads git_process.py); the 46 cases on init_scaffold.py (33 findings) copied it alone and stopped with FileNotFoundError. They carry installation.py, git_process.py and yamlish.py as companions, the registry's pattern for a module that loads a sibling |
+| 9693c8c5 | 0253 with 130, 132, 143, 144, 315, 334 | 8 registered cases' anchors no longer found once (none at 4a37d23c) | a scan materializing every case at baseline found them. hint_after's 0253 loader lines move to the end of the block, so newproject143-take-on-not-due and space334-worker-without-space-pass anchor whole again; six cases re-anchored on the lines 0253 rewrote, same defect (workflow-revision-kinds-unowned, workflow-load-returns-head, workflow-load-activates-runtime, save-base-ignored, save-speaker-is-edge, mcp144-locked-success, space315-no-worker-stop). After it the scan finds 0 moved anchors |
+
+7f8c07e8 changes product code of 0253 (one line rendered), 7aac081b the UI's route table and
+9693c8c5 the order of hint_after's steps; they need the review's eye.
+
 ## 3. Suite and falsifier results
 
-Logs: `runs/<run>.txt` (one per run, row names and counts; pc2 reds were run again on this host,
+Logs: `runs/<run>.txt` (one per run; round 3 in `runs/v1122r3.txt`, row names and counts; pc2 reds were run again on this host,
 `rerun` lines). Suites that need no sandbox, pidfd or systemd ran on pc2 (remote_run.sh --share);
 pc2's Python has no os.pidfd_open, so every pc2 red was run again through host_heavy at the same
 commit. The rest ran through host_heavy. Falsifiers: `scripts/check_gate_mutations.py --finding`.
@@ -197,6 +246,11 @@ commit. The rest ran through host_heavy. Falsifiers: `scripts/check_gate_mutatio
 | 0221 | 1871c20f | 157_0221 51/51; 25 others green; 157_0206 5 rows red (open item 1); 151 as on main | 221+333: 24/24; 206: 33 unjudged (157_0206 baseline red) |
 | Round 2 (section 2a) | f0568050 | 157_0206 94/94, 157_0221 51/51, 133_0178 42/42, 137_0181 45/45 (`runs/v1122fix.txt`) | 206+221+333: 61/61; 347+330+302+324: 58/58; bring-up 12 findings: 78/78, none by deadline |
 | Fix checks | 64af93ab, 18f880dc, f5074f54 | 133_0326 56/56, 157_0316, 158_0334, 132, 139, 153_0323, 155, 66_0047, 109_0161 81/81, 116_0188 53/53, 159, 62, 83, 127, 82_0129, 102_0210 green | 326+334: 34/34; 317: 15/15 |
+| 0253 (round 3) | 9f94b4ee | 157_0253 69/69, 127_0241 50/50 (pc2); 65_0132 42/42, 71_0130 71/71, 73_0139 43/43, 85_0171 44/44, 127_0259 46/46 (host) | 253: 19/19 |
+| 0111 completion | 13e5736c | 113_0111 48/48 | recheck drive (proof/VELDO-0111/ac2-attempt): baseline and final control 22/22, 13 continuation-2 mutants red, matrices valid, validate.py passed (first attempt stopped at the 2 h background limit, run again) |
+| 0114 | 2f385fb3, af2f3d2e | 113_0114 31/31, 48 37/37, 113_0111 48/48; at af2f3d2e 113_0114 31/31, 01 648/648, 14 53/53 | drive.py: 5/5 detected (at 4a19fa62 2/5, the crash af2f3d2e fixes) |
+| Round 3 fixes | 58a08f0f, 246167d6, 7f8c07e8, c18b9188 | 71_0138 39/39, 83_0154 40/40, 86_0148 52/52, 103_0142 49/49, 127_0254 48/48, 128_0247 46/46, 66_0047 56/56, 86_0168 52/52, 86_0186 37/37, 94_0162 52/52, 95_0203 62/62, 106_0185 46/46 | 47: 38/38; at c18b9188 253+168+186: 76 of 77, text168-prompt-collapsed survives on intake/delivery, as it already does at 4a37d23c (44 of 45; open item 8) |
+| Round 3 after the leg | 7aac081b, 9693c8c5 | at 7aac081b: 113_0117 29/29, 116_0188 53/53, 113_0145 33/33, 155_0304 77/77, 156_0315 61/61, 92_0088 56/56, 93_0152 50/50, 96_0204 46/46, 110_0143 135/135, 132_0175 47/47, 149_0312 67/67, 102_0210 263/263, 120_0131 40/40, 121_0131 28/28, 122_0131 28/28, 124_0131 34/34, 13_0623 exit 2 (pc2); at 9693c8c5: 157_0253 69/69, 110_0143 135/135, 65_0132 42/42, 71_0130 71/71, 82_0144 55/55, 156_0315 61/61, 158_0334 48/48 | at 9693c8c5: 130+132+144+253+304+145+117+188+204: 274/274; 315+334: 39 of 40; 143: 62 of 64. The three not rejected fail the same way at 4a37d23c (open item 10) |
 
 ## 4. The full unit leg (once)
 
@@ -210,6 +264,15 @@ item 3).
 Again at f0568050 (`unit-leg-2.txt`): 11018 passed, 17 failed. All 17 are items the lead holds:
 2 (86 live/claude, live/codex) and 1 (126 qualify/reproduces) open item 3, and 14 (151_0313) open
 item 5. 157_0206 is green in the full leg.
+
+Round 3, at c18b9188 (`unit-leg-3.txt`): 11054 passed, 33 failed. 15 are items the lead holds: 2
+(86 live/claude, live/codex) and 1 (126 qualify/reproduces) open item 3, 12 (151_0313) open item 5.
+7 (102_0210 scratch) and 3 (120 to 124_0131 browser waits) are green when run alone at 7aac081b, as
+102_0210 was in round 1. The other 8 were 0253 gaps fixed by 7aac081b (section 2b) and are green
+there: 113_0145, 155_0304, 156_0315, 113_0117, 116_0188 (`runs/v1122r3.txt`, fix253d). Two earlier
+attempts this round did not finish (one stopped in 71_0138, one at the 2 h background limit); their
+reds are listed in `unit-leg-3.txt` and are fixed by 58a08f0f to c18b9188. The full leg was not run
+again after 7aac081b.
 
 ## 5. Open items for the lead
 
@@ -235,7 +298,23 @@ Items 1, 2 and 4 are closed by round 2 (section 2a); their text below is the fir
 6. The 0334 admission retry signals with the caller's keywords, so on that path the evidence remover
    has no `held` reader or `landing` (section 1.5); it keeps evidence.
 7. Reviews: the selftest integration (1.10, now ac35f22b), the four re-anchored cases (a72dd21e),
-   the 333 case (1871c20f), the six fixes of section 2, and the three of section 2a.
+   the 333 case (1871c20f), the six fixes of section 2, and the three of section 2a; round 3 adds
+   the three conflict resolutions of 1.11 and the six fixes of section 2b (7f8c07e8 changes one line
+   of 0253's product code: the owner notice is rendered).
+8. Falsifier text168-prompt-collapsed (finding 168) survives on intake/delivery: the row reads the
+   question as its request's presentation (VELDO-0181), so the prompt's own rendering no longer
+   reaches the chat. Already so at 4a37d23c (44 of 45), not from round 3. The case needs a row that
+   reads the prompt's rendering, or re-anchoring.
+9. 0253's own runs never ran the full unit leg: seven service fixtures, 66_0047's installed-files
+   row, 0168's send inventory, 0186's asset list and 0162's setup helper all lacked its new assets
+   or sends (section 2b). The 0258 restack onto 0253 will meet the same.
+10. Three falsifiers that fail the same way at 4a37d23c, before round 3: space315-periodic-call
+    runs to the 120 s worker deadline (finding 315, 24 of 25 there); newproject143-pick-unmapped and
+    newproject143-ambiguous-choices-presented have a no-op control red on eleven VELDO-0065 rows of
+    suite 62_0065 (finding 143, the unchanged control_channel_presentation.py copy beside its two
+    renderer companions). Each stops a finding's stage; they need their own look.
+11. The full unit leg ran at c18b9188, before 7aac081b, 60e50380 and 9693c8c5; those three are
+    confirmed by the suites and findings in section 3, not by another full leg.
 
 ## 6. Protected paths this candidate changes against main 23318512
 
@@ -259,6 +338,10 @@ From .veldo/policy_check.py protected_patterns, with the tickets that change eac
 - `scripts/selftest.py` (0206, 0221, and the combine's integration of the two)
 - `scripts/verify.sh`, `engine/scripts/verify.sh` (0206)
 
+Round 3 (0253, the 0111 completion, 0114 and the section 2b fixes) adds no protected path: the
+same 32 files, recomputed against 23318512 at 9693c8c5 with the policy's patterns.
+`scripts/gate_unconfined.json` is unchanged by round 3.
+
 ## 7. Owner items for the landing ask
 
 - Protected-path approval for every path in section 6.
@@ -276,3 +359,11 @@ From .veldo/policy_check.py protected_patterns, with the tickets that change eac
   a fresh capture run needs the owner's approval, and whether 42874 also covers the 0127 rows on the
   combined line (combine list).
 - VELDO-0358 items (policy.yaml, gate scripts) come with 0358, which is not in this candidate.
+- VELDO-0253 (spec History): the wider footprint (F8, including suite 71 and now the section 2b
+  fixtures and suites), and treating project remote, landing destination, repository and trunk
+  changes, and the space section's widening changes, as needing an owner decision (F4, fix round 2).
+- VELDO-0111 / 0114 / 0113: the entries of the protected scripts/gate_unconfined.json, in one edit,
+  since the confined gate leg refuses ptrace: 113_veldo_0114_relay_census whole; 48_veldo_0108_relay
+  for rows (census) or whole; 113_veldo_0111_census (and 0113's cases when it comes). Not edited here.
+- VELDO-0111: the Yama / process_vm_writev caveat is recorded in its spec History (1.12); it
+  states a host assumption (Yama ptrace scope 1) the owner may want named for other hosts.

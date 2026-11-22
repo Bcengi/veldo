@@ -1,0 +1,42 @@
+Full unit leg: python3 -B scripts/selftest.py through host_heavy.sh, clone at c18b9188, 2026-11-22.
+selftest: 11054 passed, 33 failed
+== unit rc 1
+
+Failed rows (row name only):
+VELDO-0127 live/claude
+VELDO-0127 live/codex
+VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree
+VELDO-0210 scratch/SIGHUP-still-writes-back-refresh
+VELDO-0210 scratch/term-ignoring-tree-killed-after-grace
+VELDO-0210 scratch/inherited-ignored-signal-stays-ignored
+VELDO-0210 scratch/stop-during-fork-forwarded-to-child
+VELDO-0210 scratch/killed-scratch-stays
+VELDO-0210 scratch/killed-run-rotation-kept-and-reported
+VELDO-0117 enrollment/authority-refuses-domain-store-conflict
+VELDO-0188 lines/at-start
+VELDO-0188 lines/new-project
+VELDO-0188 lines/adopted-project
+VELDO-0188 lines/restart
+VELDO-0145 ui/route-trace
+VELDO-0131 ac3/keyboard-desktop
+VELDO-0131 ac3/touch-phone
+VELDO-0131 ac3/stale-save
+VELDO-0230 qualify/reproduces
+VELDO-0313 ac1/declared-started-ended
+VELDO-0313 ac1/unread-group-sends-nothing
+VELDO-0313 fix2/returns-at-the-commands-exit
+VELDO-0313 fix2/end-follows-their-exit
+VELDO-0313 fix2/captured-output-ends-at-return
+VELDO-0313 supervise/stop-after-the-command-ends-nothing
+VELDO-0313 fix3/handed-outside-the-tree
+VELDO-0313 fix3/unread-process-holds
+VELDO-0313 fix3/rewritten-environment-open-file-in-worktree
+VELDO-0313 fix3/rule-3-reads-the-kernel
+VELDO-0313 ac2/act-waits-75
+VELDO-0313 ac2/report-starts
+VELDO-0304 service/unique-work
+space315/ac7/serve-order: Traceback
+
+Earlier attempts this round (not complete):
+- at 2f385fb3: stopped in 71_0138 (missing_evidence:runtime_asset:installation_schema/schema.json); 66_0047 10 rows, 01 anti-vacuity, WARP-0717 AC3 red before it (fixed by 58a08f0f, 246167d6, af2f3d2e).
+- at 4a19fa62: stopped at the 2 h background limit after 41 suites; reds 66_0047 (1), 86_0168 (1), 86_0186 (1), 94_0162 (25), 95_0203 (35), 106_0185 (17), 86_0127 live (2) (fixed by 246167d6, 7f8c07e8, c18b9188).
