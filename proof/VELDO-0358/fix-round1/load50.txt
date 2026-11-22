@@ -1,0 +1,18 @@
+VELDO-0358 fix round 1 loaded repetitions.
+Suites 71/83 unchanged from 202635627 through cd099f7c2, including their opened files.
+Suite 151: final proof is the fresh final151 batch at cd099f7c2.
+The first load50 batch spans its probe-isolation fix; none of its 151 runs counts toward final proof.
+Every run is retained. No quiet run, retry until green, or load-sampled classification.
+
+load50: host_heavy.sh, eight suite processes, 24 spinners and two writers.
+Generator applied=true; all generators alive through the leg; all CPU and byte counters positive.
+Probe slowdown=4.253 (data only).
+151_veldo_0313_space_run: {'FAIL': 13, 'pass': 37}; leg=confined.
+Failed run indexes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]. Cause: new handler probe enabled subreaping in the suite process; residue found five unreaped adopted children.
+71_veldo_0138_channel_service: {'pass': 50}; leg=unconfined.
+83_veldo_0154_factory_loop: {'pass': 50}; leg=unconfined.
+
+final151: host_heavy.sh, eight suite processes, 24 spinners and two writers.
+Generator applied=true; all generators alive through the leg; all CPU and byte counters positive.
+Probe slowdown=7.657 (data only).
+151_veldo_0313_space_run: {'pass': 50}; leg=confined.
