@@ -123,6 +123,21 @@ leg and is covered by its own runs below.
 | The lead's falsifiers through the registered cases' own worker | mutants-waits.txt, mutants-claim.txt, mutants-lead.txt, mutants-151.txt | wait358-enodev-not-gone, wait358-hung-tree-left, wait358-orphans-not-kept, timers358-claim-window-literal, wait358-declared-rows-unread, opened358-cached-module-unclaimed, wall358-abort-signal-ignored: each rejected on its target row, baseline and no-op green. Brief G's wave358-clones-socket-timeout-restored still rejected after 1f0120c6 |
 | Suite 101 alone at 1f0120c6 | (this file) | 190 rows green, unconfined-leg/fixture-sharers-are-listed among them |
 
+### The mutation stage
+
+| Run | Where | Result |
+| - | - | - |
+| The full stage at 9e3acdd1, ten workers | full-stage-9e3acdd1.txt | status failed: stopped after 16686 s with 723 of 3665 cases executed, 650 rejected (76 by assertion, 574 unproven: a suite or a file it opens still has a baseline entry). It stopped on a worker cleanup error: the mutant of loop154-pipe-not-polled made suite 83 hang, the hung process left its directory under /dev/shm, and an unmetered worker's directory outside its home cannot be shown to be its own (the gate's metered workers can). Of the 73 invalid results: 58 are the cases of suite 86_veldo_0127, whose controls are red until the live recapture; 3 are cases of suite 160 whose no-op control was red because the canary ALONE was red under the stage's own load (below); 1 control and 1 survivor are of suite 86_veldo_0148 (below); 5 are suite 83's (1 hung, 4 cancelled when the stage stopped); 5 cancelled |
+| Suite 83's twelve cases, each driven alone | mutants-suite83.txt | eight rejected on evidence; FOUR HANG and are not rejected: loop154-pipe-not-polled, loop154-ask-reruns, loop154-account-slot-kept, loop154-orphan-not-stopped. In the gate each is hung_not_killed, and the stage is red. Brief F drove its five falsifiers and not the inherited cases of its suites (section 7, item 1) |
+| The cases the first stage did not judge, in groups through the same driver at 5342fa22 (one stage per wave 1 suite, then the other suites 400 at a time) | stage-groups.txt (driver stage_groups.py.txt) | GROUPS |
+| The survivor and the red control of suite 86_veldo_0148, driven alone | mutants-0148.txt | reland148-landed-rebuilt is rejected alone (target row red, controls green): it survived only under the stage's load. receiver148-release-deadline-not-finite: its no-op control is red alone too (receiver/pre-release-budget). Suite 86_veldo_0148 is not a wave 1 suite and has baseline entries: its verdicts are unproven by the specification's own word, and both are wave 2's |
+
+The three red controls of suite 160: row load/level-by-construction requires the canary green ALONE, and the
+canary is by construction a test synchronized by a sleep (AC12). Inside the mutation stage, beside ten workers
+and two other heavy runs of this integration, alone was not quiet and the canary was red in the no-op control.
+Wave 0 recorded this as its finding 6 and left it, by its nature. It is a row of this specification that
+depends on how busy the machine is, and it needs the owner's ruling (section 7, item 2).
+
 The unit leg's 18 reds:
 
 | Suite | Rows | Why |
@@ -155,19 +170,36 @@ exceptions) is not changed by wave 1.
 
 ## 7. Open, for the lead and the owner
 
-1. Release acts on the combined line before the gate: qualify again (suite 126) and the owner-approved live
+BLOCKERS FOR THE GATE:
+
+1. Four inherited mutants of suite 83 hang it (mutants-suite83.txt): loop154-pipe-not-polled (the pass after a
+   run's end never comes: the service holds the run and is neither idle nor ended), loop154-ask-reruns and
+   loop154-account-slot-kept (the service is quiet for good but lists an orphan whose release is pending, which
+   the suite's idle answer does not accept), loop154-orphan-not-stopped (under the profile the service itself
+   waits the hang bound for an orphan nobody stopped, and answers nothing meanwhile). AC10 requires every
+   registered case of a wave 1 suite rejected by assertion or terminal condition; brief F proved only its five
+   new falsifiers. Tried here and withdrawn: a terminal condition on the receiver's exit (the service asked
+   twice after it, still holding the run) and an idle answer that accepts a pending orphan and a timer further
+   away than any wait. On an idle machine they ended three of the four on evidence; under load they made the
+   unmutated suite red (7 of 32 loaded runs; loop/receiver-death five times, the waiting unit not offered in the
+   pass of the receiver's death), so suite 83 is as the loaded runs proved it. The fourth needs the product to
+   record that it made the orphan's stop before it waits. This goes back to brief F.
+2. Suite 160's row load/level-by-construction is red when the canary alone is run on a busy machine (three
+   controls in the stage). AC12 asks for the canary green alone; the owner rules whether that fact is asserted,
+   or recorded as data like the canary's red in the leg.
+3. Release acts on the combined line before the gate: qualify again (suite 126) and the owner-approved live
    recapture (suite 86_veldo_0127), because their records are bound to the engine modules' digests.
-2. Suite 110 is not in the proven set: scripts/suites/support/identity_wire.py has baseline entries and is in
+4. Suite 110 is not in the proven set: scripts/suites/support/identity_wire.py has baseline entries and is in
    no brief's files and outside the footprint (brief F's item 3).
-3. AC15: the two cadences of section 4 need the owner's decision; suite 106's service runs outside the
+5. AC15: the two cadences of section 4 need the owner's decision; suite 106's service runs outside the
    profile (brief E's item 4).
-4. The keeper ends the process tree: what the suite process started, and what was started below it. A unit
+6. The keeper ends the process tree: what the suite process started, and what was started below it. A unit
    the user manager itself starts for a suite (systemctl start of an installed unit) is no descendant and is
    not ended by it. A descendant another account owns is named as not ended. A heavy child that is ended by
    run_heavy after its second bound is killed alone unless it is a dispatcher (then its keeper ends its tree
    on the first signal).
-5. A browser expectation that never holds takes the wait hang bound to fail (brief H's item 3): it makes
+7. A browser expectation that never holds takes the wait hang bound to fail (brief H's item 3): it makes
    the mutation stage long, as the stage's time below shows. A design follow-up for wave 2.
-6. In production nobody was found to renew the claim of a unit that waits with no run (section 3).
-7. Brief E's item 11: control_api_authority's stop_worker has the stale_version order brief E fixed in
+8. In production nobody was found to renew the claim of a unit that waits with no run (section 3).
+9. Brief E's item 11: control_api_authority's stop_worker has the stale_version order brief E fixed in
    Runner.honor_stops; no row reaches it.
