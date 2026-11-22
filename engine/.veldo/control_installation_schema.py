@@ -249,6 +249,9 @@ def widening(previous, current):
             elif mode == 'owner_role' and b is not None:
                 if (a or {}).get('role_id') != b.get('role_id'):
                     add(path, key + '.role_id', kind)
+            elif mode == 'git_remote' and (b or {}).get('remote') is not None:
+                if (a or {}).get('remote') != b['remote']:
+                    add(path, key + '.remote', kind)
             elif mode in ('account_authority', 'channel_authority'):
                 for name, value in (b or {}).items():
                     held = (a or {}).get(name)

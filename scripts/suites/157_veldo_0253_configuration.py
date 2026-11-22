@@ -134,7 +134,8 @@ def _v253_suite():
                 'services/catalog.openapi.json': WF.canonical({'openapi': '3.1.0',
                     'info': {'title': 'Catalog', 'version': '1'}, 'paths': {'/items': {'get': {
                         'responses': {'200': {'description': 'Items', 'content': {'application/json': {
-                            'schema': {'type': 'object', 'properties': {'id': {'type': 'string'}},
+                            'schema': {'type': 'object', 'properties': {'id': {'type': 'string'},
+                                                                     'password': {'type': 'string'}},
                                        'required': ['id'], 'additionalProperties': False}}}}}}}}}),
                 'services/catalog.tools.json': WF.canonical({'tools': [{'name': 'read', 'input_schema': {
                     'type': 'object', 'properties': {'id': {'type': 'string'}}, 'required': ['id']}}]})})
@@ -228,12 +229,15 @@ def _v253_suite():
             check('ac3/external-edit', workflows.load('example')['version'] == 2
                   and workflows.load('example')['definition'] == edited)
             settings['git']['remote'] = str(root / 'absent.git')
-            commit({'installation.yaml': settings})
+            remote_change = commit({'installation.yaml': settings})
+            remote_waiting = loader.reconcile()
+            decisions.approve(decisions.requests[remote_change])
             loader.reconcile()
             edited['budget']['steps'] = 10
             saved = workflows.save({'definition': edited}, principal='owner', base=2,
                 base_commit=loader.accepted_commit, command_id='push-refused')
             check('ac3/push-refused', saved.get('push_refusal') == 'installation_push_failed:remote_refused'
+                  and remote_waiting['outcome'] == 'waiting'
                   and loader.accepted_commit == saved['commit'])
             orphan = repo.commit({'installation.yaml': WF.canonical(settings)}, None, identity, 'Replace history')
             repo.publish(orphan, repo.head())

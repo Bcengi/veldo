@@ -1470,7 +1470,8 @@
       "ports": "added",
       "channels": "channel_authority",
       "approvers": "added",
-      "owner": "owner_role"
+      "owner": "owner_role",
+      "git": "git_remote"
     },
     "project": {
       "workflows": "changed",
