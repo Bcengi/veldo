@@ -231,6 +231,7 @@ _FILES = [
     # modules that look loads: the probes, the keeper, the removers' readers, the ledger module and
     # the declarations reader. Runtime assets, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_space_signal.py",
+    ".veldo/control_space_admission.py",  # admission before reservations; the receiver and the service load it (VELDO-0316)
     ".veldo/control_space_standalone.py",
     ".veldo/control_space_probe.py",
     ".veldo/control_space_docker.py",  # the probe's relationship read loads it (VELDO-0341)
