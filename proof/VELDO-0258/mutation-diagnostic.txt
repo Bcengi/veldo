@@ -1,6 +1,6 @@
 Developer diagnostic only: registered materializer and worker, without confinement.
-Source commit a9adf0085dbd; node pc2; run rr20261122040659-ee25.
-raw_sha256=affcc5b02d474149b37d00172fcc6ac3e59d13d682ab3239fd83dfc4488de9d6
+Source commit e16512eb3a9b; node pc2; run rr20261122041928-7e1c.
+raw_sha256=135c3472a7c8030fb78af4790814df044e1631786b0f0ff5bf5d3bb04927a43a
 
 {"case": "outside258-env-resolver", "mode": "baseline", "targets": {"ac1/refuses/tracker/env": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-env-resolver", "mode": "noop", "targets": {"ac1/refuses/tracker/env": [true]}, "failed_rows": [], "matched": true}
@@ -13,7 +13,7 @@ raw_sha256=affcc5b02d474149b37d00172fcc6ac3e59d13d682ab3239fd83dfc4488de9d6
 {"case": "outside258-registered-only-scan", "mode": "mutant", "targets": {"ac3/planted-call": [false]}, "failed_rows": ["VELDO-0258 ac3/planted-call", "VELDO-0258 ac3/planted-script"], "matched": true}
 {"case": "outside258-no-service-binding", "mode": "baseline", "targets": {"ac3/service-required/tracker": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-no-service-binding", "mode": "noop", "targets": {"ac3/service-required/tracker": [true]}, "failed_rows": [], "matched": true}
-{"case": "outside258-no-service-binding", "mode": "mutant", "targets": {"ac3/service-required/tracker": [false]}, "failed_rows": ["VELDO-0258 ac3/service-required/tracker", "VELDO-0258 ac3/service-required/tracker_init", "VELDO-0258 ac3/service-required/doorbell", "VELDO-0258 ac3/service-required/provisioner", "VELDO-0258 ac3/service-required/owner_channel"], "matched": true}
+{"case": "outside258-no-service-binding", "mode": "mutant", "targets": {"ac3/service-required/tracker": [false]}, "failed_rows": ["VELDO-0258 ac3/service-required/tracker", "VELDO-0258 ac3/service-required/tracker_init", "VELDO-0258 ac3/service-required/doorbell", "VELDO-0258 ac3/service-required/provisioner", "VELDO-0258 ac3/service-required/owner_channel", "VELDO-0258 ac3/fork-does-not-inherit"], "matched": true}
 {"case": "outside258-malformed-site-accepted", "mode": "baseline", "targets": {"ac2/malformed-whole": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-malformed-site-accepted", "mode": "noop", "targets": {"ac2/malformed-whole": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-malformed-site-accepted", "mode": "mutant", "targets": {"ac2/malformed-whole": [false]}, "failed_rows": ["VELDO-0258 ac2/malformed-whole", "VELDO-0258 ac2/previous-still-live"], "matched": true}
