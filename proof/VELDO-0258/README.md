@@ -117,3 +117,11 @@ canary from records. The send census includes the shipped doorbell and signed
 tracker IPC. The claim-writer census recognizes a direct `callable(getattr(...))`
 inspection as a boolean-only result; a planted invocation inside `callable` still
 must fail. The schema reuses the installation reader's filename constant.
+
+After those repairs, MCP credentials and project handouts pass all 29 and 27 rows.
+The four-suite rerun has 126 passes and only the parent's two remaining failures:
+the text inventory lacks two VELDO-0253 entries, and the legacy evidence writer's
+home-boundary assertion fails under the nested remote home. The earlier seven-suite
+run also has the parent's setup-assets count failure. These baseline discrepancies
+remain visible; no passing gate is claimed. The remaining sandbox-dependent
+compatibility suites are queued through the host wrapper alongside finding 258.

@@ -301,3 +301,17 @@ generated: pass (scripts/suites/requires.json)
 generated: pass
 personal setup: 0 finding(s)
 remote_run[mac 1b65768a505d 06:18:22]: rc=0 in 14s (run rr20261122061808-80e3)
+
+v258-fixtures-fixed
+raw_sha256=2cf753352b577cb7946952ca4dc2106ea3581c2e05d743acb1f9506e8665cc8d
+remote_run[pc2 1b65768a505d 06:16:12]: node busy; waiting for a slot (up to 14400 s): pc2 (rc=95): busy: rr20261122061252-94d6 share from 100.127.52.61 at 2026-11-22T06:13:23Z; rr20261122061252-e388 share from 100.127.52.61 at 2026-11-22T06:13:23Z; rr20261122061332-29fc share from 100.127.52.61 at 2026-11-22T06:15:34Z;;
+VELDO-0168 detail: inventory delta engine [(('control_installation_config.py', 'Loader.reconcile', 'self.repo', 'send'), 1), (('control_installation_service.py', 'start.tell', 'presenter', '_send'), 1)] []
+VELDO-0168 detail: inventory delta production [(('control_installation_config.py', 'Loader.reconcile', 'self.repo', 'send'), 1), (('control_installation_service.py', 'start.tell', 'presenter', '_send'), 1)] []
+  SELFTEST FAIL: VELDO-0168 inventory/sends-and-assets
+  SELFTEST FAIL: VELDO-0259 writers/home-as-tilde
+  82_veldo_0144_mcp_catalog                       29 passed   52.78s
+  84_veldo_0169_project_handouts                  27 passed   26.05s
+  86_veldo_0168_text                              25 passed    7.62s
+  127_veldo_0259_installation                     19 passed   40.86s
+selftest (PARTIAL, 4 of 238 suites): 126 passed, 2 failed in 127.31s
+remote_run[pc2 1b65768a505d 06:20:59]: rc=1 in 287s (run rr20261122061612-89ed)
