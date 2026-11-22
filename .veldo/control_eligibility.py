@@ -999,7 +999,7 @@ class Gate:
         return ['missing_authority:unsupported/' + name]
 
     def _unit_problems(self, unit, inputs):
-        data = self._data(inputs.get('unit'))
+        data = self._data(inputs['unit'])
         if not isinstance(data, dict) or inputs['unit']['value']['kind'] != 'execution_unit' \
                 or data.get('repository_uuid') != self.repository_uuid:
             return ['missing_authority:unit']
