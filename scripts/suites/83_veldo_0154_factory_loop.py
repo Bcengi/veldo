@@ -462,7 +462,7 @@ sys.exit(chosen['code'])
             def assignments(self):
                 return [json.loads(data) for (data,) in self.independent("SELECT data FROM entities WHERE kind='assignment'")]
 
-            def passes(self):
+            def events(self):
                 found = []
                 try:
                     text = self.observations.read_text()
@@ -473,9 +473,12 @@ sys.exit(chosen['code'])
                         seen = json.loads(line)
                     except ValueError:
                         continue
-                    if isinstance(seen, dict) and seen.get('kind') == 'loop' and seen.get('operation') == 'loop_pass':
+                    if isinstance(seen, dict):
                         found.append(seen)
                 return found
+
+            def passes(self):
+                return [e for e in self.events() if e.get('kind') == 'loop' and e.get('operation') == 'loop_pass']
 
             def last_pass(self):
                 found = self.passes()
@@ -496,7 +499,7 @@ sys.exit(chosen['code'])
                 logged. Nothing more happens in it until this suite acts, so a pass not yet logged never comes.
                 Asked once per logged pass (an answer is itself a logged request, so asking again on that wake
                 would wake the wait again)."""
-                events = [json.loads(line) for line in self.observations.read_text().splitlines()]
+                events = self.events()
                 failed_stop = [e for e in events if e.get('operation') == 'orphan_wait'
                                and e.get('stop_issued') is not True]
                 if failed_stop:
