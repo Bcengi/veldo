@@ -49,6 +49,7 @@ footprint:
   - ".veldo/init_scaffold.py"
   - "engine/ui/src/api/workflows.ts"
   - "engine/ui/src/views/WorkflowView.vue"
+  - "engine/ui/docs/views/workflows.md"
   - "engine/.veldo/control_api*.py"
   - ".veldo/control_api*.py"
   - "engine/.veldo/control_credential_keystore.py"
