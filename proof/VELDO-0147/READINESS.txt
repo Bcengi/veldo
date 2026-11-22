@@ -1,0 +1,104 @@
+VELDO-0147 prerequisite inspection, 2026-11-21
+
+Status: INCOMPLETE. This bundle records a prerequisite failure, not an
+implementation, qualification, gate result, or acceptance-criterion proof.
+Inspected base: 9bb58b9b. Diagnostic commit: 5623ba86.
+
+The complete spec, CLAUDE.md, VELDO.md, the build queue and the relevant
+runtime paths were read before the diagnostic was written. The operational
+requirements remain:
+
+AC1: actual Claude lifecycle through the signed relay, pinned executable,
+pre-call caps, subscription guard, stripped environment, dispatch account
+profile read-back and both-direction capability comparison on the Mac.
+AC2: the same Codex lifecycle, with the dispatch's CODEX_HOME, no paid API
+keys, a ChatGPT login before the first turn and accepted capabilities.
+AC3: real tool work, command error output and an edit from each Mac engine,
+retained in order on Linux with exact credential redaction before scanning.
+AC4: exactly the selected servers' credentials in one post-release secrets
+frame; private file permissions, SSH cleanup and identifiers-only journaling.
+The four spec falsifiers remain unimplemented and unregistered. No fixture
+or failing prerequisite is represented as one of those falsifiers.
+
+Native observation
+
+preflight.py ran on the selected real Mac through SSH, coordinated under
+the external host_heavy wrapper. It uses the current profile module's
+Seatbelt generator, including the Keychain denial, with an isolated HOME
+and the retained claude-1 account profile. It runs only auth status, not a
+model turn. Captured output is reduced to booleans, versions and digests;
+raw account status and stderr are not printed or retained in this bundle.
+Its 120-second timeout is solely a hang detector. Existing scratch and
+qualification directories were not removed.
+
+mac-preflight.txt records logged_in=false, no_method=true and auth_exit=1.
+The diagnostic exits 2 for the missing subscription login. This is a
+prerequisite failure, not a git, hook or shell-tool guard refusal.
+
+The diagnostic executable is the retained Claude 2.1.303; this observation
+does not qualify it or substitute it for the Linux-qualified 2.1.317. The
+latter is absent at the standard Mac version path. The retained Veldo
+Codex installation is 0.154.0; the Linux record now qualifies 0.166.0.
+Matching Mac engine installation and qualification are still required.
+This inventory is limited to the retained qualification setup and standard
+engine paths, not a claim that no other installation exists anywhere.
+
+Needed external input
+
+Identify the intended Mac account and the Mac-local file holding its usable
+subscription token/profile, or provision that login on the Mac. Only the
+account ID and path should be supplied, never the credential value. The
+existing VELDO-0124 OPEN.md already requires this account-scoped delivery
+work in VELDO-0147. No other account was substituted and no credential was
+exported to Linux. An asynchronous request for that information is pending.
+
+Implementation paths found (base source locations)
+
+engine/.veldo/control_launch.py:1896 routes remote dispatches to invoke_remote.
+engine/.veldo/control_launch.py:2267 RemoteLaunch observes authority state;
+its pump reads and discards SSH output instead of feeding an execution record.
+engine/.veldo/control_launch.py:2340 invoke_remote sends only dispatch identity
+and closes input immediately. It has no release/secrets-frame exchange.
+engine/.veldo/control_launch.py:2497 creates the Linux run's redaction set.
+engine/.veldo/control_launch.py:3090 applies the Linux engine baseline.
+engine/.veldo/control_launch.py:3329 refuses MCP delivery to reported adapters.
+engine/.veldo/control_worker.py:74 resolves the signed claim and Mac account,
+then launches the host supervisor; this is the actual relay worker caller.
+engine/.veldo/control_worker.py:54 archives stdout but not engine.err.
+engine/.veldo/control_worker.py:410 owns the installed SSH endpoint.
+engine/.veldo/control_worker_service.py:380 settles signed worker results;
+its exit path currently supplies an incomplete artifact, not the Linux
+receiver's complete execution-record commitment.
+engine/.veldo/project_runner_macos_control.py:30 builds the account environment.
+engine/.veldo/project_runner_macos_control.py:55 checks acceptance and caps.
+engine/.veldo/project_runner_macos.py:141 checks native qualification.
+engine/.veldo/project_runner_macos.py:194 writes wrapper inputs and releases it.
+engine/.veldo/project_runner_macos_profile.py:135 rejects unapproved Claude
+settings sources, including a directly added subscription-token variable.
+engine/.veldo/project_runner_macos_profile.py:225 emits the sandbox policy.
+engine/.veldo/project_runner_macos_profile.py:368 checks evidence and digest.
+engine/.veldo/project_runner_macos_wrapper.py:37 rechecks the digest and
+settings, then starts the engine with DEVNULL input and separate output files.
+engine/.veldo/control_engine_claude.py:1288 binds the Linux pinned executable;
+:1496 generates the baseline; :1665 holds the first prompt for login and
+capability checks. Those checks are not called by the current Mac wrapper.
+engine/.veldo/control_engine_codex.py:623 binds the vendor executable;
+:786 generates the baseline; :931 requires ChatGPT authentication.
+engine/.veldo/control_agent_config_handoff.py:47 materializes the accepted
+revision; :218 compares the reported launch set in both directions.
+engine/.veldo/control_execution_record.py:434 owns ordered redacted records.
+engine/.veldo/control_credential_delivery.py:85 resolves selected credentials;
+:122 supplies exact values for redaction; :140 reports identifiers and routes.
+engine/.veldo/init_scaffold.py:95 and :519 install the engine modules and
+Linux qualification assets; new Mac assets would need corresponding entries.
+
+These findings describe remaining implementation work. In particular, AC3
+and AC4 need changes to the real worker/receiver transport, not just new
+qualification labels. The current footprint does not list control_worker.py
+or control_worker_service.py; any implementation touching those callers must
+record that footprint expansion. No production file has been changed here.
+
+Resume with the account binding, implement the transport and adapter paths,
+register all four falsifiers in the teeth inventory, then run the real Mac
+matrix and affected suites. Do not mint native evidence from synthetic rows.
+The lead retains the full gate and independent review.

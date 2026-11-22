@@ -177,6 +177,12 @@ negative controls. It is built after VELDO-0124 and VELDO-0125 in stage 3 of the
 
 ## History
 
+2026-11-21: build prerequisite inspection at 9bb58b9b reproduced the retained Mac Claude account's
+missing subscription login with the current Keychain-denying sandbox generator. The retained engines
+also differ from the current Linux-qualified versions. See `proof/VELDO-0147/READINESS.txt` and the
+sanitized native observation. Account-scoped login identification/provisioning is pending; no criterion
+is implemented or qualified by this inspection, and all acceptance requirements remain unchanged.
+
 2026-09-25: written on the review of PLAN-0019 revision 4, which moved every Mac leg out of the
 specifications built in stages 1 and 2 of the design's critical path. The legs of VELDO-0060, 0061, 0062,
 0127 and 0141 came from ready specifications and the leg of VELDO-0144 from a draft, so this
