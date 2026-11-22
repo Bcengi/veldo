@@ -129,8 +129,8 @@ The four-suite rerun has 126 passes and only the parent's two remaining failures
 the text inventory lacks two VELDO-0253 entries, and the legacy evidence writer's
 home-boundary assertion fails under the nested remote home. The earlier seven-suite
 run also has the parent's setup-assets count failure. These baseline discrepancies
-remain visible; no passing gate is claimed. The remaining sandbox-dependent
-compatibility suites are queued through the host wrapper; their results remain pending.
+remain visible; no passing gate is claimed. The sandbox-dependent compatibility
+checks completed through the host wrapper, as recorded below.
 
 The broad host compatibility run exposed the legacy channel migration gap. Its
 parent comparison had 284 passes and 17 dispatch-fixture failures caused by missing
@@ -139,10 +139,20 @@ migration, six host suites reached 129 passes with three remaining failures:
 a stopped-host restart flag prevented identity provisioning, and two historical
 assertions still required byte-identical file-based channel configuration. The
 flag now applies only when the installed engine is current; the assertions verify
-the exact credential import and retain their other invariants. Final reruns follow.
+the exact credential import and retain their other invariants.
 
 The host API suite now passes all 45 rows (71 including prerequisites). Its first
 host run reached the service fixture and found that fixture lacked the installation
 schema assets; it now copies both installation asset directories alongside runtime.
 The final code commit `78554645e` passes lint, template synchronization, generated
 files, docs hygiene and personal-setup checks (zero findings) on the Mac.
+
+The final three-suite host rerun at `5f1b2e7e4` (code `78554645e`) passed 90
+checks with zero failures: engine upgrade 34, dispatch setup 20, HTTPS port 10,
+and 26 shared prerequisites. It covers interrupted/resumed migration rollback,
+stopped-host identity provisioning and preservation of all non-credential channel
+configuration. Together with the preceding host run, factory setup (17), API
+setup (18), UI location (7), receiver trust (12), memory (127), conversations
+(38) and standing delegation (9) also pass. The raw-log hashes and selected-run
+summaries are in `developer-checks.txt`. No test process remains queued for this
+ticket. The canonical gate and independent review remain with the lead.
