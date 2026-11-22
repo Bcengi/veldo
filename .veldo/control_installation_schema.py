@@ -212,7 +212,7 @@ def widening(previous, current):
                 add(path, key, kind)
         if path not in previous and kind in ('project', 'service', 'schedule'):
             add(path, '$', 'new_' + kind)
-        if kind in ('schedule', 'tools_snapshot', 'openapi') and path in previous:
+        if kind in ('schedule', 'tools_snapshot', 'openapi'):
             add(path, '$', kind)
         if kind == 'workflow':
             for name, node in new.get('nodes', {}).items():

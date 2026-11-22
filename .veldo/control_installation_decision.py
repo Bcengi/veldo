@@ -41,8 +41,9 @@ class Decisions:
     def request(self, proposal):
         alias = self.alias(proposal)
         aid = self.settlement.I.assignment_id(self.settlement.ids['repository_uuid'], alias)
-        if self.inbox.read(aid) is not None:
-            return aid
+        existing = self.inbox.read(aid)
+        if existing is not None:
+            return self.frame(proposal, aid, existing['data']['request_version'])
         tid = 'installation-' + proposal['commit']
         command = dict(self.settlement.ids, operation='terms', terms=tid, principal=self.principal,
                        command_id=tid, nonce=tid, touchpoint='decision_disposition', target=self.target(proposal),
@@ -60,6 +61,14 @@ class Decisions:
         result = self.inbox.apply(self.packet(command))
         if not result.get('ok'):
             raise Refused('installation_waiting_approval:' + proposal['commit'])
+        return self.frame(proposal, aid, 1)
+
+    def frame(self, proposal, aid, version):
+        command = dict(self.settlement.ids, operation='frame', alias=self.alias(proposal), principal=self.principal,
+                       command_id=self.alias(proposal) + '/frame', nonce=self.alias(proposal) + '/frame',
+                       request_version=version, risk_statement='This exact commit expands installation authority: '
+                       + proposal['widening_digest'])
+        self.settlement.presenter.frame(self.packet(command))
         return aid
 
     def approved(self, proposal):
@@ -104,6 +113,10 @@ class Decisions:
         command = packet.get('command', {}) if isinstance(packet, dict) else {}
         if command.get('configuration_commit') != commit:
             raise Refused('invalid_input:approval_commit')
+        try:
+            self.settlement._verified(self.owner, command, packet.get('signature'), ('person',))
+        except Exception:
+            raise Refused('missing_authority:save_signature') from None
         # The settlement API owns signature verification and answer admission.
         answer = packet.get('answer')
         if not isinstance(answer, dict):
@@ -111,4 +124,3 @@ class Decisions:
         result = self.settlement.api_answer(answer)
         if result.get('outcome') == 'refused':
             raise Refused(result.get('refusal', 'missing_authority'))
-        self.settlement.settle(answer.get('assertion', {}).get('request_id'))

@@ -97,6 +97,8 @@ class Loader:
     def reconcile(self, *, bootstrap=False, made=False):
         previous, commit = self.accepted_commit, None
         try:
+            if bootstrap and previous is not None:
+                raise Refused('installation_invalid:installation.yaml:$:already_initialized')
             snapshot = self.repo.snapshot()
             commit = snapshot['commit']
             config, problems = self.validate(snapshot['files'])

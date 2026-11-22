@@ -28,7 +28,9 @@ def save(loader, document, *, principal, base, command_id, base_commit, approval
             raise Refused('invalid_input:command_id')
         if not isinstance(base_commit, str):
             raise Refused('invalid_input:base_commit')
-        if base_commit != loader.accepted_commit or loader.repo.head() != base_commit:
+        pending_commit = (approval or {}).get('command', {}).get('configuration_commit')
+        retry = pending_commit is not None and loader.status().get('commit') == pending_commit
+        if base_commit != loader.accepted_commit or loader.repo.head() != (pending_commit if retry else base_commit):
             raise Refused('stale_version')
         if WF.head_version(loader.conn, loader.domain, loader.workflow_repository, workflow) != base:
             raise Refused('stale_version')
@@ -48,14 +50,22 @@ def save(loader, document, *, principal, base, command_id, base_commit, approval
         if problems:
             raise Refused(problems[0], codes=problems)
         message = 'workflow %s base %d version %d command %s' % (workflow, base, base + 1, command_id)
-        commit = loader.repo.commit(files, base_commit, identity, message)
+        if retry:
+            proposed = loader.repo.snapshot(pending_commit)
+            if proposed['files'] != files:
+                raise Refused('invalid_input:approval_commit')
+            commit = pending_commit
+        else:
+            commit = loader.repo.commit(files, base_commit, identity, message)
         event.update(commit=commit, author=identity)
-        loader.repo.publish(commit, base_commit)
+        if not retry:
+            loader.repo.publish(commit, base_commit)
+        result = loader.reconcile(made=True)
         if approval is not None:
-            if loader.decisions is None:
+            if loader.decisions is None or principal != loader.decisions.owner:
                 raise Refused('installation_waiting_approval:' + commit)
             loader.decisions.signed_save(approval, commit)
-        result = loader.reconcile(made=True)
+            result = loader.reconcile(made=True)
         if result['outcome'] == 'refused':
             raise Refused(result['problems'][0], codes=result['problems'])
         answer = {'workflow': workflow, 'version': WF.head_version(loader.conn, loader.domain,

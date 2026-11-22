@@ -471,6 +471,29 @@ class Repository:
         except InstallationError:
             raise InstallationError('installation_push_failed:remote_refused') from None
 
+    def import_files(self):
+        """Existing declared setup files, excluding keys and Git internals. Called only by setup."""
+        files = {}
+        for path in Path(self.folder).rglob('*'):
+            relative = path.relative_to(self.folder)
+            if relative.parts[0] in ('.git', 'keys'):
+                continue
+            if path.is_symlink():
+                raise InstallationError('installation_invalid:%s:$:not_regular' % relative.as_posix())
+            if path.is_file():
+                files[relative.as_posix()] = path.read_bytes()
+        return files
+
+    def materialize_initial(self, files):
+        """Lay setup's first committed files down; later Git saves never edit the working tree."""
+        for name, body in files.items():
+            path = Path(self.folder) / name
+            path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+            if not path.exists():
+                with path.open('xb') as handle:
+                    handle.write(body)
+                path.chmod(0o600)
+
     @classmethod
     def create(cls, folder, branch='main'):
         folder = Path(folder)
