@@ -43,6 +43,12 @@ It records four registered/executed/rejected cases, zero invalid results, and gr
 The corresponding target row is false for each mutant; dependent later rows may also fail. This receipt
 is historical, not a claim that a later tree has been gated. A current host recheck is queued.
 
+`registered-workers.json` records current production bytes at commit 0f486f8dc697. The portable
+`registered_workers.py` invokes the existing registry materializer and worker CLI on pc2, with a separate
+process for each baseline, no-op and mutant. Every baseline/no-op has 52 true observations; all four
+mutants turn their specified row false. This confirms current anchors and red/green behavior. It is
+explicitly a worker diagnostic, not a substitute receipt for the confined coordinator or a gate pass.
+
 ## Diagnostics and limits
 
 All runs used committed snapshots. Compute runs named pc2 explicitly. Host-only checks use the owner's

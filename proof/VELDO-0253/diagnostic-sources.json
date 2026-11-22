@@ -76,5 +76,11 @@
     "raw_sha256": "2e5ebb6b353fbe92ef4c715fc356a2e850a96e7961c7c2ed2edfddf363de944f",
     "raw_bytes": 13216,
     "transcript_lines": 54
+  },
+  "registered-workers": {
+    "run": "rr20261122032728-ee03",
+    "raw_sha256": "d60125cf64e26954018cbcf337bbdec9e8a210ff0d713fa295d2cfd4cf9ea17b",
+    "raw_bytes": 9329,
+    "transcript_lines": 264
   }
 }
