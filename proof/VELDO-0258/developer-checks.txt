@@ -319,3 +319,156 @@ remote_run[pc2 1b65768a505d 06:20:59]: rc=1 in 287s (run rr20261122061612-89ed)
 v258-personal-local
 raw_sha256=2b0637308fb453f11ffa6d8ab921321767710115dc6157647a5f4165cd55bc17
 personal setup: 0 finding(s)
+
+v258-host-fixtures
+raw_sha256=2749f866cc358339c20ec37a7838fa495e179cf62adb7b12c580a4bdc30347fc
+  SELFTEST FAIL: VELDO-0171 api-edge/running-service
+  SELFTEST FAIL: VELDO-0171 rerun/over-0139-host
+  SELFTEST FAIL: VELDO-0171 api/start-rules
+  SELFTEST FAIL: VELDO-0189 upgrade/from-8bc34e94
+  SELFTEST FAIL: VELDO-0189 upgrade/from-971186ac
+  SELFTEST FAIL: VELDO-0189 upgrade/refused-by-name
+  SELFTEST FAIL: VELDO-0189 switch/kill-points
+  SELFTEST FAIL: VELDO-0189 switch/failed-restart
+  SELFTEST FAIL: VELDO-0189 kept/owner-data
+  SELFTEST FAIL: VELDO-0189 announce/before-first-write
+  SELFTEST FAIL: VELDO-0189 restart/rules
+  SELFTEST FAIL: VELDO-0189 second-run/changes-nothing
+  SELFTEST FAIL: VELDO-0189 switch/failed-after-start
+  SELFTEST FAIL: VELDO-0189 ownership/committed
+  SELFTEST FAIL: VELDO-0189 switch/resumed-failure
+  SELFTEST FAIL: VELDO-0189 switch/rollback-kills
+  SELFTEST FAIL: VELDO-0189 switch/stop-refused
+  SELFTEST FAIL: VELDO-0189 ownership/restore-reported
+  SELFTEST FAIL: VELDO-0189 ownership/start-drops
+  SELFTEST FAIL: VELDO-0189 ownership/commit-refused
+  SELFTEST FAIL: VELDO-0189 switch/stop-before-restore
+  SELFTEST FAIL: VELDO-0189 upgrade/older-0186-equivalence
+  SELFTEST FAIL: VELDO-0189 kept/runs
+  SELFTEST FAIL: VELDO-0185 fresh/team: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 fresh/adapters: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 fresh/one-engine
+  SELFTEST FAIL: VELDO-0185 loop/configured: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 reservation/principals: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 reservation/state-root: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 fresh/registered: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 login/named: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 login/receiver-refuses: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 every-account: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 rerun/changes-nothing: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 rerun/over-earlier-host
+  SELFTEST FAIL: VELDO-0185 login/retry-excludes: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 login/recheck: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 rerun/missing-state-root: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 team/workers: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 team/newest-model: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0227 ui/upgrade-pre-change: the run over it is accepted and reports the configuration step done [refused invalid_input:state_root:holds_token_file None]
+  SELFTEST FAIL: VELDO-0234 rerun/pre-change-host: the re-run without the option is accepted [refused invalid_input:state_root:holds_token_file, done: []]
+  74_veldo_0140_standing_delegation                9 passed   15.55s
+  85_veldo_0171_setup_api                         15 passed   10.43s
+  86_veldo_0189_engine_upgrade                    14 passed   22.46s
+  87_veldo_0170_receiver_trust                    12 passed    8.46s
+  106_veldo_0185_dispatch_setup                    3 passed    2.89s
+  105_veldo_0182_memory                          127 passed  105.66s
+  117_veldo_0227_ui_location                       6 passed    7.90s
+  123_veldo_0174_conversations                    38 passed   18.36s
+  127_veldo_0234_https_port                        9 passed    9.98s
+selftest (PARTIAL, 9 of 238 suites): 259 passed, 42 failed in 201.70s
+
+v258-parent-host-fixtures
+raw_sha256=d4918480f2454b159e3ac47d71c146b210ad274c739f38531dd974ace49b2839
+  SELFTEST FAIL: VELDO-0185 fresh/team: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 fresh/adapters: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 fresh/one-engine
+  SELFTEST FAIL: VELDO-0185 loop/configured: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 reservation/principals: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 reservation/state-root: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 fresh/registered: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 login/named: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 login/receiver-refuses: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 every-account: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 rerun/changes-nothing: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 rerun/over-earlier-host
+  SELFTEST FAIL: VELDO-0185 login/retry-excludes: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 login/recheck: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 rerun/missing-state-root: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 team/workers: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  SELFTEST FAIL: VELDO-0185 team/newest-model: setup laid the owner's host down [refused missing_evidence:runtime_asset:installation_schema/schema.json]
+  74_veldo_0140_standing_delegation                9 passed   14.86s
+  85_veldo_0171_setup_api                         18 passed   10.90s
+  86_veldo_0189_engine_upgrade                    34 passed   61.61s
+  87_veldo_0170_receiver_trust                    12 passed    7.93s
+  106_veldo_0185_dispatch_setup                    3 passed    2.37s
+  105_veldo_0182_memory                          127 passed  105.79s
+  117_veldo_0227_ui_location                       7 passed    9.40s
+  123_veldo_0174_conversations                    38 passed   17.60s
+  127_veldo_0234_https_port                       10 passed    8.93s
+selftest (PARTIAL, 9 of 237 suites): 284 passed, 17 failed in 239.39s
+
+v258-host-migration
+raw_sha256=d162858fb5ff453ffa5d074c9b548a671353c6d97d7558277330214cbc80ae4c
+  SELFTEST FAIL: VELDO-0189 kept/owner-data
+  SELFTEST FAIL: VELDO-0185 rerun/over-earlier-host: the run adds exactly these steps, after the engine upgrade the changed engine needs [refused invalid_input:state_root:service_running:git_identities []]
+  SELFTEST FAIL: VELDO-0234 rerun/pre-change-host: every file outside the installed engine is byte for byte the same, the store's dump too, and the service record apart from its engine keys and the state root the upgrade adds as this host's root [['<fixture-path>', '<fixture-path>'] ['state_root']]
+  73_veldo_0139_factory_setup                     17 passed   46.53s
+  85_veldo_0171_setup_api                         18 passed   11.37s
+  86_veldo_0189_engine_upgrade                    33 passed   77.51s
+  106_veldo_0185_dispatch_setup                   19 passed   13.44s
+  117_veldo_0227_ui_location                       7 passed    9.97s
+  127_veldo_0234_https_port                        9 passed   10.99s
+selftest (PARTIAL, 6 of 238 suites): 129 passed, 3 failed in 169.81s
+
+v258-migration-portable
+raw_sha256=32d67ac279d6202408d52a2d5f5971c5c9e2b9f0f68282d6c1a13ee9f5b84472
+  SELFTEST FAIL: VELDO-0139 install/assets
+  SELFTEST FAIL: VELDO-0139 setup/lays-down
+  SELFTEST FAIL: VELDO-0139 refuse/writes-nothing
+  SELFTEST FAIL: VELDO-0139 refuse/existing-store
+  SELFTEST FAIL: VELDO-0139 edge/enrolled-with-possession
+  SELFTEST FAIL: VELDO-0139 chat/enrolled
+  SELFTEST FAIL: VELDO-0139 ingress/configuration
+  SELFTEST FAIL: VELDO-0139 token/never-copied
+  SELFTEST FAIL: VELDO-0139 service/starts-inert
+  SELFTEST FAIL: VELDO-0139 journey/qualified-and-active
+  SELFTEST FAIL: VELDO-0139 genesis/owner-signed
+  SELFTEST FAIL: VELDO-0139 qualification/one-request-across-restart
+  SELFTEST FAIL: VELDO-0139 rollback/rerun
+  SELFTEST FAIL: VELDO-0139 store/private-and-closed
+  SELFTEST FAIL: VELDO-0139 host-trust/directory-checked
+  SELFTEST FAIL: VELDO-0139 qualification/opening-retried
+  73_veldo_0139_factory_setup                      1 passed    3.05s
+  158_veldo_0258_outside_calls                    63 passed   11.36s
+selftest (PARTIAL, 2 of 238 suites): 90 passed, 16 failed in 14.41s
+
+v258-parent-setup-now
+raw_sha256=a83c02196af73843e3eb502dc5c9ee30eb72b1061dd49a0ab2a84d732bec96c7
+  SELFTEST FAIL: VELDO-0139 install/assets
+  SELFTEST FAIL: VELDO-0139 setup/lays-down
+  SELFTEST FAIL: VELDO-0139 refuse/writes-nothing
+  SELFTEST FAIL: VELDO-0139 refuse/existing-store
+  SELFTEST FAIL: VELDO-0139 edge/enrolled-with-possession
+  SELFTEST FAIL: VELDO-0139 chat/enrolled
+  SELFTEST FAIL: VELDO-0139 ingress/configuration
+  SELFTEST FAIL: VELDO-0139 token/never-copied
+  SELFTEST FAIL: VELDO-0139 service/starts-inert
+  SELFTEST FAIL: VELDO-0139 journey/qualified-and-active
+  SELFTEST FAIL: VELDO-0139 genesis/owner-signed
+  SELFTEST FAIL: VELDO-0139 qualification/one-request-across-restart
+  SELFTEST FAIL: VELDO-0139 rollback/rerun
+  SELFTEST FAIL: VELDO-0139 store/private-and-closed
+  SELFTEST FAIL: VELDO-0139 host-trust/directory-checked
+  SELFTEST FAIL: VELDO-0139 qualification/opening-retried
+  73_veldo_0139_factory_setup                      1 passed    3.01s
+selftest (PARTIAL, 1 of 237 suites): 27 passed, 16 failed in 3.01s
+
+v258-migration-hygiene
+raw_sha256=164098ea8f30000420ad6bae865532689ec76c9572f43de497da24bfcd1d24a3
+lint: pass (1274 python, 40 shell, 3.40s)
+template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
+generated: pass (specs/index.md)
+generated: pass (proof/WARP-0716/crossing-state.md)
+generated: pass (proof/WARP-0712/order-dependence.md)
+generated: pass (proof/WARP-0712/split-plan.md)
+generated: pass (scripts/suites/requires.json)
+generated: pass
+personal setup: 0 finding(s)
