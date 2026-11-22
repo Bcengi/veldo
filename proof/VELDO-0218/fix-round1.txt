@@ -1,0 +1,73 @@
+VELDO-0218 fix round 1 (review verdict FIX, one finding plus observations)
+
+Finding: suite 112 no longer checked that a reused, unaudited case records no time sample.
+- New row case-deadlines/reused-unaudited-no-sample, beside authority-recording. The fixture's
+  audit draw is fixed to pass over its one hit; the stage reuses it, executes nothing, audits
+  nothing, and writes no time sample.
+- Falsifier deadline215-reused-unaudited-sampled records a sample for every non-fresh case; it
+  fails exactly that row (below).
+
+Defect found while proving the falsifier: check_gate_mutations.py loaded mutation_reuse.py at
+import from its own ROOT. A teeth mutant of that file runs from a scratch directory, so all 30
+mutants of check_gate_mutations.py (suites 112, 115, 157, 158) died on import with driver_error
+instead of being judged. run_stage now loads the module from the ROOT in force, through a bound
+reference to the real loader so fixtures that stub load() for their doubles are unaffected.
+
+Observations:
+- 159 fixed-seed-control tested only Python's random; removed. The fixed-entropy control remains
+  inside reuse-audit/unpredictable (159 now 37 rows).
+- Suite 99 count control and the leg-time cache prune: no change; the original defect is still
+  caught by 159 receipts, and the prune predates this ticket.
+- Spec edits (footprint, Implementation interface) remain for the owner to acknowledge at approval.
+- Manifest commit now names the last production/test change of this round.
+
+Runs at 3bc13bb9 (selected diagnostics; partial runs exit 2 by design; verify.sh not run here)
+pc2 112_veldo_0215_case_deadlines: selftest (PARTIAL, 1 of 239 suites): 44 passed, 0 failed in 0.36s
+pc2 159_veldo_0218_reuse_audit: selftest (PARTIAL, 1 of 239 suites): 37 passed, 0 failed in 2.78s
+pc2 98_veldo_0204_mutation_receipts: selftest (PARTIAL, 1 of 239 suites): 71 passed, 0 failed in 2.42s
+pc2 115_veldo_0219_measured_admission: selftest (PARTIAL, 1 of 239 suites): 57 passed, 0 failed in 10.77s
+pc2 157_veldo_0217_declarations: selftest (PARTIAL, 1 of 239 suites): 45 passed, 0 failed in 2.43s
+pc2 158_veldo_0224_stale_declarations: selftest (PARTIAL, 1 of 239 suites): 32 passed, 0 failed in 3.94s
+host_heavy 53_veldo_0123_mutations: selftest (PARTIAL, 1 of 239 suites): 40 passed, 0 failed in 28.87s
+host_heavy 99_veldo_0205_reuse: selftest (PARTIAL, 1 of 239 suites): 55 passed, 0 failed in 1.76s
+host_heavy 100_veldo_0207_case_reuse: selftest (PARTIAL, 1 of 239 suites): 118 passed, 0 failed in 8.88s
+host_heavy 101_veldo_0208_landing_reuse: selftest (PARTIAL, 1 of 239 suites): 216 passed, 0 failed in 250.76s
+
+Confined mutation driver, clean clone, every check_gate_mutations.py case (host_heavy):
+mutations: passed registered=30 executed=30 reused=0 rejected=30 workers=38 elapsed=36.144s
+status=passed registered=30 executed=30 rejected=30 invalid_results=0
+  admission219-channel-ignored expected admission/cli-graph-with-channel failed admission/cli-graph-with-channel
+  admission219-fixed-sixteen expected admission/fits-ledger failed admission/fits-ledger,admission/unmeasured-inventory
+  admission219-graph-without-channel expected admission/cli-graph-without-channel failed admission/cli-graph-without-channel
+  admission219-optimistic-m expected admission/same-verdicts failed admission/same-verdicts,admission/stage-receipts-and-recording
+  admission219-slowest-rate expected admission/measured-per-case failed admission/measured-per-case,admission/fallback-order,admission/cpu-per-run
+  deadline215-candidate-authority-not-recorded expected case-deadlines/candidate-authority failed case-deadlines/candidate-authority
+  deadline215-drop-measurement expected case-deadlines/measured-worker,case-deadlines/slow-pass failed case-deadlines/measured-worker,case-deadlines/slow-pass,case-deadlines/hang-timeout,case-deadlines/unmeasured-slow-baseline,case-deadlines/unmeasured-mutant-deadline,case-deadlines/unmeasured-hang,case-deadlines/baseline-details,case-deadlines/authority-recording,case-deadlines/real-hang-reaped
+  deadline215-first-control expected case-deadlines/shared-controls failed case-deadlines/shared-controls
+  deadline215-fixed-worker expected case-deadlines/measured-worker,case-deadlines/slow-pass failed case-deadlines/measured-worker,case-deadlines/slow-pass,case-deadlines/hang-timeout,case-deadlines/unmeasured-slow-baseline,case-deadlines/unmeasured-mutant-deadline,case-deadlines/unmeasured-hang,case-deadlines/baseline-details,case-deadlines/authority-recording
+  deadline215-key-omits-definition expected case-deadlines/key-binding failed case-deadlines/key-binding
+  deadline215-key-omits-sources expected case-deadlines/key-binding failed case-deadlines/key-binding
+  deadline215-latest-sample expected case-deadlines/rolling-maximum failed case-deadlines/rolling-maximum
+  deadline215-lost-baseline-details expected case-deadlines/baseline-details failed case-deadlines/baseline-details
+  deadline215-no-authority-guard expected case-deadlines/authority-recording failed case-deadlines/authority-recording
+  deadline215-no-ceiling expected case-deadlines/bounds failed case-deadlines/bounds
+  deadline215-no-expiry expected case-deadlines/hang-timeout failed case-deadlines/hang-timeout,case-deadlines/unmeasured-mutant-deadline,case-deadlines/unmeasured-hang
+  deadline215-no-prune expected case-deadlines/store-pruned failed case-deadlines/store-pruned
+  deadline215-old-stage-cap expected case-deadlines/combined-budget failed case-deadlines/combined-budget,case-deadlines/measured-worker,case-deadlines/slow-pass,case-deadlines/hang-timeout,case-deadlines/unmeasured-slow-baseline,case-deadlines/unmeasured-mutant-deadline,case-deadlines/unmeasured-hang,case-deadlines/baseline-details,case-deadlines/authority-recording
+  deadline215-record-invalid expected case-deadlines/authority-recording failed case-deadlines/authority-recording
+  deadline215-reused-unaudited-sampled expected case-deadlines/reused-unaudited-no-sample failed case-deadlines/reused-unaudited-no-sample
+  deadline215-serial-stage-cap expected case-deadlines/combined-budget failed case-deadlines/combined-budget
+  deadline215-setup-timeout-is-driver-error expected case-deadlines/setup-timeout failed case-deadlines/setup-timeout
+  deadline215-stage-drops-authority expected case-deadlines/authority-recording failed case-deadlines/unmeasured-slow-baseline,case-deadlines/authority-recording
+  deadline215-timeout-is-baseline expected case-deadlines/hang-timeout failed case-deadlines/hang-timeout,case-deadlines/unmeasured-mutant-deadline,case-deadlines/unmeasured-hang,case-deadlines/real-hang-reaped
+  deadline285-no-same-stage-derivation expected case-deadlines/unmeasured-mutant-deadline failed case-deadlines/unmeasured-slow-baseline,case-deadlines/unmeasured-mutant-deadline
+  deadline285-unmeasured-floor expected case-deadlines/unmeasured-slow-baseline failed case-deadlines/unmeasured-slow-baseline,case-deadlines/unmeasured-mutant-deadline,case-deadlines/unmeasured-hang
+  declarations217-absent-unkeyed expected declarations/undeclared-absent-socket failed declarations/undeclared-absent-socket
+  declarations217-incomplete-fails-stage expected declarations/incomplete-trace-demoted failed declarations/incomplete-trace-demoted
+  declarations217-worker-trace-ignored expected declarations/worker-trace-refused failed declarations/worker-trace-refused
+  stale224-snapshot-verdict-kept expected stale-declarations/runs-fresh failed stale-declarations/runs-fresh,stale-declarations/never-published,stale-declarations/authority-store
+
+Before the loader fix (run at e8592b63): driver_error, worker traceback
+  FileNotFoundError: <scratch>/scripts/mutation_reuse.py from check_gate_mutations.py import.
+At 4ed28d27 (lazy load through the stubbable load name) suite 157 failed declarations/non-file-refused:
+its fixture stubs load() and was handed its case_reuse double as the sampler. 3bc13bb9 fixes that.
