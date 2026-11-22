@@ -10517,6 +10517,47 @@ def cases():
         ['observability/commit-pinned'])
     result[-1]['siblings'] = True
 
+    # VELDO-0258 fix round 1: each review finding's falsifier.
+    # F1: the OAuth resolver names a `self` it does not have; the OAuth mode crashes with NameError.
+    add(258, 'outside258-oauth-self-unit', outside258, 'tracker_mirror_runner.py',
+        "    with _IK._CP.http('tracker', req) as resp:\n",
+        "    with _IK._CP.http('tracker', req, unit=getattr(self, '_unit', None)) as resp:\n",
+        ['ac1/oauth-end-to-end'])
+    result[-1]['siblings'] = True
+    # F2: the census no longer recognizes the repository's _git and git wrappers.
+    add(258, 'outside258-git-wrapper-unseen', outside258, 'control_plane_scan.py',
+        "(last in PROCESS or GIT_NAME.search(last))", "(last in PROCESS)",
+        ['ac3/planted-git-wrapper'])
+    result[-1]['siblings'] = True
+    # F2: a local-only exemption without a reason is accepted.
+    add(258, 'outside258-reasonless-exemption', outside258, 'control_plane_scan.py',
+        "        if not isinstance(functions, dict) or not all(",
+        "        if False and not all(",
+        ['ac3/exemption-needs-reason'])
+    result[-1]['siblings'] = True
+    # F2 at run time: an isolated-profile push to an outside URL bypasses the service.
+    add(258, 'outside258-outside-git-unbound', outside258, 'git_process.py',
+        "        if identity_profile or destination is not None:\n",
+        "        if identity_profile:\n",
+        ['ac3/outside-git-service-required'])
+    result[-1]['siblings'] = True
+    # F3: the CLI refusal is an unnamed error again, as a crash would be.
+    add(258, 'outside258-tracker-cli-unnamed', '09_action_whitelist_warp_1205.py', 'control_tracker_service.py',
+        "            raise CP.Refused('invalid_input:tracker_command:owner_identity')\n",
+        "            raise ValueError('owner identity required')\n",
+        ['tracker-cli/init-unsigned-named'])
+    result[-1]['siblings'] = True
+    # F3: the service's init preview runs the mirror instead of the bootstrap.
+    add(258, 'outside258-init-preview-mirrors', outside258, 'control_tracker_service.py',
+        "        if action == 'mirror':\n", "        if action in ('mirror', 'init'):\n",
+        ['ac3/signed-init-preview'])
+    result[-1]['siblings'] = True
+    # F3: the service's snapshot preview runs the bootstrap instead of the snapshot.
+    add(258, 'outside258-snapshot-preview-bootstraps', outside258, 'control_tracker_service.py',
+        "            if action == 'init':\n", "            if action != 'mirror':\n",
+        ['ac3/signed-snapshot-preview'])
+    result[-1]['siblings'] = True
+
     # VELDO-0253: each criterion's declared falsifier, run through real Git and SQLite.
     install253 = '157_veldo_0253_configuration.py'
     add(253, 'install253-partial-commit', install253, 'control_installation_config.py',

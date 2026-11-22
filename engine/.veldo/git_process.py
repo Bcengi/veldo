@@ -148,17 +148,72 @@ def _options(args, kwargs, private_home=None):
     return kwargs
 
 
+TRANSPORT = ('push', 'fetch', 'pull', 'ls-remote', 'clone')
+_SEPARATE_VALUE = ('-C', '-c', '--git-dir', '--work-tree', '--namespace', '--config-env', '--exec-path')
+
+
+def transport_destination(args):
+    """(prefix, verb, destination) of a Git transport argv, or None for a local command.
+
+    The destination is the first positional word after the verb, as Git reads it."""
+    i = 1
+    while i < len(args) and str(args[i]).startswith('-'):
+        i += 2 if args[i] in _SEPARATE_VALUE else 1
+    if i >= len(args) or args[i] not in TRANSPORT:
+        return None
+    verb, tail = args[i], [str(word) for word in args[i + 1:]]
+    while tail and tail[0].startswith('-'):
+        if tail.pop(0) == '--':
+            break
+    return [str(word) for word in args[:i]], verb, (tail[0] if tail else None)
+
+
+def outside_destination(url):
+    """A destination off this host: a URL other than file://, or an scp-like host:path."""
+    if not isinstance(url, str) or not url:
+        return False
+    if '://' in url:
+        return url.split('://', 1)[0].lower() != 'file'
+    if url.startswith(('/', '.')):
+        return False
+    return re.match(r'[^/:]{2,}:', url) is not None
+
+
+def _outside_caller(args, options):
+    """VELDO-0258 AC3: transport to an outside destination is a control-plane call, made only by the
+    service. A remote name or an insteadOf rewrite is resolved as Git would resolve it."""
+    found = transport_destination(args)
+    if found is None:
+        return None
+    prefix, verb, destination = found
+    if not outside_destination(destination) and destination and verb != 'clone':
+        try:
+            resolved = subprocess.run([*prefix, 'ls-remote', '--get-url', '--', destination],
+                                      cwd=options.get('cwd'), env=options['env'], capture_output=True,
+                                      text=True, timeout=15, stdin=subprocess.DEVNULL)
+            destination = resolved.stdout.strip() if resolved.returncode == 0 else destination
+        except (OSError, subprocess.SubprocessError):
+            pass
+    if outside_destination(destination):
+        return destination
+    return None
+
+
 def _invoke(invoke, args, kwargs):
     # The home is empty, private, unique to this invocation and alive until Git exits.
     context = tempfile.TemporaryDirectory(prefix='veldo-git-home-') if kwargs.get('profile') == 'identity' else nullcontext()
     with context as private_home:
         args = list(args)
         identity_profile = kwargs.get('profile') == 'identity'
+        caller = kwargs.pop('caller', None)
         destination = kwargs.get('remote_url')
         options = _options(args, kwargs, private_home)
-        if identity_profile:
+        if not identity_profile:
+            destination = _outside_caller(args, options)
+        if identity_profile or destination is not None:
             outside = identity_transport().organ('control_plane_calls')
-            with outside.outside('landing_push', destination, 'git_transport') as observation:
+            with outside.outside(caller or ('landing_push' if identity_profile else 'git_transport'), destination,
+                                 'git_transport') as observation:
                 answer = invoke(args, **options)
                 if getattr(answer, 'returncode', 0):
                     observation['result'] = 'failed'

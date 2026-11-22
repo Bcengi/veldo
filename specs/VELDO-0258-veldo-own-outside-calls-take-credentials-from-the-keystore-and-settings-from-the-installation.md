@@ -37,6 +37,10 @@ footprint:
   - "specs/VELDO-0258-veldo-own-outside-calls-take-credentials-from-the-keystore-and-settings-from-the-installation.md"
   - "specs/index.md"
   - "proof/VELDO-0258/**"
+  - ".veldo/control_batch.py"
+  - "engine/.veldo/control_batch.py"
+  - ".veldo/control_replica.py"
+  - "engine/.veldo/control_replica.py"
   - ".veldo/control_channel_activation.py"
   - ".veldo/control_channel_ingress.py"
   - ".veldo/control_channel_projection.py"
@@ -220,3 +224,9 @@ says a run finds no route to a control-plane destination; it checks instead that
 for one (VELDO-0254 AC1), and the Context and threat model say the same.
 
 2026-11-05: the review amendments and new tickets approved by the owner, Telegram 39157 ("Yes", to 39156). Status ready.
+
+2026-11-22: review fix round 1. The census now recognizes the repository's own Git wrappers and
+profiles, an opener held in a variable and network tools, so batch landing, the lander, the landing
+station's remote read, the audit replica and the installation remote are registered by destination
+kind; local-only exemptions carry their reason. The Git boundary refuses transport to an off-host
+destination outside the service. The footprint adds control_batch.py and control_replica.py for that.

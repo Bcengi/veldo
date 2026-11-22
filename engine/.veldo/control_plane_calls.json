@@ -16,21 +16,42 @@
     "control_channel_presentation.py": "owner_channel",
     "control_channel_attribution.py": "owner_channel",
     "request_doorbell.py": "doorbell",
-    "git_process.py": "identity_transport"
+    "git_process.py": "identity_transport",
+    "control_batch.py": "landing_push",
+    "control_landing.py": "landing_push",
+    "lander.py": "landing_push",
+    "control_replica.py": "audit_replica",
+    "installation.py": "installation_repository"
   },
   "local_only": {
-    "candidate_git.py": [
-      "clone"
-    ],
-    "control_launch_work.py": [
-      "_collect",
-      "build"
-    ],
-    "control_memory_adapter.py": [
-      "ready",
-      "http",
-      "get"
-    ]
+    "candidate_git.py": {
+      "clone": "clones the candidate's own local repository for the guard"
+    },
+    "control_launch_work.py": {
+      "_collect": "fetches a worker's objects between local repositories",
+      "build": "clones the local authority repository into a candidate workspace"
+    },
+    "control_memory_adapter.py": {
+      "ready": "the local memory service on this host",
+      "http": "the local memory service on this host",
+      "get": "the local memory service on this host"
+    },
+    "control_clone.py": {
+      "_pin": "fetches the accepted commit from the local workflow repository into the local cache",
+      "enter": "builds the clone's Git environment; no call is made"
+    },
+    "control_space_install.py": {
+      "_owner_git": "reads the owner's Git configuration; no transport"
+    },
+    "control_space_keep.py": {
+      "_record_refs": "fetches between two object stores on this host"
+    },
+    "pack_conformance.py": {
+      "_attempt": "pushes into a temporary bare repository on this host"
+    },
+    "scripts/agent_sandbox.py": {
+      "integrate": "fetches from the agent's private repository on this host"
+    }
   },
   "project_calls": {
     "scripts/runners/api/veldo_api_runner.py": [

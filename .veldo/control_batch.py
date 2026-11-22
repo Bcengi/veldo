@@ -459,11 +459,14 @@ class Batch:
         try:
             result = _git_process.run(['git', '-C', str(repo), *args], capture_output=True, text=text,
                                       timeout=GIT_SECONDS, stdin=subprocess.DEVNULL, identity=identity,
-                                      profile=profile,
+                                      profile=profile, caller='landing_push',
                                       push_identity=self.push_identity if profile == 'identity' else None,
                                       remote_url=remote_url if profile == 'identity' else None)
         except (OSError, subprocess.SubprocessError, ValueError) as error:
-            raise Refused('unavailable_service:git/' + args[0], type(error).__name__)
+            # VELDO-0258: a transport outside the service is refused by name, not as a Git failure.
+            code = getattr(error, 'code', '')
+            raise Refused(code if code.startswith('unauthorized:control_plane') else
+                          'unavailable_service:git/' + args[0], type(error).__name__)
         if ok is not None and result.returncode not in ok:
             raise Refused('unavailable_service:git/' + args[0], (result.stderr or '').strip()[:300])
         return result

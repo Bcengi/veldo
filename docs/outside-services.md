@@ -128,9 +128,21 @@ original contents before writing, so an interrupted upgrade can still restore
 the earlier engine and its matching configuration. No runtime file fallback is used.
 
 `control_plane_calls.json` registers the service network modules and their
-destination kinds. The same register names exact local-only and project-call
-functions, including project MCP inventory; these are outside this service-call
-set. The static census scans unregistered modules too. Each service call
+destination kinds: the tracker, the repository provisioner, the landing push
+(including batch landing and the lander), the audit replica, the installation
+repository's remote, the owner's channel and its doorbell. The same register
+names exact local-only and project-call functions, including project MCP
+inventory; these are outside this service-call set, and each local-only
+function states why it reaches nothing off the host. The static census scans
+every engine module, registered or not. It recognizes HTTP and socket clients,
+an opener built anywhere, a Git transport verb (push, fetch, pull, ls-remote,
+clone) given to a process call or to any Git wrapper, Git's network and
+identity profiles, and network tools such as curl given to a process call.
+
+At run time the Git boundary applies the same rule. A transport operation whose
+destination is off the host (a URL other than `file://`, or `host:path`), named
+directly or through a remote name, runs only inside the service and is refused
+in a run. A local path is not an outside call. Each service call
 records its caller, destination host, operation, result, latency and accepted
 installation commit, with a unit or dispatch identifier where available. Bodies
 and credentials are omitted. Counters group calls by caller and result and

@@ -1400,7 +1400,7 @@ expect("AC5: supervisor.py ships in the engine (its home resolves for the honest
 # The service dependencies ship, and an unsigned preview has no authority to run it.
 _rc_mir = _route904(["mirror", "--dry-run"])
 expect("AC2: veldo mirror routes to the service command and refuses an unsigned request",
-       _rc_mir[0] == 2 and "unavailable_service:tracker_command" in (_rc_mir[1] + _rc_mir[2]))
+       _rc_mir[0] == 2 and "invalid_input:tracker_command:owner_identity" in (_rc_mir[1] + _rc_mir[2]))
 expect("AC2: the service tracker mirror runner ships in the engine",
        ".veldo/tracker_mirror_runner.py" in _CH_ENGINE and (ROOT / ".veldo/tracker_mirror_runner.py").exists())
 

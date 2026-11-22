@@ -23,6 +23,8 @@ def _v258_suite():
     import threading
     from types import SimpleNamespace
     from unittest.mock import patch
+    import urllib.request
+    from urllib.parse import parse_qs, urlsplit
 
     PRODUCTION = {
         'control_plane_calls.py': ROOT / ".veldo" / "control_plane_calls.py",
@@ -30,6 +32,12 @@ def _v258_suite():
         'tracker.py': ROOT / ".veldo" / "tracker.py",
         'tracker_intake.py': ROOT / ".veldo" / "tracker_intake.py",
         'control_installation_schema.py': ROOT / ".veldo" / "control_installation_schema.py",
+        'tracker_mirror_runner.py': ROOT / ".veldo" / "tracker_mirror_runner.py",
+        'control_tracker_service.py': ROOT / ".veldo" / "control_tracker_service.py",
+        'git_process.py': ROOT / ".veldo" / "git_process.py",
+        'control_batch.py': ROOT / ".veldo" / "control_batch.py",
+        'control_replica.py': ROOT / ".veldo" / "control_replica.py",
+        'installation.py': ROOT / ".veldo" / "installation.py",
     }
 
     def load(name, path):
@@ -65,6 +73,10 @@ def _v258_suite():
         C = load('v258_config', mods / 'control_installation_config.py')
         values = {caller: 'canary-' + secrets.token_hex(24) for caller in
                   ('tracker', 'tracker_init', 'doorbell', 'provisioner', 'owner_channel', 'landing_push')}
+        # The OAuth service account's client credential, also only in the keystore.
+        values.update(tracker_client_id='canary-' + secrets.token_hex(24),
+                      tracker_client_secret='canary-' + secrets.token_hex(24))
+        oauth_token, oauth_site, oauth_seen = 'canary-' + secrets.token_hex(24), 'https://tracker.example.com', []
         keystore = root / 'keystore.json'
         keystore.write_text(json.dumps(values))
         binaries = root / 'bin'
@@ -90,6 +102,14 @@ def _v258_suite():
                     basic = base64.b64encode(('owner@example.com:' + value).encode()).decode()
                     if header in ('Bearer ' + value, 'Basic ' + basic) or ('/bot' + value + '/') in self.path:
                         authenticated.append(caller)
+                oauth = self.oauth(body, header)
+                if oauth is not None:
+                    reply = json.dumps(oauth).encode()
+                    self.send_response(200)
+                    self.send_header('Content-Length', str(len(reply)))
+                    self.end_headers()
+                    self.wfile.write(reply)
+                    return
                 failed = self.path == '/failure'
                 if self.path == '/commit-changes':
                     self.server.commit_change()
@@ -100,6 +120,28 @@ def _v258_suite():
                 self.send_header('Content-Length', str(len(reply)))
                 self.end_headers()
                 self.wfile.write(reply)
+
+            def oauth(self, body, header):
+                # A test double of the OAuth token endpoint, the accessible-resources list and
+                # the API gateway. Each answers only the credential the step before it issued.
+                if self.path == '/oauth/token':
+                    form = {k: v[0] for k, v in parse_qs(body.decode()).items()}
+                    if (form.get('grant_type') == 'client_credentials'
+                            and form.get('client_id') == values['tracker_client_id']
+                            and form.get('client_secret') == values['tracker_client_secret']):
+                        oauth_seen.append('token')
+                        return {'access_token': oauth_token, 'expires_in': 3600}
+                    return {}
+                if header != 'Bearer ' + oauth_token:
+                    return None
+                if self.path == '/oauth/token/accessible-resources':
+                    oauth_seen.append('resources')
+                    return [{'id': 'other-cloud', 'url': 'https://other.example.com'},
+                            {'id': 'cloud-fixture', 'url': oauth_site}]
+                if self.path.startswith('/ex/jira/cloud-fixture/'):
+                    oauth_seen.append('gateway')
+                    return {'issues': []}
+                return None
 
         server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
         thread = threading.Thread(target=server.serve_forever)
@@ -168,6 +210,40 @@ def _v258_suite():
                         RN.build_live_adapter(entry('keychain:tracker'))._request('GET', '/commit-changes')
                     check('observability/commit-pinned', changing_commit[0] == 'b' * 40
                           and observed[-1]['installation_commit'] == 'a' * 40)
+
+                    # F1: the OAuth service-account mode end to end: the client credential from the
+                    # keystore, the token grant, the cloud id resolved from the accessible resources
+                    # (no cloud_id configured) and a gateway call. The test double reroutes only
+                    # the opener's wire to the loopback fixture; every request is built for real.
+                    real_build_opener = urllib.request.build_opener
+
+                    def rerouted(*handlers):
+                        opener = real_build_opener(*handlers)
+
+                        class Loopback:
+                            def open(self, request, timeout=None):
+                                parts = urlsplit(request.full_url)
+                                if parts.hostname not in ('auth.atlassian.com', 'api.atlassian.com'):
+                                    raise AssertionError('unexpected OAuth destination')
+                                request.full_url = origin + parts.path
+                                return opener.open(request, timeout=timeout)
+                        return Loopback()
+                    oauth_entry = {'trackers': {'fixture': {
+                        'kind': 'jira-cloud', 'base_url': oauth_site, 'auth': 'oauth-client-credentials',
+                        'client_id_ref': 'keychain:tracker_client_id',
+                        'client_secret_ref': 'keychain:tracker_client_secret'}}}
+                    before = len(observed)
+                    with patch.object(urllib.request, 'build_opener', side_effect=rerouted):
+                        oauth_code = refusal(lambda: RN.build_live_adapter(oauth_entry)._request('GET', '/fixture'))
+                    oauth_rows = [row for row in observed[before:] if 'operation' in row]
+                    print('VELDO-0258 OAuth mode:', oauth_code, oauth_seen)
+                    check('ac1/oauth-end-to-end', oauth_code is None
+                          and oauth_seen == ['token', 'resources', 'gateway']
+                          and [(row['caller'], row['host'], row['result']) for row in oauth_rows]
+                          == [('tracker', 'auth.atlassian.com', 'ok'), ('tracker', 'api.atlassian.com', 'ok'),
+                              ('tracker', 'api.atlassian.com', 'ok')]
+                          and all(secret not in json.dumps(observed) for secret in
+                                  (oauth_token, values['tracker_client_id'], values['tracker_client_secret'])))
                 # Exec cannot inherit the memory binding; a run marker refuses even an existing service binding.
                 for caller, construct in constructors.items():
                     check('ac3/service-required/' + caller, refusal(lambda: construct('keychain:' + caller))
@@ -242,6 +318,7 @@ def _v258_suite():
                     identity = {'name': 'Fixture Owner', 'email': 'owner@example.com'}
                     routing = {'schema': 'veldo.tracker/v1', 'routing': {'mechanism': 'label', 'label_prefix': 'repo:'},
                                'repos': [{'id': 'example', 'tracker': 'fixture', 'project': 'EX'}],
+                               'bootstrap': {'project_key': 'EX'},
                                'trackers': entry('keychain:tracker')['trackers']}
                     settings = {'schema': 'veldo.installation/v1', 'git': {'branch': 'main'},
                                 'tracker_routing': routing,
@@ -279,6 +356,23 @@ def _v258_suite():
                             answer = TS.execute(service, packet, 'fixture')
                             print('VELDO-0258 signed command:', answer)
                             check('ac3/signed-service-command', answer['ok'])
+                            # F3: the service's init and snapshot previews, each signed and run over
+                            # the accepted routing with a FakeTracker; neither makes an outside call.
+                            expected_preview = {
+                                'init': lambda summary: summary.get('provisioned') is True and summary.get('project') == 'EX',
+                                'snapshot': lambda summary: 'provisioned' not in summary and summary.get('reconciled') is True,
+                            }
+                            for action in ('init', 'snapshot'):
+                                calls_before = len([row for row in observed if 'operation' in row])
+                                preview = dict(command, command_id='preview-' + action,
+                                               parameters=dict(action=action, tracker='fixture', dry_run=True))
+                                signed = dict(command=preview, signature=SIG.sign_bytes(
+                                    private, S.canonical_bytes(preview), 'veldo-command'))
+                                reply = TS.execute(service, signed, 'fixture')
+                                print('VELDO-0258 signed', action, 'preview:', reply)
+                                check('ac3/signed-' + action + '-preview', reply.get('ok') is True
+                                      and expected_preview[action](reply.get('summary') or {})
+                                      and len([row for row in observed if 'operation' in row]) == calls_before)
                             packet['command'] = dict(command, parameters=dict(action='init', tracker='fixture', dry_run=False))
                             check('ac3/tampered-command-refused', TS.execute(service, packet, 'fixture') ==
                                   {'ok': False, 'reason': 'unauthorized:tracker_call'})
@@ -324,6 +418,90 @@ def _v258_suite():
                 (tree / 'scripts').mkdir()
                 shutil.copyfile(planted, tree / 'scripts/unregistered.py')
                 check('ac3/planted-script', 'control_plane_call_unregistered:scripts/unregistered.py' in SC.findings(tree))
+                planted.unlink()
+                # F2: the repository's own conventions. Each planted module calls a remote the way
+                # an engine module does, and each must be named until it is registered.
+                plants = {
+                    'git-wrapper': "class Lander:\n    def land(self, url):\n"
+                                   "        self._git(self.clone, 'push', '-q', url, 'HEAD:refs/heads/main')\n",
+                    'git-function': "def tip(remote):\n    return _git(['ls-remote', remote, 'refs/heads/main'], cwd='.')\n",
+                    'git-profile': "def send(G, argv):\n    return G.run(argv, profile='network')\n",
+                    'opener-variable': "import urllib.request\ndef fetch(r):\n"
+                                       "    o = urllib.request.build_opener()\n    return o.open(r)\n",
+                    'process-tool': "import subprocess\ndef fetch():\n"
+                                    "    subprocess.run(['curl', '-s', 'https://example.com'])\n",
+                }
+                for label, source in plants.items():
+                    plant = mods / ('unregistered_' + label.replace('-', '_') + '.py')
+                    plant.write_text(source)
+                    check('ac3/planted-' + label, 'control_plane_call_unregistered:' + plant.name in SC.findings(mods))
+                    register = json.loads((mods / 'control_plane_calls.json').read_text())
+                    register['modules'][plant.name] = 'landing_push'
+                    check('ac3/registered-' + label, 'control_plane_call_unregistered:' + plant.name
+                          not in SC.findings(mods, register))
+                    plant.unlink()
+                register = json.loads((mods / 'control_plane_calls.json').read_text())
+                register['local_only']['control_clone.py']['_pin'] = ''
+                check('ac3/exemption-needs-reason', SC.findings(mods, register)
+                      == ['control_plane_call_unregistered:control_clone.py'])
+                check('ac3/registered-engine-callers', all(json.loads((ROOT / 'engine/.veldo/control_plane_calls.json')
+                      .read_text())['modules'].get(module) == kind for module, kind in (
+                          ('control_batch.py', 'landing_push'), ('control_landing.py', 'landing_push'),
+                          ('lander.py', 'landing_push'), ('control_replica.py', 'audit_replica'),
+                          ('installation.py', 'installation_repository'))))
+
+                # F2 at run time: Git transport to a destination off this host is the service's call,
+                # whichever profile and module make it. The fixture's local insteadOf rewrite is the
+                # only test double: the URL Veldo names is outside; Git's wire reaches a bare remote.
+                G = load('v258_git_process', mods / 'git_process.py')
+                CB = load('v258_batch', mods / 'control_batch.py')
+                RP = load('v258_replica', mods / 'control_replica.py')
+                INS = load('v258_installation', mods / 'installation.py')
+                outside_remote, outside_work = root / 'outside.git', root / 'outside-work'
+                git('init', '-q', '--bare', outside_remote)
+                git('init', '-q', '--initial-branch=main', outside_work)
+                git('-C', outside_work, '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.com',
+                    'commit', '-q', '--allow-empty', '-m', 'Fixture outside push')
+                outside_tip = git('-C', outside_work, 'rev-parse', 'HEAD')
+                outside_url = 'https://git.example.com/fixture/outside.git'
+                git('-C', outside_work, 'config', 'url.' + str(outside_remote) + '.insteadOf', outside_url)
+                # A remote name is resolved as Git resolves it; this one is never reached.
+                git('-C', outside_work, 'remote', 'add', 'outside', 'https://git.example.com/fixture/named.git')
+                def push_to(destination, **extra):
+                    return G.run(['git', '-C', str(outside_work), 'push', '-q', destination,
+                                  outside_tip + ':refs/heads/main'], capture_output=True, timeout=120, **extra)
+                check('ac3/outside-git-service-required', refusal(lambda: push_to(outside_url))
+                      == 'unauthorized:control_plane_service:git_transport'
+                      and refusal(lambda: git('--git-dir', outside_remote, 'rev-parse', 'refs/heads/main')) is not None)
+                check('ac3/outside-git-remote-name', refusal(lambda: push_to('outside', caller='landing_push'))
+                      == 'unauthorized:control_plane_service:landing_push')
+                with patch.dict(os.environ, VELDO_DISPATCH_ID='dispatch/fixture'):
+                    check('ac3/outside-git-run-refused', refusal(lambda: push_to(outside_url))
+                          == 'unauthorized:control_plane_run:git_transport')
+                local_remote = root / 'local.git'
+                git('init', '-q', '--bare', local_remote)
+                check('ac3/local-git-not-outside', push_to(str(local_remote)).returncode == 0)
+                batch = SimpleNamespace(push_identity=None)
+                check('ac3/batch-isolated-push-needs-service', refusal(lambda: CB.Batch._git(
+                    batch, outside_work, 'push', '-q', outside_url, outside_tip + ':refs/heads/main', ok=None))
+                      == 'unauthorized:control_plane_service:landing_push')
+                check('ac3/replica-needs-service', refusal(lambda: RP._git(
+                    ['push', '-q', outside_url, outside_tip + ':refs/heads/main'], cwd=str(outside_work), check=False))
+                      == 'unauthorized:control_plane_service:audit_replica')
+                installation_repo = INS.Repository.create(root / 'installation-send')
+                sent = installation_repo.commit({'installation.yaml': b'{}'}, None,
+                                                {'name': 'Fixture Owner', 'email': 'owner@example.com'}, 'Send')
+                installation_repo.git('config', 'url.' + str(outside_remote) + '.insteadOf', outside_url)
+                check('ac3/installation-push-needs-service', refusal(lambda: installation_repo.send(sent, outside_url))
+                      == 'installation_push_failed:control_plane_service')
+                before = len(observed)
+                with CP.service('a' * 40, observed.append, dispatch='fixture-batch'):
+                    pushed = CB.Batch._git(batch, outside_work, 'push', '-q', outside_url,
+                                           outside_tip + ':refs/heads/main', ok=None)
+                check('ac3/batch-isolated-push-observed', pushed.returncode == 0
+                      and git('--git-dir', outside_remote, 'rev-parse', 'refs/heads/main') == outside_tip
+                      and [(row['caller'], row['host'], row['result'], row['dispatch_id']) for row in observed[before:]]
+                      == [('landing_push', 'git.example.com', 'ok', 'fixture-batch')])
                 check('ac1/no-canary-in-records', all(value not in json.dumps(observed) for value in values.values()))
         finally:
             server.shutdown()
