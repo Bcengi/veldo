@@ -125,7 +125,9 @@ installed ingress contains only the resulting reference and never reads that
 file. An old ingress configuration naming a file must be migrated before restart.
 
 `control_plane_calls.json` registers the service network modules and their
-destination kinds. The static census scans unregistered modules too. Each call
+destination kinds. The same register names exact local-only and project-call
+functions, including project MCP inventory; these are outside this service-call
+set. The static census scans unregistered modules too. Each service call
 records its caller, destination host, operation, result, latency and accepted
 installation commit, with a unit or dispatch identifier where available. Bodies
 and credentials are omitted. Counters group calls by caller and result and
