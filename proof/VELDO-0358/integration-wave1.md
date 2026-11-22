@@ -34,12 +34,12 @@ Conflicts, both intents kept:
 
 | Item | Closed by | Proof |
 | - | - | - |
-| waits.cgroup_populated and CgroupEmpty treat only ENOENT as gone (brief G) | 7cc54406. Both read a cgroup's events through one opener and take ENOENT and ENODEV as the same fact: populated is None, the source is gone and is not polled, a wait for the group to be empty is done at its first reading. Any other error is still raised. Every caller gets it (suites 63, 66_veldo_0042, 157) | suite 157 row waits/cgroup-gone-is-empty: the kernel's own ENODEV, made by removing a child cgroup once its events file is open. Falsifier wait358-enodev-not-gone rejected (mutants-waits.txt) |
+| waits.cgroup_populated and CgroupEmpty treat only ENOENT as gone (brief G) | 7cc54406. Both read a cgroup's events through one opener and take ENOENT and ENODEV as the same fact: populated is None, the source is gone and is not polled, a wait for the group to be empty is done at its first reading. Any other error is still raised. Every caller gets it (suites 63, 66_veldo_0042, 157) | suite 157 row waits/cgroup-gone-is-empty: the kernel's own ENODEV, made by removing a child cgroup once its events file is open. Falsifier wait358-enodev-not-gone rejected (mutants-waits.txt). Under the gate's confinement the row cannot make its group (section 7, item 3) |
 | bin/veldo into the footprint (brief G) | fd7900a3. The footprint now names every file waves 0 and 1 changed that it did not: bin/veldo, the synced .veldo copies of the engine modules, init_scaffold.py, claim.py, the files brief E and the lead converted, suites 36 and 86_veldo_0168 | computed from the diff against e3451130: no changed file is outside the footprint |
 | THE HANG WATCHDOG MUST KILL AND REAP THE WHOLE PROCESS TREE (brief F: 38 leaked processes) | 7cc54406. scripts/selftest.py becomes the run's keeper (waits.keep_the_tree) and its child runs the suites. The keeper is the run's child subreaper, so a process whose parent ended (the orphaned worker of suite 83's receiver-death row, in a scope of its own) is the keeper's child and is reaped by it at once, as the user manager would. When the suite process ends without having said that it ran every suite to its end (a hung wait, the watchdog, its faulthandler timer, a signal), the keeper kills every descendant, reaps each one, names each (SELFTEST TREE) and only then ends with the run's own status. An orderly end kills nothing: what a suite leaves then is the residue row's. The keeper sleeps in sigwaitinfo and reads no clock | suite 157 row watchdog/hung-tree-ended: four holders nobody releases (a child, a child with a child below it, and a process in a session of its own whose parent ended at once); after a hung run each is reaped (pidfd: no such process) and named; after an orderly run each is still held and is then released by the test. Falsifiers wait358-hung-tree-left and wait358-orphans-not-kept rejected (mutants-waits.txt) |
 | Suite 36 needs sys in its allowed imports (brief F) | b0dba70e. control_store loads the shared timers table through sys.modules; sys is standard library, which is what the row requires | suite 36 green alone and in the unit leg |
 | AbortSignal.timeout(n) in the census (brief H) | b0dba70e. An R3 site in TypeScript, in scripts/check_wallclock.py and its canon copy; the hang constants are the allowed forms | suite 158: a site fixture and an allowed one. Falsifier wall358-abort-signal-ignored rejected (mutants-lead.txt) |
-| Sites in decisions.spec.ts, factory_harness.py, team_harness.py and suite 122 (brief H) | b0dba70e. unique() for the alias, H.wall() for the record's time, H.WAIT_HANG_SECONDS for the key tool, and suite 122 as suite 121 was converted (run_heavy for the install, the build and the browser run, the stamp, no suite seconds). Seven baseline sites lowered. Suite 121's row wave1/no-sites reads the four files | census pass. Falsifier wave358-harness-bound-restored (suite 121; in the full mutation stage) |
+| Sites in decisions.spec.ts, factory_harness.py, team_harness.py and suite 122 (brief H) | b0dba70e. unique() for the alias, H.wall() for the record's time, H.WAIT_HANG_SECONDS for the key tool, and suite 122 as suite 121 was converted (run_heavy for the install, the build and the browser run, the stamp, no suite seconds). Seven baseline sites lowered. Suite 121's row wave1/no-sites reads the four files | census pass. Falsifier wave358-harness-bound-restored rejected through the stage (stage-groups.txt) |
 | AC15 rechecked with E's and F's timers in | section 4 | |
 | Suite 151's dynamic row names (brief G) | Decided yes, fd7900a3: waits.declared_rows reads the rows a suite declares in ROWS (66 suites state their rows at their end under names built at run time). When such a suite hangs, each declared row no stated row reached prints SELFTEST NOT RUN, so the verdict rule reads a target row as not run (hung_not_killed) and not as a removed row | suite 157 row waits/declared-rows-not-run. Falsifier wait358-declared-rows-unread rejected (mutants-lead.txt) |
 | Check that E, F and H built their own brief | section 1 | |
@@ -48,7 +48,7 @@ Also closed, from the briefs' own lead items:
 
 | Item | Closed by | Proof |
 | - | - | - |
-| Brief F item 2: a module read from a fresh cache file was claimed by no suite, so the opened-files record lost it | 9e3acdd1. The dispatcher's audit hook claims the source of a cache file it sees opened (the authority's watch already counted it) | suite 157 row record/cached-module-is-its-source. Falsifier opened358-cached-module-unclaimed rejected (mutants-lead.txt) |
+| Brief F item 2: a module read from a fresh cache file was claimed by no suite, so the opened-files record lost it | 9e3acdd1, cdcae563. The dispatcher's audit hook claims the source of a cache file it sees opened (the authority's watch already counted it). The row makes its cache file beside the source whatever bytecode prefix runs it (a mutation worker has one) | suite 157 row record/cached-module-is-its-source. Falsifier opened358-cached-module-unclaimed rejected (mutants-lead.txt) |
 | Brief F items 1, 6b, 9 and brief E item 9 (the scaffold line, _await_gone, the private timer readers) | landed with briefs E and F together | the unit leg and the mutation stage below |
 
 ## 3. The root cause of loop/reset-timer-wake
@@ -129,15 +129,28 @@ covered by its own runs below; and terminal conditions in suite 83 (5342fa22) th
 | Run | Where | Result |
 | - | - | - |
 | The full stage at 9e3acdd1, ten workers | full-stage-9e3acdd1.txt | status failed: stopped after 16686 s with 723 of 3665 cases executed, 650 rejected (76 by assertion, 574 unproven: a suite or a file it opens still has a baseline entry). It stopped on a worker cleanup error: the mutant of loop154-pipe-not-polled made suite 83 hang, the hung process left its directory under /dev/shm, and an unmetered worker's directory outside its home cannot be shown to be its own (the gate's metered workers can). Of the 73 invalid results: 58 are the cases of suite 86_veldo_0127, whose controls are red until the live recapture; 3 are cases of suite 160 whose no-op control was red because the canary ALONE was red under the stage's own load (below); 1 control and 1 survivor are of suite 86_veldo_0148 (below); 5 are suite 83's (1 hung, 4 cancelled when the stage stopped); 5 cancelled |
-| Suite 83's twelve cases, each driven alone | mutants-suite83.txt | eight rejected on evidence; FOUR HANG and are not rejected: loop154-pipe-not-polled, loop154-ask-reruns, loop154-account-slot-kept, loop154-orphan-not-stopped. In the gate each is hung_not_killed, and the stage is red. Brief F drove its five falsifiers and not the inherited cases of its suites (section 7, item 1) |
-| The cases the first stage did not judge, in groups through the same driver at 5342fa22 (one stage per wave 1 suite, then the other suites 400 at a time) | stage-groups.txt (driver stage_groups.py.txt) | GROUPS |
+| Suite 83's twelve cases | mutants-suite83.txt | eight rejected on evidence (seven in the first stage, the lead's through its own worker); FOUR HANG and are not rejected: loop154-pipe-not-polled, loop154-ask-reruns, loop154-account-slot-kept, loop154-orphan-not-stopped. In the gate each is hung_not_killed, and the stage is red. Brief F drove its five falsifiers and not the inherited cases of its suites (section 7, item 1) |
+| The cases the first stage did not judge, in groups through the same driver at 5342fa22 (the tree of 9e3acdd1 but for suite 151's path and suite 83's withdrawn conditions) (one stage per wave 1 suite, then the other suites 400 at a time) | stage-groups.txt (driver stage_groups.py.txt) | Every group but four passed with every case rejected: suites 62 (37, assertion, dispatch261-stop-leaves-record-running among them, which stopped wave 0's stage), 63 (42, assertion), 66_veldo_0042 (24, assertion), 66_veldo_0047 (43, assertion), 78 (36, assertion), 85_veldo_0171 (17, assertion), 106 (20, assertion), 158 (13), 160 (3), 112 (26), and the other suites in seven groups (2607 of 2607). Not clean: suite 71 (13 rejected, 4 hang), suite 151 (41 rejected, 3 hang, 1 with a verdict that changed with the load), suite 157 (its controls red under the confinement), and one flaky control of suite 86_veldo_0148. The harness falsifier and the five cases of the review driver were run after, each rejected |
 | The survivor and the red control of suite 86_veldo_0148, driven alone | mutants-0148.txt | reland148-landed-rebuilt is rejected alone (target row red, controls green): it survived only under the stage's load. receiver148-release-deadline-not-finite: its no-op control is red alone too (receiver/pre-release-budget). Suite 86_veldo_0148 is not a wave 1 suite and has baseline entries: its verdicts are unproven by the specification's own word, and both are wave 2's |
+
+The count over both runs: 3665 cases are registered. 3581 are rejected through the stage's own driver (650 in
+the first stage, 2924 in the groups, 7 in the single stages), each by assertion or, where a baseline entry
+remains in its suite or a file it opens, unproven. The 84 others, each accounted for:
+
+| Cases | Why not rejected |
+| - | - |
+| 58 of suite 86_veldo_0127 | its controls are red until the live recapture (section 7, item 5) |
+| 13 of suite 157 | its controls are red under the confinement: no child cgroup can be made there (section 7, item 3). Each of the lead's cases is rejected through its own worker outside the confinement (mutants-waits.txt, mutants-lead.txt) |
+| 4 of suite 83 and 4 of suite 71 | the mutant hangs the suite (section 7, item 1) |
+| 1 of suite 83, timers358-claim-window-literal | rejected through its own worker (mutants-claim.txt); its group stage is void |
+| 3 of suite 151 | the mutant hangs the suite (section 7, item 2) |
+| 1 of suite 86_veldo_0148 | its no-op control is red, alone too (mutants-0148.txt) |
 
 The three red controls of suite 160: row load/level-by-construction requires the canary green ALONE, and the
 canary is by construction a test synchronized by a sleep (AC12). Inside the mutation stage, beside ten workers
 and two other heavy runs of this integration, alone was not quiet and the canary was red in the no-op control.
 Wave 0 recorded this as its finding 6 and left it, by its nature. It is a row of this specification that
-depends on how busy the machine is, and it needs the owner's ruling (section 7, item 2).
+depends on how busy the machine is, and it needs the owner's ruling (section 7, item 4).
 
 The unit leg's 18 reds:
 
@@ -185,23 +198,41 @@ BLOCKERS FOR THE GATE:
    unmutated suite red (7 of 32 loaded runs; loop/receiver-death five times, the waiting unit not offered in the
    pass of the receiver's death), so suite 83 is as the loaded runs proved it. The fourth needs the product to
    record that it made the orphan's stop before it waits. This goes back to brief F.
-2. Suite 160's row load/level-by-construction is red when the canary alone is run on a busy machine (three
-   controls in the stage). AC12 asks for the canary green alone; the owner rules whether that fact is asserted,
-   or recorded as data like the canary's red in the leg.
-3. Release acts on the combined line before the gate: qualify again (suite 126) and the owner-approved live
+   The same in suite 71, four inherited cases (mutants-suite71.txt): owner-command-unrouted,
+   service-skips-open-ingress, resume-drops-backlog and probe-on-the-real-bot each hang a wait for a request to
+   be presented or settled, which has no terminal condition for a service that will never do it.
+2. Suite 151 under the gate's confinement, which brief G's host could not give it (stage-groups.txt): three
+   inherited cases hang at the same wait (the idle supervisor to sleep again after a process ended):
+   space313-unread-process-not-counted, -unread-bounded-by-a-read-parent and
+   -unread-started-after-the-run-left-out. And space313-stop-after-the-command-ends-the-supervisor survived in
+   the group stage (twelve workers) and is rejected alone: its verdict depended on how busy the machine was.
+   This goes back to brief G.
+3. Suite 157 is red through the gate's confined launcher at waits/no-idle-wake (brief A's row of wave 0) and at
+   waits/cgroup-gone-is-empty (this integration's): no child cgroup can be made under the confinement
+   (permission denied). Both full unit legs ran one unconfined dispatcher and did not show it; the stage's
+   confined workers did, as red controls of all thirteen cases of the suite. The rows need a cgroup they may
+   write: a row-scoped entry for the suite in scripts/gate_unconfined.json, or a grant of the gate's own
+   delegated group to its confinement. Both are the owner's (protected paths).
+4. Suite 160's row load/level-by-construction is red when the canary alone is run on a busy machine (three
+   controls in the first stage; green in the group stage). AC12 asks for the canary green alone; the owner
+   rules whether that fact is asserted, or recorded as data like the canary's red in the leg.
+
+OTHER:
+
+5. Release acts on the combined line before the gate: qualify again (suite 126) and the owner-approved live
    recapture (suite 86_veldo_0127), because their records are bound to the engine modules' digests.
-4. Suite 110 is not in the proven set: scripts/suites/support/identity_wire.py has baseline entries and is in
+6. Suite 110 is not in the proven set: scripts/suites/support/identity_wire.py has baseline entries and is in
    no brief's files and outside the footprint (brief F's item 3).
-5. AC15: the two cadences of section 4 need the owner's decision; suite 106's service runs outside the
+7. AC15: the two cadences of section 4 need the owner's decision; suite 106's service runs outside the
    profile (brief E's item 4).
-6. The keeper ends the process tree: what the suite process started, and what was started below it. A unit
+8. The keeper ends the process tree: what the suite process started, and what was started below it. A unit
    the user manager itself starts for a suite (systemctl start of an installed unit) is no descendant and is
    not ended by it. A descendant another account owns is named as not ended. A heavy child that run_heavy ends
    after its second bound is killed alone unless it is a dispatcher (then its keeper ends its tree on the first
    signal). A mutation worker runs a suite with no dispatcher and so with no keeper: its coordinator reaps the
    worker's unit, and a hung suite's directory under /dev/shm stops an unmetered stage (section 5).
-7. A browser expectation that never holds takes the wait hang bound to fail (brief H's item 3): it makes
+9. A browser expectation that never holds takes the wait hang bound to fail (brief H's item 3): it makes
    the mutation stage long, as the stage's time below shows. A design follow-up for wave 2.
-8. In production nobody was found to renew the claim of a unit that waits with no run (section 3).
-9. Brief E's item 11: control_api_authority's stop_worker has the stale_version order brief E fixed in
+10. In production nobody was found to renew the claim of a unit that waits with no run (section 3).
+11. Brief E's item 11: control_api_authority's stop_worker has the stale_version order brief E fixed in
    Runner.honor_stops; no row reaches it.
