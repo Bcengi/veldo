@@ -102,6 +102,31 @@ def cases():
     add(12, 'exclusive-response-limit', '48_veldo_0108_relay.py', 'control_relay.py',
         '            if total > MAX_BYTES:', '            if total >= MAX_BYTES:',
         ['relay/exact-limit-response-is-carried'])
+    # VELDO-0114: each acceptance criterion's declared falsifier. The census needs ptrace, so these
+    # rows are judged only where the VELDO-0111 census is complete (the unconfined leg); elsewhere
+    # they stand down by name and the baseline is invalid, never a killed mutant.
+    S114 = '113_veldo_0114_relay_census.py'
+    add(114, 'v114-ipv4-listener-before-forwarding', S114, 'control_relay.py',
+        '        answer = forward(address, payload)\n',
+        '        _l = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n'
+        '        _l.bind(("127.0.0.1", 0)); _l.listen(1); _l.close()  # defect: a transient listener\n'
+        '        answer = forward(address, payload)\n',
+        ['relay/no-listener-during-call'])
+    add(114, 'v114-endpoint-helper-forked', S114, 'control_relay.py',
+        '    conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)\n',
+        '    _h = os.fork()  # defect: a short-lived endpoint helper before connecting\n'
+        '    if _h == 0:\n        os._exit(0)\n    os.waitpid(_h, 0)\n'
+        '    conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)\n',
+        ['relay/no-second-process'])
+    add(114, 'v114-snapshot-fallback', S114, S114,
+        '    if not (ready and one_each):\n',
+        '    if not (ready and one_each) and all(\n'
+        '            invocation.get("snapshots", (0, 1))[0] == invocation.get("snapshots", (0, 1))[1]\n'
+        '            for invocation in invocations):  # defect: snapshot equality for a failed observer\n'
+        '        return {name: dict(status="PASS", reason="pathname_snapshots_match") for name in _v114_ROWS}\n'
+        '    if not (ready and one_each):\n',
+        ['relay/listener-proof-needs-census', 'relay/stand-down-is-not-green'])
+    result[-1]['dir'] = 'scripts/suites'
     def grammar(name, module, old, new, row):
         add(118, name, '54_veldo_0118_grammar.py', module, old, new, ['grammar/' + row])
         result[-1]['fixture'] = True
