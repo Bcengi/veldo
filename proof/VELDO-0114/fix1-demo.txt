@@ -1,0 +1,11 @@
+# Scratch clone (git clone --shared of the fix-round-1 tree), suite 48 with two demo edits:
+#   census calls given fault="denied" (as on a leg without ptrace), addrfromenv reason operand broken.
++                                       fault="denied")  # DEMO: as on a leg without ptrace
++                                and _v108_ans_m3.get("reason") == "DEMO-broken-operand")
+# python3 scripts/selftest.py --suite 48_veldo_0108_relay (through host_heavy.sh), lines 41-46:
+   VELDO-0108 AC3 relay/one-endpoint-one-judgement: FAIL (comparison_failed), census INCOMPLETE
+  SELFTEST FAIL: VELDO-0108 AC3 relay/one-endpoint-one-judgement: the same command sent locally and through the relay produces the same judgement and the same entry in the authority's applied log, so a relayed command is not a second code path. Each relayed call ran as the root of a VELDO-0111 census with its own complete receipt, from before the relay executable ran through exit and descendant dr
+  48_veldo_0108_relay                             10 passed   17.01s
+selftest (PARTIAL, 1 of 255 suites): 36 passed, 1 failed in 17.01s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
+exit 1

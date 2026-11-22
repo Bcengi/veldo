@@ -42,7 +42,7 @@ substitute: its before/after snapshots match while the census records the listen
 ## Falsifiers (teeth finding 114)
 
 `drive.py` runs the registry's own `materialize()` and `worker()` for each case.
-It runs one baseline of the original suite, then a no-op copy and the mutant for
+It runs one baseline of each original suite, then a no-op copy and the mutant for
 each case. A case counts only if the target was [True] in the baseline, the no-op
 rows equal the baseline, and the mutant's target is exactly [False] in a run with
 the same number of rows. `results.json` holds the outcomes and digests, and each
@@ -53,8 +53,10 @@ the same number of rows. `results.json` holds the outcomes and digests, and each
 | v114-ipv4-listener-before-forwarding | Open and close an IPv4 listener on an ephemeral port before forwarding | relay/no-listener-during-call |
 | v114-endpoint-helper-forked | Fork a short-lived endpoint helper before connecting | relay/no-second-process |
 | v114-snapshot-fallback | Fall back to pathname snapshot equality when census collection fails | relay/listener-proof-needs-census, relay/stand-down-is-not-green |
+| v114-stand-down-hides-failed-comparison (fix round 1) | Suite 48 lets an incomplete census decide before the comparison | relay/stand-down-never-hides-a-failed-comparison |
 
-All three were detected, and their no-op controls equal the green baseline (30 rows).
+All four were detected, and each no-op control equals its suite's green baseline
+(suite 113: 30 rows, suite 48: 37 rows). Each mutant fails only its target rows.
 
 ## Runs
 
@@ -64,7 +66,65 @@ All three were detected, and their no-op controls equal the green baseline (30 r
   input identity, input and implementation digests, and fixture version).
 * `selftest.py --suite 48_veldo_0108_relay`: 10 passed, 0 failed. The composite
   row was emitted from complete receipts, not stood down.
+* Fix round 1, through host_heavy.sh on this host (census complete):
+  `--suite 48_veldo_0108_relay` 11 passed, 0 failed (closure 37), with no STANDS
+  DOWN line. `--suite 113_veldo_0114_relay_census` 4 passed, 0 failed (closure 30).
+  Both exit 2, the partial-run exit. The scratch-clone demo is red (`fix1-demo.txt`).
 * Lint passed, and `check_personal_setup.py` found 0.
+
+## Fix round 1 (review F1)
+
+Finding: in suite 48, when the census was incomplete (ptrace refused, as on the
+confined gate leg), a failed endpoint/judgement comparison only printed STANDS
+DOWN and the suite stayed green. Fixed:
+
+* `_v108_composite(census_ready, census_clean, comparison)` in suite 48 decides
+  the composite. A failed comparison is FAIL (comparison_failed) whatever the
+  census shows. An incomplete census only withholds the pass of a comparison that
+  held (STANDS DOWN, census_incomplete). A complete census with a service event or
+  a non-root task is FAIL (relay_listener). Only a complete, clean census with a
+  held comparison is PASS.
+* New row `relay/stand-down-never-hides-a-failed-comparison` (suite 48, every
+  leg): one real relayed call under a census given `fault="denied"` must leave an
+  INCOMPLETE receipt that is not ready. With it, a failed comparison is FAIL and a
+  held one is STANDS DOWN, never PASS. The complete-census rows of the table are
+  pinned too.
+* Suite 113's `_v114_judge` now follows the same rule (its docstring already said
+  so): with no complete census, `comparison=False` makes the composite FAIL
+  (comparison_failed). The stand-down contract checks this in every fault, missing,
+  mixed and shared-receipt case.
+* The composite is guarded by `leg_runs("census")`, as suites 100 and 101 guard
+  their strace rows. Without a list entry it runs on the confined leg as before.
+* Falsifier, teeth finding 114: `v114-stand-down-hides-failed-comparison` puts
+  the census check back in front of the comparison in `_v108_composite`. The new
+  row is its target. It needs no census, so the confined leg judges it.
+* Scratch clone demo (the reviewer's case): suite 48's census calls given
+  `fault="denied"`, and the `addrfromenv` reason operand broken. See
+  `fix1-demo.txt`: the composite is FAIL (comparison_failed) and the suite is red.
+
+## Owner landing decision: entries for `scripts/gate_unconfined.json`
+
+The reviewer recommends these entries. This change does not edit that protected
+file. They belong in one edit:
+
+* `{"suite": "113_veldo_0114_relay_census", "reason": "nested ptrace: the relay
+  runs as the PTRACE_TRACEME root of a VELDO-0111 census, and the gate domain
+  refuses ptrace"}`: the whole suite. Every row except
+  relay/stand-down-is-not-green needs the census. This also lets the mutation
+  stage run the finding 114 cases unconfined.
+* `48_veldo_0108_relay`: preferably rows-scoped, `{"suite": "48_veldo_0108_relay",
+  "rows": "census", "reason": "nested ptrace: relay/one-endpoint-one-judgement
+  runs each relayed call under a VELDO-0111 census, and the gate domain refuses
+  ptrace"}`. Suite 48 already guards only that row with `leg_runs("census")`, so
+  the other relay rows, the new stand-down row among them, stay confined. A
+  whole-suite entry also works, but it moves every relay row out of the confined
+  leg.
+* `113_veldo_0111_census`: the whole suite, in the same edit (the VELDO-0111
+  open item). VELDO-0114 consumes its receipts.
+* At landing, require a gate stamp that shows these rows green on the
+  unconfined leg. That leg must really allow PTRACE_TRACEME (yama ptrace_scope 1
+  allows it). If it does not, the rows stand down there too and the entries buy
+  nothing.
 
 ## Open for the lead and owner
 
