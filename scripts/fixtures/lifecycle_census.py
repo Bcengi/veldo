@@ -1014,8 +1014,14 @@ class Collector:
                 self.descriptor_closed(pid, fd, before[fd], 436, flags=flags)
 
     def exec_closes(self, pid, entry):
-        """A successful exec closes every close-on-exec descriptor."""
-        if not entry or entry['nr'] not in (59, 322) or entry.get('files_shared'):
+        """A successful exec closes every close-on-exec descriptor.
+
+        At PTRACE_EVENT_EXEC the kernel has already run de_thread and
+        unshare_files, so the table read here belongs to this task alone; the
+        closes are accounted from entry to here even when the table was shared
+        with this task's threads at exec entry.
+        """
+        if not entry or entry['nr'] not in (59, 322):
             return
         after = self.fd_table(pid)
         for fd, link in sorted(entry['fds'].items()):
