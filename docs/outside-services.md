@@ -132,3 +132,8 @@ records its caller, destination host, operation, result, latency and accepted
 installation commit, with a unit or dispatch identifier where available. Bodies
 and credentials are omitted. Counters group calls by caller and result and
 credential refusals by scheme.
+
+Service inspection exposes live service counters as `control_plane` and durable
+effect counters as `control_plane_effects`. Effect children append their safe
+observations to `control-plane-calls.jsonl` beside the private authority store.
+Literal credential values have no reported reference name.
