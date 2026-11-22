@@ -1003,6 +1003,19 @@ def attach_installation(store, conn, loader):
 def installation_revisions(conn, domain, repository, snapshot, config, principal, now):
     """Changes for an accepted tree; immutable definition copies and revision provenance."""
     changes = {}
+    # Import every earlier definition once; pins retain their original revision
+    # and digest, including revisions no longer at a workflow's head.
+    for rid, raw in conn.execute('SELECT id, data FROM entities WHERE kind=?', (REVISION_KIND,)):
+        data = json.loads(raw)
+        if 'definition' not in data:
+            continue
+        dd = definition_digest(data['definition'])
+        if dd != data['definition_digest']:
+            raise Refused('missing_evidence:definition_digest', rid)
+        cid = 'workflow-definition:' + dd
+        if _entity_row(conn, cid) is None:
+            changes[cid] = {'kind': CONTENT_KIND, 'data': {
+                'canonical': canonical(data['definition']).decode('ascii'), 'imported_revision': rid}}
     for path, definition in sorted(config.items()):
         if not path.startswith('workflows/') or not path.endswith('.json') or path.endswith('.layout.json'):
             continue

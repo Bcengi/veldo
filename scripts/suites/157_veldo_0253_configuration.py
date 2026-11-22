@@ -27,7 +27,7 @@ def _v253_suite():
     rows = ('ac1/whole-commit', 'ac1/committed-only', 'ac1/schema', 'ac1/notification',
             'ac2/widening-waits', 'ac2/exact-decision', 'ac2/superseded', 'ac2/classification',
             'ac3/one-source', 'ac3/stale-parent', 'ac3/layout-only', 'ac3/external-edit', 'ac3/push-refused',
-            'ac4/pinned-survives')
+            'ac4/pinned-survives', 'ac2/signed-settlement', 'ac2/forged-settlement')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -198,6 +198,63 @@ def _v253_suite():
             except C.I.InstallationError:
                 gone = True
             check('ac4/pinned-survives', gone and WU.pinned(S, conn, 'domain', 'repository', pinned) == definition)
+            claims = load('v253_claims', mods / 'control_claim.py')
+            A = load('v253_assignment', mods / 'control_assignment.py')
+            P = load('v253_projection', mods / 'control_channel_projection.py')
+            V = load('v253_presenter', mods / 'control_channel_presentation.py')
+            ST = load('v253_settlement', mods / 'control_request_settlement.py')
+            D = load('v253_decisions', mods / 'control_installation_decision.py')
+            contract = load('v253_contract', mods / 'entity_contract.py')
+            keys = {}
+            def fixture(eid, kind, data):
+                before = WF._entity_row(conn, eid)
+                token = 'signed-fixture-' + eid
+                S.execute(conn, dict(command_id=token, principal='setup', operation='upsert_entity', nonce=token,
+                    artifact_digests=[], expected_versions={eid: before['version'] if before else 0},
+                    parameters=dict(entity_id=eid, kind=kind, data=data)), 'setup', sign, 1)
+            for who in ('owner', 'pm', 'api-edge'):
+                keys[who] = root / ('key-' + who)
+                subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys[who])],
+                               check=True, capture_output=True, timeout=120)
+                fixture(who, 'membership', dict(principal_type='person' if who == 'owner' else 'service',
+                    roles=['project_owner'] if who == 'owner' else [], scope='*', independence_group=who,
+                    revoked_at=None, expires_at=None))
+                fixture('key:' + who, 'verification_key', dict(principal=who, effective_at=0,
+                    public_key=' '.join(keys[who].with_suffix('.pub').read_text().split()[:2])))
+            fixture('channel-enrollment:telegram_chat:owner', 'channel_enrollment',
+                dict(schema='veldo.channel_enrollment/v1', channel='telegram_chat', principal='owner',
+                     chat_id=25301, revoked_at=None))
+            class Edge:
+                serial = 0
+                def send(self, chat, text, reply_to):
+                    self.serial += 1
+                    return dict(chat_id=chat, message_id=self.serial, date=1, text=text, reply_to_message_id=reply_to)
+            ids = dict(domain_uuid='domain', repository_uuid='repository', store_uuid='store')
+            inbox = A.Inbox(S, claims.CM, claims, contract, conn, ids, 'setup', sign)
+            presenter = V.Presenter(S, claims.CM, P, inbox, Edge(), conn, 'setup', sign, assignment=A)
+            settlement = ST.Settlement(S, claims.CM, inbox, presenter, conn, 'setup', sign,
+                                      assignment=A, presentation=V, api_edge='api-edge')
+            command_sign = lambda who, data: SIG.sign_bytes(keys[who], data, 'veldo-command')
+            loader.decisions = D.Decisions(settlement, 'owner', 'pm', lambda data: command_sign('pm', data))
+            loader.reconcile()
+            signed_commit = commit({'projects/signed.yaml': {'account': 'primary'}})
+            outcome = loader.reconcile()
+            proposal = loader.status()['proposal']
+            request = A.assignment_id('repository', loader.decisions.alias(proposal))
+            published = presenter.present(request)
+            receipt = presenter.current(request)
+            if not receipt:
+                raise AssertionError(('presentation', outcome, published, settlement.observations))
+            body = dict(ids, schema='veldo.settlement_api_answer/v1', edge='api-edge', answer_id='installation-answer',
+                principal='owner', request_id=request, request_version=receipt['request_version'],
+                presentation_id=receipt['presentation_id'], presentation_digest=receipt['brief_digest'],
+                presentation_version=receipt['presentation_version'], choice='approve', rationale='Approve exact widening')
+            forged = settlement.api_answer({'answer': body, 'signature': command_sign('owner', S.canonical_bytes(body))})
+            check('ac2/forged-settlement', forged['outcome'] == 'refused' and loader.reconcile()['outcome'] == 'waiting')
+            settled = settlement.api_answer({'answer': body, 'signature': command_sign('api-edge', S.canonical_bytes(body))})
+            result = loader.reconcile()
+            check('ac2/signed-settlement', settled['outcome'] != 'refused' and result['outcome'] == 'accepted'
+                  and loader.accepted_commit == signed_commit and bool(loader.record()['decision']))
         except Exception as error:
             errors.append(type(error).__name__ + ': ' + str(error))
         finally:
