@@ -1,0 +1,263 @@
+{
+  "cases": [
+    {
+      "baseline_failed_rows": [],
+      "baseline_targets": {
+        "ac1/refuses/tracker/env": [
+          true
+        ]
+      },
+      "mutant_failed_rows": [
+        "VELDO-0258 observability/commit-pinned"
+      ],
+      "mutant_targets": {
+        "observability/commit-pinned": [
+          false
+        ]
+      },
+      "name": "outside258-commit-read-after-call",
+      "noop_failed_rows": [],
+      "noop_targets": {
+        "ac1/refuses/tracker/env": [
+          true
+        ]
+      },
+      "replacement_count": 1,
+      "rows": [
+        "observability/commit-pinned"
+      ],
+      "source": "fresh"
+    },
+    {
+      "baseline_failed_rows": [],
+      "baseline_targets": {
+        "effects/publication-call-observed": [
+          true
+        ]
+      },
+      "mutant_failed_rows": [
+        "VELDO-0028 effects/publication-call-observed"
+      ],
+      "mutant_targets": {
+        "effects/publication-call-observed": [
+          false
+        ]
+      },
+      "name": "outside258-effect-observer-dropped",
+      "noop_failed_rows": [],
+      "noop_targets": {
+        "effects/publication-call-observed": [
+          true
+        ]
+      },
+      "replacement_count": 1,
+      "rows": [
+        "effects/publication-call-observed"
+      ],
+      "source": "fresh"
+    },
+    {
+      "baseline_failed_rows": [],
+      "baseline_targets": {
+        "ac1/refuses/tracker/env": [
+          true
+        ]
+      },
+      "mutant_failed_rows": [
+        "VELDO-0258 ac1/refuses/tracker/env",
+        "VELDO-0258 observability/counts"
+      ],
+      "mutant_targets": {
+        "ac1/refuses/tracker/env": [
+          false
+        ]
+      },
+      "name": "outside258-env-resolver",
+      "noop_failed_rows": [],
+      "noop_targets": {
+        "ac1/refuses/tracker/env": [
+          true
+        ]
+      },
+      "replacement_count": 1,
+      "rows": [
+        "ac1/refuses/tracker/env"
+      ],
+      "source": "fresh"
+    },
+    {
+      "baseline_failed_rows": [],
+      "baseline_targets": {
+        "ac1/refuses/tracker/env": [
+          true
+        ]
+      },
+      "mutant_failed_rows": [
+        "VELDO-0258 ac1/no-canary-in-observations",
+        "VELDO-0258 observability/failed-body-private",
+        "VELDO-0258 observability/effect-log",
+        "VELDO-0258 ac1/no-canary-in-records"
+      ],
+      "mutant_targets": {
+        "ac1/no-canary-in-observations": [
+          false
+        ]
+      },
+      "name": "outside258-literal-in-refusal",
+      "noop_failed_rows": [],
+      "noop_targets": {
+        "ac1/refuses/tracker/env": [
+          true
+        ]
+      },
+      "replacement_count": 1,
+      "rows": [
+        "ac1/no-canary-in-observations"
+      ],
+      "source": "fresh"
+    },
+    {
+      "baseline_failed_rows": [],
+      "baseline_targets": {
+        "ac2/malformed-whole": [
+          true
+        ]
+      },
+      "mutant_failed_rows": [
+        "VELDO-0258 ac2/malformed-whole",
+        "VELDO-0258 ac2/previous-still-live"
+      ],
+      "mutant_targets": {
+        "ac2/malformed-whole": [
+          false
+        ]
+      },
+      "name": "outside258-malformed-site-accepted",
+      "noop_failed_rows": [],
+      "noop_targets": {
+        "ac2/malformed-whole": [
+          true
+        ]
+      },
+      "replacement_count": 1,
+      "rows": [
+        "ac2/malformed-whole"
+      ],
+      "source": "fresh"
+    },
+    {
+      "baseline_failed_rows": [],
+      "baseline_targets": {
+        "ac1/refuses/tracker/env": [
+          true
+        ]
+      },
+      "mutant_failed_rows": [
+        "VELDO-0258 ac3/service-required/tracker",
+        "VELDO-0258 ac3/service-required/tracker_init",
+        "VELDO-0258 ac3/service-required/doorbell",
+        "VELDO-0258 ac3/service-required/provisioner",
+        "VELDO-0258 ac3/service-required/owner_channel",
+        "VELDO-0258 ac3/fork-does-not-inherit"
+      ],
+      "mutant_targets": {
+        "ac3/service-required/tracker": [
+          false
+        ]
+      },
+      "name": "outside258-no-service-binding",
+      "noop_failed_rows": [],
+      "noop_targets": {
+        "ac1/refuses/tracker/env": [
+          true
+        ]
+      },
+      "replacement_count": 1,
+      "rows": [
+        "ac3/service-required/tracker"
+      ],
+      "source": "fresh"
+    },
+    {
+      "baseline_failed_rows": [],
+      "baseline_targets": {
+        "ac2/accepted-site": [
+          true
+        ]
+      },
+      "mutant_failed_rows": [
+        "VELDO-0258 ac2/accepted-site",
+        "VELDO-0258 ac2/accepted-route-authenticates",
+        "VELDO-0258 ac3/signed-service-command",
+        "VELDO-0258 observability/effect-log",
+        "VELDO-0258 observability/effect-counters",
+        "VELDO-0258 ac2/malformed-whole",
+        "VELDO-0258 ac2/previous-still-live"
+      ],
+      "mutant_targets": {
+        "ac2/accepted-site": [
+          false
+        ]
+      },
+      "name": "outside258-product-routing",
+      "noop_failed_rows": [],
+      "noop_targets": {
+        "ac2/accepted-site": [
+          true
+        ]
+      },
+      "replacement_count": 1,
+      "rows": [
+        "ac2/accepted-site"
+      ],
+      "source": "fresh"
+    },
+    {
+      "baseline_failed_rows": [],
+      "baseline_targets": {
+        "ac3/planted-call": [
+          true
+        ]
+      },
+      "mutant_failed_rows": [
+        "VELDO-0258 ac3/planted-call",
+        "VELDO-0258 ac3/planted-script"
+      ],
+      "mutant_targets": {
+        "ac3/planted-call": [
+          false
+        ]
+      },
+      "name": "outside258-registered-only-scan",
+      "noop_failed_rows": [],
+      "noop_targets": {
+        "ac3/planted-call": [
+          true
+        ]
+      },
+      "replacement_count": 1,
+      "rows": [
+        "ac3/planted-call"
+      ],
+      "source": "fresh"
+    }
+  ],
+  "command": "host_heavy.sh python3 -B scripts/check_gate_mutations.py --finding 258",
+  "elapsed": 513.2559459572658,
+  "executed": 8,
+  "exit_code": 0,
+  "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+  "input_digest": "bc00a4184531f6736a4640fdebdfb557913786c1c1984498452c2b7625b4034e",
+  "invalid_results": [],
+  "raw_log_sha256": "ba1624b4d3355c6f40f4553ebff4a377c56e690e862413851f76956b4cf6454a",
+  "raw_receipt_sha256": "c0a7e1ac4e68c0ad6e37a9abf9aa66514c78516fe855857c5411d0db2ef1ec6e",
+  "registered": 8,
+  "rejected": 8,
+  "reuse_integrity_errors": [],
+  "reused": 0,
+  "schema": "veldo.mutation-stage/v1",
+  "scope": "selected",
+  "source_commit": "00d39faf2",
+  "status": "passed",
+  "surviving_workers": 0
+}

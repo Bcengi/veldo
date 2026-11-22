@@ -315,3 +315,7 @@ VELDO-0168 detail: inventory delta production [(('control_installation_config.py
   127_veldo_0259_installation                     19 passed   40.86s
 selftest (PARTIAL, 4 of 238 suites): 126 passed, 2 failed in 127.31s
 remote_run[pc2 1b65768a505d 06:20:59]: rc=1 in 287s (run rr20261122061612-89ed)
+
+v258-personal-local
+raw_sha256=2b0637308fb453f11ffa6d8ab921321767710115dc6157647a5f4165cd55bc17
+personal setup: 0 finding(s)

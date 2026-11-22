@@ -41,8 +41,8 @@ row, rather than a source-text assertion.
 
 `diagnose_mutations.py` uses the registered materializer and worker in fresh
 subprocesses. `mutation-diagnostic.txt` records baseline/no-op green and the
-intended mutant red for all eight cases on pc2. This diagnostic does not replace
-the confined mutation driver. Its subprocess deadlines are generous hang
+intended mutant red for all eight cases on pc2. The confined driver also passed all eight cases; `confined-mutations.txt`
+records its path-free receipt summary and raw receipt/log hashes. Its subprocess deadlines are generous hang
 detectors; the rows synchronize on completed operations and never assert speed.
 
 The existing renderer mutation cases also retain the new service-boundary helper
@@ -101,8 +101,10 @@ The VELDO-0254 launch-canary suite passed all seven rows through the host's
 shared heavy-run wrapper (33 checks including prerequisites, zero failures).
 Its first run exposed a fixture assertion still expecting two canaries; the
 corrected assertion requires seven distinct values and the rerun passed.
-The confined finding-258 driver remains queued through the same wrapper because
-pc2's Python lacks pidfd. Its outcome will be recorded when that run completes.
+The confined finding-258 driver passed through the host wrapper: eight registered,
+eight executed fresh, eight rejected, zero invalid results or surviving workers.
+It completed in 513.256 seconds after waiting for host capacity. The checkout
+remained at `00d39faf2` throughout that run.
 
 The extended tracker closure now matches the parent at 3534 passed and the same
 two scaffold failures. Its legacy distribution assertion now checks that the
@@ -124,4 +126,4 @@ the text inventory lacks two VELDO-0253 entries, and the legacy evidence writer'
 home-boundary assertion fails under the nested remote home. The earlier seven-suite
 run also has the parent's setup-assets count failure. These baseline discrepancies
 remain visible; no passing gate is claimed. The remaining sandbox-dependent
-compatibility suites are queued through the host wrapper alongside finding 258.
+compatibility suites are queued through the host wrapper; their results remain pending.
