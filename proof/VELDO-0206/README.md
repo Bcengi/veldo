@@ -1,10 +1,44 @@
-# VELDO-0206 build report, fix round 2
+# VELDO-0206 build report, fix round 3
 
 Builder's report, not a review and not a gate result. The canonical gate was not run in this
 build or in either fix round; the lead queues it. Every criterion in manifest.json is pending until
 then. Fix round 1 answered the review of a27ec1c4 (verdict FIX, findings 1 to 5). Fix round 2
 answers the fix-check of 9a250b98 (verdict FIX, one item), next section; the rest of this report
-is fix round 1's, corrected where round 2 changed it.
+is fix round 1's, corrected where round 2 changed it. Fix round 3 ran what round 2 owed and
+corrected the new row (next section).
+
+## Fix round 3: the new row, and what round 2 owed
+
+The lead ran suite 157 at 3adaae2e on the compute node: 90 passed, 2 failed, both on row
+closure/files-left-outside-the-repository-cannot-reach-a-qualified-suite. The same run at the same
+code on this host fails the same way, with the same listing (fix3-suite-157-before.txt). So it was
+neither an environment difference nor a defect in the round 2 mechanism. In both places all three
+gates were green, e ran fresh, the warm gate reused it on a hit and the force-fresh gate ran it
+again. The row's own listing was wrong: it walked places.values(), where TMPDIR, TEMP and TMP name
+one folder, so tmp/left-by-d appeared three times against an expectation of one. It now lists each
+folder once (commit be85a112, the suite file only). No production code changed in this round.
+
+Runs at be85a112 (logs in this folder, home paths replaced by <home>):
+
+| Run | Where | Result |
+|---|---|---|
+| suite 157 | compute node (empty environment, its own HOME and TMPDIR) | 92 passed, 0 failed |
+| suite 157 | this host | 92 passed, 0 failed |
+| 14, 27, 99 | this host | 108 passed, 0 failed |
+| 101 | this host | 216 passed, 0 failed |
+| 113, 114 gate scope, 114 concurrent stages, 153 | this host | 80 passed, 0 failed |
+| check_teeth_mutations.py --finding 206 | this host | passed, 33 registered, 33 rejected (teeth.json) |
+
+The eight affected suites also ran on the compute node and failed there, identically at the merge
+base 23318512: the node has no os.pidfd_open (the agent sandbox refuses to start), no host lock and
+no user systemd scopes. Those suites test this host's machinery, so they ran here
+(fix3-affected-suites.txt). The teeth stage needs the same sandbox and ran here too. A first teeth
+run ended driver_error: inputs changed during stage, because its log was being written inside the
+work tree; it was run again with the log outside it.
+
+Falsifier suite206-isolated-suite-shares-home-and-temp is red for its stated reason: with the
+gate's own places, the warm gate reuses e's pass and the force-fresh gate of the same tree exits 1,
+so the row and closure fail, while the baseline and no-op runs fail nothing.
 
 ## Fix round 2: files outside the repository
 
@@ -214,11 +248,7 @@ process is started for any suite, and no speedup is claimed.
 
 ## What was run in fix round 2
 
-Nothing yet. The heavy-run wrapper had no free builder slot for two hours (all three busy from
-2026-11-21T17:00Z), and the run was stopped at its limit before it started. Suite 157, the eight
-affected suites and check_teeth_mutations.py --finding 206 (which must now report 33 rejected of
-33) are still to be run at 3adaae2e. Until then the new row and its falsifier have no recorded
-result, and the tables below are fix round 1's.
+Nothing. Fix round 3 ran it (above).
 
 ## What was run in fix round 1
 

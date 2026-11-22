@@ -1,0 +1,540 @@
+The eight affected suites at be85a11241983333ed42fe90c75d1085ae2210cc on this host (heavy-run wrapper): 14, 27, 99 (108 passed, 0 failed), 101 (216 passed, 0 failed), 113, 114 gate scope, 114 concurrent stages, 153 (80 passed, 0 failed). Then the compute-node attempts and the same eight at the merge base 23318512 on the compute node, which fail identically there: the node has no os.pidfd_open (the agent sandbox), no host lock or user systemd scopes, so these suites need this host.
+
+============================== local-three.txt
+host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-21T22:49:31Z
+==============================================================================
+PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
+==============================================================================
+  selector    --suite 99_veldo_0205_reuse 14_warp_0717_subset_runner 27_veldo_0010_evidence_provenance
+  running     3 of 237 suites: 14_warp_0717_subset_runner, 27_veldo_0010_evidence_provenance, 99_veldo_0205_reuse
+  skipped     234: 01_warp_0101_reviewer_notes, 02_mobile_ios_runner_b8, 03_plugin_extension_loading_runner, 04_run_status_reader_veldo, 05_tracker_routing_resolver_veldo, 06_capabilities_manifest_honesty_veldo, 07_warp_1103_completion_mandatory, 08_restoration_spec_generation_veldo, 09_action_whitelist_warp_1205, 10_warp_0613_anti_vacuity, 11_inbound_command_receipt_reconcile, 12_warp_1210_hardening_four, 13_warp_0623_codified_live, 15_warp_1402_estimate_record, 15_warp_1404_historical_analogy, 15_warp_1405_reconciliation, 15_warp_1406_normalization, 15_warp_1407_judgment_load, 15_warp_1408_budget_rollup, 15_warp_1409_cost_to_change_per_area, 16_warp_1403_sizing_pass, 17_veldo_0001_falsification_declared, 18_veldo_0011_release_contract, 18_veldo_0012_behaviour_floor_contract, 19_veldo_0002_work_state, 20_veldo_0003_task_source, 21_veldo_0004_promise_corpus, 22_veldo_0005_declared_vs_shipped, 23_veldo_0006_budget_state, 24_veldo_0007_install_and_run, 25_veldo_0008_version, 26_veldo_0009_install_stamp, 28_veldo_0015_clock_standdown, 29_veldo_0016_policy_boundaries, 30_veldo_0017_entity_lifecycle, 31_veldo_0018_release_floor, 32_veldo_0019_combined_graph, 33_veldo_0020_authority, 34_veldo_0022_admission, 35_veldo_0021_completion, 36_veldo_0023_journal, 37_veldo_0024_replica, 38_veldo_0025_membership, 39_veldo_0026_revocation, 40_veldo_0101_capsules, 41_veldo_0103_assessor, 42_veldo_0102_fixval, 43_veldo_0104_proofcheck, 44_veldo_0105_startline, 45_veldo_0106_policyread, 46_veldo_0029_enrollment, 47_veldo_0107_ipc, 48_veldo_0108_relay, 49_veldo_0109_unavailable, 50_git_environment, 51_parser_boundary, 52_writer_boundary, 53_veldo_0123_mutations, 54_veldo_0118_grammar, 55_veldo_0119_agreement, 56_veldo_0027_signing, 57_veldo_0120_policygrammar, 58_veldo_0028_effects, 58_veldo_0036_reservations, 58_veldo_0035_snapshots, 59_veldo_0043_graph, 59_veldo_0037_aliases, 58_veldo_0031_claims, 59_veldo_0031_review, 60_veldo_0052_eligibility, 60_veldo_0053_architecture, 58_veldo_0046_notifications, 60_veldo_0064_inbox, 61_scope_covers, 62_veldo_0045_runtime, 62_veldo_0054_decisions, 62_veldo_0065_presentations, 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0066_attribution, 63_veldo_0049_floor, 64_veldo_0050_proof, 65_veldo_0132_workflow, 65_veldo_0067_edges, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 66_veldo_0051_events, 67_veldo_0056_candidates, 68_veldo_0137_policy_revision, 68_veldo_0126_intake, 69_veldo_0058_gate_output, 67_veldo_0135_offers, 68_veldo_0136_hints, 68_veldo_0134_acceptance, 69_veldo_0068_settlement, 69_veldo_0133_dispositions, 70_veldo_0069_bindings, 70_veldo_0057_landing, 70_veldo_0073_activation, 71_veldo_0076_projects, 71_veldo_0138_channel_service, 72_veldo_0077_objectives, 72_veldo_0075_andon, 72_veldo_0128_reports, 73_veldo_0089_team, 71_veldo_0130_api, 73_veldo_0139_factory_setup, 74_veldo_0140_standing_delegation, 73_veldo_0078_backlog, 75_veldo_0062_accounts, 75_veldo_0150_own_message_acceptance, 76_veldo_0079_grooming, 77_veldo_0149_adopted_activation, 78_veldo_0160_account_pool, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0144_mcp_catalog, 82_veldo_0141_execution_record, 82_veldo_0085_decomposition, 82_veldo_0129_worker_wiring, 82_veldo_0165_launch_hygiene, 82_veldo_0173_tool_registry, 82_veldo_0172_live_formats, 84_veldo_0169_project_handouts, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 86_veldo_0148_re_land, 86_veldo_0127_agent_configuration, 83_veldo_0166_usage_windows, 86_veldo_0168_text, 86_veldo_0186_setup_assets, 87_veldo_0127_codex_delivery, 88_veldo_0127_feature_defaults, 89_veldo_0127_feature_listing, 90_veldo_0127_feature_profile, 85_veldo_0171_setup_api, 86_veldo_0189_engine_upgrade, 91_veldo_0167_setup_records, 87_veldo_0170_receiver_trust, 91_veldo_0151_specialists, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 97_veldo_0204_gate_resources, 98_veldo_0204_mutation_receipts, 100_veldo_0207_case_reuse, 101_veldo_0208_landing_reuse, 102_veldo_0210_agent_profile_runtime, 103_veldo_0142_git_identities, 104_veldo_0210_mutation_workers, 103_veldo_0211_borrowed_login, 104_veldo_0164_scoped_reads, 106_veldo_0185_dispatch_setup, 105_veldo_0182_memory, 107_veldo_0153_identity_push, 108_veldo_0153_executor_profile, 109_veldo_0161_adoption, 110_veldo_0143_new_project, 111_veldo_0214_first_use_budget, 112_veldo_0215_case_deadlines, 113_veldo_0080_defects, 113_veldo_0112_registered_clients, 113_veldo_0115_authority_store, 113_veldo_0121_relay_exchange, 113_veldo_0220_gate_host, 114_veldo_0220_gate_scope, 114_veldo_0216_concurrent_stages, 115_veldo_0219_measured_admission, 116_veldo_0188_project_lines, 113_veldo_0145_ui, 118_veldo_0159_mcp_credential_form, 119_veldo_0163_role_team_form, 120_veldo_0131_factory_ui, 121_veldo_0131_factory_screens_narrow, 122_veldo_0131_factory_screens_wide, 124_veldo_0131_factory_reads_commands, 117_veldo_0227_ui_location, 123_veldo_0174_conversations, 125_veldo_0230_engine_census, 126_veldo_0230_qualify_reproduces, 127_veldo_0234_https_port, 127_veldo_0241_unit_workflows, 128_veldo_0235_land_locally, 127_veldo_0254_secret_scan, 128_veldo_0254_confined_runner, 129_veldo_0254_canary_launch, 127_veldo_0259_installation, 128_veldo_0247_check_join, 129_veldo_0247_line, 129_veldo_0239_batch_landing, 129_veldo_0260_checkout_in_step, 130_veldo_0296_space_section, 131_veldo_0338_project_space_file, 132_veldo_0297_space_ledger, 133_veldo_0326_space_principals, 134_veldo_0331_space_mode, 135_veldo_0298_space_kinds, 136_veldo_0299_space_probe, 137_veldo_0330_space_rules, 138_veldo_0300_space_remove, 139_veldo_0301_space_signal, 140_veldo_0345_space_keep, 141_veldo_0344_process_reader, 142_veldo_0303_space_paths, 143_veldo_0305_space_census, 144_veldo_0306_space_docker, 145_veldo_0307_space_docker_ownership, 146_veldo_0308_run_finished, 147_veldo_0310_landed_contained, 148_veldo_0311_git_hooks, 149_veldo_0312_ticket_ended, 150_veldo_0350_end_write, 151_veldo_0313_space_run, 152_veldo_0313_house_group, 153_veldo_0302_space_creators, 154_veldo_0324_batch_sandbox, 153_veldo_0333_leg_time_store, 155_veldo_0304_space_boundary, 153_veldo_0328_images, 153_veldo_0341_docker_protection, 153_veldo_0337_verdict_recorded, 153_veldo_0314_session_hooks, 153_veldo_0336_run_worktree, 153_veldo_0309_gate_space, 153_veldo_0323_hook_events, 154_veldo_0335_released, 156_veldo_0315_reconcile, 150_veldo_0329_hook_install, 157_veldo_0206_suite_reuse
+  why these   the named suites plus their measured prerequisite closure
+              (scripts/suites/requires.json). No fragment runs alone: every
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  cannot      emit the aggregate summary line, write .veldo/last_verify, or
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  exit        never 0, even when nothing fails.
+  done means  `bash scripts/verify.sh` green, and nothing else.
+==============================================================================
+  /tmp/tmp8o6w4z00: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmp8o6w4z00/nocrit.md: no acceptance criteria
+  /tmp/tmp8o6w4z00/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmp8o6w4z00/status.md: bad status: donezo
+  /tmp/tmp8o6w4z00/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmp8o6w4z00/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmp8o6w4z00/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmp8o6w4z00/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmp8o6w4z00/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmp8o6w4z00/verdict.json: bad verdict: looks_fine
+  /tmp/tmpmh6pnpka/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpmh6pnpka/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpmh6pnpka/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpmh6pnpka/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpmh6pnpka/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpmh6pnpka/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpmh6pnpka/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpmh6pnpka/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpmh6pnpka/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpmh6pnpka/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpmh6pnpka/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpmh6pnpka/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  x.md: declares plan PLAN-9002 but no such plan exists
+  x.md: plan PLAN-9001 has no work item W9
+  x.md: plan and work must be declared together
+  /tmp/tmp4quh8wzs/proof-without.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  <home>/projects/veldo-worktrees/veldo-0206b/releases: release check STANDS DOWN, recorded rather than passed: a releases directory that declares no release at all (the template is excluded from it, as plan_registry excludes it)
+  <home>/projects/veldo-worktrees/veldo-0206b/specs: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 328 spec(s) declare behaviour of 493, 328 already comply, 0 would be refused (0 criterion(s): none), 165 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0001/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at e4ce85da9529, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0002/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at e4ce85da9529, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0003/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at e4ce85da9529, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0004/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at e4ce85da9529, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0005/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at e4ce85da9529, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0006/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at e4ce85da9529, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0007/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at e4ce85da9529, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0008/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at e4ce85da9529, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0009/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at e4ce85da9529, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0010/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at cd3034f064a0, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0011/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at e4ce85da9529, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0012/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle landed at 7e36a2e3d550, before the start line 5c6473325b19
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0016/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0017/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0018/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0019/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0020/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0021/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0022/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0023/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0024/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0025/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0026/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0027/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0028/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0029/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0031/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0035/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0036/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0046/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0080/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0099/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0101/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0102/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0103/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0104/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0105/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0106/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0107/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0108/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0109/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0112/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0118/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0119/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0120/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0123/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0142/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0143/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0145/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0153/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0161/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0164/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0182/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0185/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0206/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0211/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0213/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0214/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0215/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0220/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0230/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0254/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0259/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0296/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0297/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0298/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0299/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0300/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0301/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0302/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0303/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0304/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0305/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0306/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0307/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0308/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0309/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0310/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0311/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0312/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0313/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0314/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0315/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0323/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0324/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0326/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0328/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0329/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0330/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0331/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0333/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0335/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0336/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0337/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0338/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0341/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0344/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/VELDO-0345/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0100/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0101/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0102/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0103/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0104/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0105/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0106/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0107/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0108/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0109/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0110/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0111/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0112/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0113/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0114/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0301/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0302/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0303/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0304/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0305/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0306/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0307/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0308/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0309/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0310/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0311/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0312/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0313/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0314/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0315/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0316/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0317/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0318/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0319/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0320/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0401/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0402/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0403/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0404/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0405/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0406/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0407/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0410/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0411/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0501/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0502/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0503/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0504/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0505/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0506/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0507/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0601/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0602/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0603/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0604/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0605/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0606/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0607/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0608/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0609/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0610/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0611/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0612/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0613/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: 9651342, 96513429a0f1
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0614/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: 268ee4d8b53f, 006c74fd4cee
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0615/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0616/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: e43d2be, 50087bdd3bb1
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0617/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: 9cf58f1, 9cf58f129882
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0618/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: dbdfc91, dbdfc91125c8
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0619/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: ddd9451, ddd9451560f4
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0623/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: 0f49b614e49a, f35a900f04dc
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0701/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0702/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0703/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0704/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0705/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0706/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0707/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0708/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0709/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0710/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0711/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: d4addf84e310, 0738961b07e2
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0712/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: b5a1af65c2af, eb9cd1be3380
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0713/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: e1ece579b65a, e897958ead10
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0716/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: a16e88c33319, 2a3cd68468d9
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0717/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: f1aa4c9fbceb, 135d55c22de5
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0722/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: 528c98fb5d22, 489bebb271d2
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0723/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: 26b6c3467f70, 18e6ca8d0517
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0724/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: 0f59d3345ae9, 156ae80309cc
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0725/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0727/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: bdb4055bf0d0, e4696f9f377e
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0801/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0802/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0803/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0804/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0805/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0806/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0807/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0808/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0809/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0810/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0901/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0902/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0903/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0904/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0905/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0906/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0907/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0908/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-0909/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1001/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1002/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1003/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1004/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1005/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1006/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1007/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1008/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1009/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1010/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1011/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1012/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1101/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1102/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1103/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1104/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1105/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1106/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1107/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1108/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1109/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1110/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1201/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit<home>/projects/veldo-worktrees/veldo-0206b/scripts/gate_reuse.py:114: UserWarning: reuse integrity failure: conflicting record 2f914a1d823ae4699b0d82d6bd21f5b337ff2dabbc824453c252b355026e06ae.json
+  warnings.warn('reuse integrity failure: conflicting record ' + target.name)
+<home>/projects/veldo-worktrees/veldo-0206b/scripts/gate_reuse.py:114: UserWarning: reuse integrity failure: conflicting record 312a60d576e5738ebc849b950516c081a578a1f060bc8ecbd9e3f9dfb9667aec.json
+  warnings.warn('reuse integrity failure: conflicting record ' + target.name)
+<home>/projects/veldo-worktrees/veldo-0206b/scripts/gate_reuse.py:114: UserWarning: reuse integrity failure: conflicting record af471fe77e1657c76c8f95f9e041b4d2d3ed7167395fb3565b796258a3458291.json
+  warnings.warn('reuse integrity failure: conflicting record ' + target.name)
+
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1202/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1203/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1204/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1205/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1206/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1207/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1208/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: ad65e2a946e0, 3ff4336929be
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1209/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1210/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the review evidence names commit(s) this repository does not have, so nothing about it can be counted here: 34cbc292fcf8, 13b4b4d29fec
+  <home>/projects/veldo-worktrees/veldo-0206b/proof/WARP-1212/manifest.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  <home>/projects/veldo-worktrees/veldo-0206b/.veldo/examples: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 2, 0 already comply, 0 would be refused (0 criterion(s): none), 2 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  <home>/projects/veldo-worktrees/veldo-0206b/.veldo/examples/proof-example.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  14_warp_0717_subset_runner                      27 passed   12.22s
+  27_veldo_0010_evidence_provenance               26 passed    9.90s
+  99_veldo_0205_reuse                             29 passed    1.68s
+selftest (PARTIAL, 3 of 237 suites): 108 passed, 0 failed in 23.79s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
+exit 2
+
+============================== local-101.txt
+host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-21T22:53:45Z
+==============================================================================
+PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
+==============================================================================
+  selector    --suite 101_veldo_0208_landing_reuse
+  running     1 of 237 suites: 101_veldo_0208_landing_reuse
+  skipped     236: 01_warp_0101_reviewer_notes, 02_mobile_ios_runner_b8, 03_plugin_extension_loading_runner, 04_run_status_reader_veldo, 05_tracker_routing_resolver_veldo, 06_capabilities_manifest_honesty_veldo, 07_warp_1103_completion_mandatory, 08_restoration_spec_generation_veldo, 09_action_whitelist_warp_1205, 10_warp_0613_anti_vacuity, 11_inbound_command_receipt_reconcile, 12_warp_1210_hardening_four, 13_warp_0623_codified_live, 14_warp_0717_subset_runner, 15_warp_1402_estimate_record, 15_warp_1404_historical_analogy, 15_warp_1405_reconciliation, 15_warp_1406_normalization, 15_warp_1407_judgment_load, 15_warp_1408_budget_rollup, 15_warp_1409_cost_to_change_per_area, 16_warp_1403_sizing_pass, 17_veldo_0001_falsification_declared, 18_veldo_0011_release_contract, 18_veldo_0012_behaviour_floor_contract, 19_veldo_0002_work_state, 20_veldo_0003_task_source, 21_veldo_0004_promise_corpus, 22_veldo_0005_declared_vs_shipped, 23_veldo_0006_budget_state, 24_veldo_0007_install_and_run, 25_veldo_0008_version, 26_veldo_0009_install_stamp, 27_veldo_0010_evidence_provenance, 28_veldo_0015_clock_standdown, 29_veldo_0016_policy_boundaries, 30_veldo_0017_entity_lifecycle, 31_veldo_0018_release_floor, 32_veldo_0019_combined_graph, 33_veldo_0020_authority, 34_veldo_0022_admission, 35_veldo_0021_completion, 36_veldo_0023_journal, 37_veldo_0024_replica, 38_veldo_0025_membership, 39_veldo_0026_revocation, 40_veldo_0101_capsules, 41_veldo_0103_assessor, 42_veldo_0102_fixval, 43_veldo_0104_proofcheck, 44_veldo_0105_startline, 45_veldo_0106_policyread, 46_veldo_0029_enrollment, 47_veldo_0107_ipc, 48_veldo_0108_relay, 49_veldo_0109_unavailable, 50_git_environment, 51_parser_boundary, 52_writer_boundary, 53_veldo_0123_mutations, 54_veldo_0118_grammar, 55_veldo_0119_agreement, 56_veldo_0027_signing, 57_veldo_0120_policygrammar, 58_veldo_0028_effects, 58_veldo_0036_reservations, 58_veldo_0035_snapshots, 59_veldo_0043_graph, 59_veldo_0037_aliases, 58_veldo_0031_claims, 59_veldo_0031_review, 60_veldo_0052_eligibility, 60_veldo_0053_architecture, 58_veldo_0046_notifications, 60_veldo_0064_inbox, 61_scope_covers, 62_veldo_0045_runtime, 62_veldo_0054_decisions, 62_veldo_0065_presentations, 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0066_attribution, 63_veldo_0049_floor, 64_veldo_0050_proof, 65_veldo_0132_workflow, 65_veldo_0067_edges, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 66_veldo_0051_events, 67_veldo_0056_candidates, 68_veldo_0137_policy_revision, 68_veldo_0126_intake, 69_veldo_0058_gate_output, 67_veldo_0135_offers, 68_veldo_0136_hints, 68_veldo_0134_acceptance, 69_veldo_0068_settlement, 69_veldo_0133_dispositions, 70_veldo_0069_bindings, 70_veldo_0057_landing, 70_veldo_0073_activation, 71_veldo_0076_projects, 71_veldo_0138_channel_service, 72_veldo_0077_objectives, 72_veldo_0075_andon, 72_veldo_0128_reports, 73_veldo_0089_team, 71_veldo_0130_api, 73_veldo_0139_factory_setup, 74_veldo_0140_standing_delegation, 73_veldo_0078_backlog, 75_veldo_0062_accounts, 75_veldo_0150_own_message_acceptance, 76_veldo_0079_grooming, 77_veldo_0149_adopted_activation, 78_veldo_0160_account_pool, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0144_mcp_catalog, 82_veldo_0141_execution_record, 82_veldo_0085_decomposition, 82_veldo_0129_worker_wiring, 82_veldo_0165_launch_hygiene, 82_veldo_0173_tool_registry, 82_veldo_0172_live_formats, 84_veldo_0169_project_handouts, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 86_veldo_0148_re_land, 86_veldo_0127_agent_configuration, 83_veldo_0166_usage_windows, 86_veldo_0168_text, 86_veldo_0186_setup_assets, 87_veldo_0127_codex_delivery, 88_veldo_0127_feature_defaults, 89_veldo_0127_feature_listing, 90_veldo_0127_feature_profile, 85_veldo_0171_setup_api, 86_veldo_0189_engine_upgrade, 91_veldo_0167_setup_records, 87_veldo_0170_receiver_trust, 91_veldo_0151_specialists, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 97_veldo_0204_gate_resources, 98_veldo_0204_mutation_receipts, 99_veldo_0205_reuse, 100_veldo_0207_case_reuse, 102_veldo_0210_agent_profile_runtime, 103_veldo_0142_git_identities, 104_veldo_0210_mutation_workers, 103_veldo_0211_borrowed_login, 104_veldo_0164_scoped_reads, 106_veldo_0185_dispatch_setup, 105_veldo_0182_memory, 107_veldo_0153_identity_push, 108_veldo_0153_executor_profile, 109_veldo_0161_adoption, 110_veldo_0143_new_project, 111_veldo_0214_first_use_budget, 112_veldo_0215_case_deadlines, 113_veldo_0080_defects, 113_veldo_0112_registered_clients, 113_veldo_0115_authority_store, 113_veldo_0121_relay_exchange, 113_veldo_0220_gate_host, 114_veldo_0220_gate_scope, 114_veldo_0216_concurrent_stages, 115_veldo_0219_measured_admission, 116_veldo_0188_project_lines, 113_veldo_0145_ui, 118_veldo_0159_mcp_credential_form, 119_veldo_0163_role_team_form, 120_veldo_0131_factory_ui, 121_veldo_0131_factory_screens_narrow, 122_veldo_0131_factory_screens_wide, 124_veldo_0131_factory_reads_commands, 117_veldo_0227_ui_location, 123_veldo_0174_conversations, 125_veldo_0230_engine_census, 126_veldo_0230_qualify_reproduces, 127_veldo_0234_https_port, 127_veldo_0241_unit_workflows, 128_veldo_0235_land_locally, 127_veldo_0254_secret_scan, 128_veldo_0254_confined_runner, 129_veldo_0254_canary_launch, 127_veldo_0259_installation, 128_veldo_0247_check_join, 129_veldo_0247_line, 129_veldo_0239_batch_landing, 129_veldo_0260_checkout_in_step, 130_veldo_0296_space_section, 131_veldo_0338_project_space_file, 132_veldo_0297_space_ledger, 133_veldo_0326_space_principals, 134_veldo_0331_space_mode, 135_veldo_0298_space_kinds, 136_veldo_0299_space_probe, 137_veldo_0330_space_rules, 138_veldo_0300_space_remove, 139_veldo_0301_space_signal, 140_veldo_0345_space_keep, 141_veldo_0344_process_reader, 142_veldo_0303_space_paths, 143_veldo_0305_space_census, 144_veldo_0306_space_docker, 145_veldo_0307_space_docker_ownership, 146_veldo_0308_run_finished, 147_veldo_0310_landed_contained, 148_veldo_0311_git_hooks, 149_veldo_0312_ticket_ended, 150_veldo_0350_end_write, 151_veldo_0313_space_run, 152_veldo_0313_house_group, 153_veldo_0302_space_creators, 154_veldo_0324_batch_sandbox, 153_veldo_0333_leg_time_store, 155_veldo_0304_space_boundary, 153_veldo_0328_images, 153_veldo_0341_docker_protection, 153_veldo_0337_verdict_recorded, 153_veldo_0314_session_hooks, 153_veldo_0336_run_worktree, 153_veldo_0309_gate_space, 153_veldo_0323_hook_events, 154_veldo_0335_released, 156_veldo_0315_reconcile, 150_veldo_0329_hook_install, 157_veldo_0206_suite_reuse
+  why these   the named suites plus their measured prerequisite closure
+              (scripts/suites/requires.json). No fragment runs alone: every
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  cannot      emit the aggregate summary line, write .veldo/last_verify, or
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  exit        never 0, even when nothing fails.
+  done means  `bash scripts/verify.sh` green, and nothing else.
+==============================================================================
+  /tmp/tmpv4m_o3gk: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpv4m_o3gk/nocrit.md: no acceptance criteria
+  /tmp/tmpv4m_o3gk/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmpv4m_o3gk/status.md: bad status: donezo
+  /tmp/tmpv4m_o3gk/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmpv4m_o3gk/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmpv4m_o3gk/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpv4m_o3gk/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpv4m_o3gk/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmpv4m_o3gk/verdict.json: bad verdict: looks_fine
+  /tmp/tmpqh9h9vt0/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmpqh9h9vt0/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmpqh9h9vt0/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmpqh9h9vt0/fref.md: work W1: unknown feature ref F9
+  /tmp/tmpqh9h9vt0/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmpqh9h9vt0/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmpqh9h9vt0/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmpqh9h9vt0/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmpqh9h9vt0/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmpqh9h9vt0/dupspec.md: duplicate spec ids across work items
+  /tmp/tmpqh9h9vt0/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmpqh9h9vt0/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  x.md: declares plan PLAN-9002 but no such plan exists
+  x.md: plan PLAN-9001 has no work item W9
+  x.md: plan and work must be declared together
+  101_veldo_0208_landing_reuse                   190 passed  242.76s
+selftest (PARTIAL, 1 of 237 suites): 216 passed, 0 failed in 242.76s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
+exit 2
+
+============================== local-four.txt
+host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-21T22:53:49Z
+==============================================================================
+PARTIAL RUN OF THE UNIT SUITE. THIS IS NOT VERIFICATION AND CANNOT BECOME IT.
+==============================================================================
+  selector    --suite 113_veldo_0220_gate_host 114_veldo_0220_gate_scope 114_veldo_0216_concurrent_stages 153_veldo_0309_gate_space
+  running     4 of 237 suites: 113_veldo_0220_gate_host, 114_veldo_0220_gate_scope, 114_veldo_0216_concurrent_stages, 153_veldo_0309_gate_space
+  skipped     233: 01_warp_0101_reviewer_notes, 02_mobile_ios_runner_b8, 03_plugin_extension_loading_runner, 04_run_status_reader_veldo, 05_tracker_routing_resolver_veldo, 06_capabilities_manifest_honesty_veldo, 07_warp_1103_completion_mandatory, 08_restoration_spec_generation_veldo, 09_action_whitelist_warp_1205, 10_warp_0613_anti_vacuity, 11_inbound_command_receipt_reconcile, 12_warp_1210_hardening_four, 13_warp_0623_codified_live, 14_warp_0717_subset_runner, 15_warp_1402_estimate_record, 15_warp_1404_historical_analogy, 15_warp_1405_reconciliation, 15_warp_1406_normalization, 15_warp_1407_judgment_load, 15_warp_1408_budget_rollup, 15_warp_1409_cost_to_change_per_area, 16_warp_1403_sizing_pass, 17_veldo_0001_falsification_declared, 18_veldo_0011_release_contract, 18_veldo_0012_behaviour_floor_contract, 19_veldo_0002_work_state, 20_veldo_0003_task_source, 21_veldo_0004_promise_corpus, 22_veldo_0005_declared_vs_shipped, 23_veldo_0006_budget_state, 24_veldo_0007_install_and_run, 25_veldo_0008_version, 26_veldo_0009_install_stamp, 27_veldo_0010_evidence_provenance, 28_veldo_0015_clock_standdown, 29_veldo_0016_policy_boundaries, 30_veldo_0017_entity_lifecycle, 31_veldo_0018_release_floor, 32_veldo_0019_combined_graph, 33_veldo_0020_authority, 34_veldo_0022_admission, 35_veldo_0021_completion, 36_veldo_0023_journal, 37_veldo_0024_replica, 38_veldo_0025_membership, 39_veldo_0026_revocation, 40_veldo_0101_capsules, 41_veldo_0103_assessor, 42_veldo_0102_fixval, 43_veldo_0104_proofcheck, 44_veldo_0105_startline, 45_veldo_0106_policyread, 46_veldo_0029_enrollment, 47_veldo_0107_ipc, 48_veldo_0108_relay, 49_veldo_0109_unavailable, 50_git_environment, 51_parser_boundary, 52_writer_boundary, 53_veldo_0123_mutations, 54_veldo_0118_grammar, 55_veldo_0119_agreement, 56_veldo_0027_signing, 57_veldo_0120_policygrammar, 58_veldo_0028_effects, 58_veldo_0036_reservations, 58_veldo_0035_snapshots, 59_veldo_0043_graph, 59_veldo_0037_aliases, 58_veldo_0031_claims, 59_veldo_0031_review, 60_veldo_0052_eligibility, 60_veldo_0053_architecture, 58_veldo_0046_notifications, 60_veldo_0064_inbox, 61_scope_covers, 62_veldo_0045_runtime, 62_veldo_0054_decisions, 62_veldo_0065_presentations, 62_veldo_0039_dispatch, 63_veldo_0040_containment, 63_veldo_0066_attribution, 63_veldo_0049_floor, 64_veldo_0050_proof, 65_veldo_0132_workflow, 65_veldo_0067_edges, 66_veldo_0042_clones, 66_veldo_0047_authority, 67_veldo_0041_heartbeat, 66_veldo_0051_events, 67_veldo_0056_candidates, 68_veldo_0137_policy_revision, 68_veldo_0126_intake, 69_veldo_0058_gate_output, 67_veldo_0135_offers, 68_veldo_0136_hints, 68_veldo_0134_acceptance, 69_veldo_0068_settlement, 69_veldo_0133_dispositions, 70_veldo_0069_bindings, 70_veldo_0057_landing, 70_veldo_0073_activation, 71_veldo_0076_projects, 71_veldo_0138_channel_service, 72_veldo_0077_objectives, 72_veldo_0075_andon, 72_veldo_0128_reports, 73_veldo_0089_team, 71_veldo_0130_api, 73_veldo_0139_factory_setup, 74_veldo_0140_standing_delegation, 73_veldo_0078_backlog, 75_veldo_0062_accounts, 75_veldo_0150_own_message_acceptance, 76_veldo_0079_grooming, 77_veldo_0149_adopted_activation, 78_veldo_0160_account_pool, 78_veldo_0060_claude_adapter, 79_veldo_0061_codex_adapter, 80_veldo_0155_claude_baseline, 81_veldo_0156_codex_baseline, 82_veldo_0144_mcp_catalog, 82_veldo_0141_execution_record, 82_veldo_0085_decomposition, 82_veldo_0129_worker_wiring, 82_veldo_0165_launch_hygiene, 82_veldo_0173_tool_registry, 82_veldo_0172_live_formats, 84_veldo_0169_project_handouts, 83_veldo_0154_factory_loop, 85_veldo_0158_credential_delivery, 86_veldo_0148_re_land, 86_veldo_0127_agent_configuration, 83_veldo_0166_usage_windows, 86_veldo_0168_text, 86_veldo_0186_setup_assets, 87_veldo_0127_codex_delivery, 88_veldo_0127_feature_defaults, 89_veldo_0127_feature_listing, 90_veldo_0127_feature_profile, 85_veldo_0171_setup_api, 86_veldo_0189_engine_upgrade, 91_veldo_0167_setup_records, 87_veldo_0170_receiver_trust, 91_veldo_0151_specialists, 92_veldo_0088_pm_cycles, 93_veldo_0152_intake_routes, 94_veldo_0162_configuration_routes, 95_veldo_0203_owner_revisions, 96_veldo_0204_reservation_policies, 97_veldo_0204_gate_resources, 98_veldo_0204_mutation_receipts, 99_veldo_0205_reuse, 100_veldo_0207_case_reuse, 101_veldo_0208_landing_reuse, 102_veldo_0210_agent_profile_runtime, 103_veldo_0142_git_identities, 104_veldo_0210_mutation_workers, 103_veldo_0211_borrowed_login, 104_veldo_0164_scoped_reads, 106_veldo_0185_dispatch_setup, 105_veldo_0182_memory, 107_veldo_0153_identity_push, 108_veldo_0153_executor_profile, 109_veldo_0161_adoption, 110_veldo_0143_new_project, 111_veldo_0214_first_use_budget, 112_veldo_0215_case_deadlines, 113_veldo_0080_defects, 113_veldo_0112_registered_clients, 113_veldo_0115_authority_store, 113_veldo_0121_relay_exchange, 115_veldo_0219_measured_admission, 116_veldo_0188_project_lines, 113_veldo_0145_ui, 118_veldo_0159_mcp_credential_form, 119_veldo_0163_role_team_form, 120_veldo_0131_factory_ui, 121_veldo_0131_factory_screens_narrow, 122_veldo_0131_factory_screens_wide, 124_veldo_0131_factory_reads_commands, 117_veldo_0227_ui_location, 123_veldo_0174_conversations, 125_veldo_0230_engine_census, 126_veldo_0230_qualify_reproduces, 127_veldo_0234_https_port, 127_veldo_0241_unit_workflows, 128_veldo_0235_land_locally, 127_veldo_0254_secret_scan, 128_veldo_0254_confined_runner, 129_veldo_0254_canary_launch, 127_veldo_0259_installation, 128_veldo_0247_check_join, 129_veldo_0247_line, 129_veldo_0239_batch_landing, 129_veldo_0260_checkout_in_step, 130_veldo_0296_space_section, 131_veldo_0338_project_space_file, 132_veldo_0297_space_ledger, 133_veldo_0326_space_principals, 134_veldo_0331_space_mode, 135_veldo_0298_space_kinds, 136_veldo_0299_space_probe, 137_veldo_0330_space_rules, 138_veldo_0300_space_remove, 139_veldo_0301_space_signal, 140_veldo_0345_space_keep, 141_veldo_0344_process_reader, 142_veldo_0303_space_paths, 143_veldo_0305_space_census, 144_veldo_0306_space_docker, 145_veldo_0307_space_docker_ownership, 146_veldo_0308_run_finished, 147_veldo_0310_landed_contained, 148_veldo_0311_git_hooks, 149_veldo_0312_ticket_ended, 150_veldo_0350_end_write, 151_veldo_0313_space_run, 152_veldo_0313_house_group, 153_veldo_0302_space_creators, 154_veldo_0324_batch_sandbox, 153_veldo_0333_leg_time_store, 155_veldo_0304_space_boundary, 153_veldo_0328_images, 153_veldo_0341_docker_protection, 153_veldo_0337_verdict_recorded, 153_veldo_0314_session_hooks, 153_veldo_0336_run_worktree, 153_veldo_0323_hook_events, 154_veldo_0335_released, 156_veldo_0315_reconcile, 150_veldo_0329_hook_install, 157_veldo_0206_suite_reuse
+  why these   the named suites plus their measured prerequisite closure
+              (scripts/suites/requires.json). No fragment runs alone: every
+              one of them was measured PASSES_IN_AGGREGATE_FAILS_ALONE.
+  cannot      emit the aggregate summary line, write .veldo/last_verify, or
+              produce a passed unit-evidence record. Each raises PARTIAL_RUN_CANNOT_VERIFY.
+  exit        never 0, even when nothing fails.
+  done means  `bash scripts/verify.sh` green, and nothing else.
+==============================================================================
+  /tmp/tmpt2qp_sc1: falsified_by STANDS DOWN for the specs in this corpus that declare no behaviour, recorded rather than passed: falsification migration: 0 spec(s) declare behaviour of 1, 0 already comply, 0 would be refused (0 criterion(s): none), 1 stood down. Posture: REFUSING since 2026-08-11 (01bcdf3). One line per corpus per run; every stand-down is in falsification_standdowns() with the reason it stood down
+  /tmp/tmpt2qp_sc1/nocrit.md: no acceptance criteria
+  /tmp/tmpt2qp_sc1/vibes.md: unknown evidence kind 'vibes' (canonical: ['baseline', 'design_review', 'device_matrix', 'figma_composite', 'integration', 'interaction_recording', 'journeys', 'operational', 'staging_run', 'ui_states', 'unit'])
+  /tmp/tmpt2qp_sc1/status.md: bad status: donezo
+  /tmp/tmpt2qp_sc1/proof.json: proof criterion AC9 not in the specification (invented)
+  /tmp/tmpt2qp_sc1/proof2.json: spec criterion AC1 missing from proof
+  /tmp/tmpt2qp_sc1/proof3.json: required evidence kind 'unit' absent from proof (no matching evidence type or check name)
+  /tmp/tmpt2qp_sc1/proof4.json: criterion AC1 passed without evidence
+  /tmp/tmpt2qp_sc1/proof4.json: fix validation required, from 5c6473325b19 (policy fix_validation); not applicable: the bundle carries no review evidence taken before its own commit
+  /tmp/tmpt2qp_sc1/verdict.json: bad verdict: looks_fine
+  /tmp/tmp77uawqch/cycle.md: dependency cycle through WARP-9101
+  /tmp/tmp77uawqch/dangle.md: work W2: depends_on WARP-9999 is not a spec of any work item
+  /tmp/tmp77uawqch/oref.md: feature F1: unknown outcome ref O7
+  /tmp/tmp77uawqch/fref.md: work W1: unknown feature ref F9
+  /tmp/tmp77uawqch/nodep.md: work W1: depends_on must be declared (use [] for none): an undeclared dependency is a decision nobody made
+  /tmp/tmp77uawqch/noappr.md: status ready requires approved_by: a plan leaves draft only by a recorded human approval
+  /tmp/tmp77uawqch/noappr.md: status ready requires approved_at: a plan leaves draft only by a recorded human approval
+  /tmp/tmp77uawqch/noblocks.md: open decisions need id, text, and an explicit blocks list ([] if nothing waits on it)
+  /tmp/tmp77uawqch/badblock.md: open decision D1: blocks unknown spec WARP-9999
+  /tmp/tmp77uawqch/dupspec.md: duplicate spec ids across work items
+  /tmp/tmp77uawqch/mode.md: bad release mode: yolo (allowed: ['continuous', 'coordinated'])
+  /tmp/tmp77uawqch/PLAN-9001-good.md: mirroring: WARP-9101-first.md exists but does not declare plan: PLAN-9001 / work: W1 (declares plan: PLAN-9001 / work: W2)
+  x.md: declares plan PLAN-9002 but no such plan exists
+  x.md: plan PLAN-9001 has no work item W9
+  x.md: plan and work must be declared together
+space: cleanup held by an item the owner kept
+space: end deferred (space unread: gate hold not active)
+space: end deferred (space unread: no new recorded verdict)
+GATE: NOT JUDGED (space unread: pool free space unread)
+space: end deferred (space unread: space locator must be absolute, without links or dot segments)
+space: end deferred (space unread: space locator must be absolute, without links or dot segments)
+  113_veldo_0220_gate_host                         3 passed    8.05s
+  114_veldo_0220_gate_scope                        1 passed    3.96s
+  114_veldo_0216_concurrent_stages                26 passed   36.37s
+  153_veldo_0309_gate_space                       24 passed   24.89s
+selftest (PARTIAL, 4 of 237 suites): 80 passed, 0 failed in 73.27s
+PARTIAL RUN: no proof manifest, no evidence claim and no landing decision may cite this. Only a green `bash scripts/verify.sh` means done.
+exit 2
+
+============================== pc2-eight.txt
+(filtered to verdict, failure and run lines)
+remote_run[pc2 be85a1124198 22:46:58]: selected node pc2 (dmitry-pc2); mode=share, slots=3
+remote_run[pc2 be85a1124198 22:46:58]: note: 1 uncommitted change(s) in the worktree are NOT shipped; the node runs be85a1124198 as committed
+remote_run[pc2 be85a1124198 22:46:59]: commit already on dmitry-pc2
+remote_run[pc2 be85a1124198 22:46:59]: run rr20261121224658-0dfd started on dmitry-pc2 (VELDO-0206 fix round 3: list each private folder once in the outside-f); node log ~/remote-run/runs/rr20261121224658-0dfd/log
+[remote_run pc2 22:46:59] run rr20261121224658-0dfd selected node pc2 (Linux-x86_64)
+[remote_run pc2 22:47:00] setup 1s; be85a11241983333ed42fe90c75d1085ae2210cc in <home>/remote-run/runs/rr20261121224658-0dfd/work; python 3.12.13, node 22.22.0
+[remote_run pc2 22:47:00] command: python3 -B scripts/selftest.py --suite 99_veldo_0205_reuse --suite 101_veldo_0208_landing_reuse --suite 14_warp_0717_subset_runner --suite 113_veldo_0220_gate_host --suite 114_veldo_0220_gate_scope --suite 114_veldo_0216_concurrent_stages --suite 153_veldo_0309_gate_space --suite 27_veldo_0010_evidence_provenance 
+  SELFTEST FAIL: WARP-0717 AC3 NO REGRESSION: `--upto` STILL WORKS, still exits 2 on success, and its final line still BEGINS with the exact text WARP-0712 gave it, `selftest (PARTIAL, N of M suites): P passed, F failed`, which is now a strict prefix of a line that also carries the elapsed time. So anything that already recognised a partial run still does, and the two selectors print the same shap
+  SELFTEST FAIL: VELDO-0010 AC5 NEGATIVE CONTROL: the SAME gates, run in a tree that DOES declare a version, stamp THAT version - '9.9.9', version-shaped by this module's own rule - so the null above is a measurement of a version that could not be read rather than the only value these gates know how to write. A gate hardcoding null would satisfy every row above and fail this one
+subprocess.TimeoutExpired: Command '['<home>/remote-run/cache/veldo/venv-5e4ce26cb01caa72/bin/python3', '-B', '-c', "import importlib.util, pathlib, subprocess, sys\nspec = importlib.util.spec_from_file_location('sandbox', sys.argv[1])\ns = importlib.util.module_from_spec(spec); spec.loader.exec_module(s)\ns.confine(sys.argv[5], sys.argv[2], sys.argv[3])\np = pathlib.Path(sys.argv[4])\ntry:\n p.re
+[remote_run pc2 22:47:45] command exit 1 after 45s
+[remote_run pc2 22:47:46] run ended rc=1
+remote_run[pc2 be85a1124198 22:47:48]: rc=1 in 50s (run rr20261121224658-0dfd)
+exit 1
+
+============================== pc2-eight-base.txt
+(filtered to verdict, failure and run lines)
+remote_run[pc2 23318512f123 22:48:06]: selected node pc2 (dmitry-pc2); mode=share, slots=3
+remote_run[pc2 23318512f123 22:48:06]: note: 1 uncommitted change(s) in the worktree are NOT shipped; the node runs 23318512f123 as committed
+remote_run[pc2 23318512f123 22:48:06]: commit already on dmitry-pc2
+remote_run[pc2 23318512f123 22:48:07]: run rr20261121224805-c436 started on dmitry-pc2 (space-0329b landing: gate stamps at f5055400 (gate 13 GREEN) and Dmitr); node log ~/remote-run/runs/rr20261121224805-c436/log
+[remote_run pc2 22:48:07] run rr20261121224805-c436 selected node pc2 (Linux-x86_64)
+[remote_run pc2 22:48:08] setup 1s; 23318512f12355ae6397cd4b64fe9e487d3679bb in <home>/remote-run/runs/rr20261121224805-c436/work; python 3.12.13, node 22.22.0
+[remote_run pc2 22:48:08] command: python3 -B scripts/selftest.py --suite 99_veldo_0205_reuse --suite 101_veldo_0208_landing_reuse --suite 14_warp_0717_subset_runner --suite 113_veldo_0220_gate_host --suite 114_veldo_0220_gate_scope --suite 114_veldo_0216_concurrent_stages --suite 153_veldo_0309_gate_space --suite 27_veldo_0010_evidence_provenance 
+  SELFTEST FAIL: WARP-0717 AC3 NO REGRESSION: `--upto` STILL WORKS, still exits 2 on success, and its final line still BEGINS with the exact text WARP-0712 gave it, `selftest (PARTIAL, N of M suites): P passed, F failed`, which is now a strict prefix of a line that also carries the elapsed time. So anything that already recognised a partial run still does, and the two selectors print the same shap
+  SELFTEST FAIL: VELDO-0010 AC5 NEGATIVE CONTROL: the SAME gates, run in a tree that DOES declare a version, stamp THAT version - '9.9.9', version-shaped by this module's own rule - so the null above is a measurement of a version that could not be read rather than the only value these gates know how to write. A gate hardcoding null would satisfy every row above and fail this one
+subprocess.TimeoutExpired: Command '['<home>/remote-run/cache/veldo/venv-5e4ce26cb01caa72/bin/python3', '-B', '-c', "import importlib.util, pathlib, subprocess, sys\nspec = importlib.util.spec_from_file_location('sandbox', sys.argv[1])\ns = importlib.util.module_from_spec(spec); spec.loader.exec_module(s)\ns.confine(sys.argv[5], sys.argv[2], sys.argv[3])\np = pathlib.Path(sys.argv[4])\ntry:\n p.re
+[remote_run pc2 22:48:48] command exit 1 after 40s
+[remote_run pc2 22:48:51] run ended rc=1
+remote_run[pc2 23318512f123 22:48:53]: rc=1 in 48s (run rr20261121224805-c436)
+
+============================== pc2-five.txt
+(filtered to verdict, failure and run lines)
+remote_run[pc2 be85a1124198 22:49:00]: selected node pc2 (dmitry-pc2); mode=share, slots=3
+remote_run[pc2 be85a1124198 22:49:00]: note: 1 uncommitted change(s) in the worktree are NOT shipped; the node runs be85a1124198 as committed
+remote_run[pc2 be85a1124198 22:49:00]: commit already on dmitry-pc2
+remote_run[pc2 be85a1124198 22:49:01]: run rr20261121224859-3769 started on dmitry-pc2 (VELDO-0206 fix round 3: list each private folder once in the outside-f); node log ~/remote-run/runs/rr20261121224859-3769/log
+[remote_run pc2 22:49:01] run rr20261121224859-3769 selected node pc2 (Linux-x86_64)
+[remote_run pc2 22:49:03] setup 2s; be85a11241983333ed42fe90c75d1085ae2210cc in <home>/remote-run/runs/rr20261121224859-3769/work; python 3.12.13, node 22.22.0
+[remote_run pc2 22:49:03] command: python3 -B scripts/selftest.py --suite 101_veldo_0208_landing_reuse --suite 113_veldo_0220_gate_host --suite 114_veldo_0220_gate_scope --suite 114_veldo_0216_concurrent_stages --suite 153_veldo_0309_gate_space 
+  SELFTEST FAIL: VELDO-0208 candidate/planted-suite-publication-red
+  SELFTEST FAIL: VELDO-0208 sandbox/launcher-starts: agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+  SELFTEST FAIL: VELDO-0208 sandbox/store-read
+  SELFTEST FAIL: VELDO-0208 sandbox/key-read
+  SELFTEST FAIL: VELDO-0208 sandbox/key-write
+  SELFTEST FAIL: VELDO-0208 sandbox/plant-record
+  SELFTEST FAIL: VELDO-0208 sandbox/replace-store
+  SELFTEST FAIL: VELDO-0208 sandbox/runner-write
+  SELFTEST FAIL: VELDO-0208 sandbox/runner-replace
+  SELFTEST FAIL: VELDO-0208 sandbox/authority-write
+  SELFTEST FAIL: VELDO-0208 sandbox/inherited-fd
+  SELFTEST FAIL: VELDO-0208 sandbox/symlink-key-read
+  SELFTEST FAIL: VELDO-0208 sandbox/symlink-key-write
+  SELFTEST FAIL: VELDO-0208 sandbox/hardlink-key
+  SELFTEST FAIL: VELDO-0208 sandbox/unix-service
+  SELFTEST FAIL: VELDO-0208 sandbox/user-bus
+  SELFTEST FAIL: VELDO-0208 sandbox/systemd-private
+  SELFTEST FAIL: VELDO-0208 sandbox/network-ipv4
+  SELFTEST FAIL: VELDO-0208 sandbox/network-ipv6
+  SELFTEST FAIL: VELDO-0208 sandbox/private-ssh
+  SELFTEST FAIL: VELDO-0208 sandbox/private-v1-store
+  SELFTEST FAIL: VELDO-0208 sandbox/private-v1-key
+  SELFTEST FAIL: VELDO-0208 sandbox/private-codex-auth
+  SELFTEST FAIL: VELDO-0208 sandbox/private-claude-credentials
+  SELFTEST FAIL: VELDO-0208 sandbox/terminal-injection
+  SELFTEST FAIL: VELDO-0208 sandbox/child-read
+  SELFTEST FAIL: VELDO-0208 sandbox/child-plant
+  SELFTEST FAIL: VELDO-0208 sandbox/child-runner
+  SELFTEST FAIL: VELDO-0208 sandbox/own-worktree
+  SELFTEST FAIL: VELDO-0208 sandbox/private-home
+  SELFTEST FAIL: VELDO-0208 sandbox/unavailable-refuses-before-exec: agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+  SELFTEST FAIL: VELDO-0208 sandbox/old-abi-refuses-before-exec: agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+  SELFTEST FAIL: VELDO-0208 sandbox/agent-repository-commit: agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+  SELFTEST FAIL: VELDO-0208 git/agent-main-ref-write-refused: {}
+  SELFTEST FAIL: VELDO-0208 git/agent-protected-and-shared-writes-refused: {}
+  SELFTEST FAIL: VELDO-0208 git/integrate-fetches-agent-namespace
+  SELFTEST FAIL: VELDO-0208 git/integrate-rehashes-remapped-object
+  SELFTEST FAIL: VELDO-0208 install/planted-remap-not-installed
+[remote_run pc2 22:49:26] command exit 1 after 23s
+[remote_run pc2 22:49:29] run ended rc=1
+remote_run[pc2 be85a1124198 22:49:31]: rc=1 in 32s (run rr20261121224859-3769)
+
+============================== pc2-four.txt
+(filtered to verdict, failure and run lines)
+remote_run[pc2 be85a1124198 22:49:37]: selected node pc2 (dmitry-pc2); mode=share, slots=3
+remote_run[pc2 be85a1124198 22:49:37]: note: 1 uncommitted change(s) in the worktree are NOT shipped; the node runs be85a1124198 as committed
+remote_run[pc2 be85a1124198 22:49:38]: commit already on dmitry-pc2
+remote_run[pc2 be85a1124198 22:49:39]: run rr20261121224936-3644 started on dmitry-pc2 (VELDO-0206 fix round 3: list each private folder once in the outside-f); node log ~/remote-run/runs/rr20261121224936-3644/log
+[remote_run pc2 22:49:39] run rr20261121224936-3644 selected node pc2 (Linux-x86_64)
+[remote_run pc2 22:49:41] setup 2s; be85a11241983333ed42fe90c75d1085ae2210cc in <home>/remote-run/runs/rr20261121224936-3644/work; python 3.12.13, node 22.22.0
+[remote_run pc2 22:49:41] command: python3 -B scripts/selftest.py --suite 113_veldo_0220_gate_host --suite 114_veldo_0220_gate_scope --suite 114_veldo_0216_concurrent_stages --suite 153_veldo_0309_gate_space 
+  SELFTEST FAIL: VELDO-0220 host-lock/held-not-started: {"other-gate": false, "core-flock": true, "free": false, "free-released": false, "waits": false, "caller-holds": false, "nested-holder-guard": true}
+  SELFTEST FAIL: VELDO-0220 host-lock/released-on-exit: {"killed": false, "terminated": false, "red": false}
+  SELFTEST FAIL: VELDO-0220 host-scope/own-scope: {"cases": {"outside": false, "inside-a-scope": false, "cleanup-killed": false, "cleanup-terminated": false, "cleanup-normal": false, "cleanup-red": false}, "seen": {"outside": {"failed": "exit 0", "exit": 1, "out": "ywsrei97/scoped/scripts/gate_host.py\", line 520, in <module>\n    sys.exit(main(sys.argv[1:]))\n             ^^^^^^^^^^^^^^^^^^\n  Fi
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+  SELFTEST FAIL: VELDO-0216 concurrent-stages/graph-complete
+  SELFTEST FAIL: VELDO-0216 concurrent-stages/integration-waits-for-unit-without-measurement
+  SELFTEST FAIL: VELDO-0216 concurrent-stages/integration-beside-measured-unit
+  SELFTEST FAIL: VELDO-0216 concurrent-stages/ordered-logs
+  SELFTEST FAIL: VELDO-0216 concurrent-stages/same-verdicts
+  SELFTEST FAIL: VELDO-0216 concurrent-stages/tree-unchanged
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+    handle = os.pidfd_open(pid)
+AttributeError: module 'os' has no attribute 'pidfd_open'
+ agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+agent sandbox refused to start: module 'os' has no attribute 'pidfd_open'
+  SELFTEST FAIL: VELDO-0216 concurrent-stages/shell-catalog
+  SELFTEST FAIL: VELDO-0309 exit/group-ended
+  113_veldo_0220_gate_host                         1 passed  184.06s
+  114_veldo_0220_gate_scope                        0 passed    0.75s
+  114_veldo_0216_concurrent_stages                19 passed   28.52s
+  153_veldo_0309_gate_space                       23 passed   26.73s
+selftest (PARTIAL, 4 of 237 suites): 69 passed, 11 failed in 240.05s
+[remote_run pc2 22:53:41] command exit 1 after 240s
+[remote_run pc2 22:53:43] run ended rc=1
+remote_run[pc2 be85a1124198 22:53:45]: rc=1 in 249s (run rr20261121224936-3644)

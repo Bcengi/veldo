@@ -1,12 +1,12 @@
 {
- "command": "python3 -B scripts/check_teeth_mutations.py --finding 206 --jobs 4 (through the host heavy-run wrapper)",
- "commit": "6de078204de81d3ad63e3a34d9624d9f7c0360f5",
+ "command": "python3 -B scripts/check_teeth_mutations.py --finding 206 --jobs 4 (through the host heavy-run wrapper; the sandbox needs os.pidfd_open, which the compute node lacks)",
+ "commit": "be85a11241983333ed42fe90c75d1085ae2210cc",
  "exit_code": 0,
- "last_line": "mutations: passed registered=32 executed=32 reused=0 rejected=32 workers=40 elapsed=176.433s",
+ "last_line": "mutations: passed registered=33 executed=33 reused=0 rejected=33 workers=41 elapsed=149.841s",
  "status": "passed",
- "registered": 32,
- "executed": 32,
- "rejected": 32,
+ "registered": 33,
+ "executed": 33,
+ "rejected": 33,
  "reused": 0,
  "scope": "selected",
  "declared_falsifiers": {
@@ -36,6 +36,9 @@
   ],
   "untested branch (no plan)": [
    "suite206-unplanned-gate-not-settled"
+  ],
+  "fix-check P2 (fix round 2)": [
+   "suite206-isolated-suite-shares-home-and-temp"
   ]
  },
  "cases": [
@@ -98,8 +101,6 @@
    "baseline_failed": [],
    "noop_failed": [],
    "mutant_failed": [
-    "VELDO-0206 suite-reuse/closure/base-environment-misses-all",
-    "VELDO-0206 suite-reuse/closure/declared-environment-misses-declarer",
     "VELDO-0206 suite-reuse/closure"
    ]
   },
@@ -132,7 +133,6 @@
    "baseline_failed": [],
    "noop_failed": [],
    "mutant_failed": [
-    "VELDO-0206 suite-reuse/closure/another-root-misses-all",
     "VELDO-0206 suite-reuse/closure"
    ]
   },
@@ -183,8 +183,8 @@
     "VELDO-0206 suite-reuse/closure/fresh-dependent-executes-its-reusable-prerequisite",
     "VELDO-0206 suite-reuse/closure/new-inputs-hit-once-observed",
     "VELDO-0206 suite-reuse/closure/state-left-by-an-earlier-suite-cannot-hide-a-failure",
+    "VELDO-0206 suite-reuse/closure/files-left-outside-the-repository-cannot-reach-a-qualified-suite",
     "VELDO-0206 suite-reuse/closure",
-    "VELDO-0206 suite-reuse/pass-only/passing-run-is-stored-and-reused",
     "VELDO-0206 suite-reuse/pass-only/failed-run-is-not-stored",
     "VELDO-0206 suite-reuse/pass-only/timed-out-run-is-not-stored",
     "VELDO-0206 suite-reuse/pass-only/selector-run-is-not-stored",
@@ -354,6 +354,8 @@
    "baseline_failed": [],
    "noop_failed": [],
    "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/files-left-outside-the-repository-cannot-reach-a-qualified-suite",
+    "VELDO-0206 suite-reuse/closure",
     "VELDO-0206 suite-reuse/receipts/force-fresh-reads-and-writes-no-record",
     "VELDO-0206 suite-reuse/receipts/gate-stamp-and-event-carry-exact-keys-and-counts",
     "VELDO-0206 suite-reuse/receipts/gate-force-fresh-runs-every-suite",
@@ -425,8 +427,8 @@
     "VELDO-0206 suite-reuse/closure/fresh-dependent-executes-its-reusable-prerequisite",
     "VELDO-0206 suite-reuse/closure/new-inputs-hit-once-observed",
     "VELDO-0206 suite-reuse/closure/state-left-by-an-earlier-suite-cannot-hide-a-failure",
+    "VELDO-0206 suite-reuse/closure/files-left-outside-the-repository-cannot-reach-a-qualified-suite",
     "VELDO-0206 suite-reuse/closure",
-    "VELDO-0206 suite-reuse/pass-only/passing-run-is-stored-and-reused",
     "VELDO-0206 suite-reuse/pass-only/failed-run-is-not-stored",
     "VELDO-0206 suite-reuse/pass-only/timed-out-run-is-not-stored",
     "VELDO-0206 suite-reuse/pass-only/selector-run-is-not-stored",
@@ -630,6 +632,21 @@
     "VELDO-0206 suite-reuse/receipts/gate-is-red-when-no-plan-could-be-made",
     "VELDO-0206 suite-reuse/receipts/graph-node-output-is-what-the-gate-settles",
     "VELDO-0206 suite-reuse/receipts"
+   ]
+  },
+  {
+   "case": "suite206-isolated-suite-shares-home-and-temp",
+   "module": "selftest.py",
+   "rows": [
+    "suite-reuse/closure",
+    "suite-reuse/closure/files-left-outside-the-repository-cannot-reach-a-qualified-suite"
+   ],
+   "source": "fresh",
+   "baseline_failed": [],
+   "noop_failed": [],
+   "mutant_failed": [
+    "VELDO-0206 suite-reuse/closure/files-left-outside-the-repository-cannot-reach-a-qualified-suite",
+    "VELDO-0206 suite-reuse/closure"
    ]
   }
  ]
