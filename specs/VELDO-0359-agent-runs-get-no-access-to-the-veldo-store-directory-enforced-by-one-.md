@@ -63,9 +63,10 @@ observability:
     unavailable_service:confinement:store_guard:enforce:<step> (audit, probe, create, add, restrict or
     unreported, in the wrapper after acceptance and before any model code; no heartbeat child, no
     engine); invalid_input:layout:<element> (directory, entry, mount, runs, placement);
-    confined_runner_unavailable:store_reachable (an effective risky grant reaches the store directory, or
-    a required item cannot be resolved); confined_runner_unavailable:store_source (a seed or credential
-    source resolves into it); unavailable_service:run_query (endpoint could not be made or made ready,
+    confined_runner_unavailable:store_reachable (an effective risky grant reaches the store directory);
+    confined_runner_unavailable:census_failed:<item> (the census could not be completed: missing_item,
+    unreadable_item, configuration, qualification, runner or process; never read as store reachability);
+    confined_runner_unavailable:store_source (a seed or credential source resolves into it); unavailable_service:run_query (endpoint could not be made or made ready,
     or the receiver did not answer); run_query:other_repository; run_query:unsupported:<name>;
     coordinate_not_served.
 acceptance_criteria:
@@ -511,3 +512,21 @@ post-exclusion census grants; falsifiers bound to reachable behavior.
 presence of store-guard.off turns it OFF); the risky census separates placement inputs, actual grants and
 copy sources, with set-(b)-only parity; an explicit receiver pre-identity path for an early audit
 failure; socket-open, unresolvable-root and low-ABI rows corrected to outcomes their fixtures can produce.
+2026-11-22: B2 fix round 2 after the independent review (FIX, two findings). F1: store359-placement-skipped
+now removes the runs check and the placement check together, and layout/placement observes the fallback
+launch's acceptance; the placement check alone has store359-placement-check-skipped. F2: the execution
+record's header carries the sampled store_guard decision (pending, or off with the marker path), and a
+launch the guard refuses before acceptance keeps a header-only record with the reason and the fix; rows
+launch/ack and switch/off read the record (store359-record-header-dropped,
+store359-refusal-record-skipped). A1: rows state "payload reached" explicitly. A2: the Codex override
+replaces the role's own sandbox_mode pair, one setting in the final argument list
+(store359-role-sandbox-duplicated). A3: a census that cannot be completed refuses as
+confined_runner_unavailable:census_failed:<item>, not store_reachable
+(store359-census-failure-as-reachable).
+2026-11-22: owner decision (Telegram 43030, research/approvals/2026-11-22-veldo-0359-b2-real-mount-deferred.md):
+B2 lands without the real bind-mount and device fixtures; no host security setting changes. AC3's real
+cases (a directory bind, an ancestor bind, single-file binds of the database and the lock in the actual
+enforcement namespace, and a device entry) are recorded as deferred by owner approval 2026-11-22: printed
+in the suite's output, never asserted and never counted as passed. Row layout/mounts is judged on its
+component checks on recorded mountinfo, which stay asserted, and store359-file-binds-allowed is judged on
+those only. Follow-up: research/specs-pending/VELDO-0359-follow-up-real-mount-fixture.md.

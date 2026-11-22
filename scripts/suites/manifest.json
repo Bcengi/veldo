@@ -2192,7 +2192,7 @@
    "requires": [
     "158_veldo_0359_store_guard"
    ],
-   "regions": "VELDO-0359 B2: guard, descriptors, acknowledgement, probe, layout, risky census, engine configuration and switch rows. Includes the B1 differential journey under the real ruleset; actual bind namespaces fail as NOT RUN when the host cannot provide them.",
+   "regions": "VELDO-0359 B2: guard, descriptors, acknowledgement, probe, layout, risky census, engine configuration and switch rows. Includes the B1 differential journey under the real ruleset; real bind-mount and device cases are printed as deferred (owner approval 2026-11-22) when the host cannot make them, never asserted.",
    "requires_note": "ROOT and expect. Fixture-only production wrappers with Landlock, systemd and pidfds. No live engine.",
    "resources": {
     "systemd_user_manager": 1
