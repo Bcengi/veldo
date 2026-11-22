@@ -1,0 +1,54 @@
+"""Fifty runs of each named suite under the load generator, each in its own process through the leg's own
+runner (scripts/gate_legs.py suite_run): the confinement its leg has in the gate (the confined launcher for a
+suite of the confined leg, none for a suite the unconfined list names whole), eight at a time. Every run is
+kept: a run is never repeated because it failed, and a red suite's later runs are still made.
+Usage: <worktree> <out dir> <runs> <suite>..."""
+import importlib.util, json, os, sys, tempfile, threading
+from pathlib import Path
+sys.dont_write_bytecode = True
+root, out, runs, suites = Path(sys.argv[1]).resolve(), Path(sys.argv[2]), int(sys.argv[3]), sys.argv[4:]
+spec = importlib.util.spec_from_file_location('legs', root / 'scripts/gate_legs.py')
+legs = importlib.util.module_from_spec(spec); spec.loader.exec_module(legs)
+load = legs.load_generator()
+declaration = legs.read_declaration(legs.DECLARATION)
+listed = {e['suite']: e.get('rows') for e in declaration[0]['suites']}
+leg_of = {name: 'unconfined' if name in listed and listed[name] is None else 'confined' for name in suites}
+print('legs: %s' % json.dumps(leg_of, sort_keys=True), flush=True)
+tasks = [(name, i) for i in range(runs) for name in suites]
+lock, results = threading.Lock(), []
+fds = legs._launcher_fds()
+write = out / 'write'; write.mkdir(parents=True, exist_ok=True)
+with load.Generator(legs.LOAD_SLOTS, [str(write), tempfile.gettempdir()]) as generator:
+    def worker():
+        while True:
+            with lock:
+                if not tasks:
+                    return
+                name, i = tasks.pop(0)
+            leg = leg_of[name]
+            env = legs._env(leg, legs.entries(declaration[0]), declaration[1])
+            try:
+                outcome = legs.suite_run(generator, load.HANG, root, name, leg, env, fds)
+            except (OSError, ValueError) as error:
+                outcome = dict(suite=name, leg=leg, verdict='FAIL', seconds=None, tail=[], red=['not started: %s' % error])
+            outcome['run'] = i
+            if outcome['verdict'] == 'pass':
+                outcome['tail'] = outcome['tail'][-2:]
+            with lock:
+                results.append(outcome)
+                with open(out / 'runs.jsonl', 'a') as f:
+                    f.write(json.dumps(outcome) + '\n')
+                print('%s run %02d (%s): %s %s' % (name, i, leg, outcome['verdict'], outcome['seconds']), flush=True)
+    threads = [threading.Thread(target=worker) for _ in range(legs.LOAD_SLOTS)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+record = generator.record
+summary = {}
+for r in results:
+    s = summary.setdefault(r['suite'], {'runs': 0, 'pass': 0, 'red': []})
+    s['runs'] += 1
+    s['pass'] += int(r['verdict'] == 'pass')
+    if r['verdict'] != 'pass':
+        s['red'].append([r['run'], r['verdict'], [line[:300] for line in r['red'][:6]]])
+print(json.dumps(summary, indent=1), flush=True)
+print('load record: %s' % json.dumps(record, sort_keys=True)[:3000], flush=True)

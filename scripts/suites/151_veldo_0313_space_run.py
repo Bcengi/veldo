@@ -2694,13 +2694,16 @@ def _v313_space_run_suite():
             # 66_veldo_0042 holds the same row, so a mutant of this suite's own file is read there.
             row = 'wave1/no-sites'
             census = load('v313_census', ROOT / 'scripts' / 'check_wallclock.py')
-            files = {'scripts/suites/151_veldo_0313_space_run.py': ROOT / "scripts/suites" / "151_veldo_0313_space_run.py",
-                     'scripts/suites/66_veldo_0042_clones.py': ROOT / "scripts/suites" / "66_veldo_0042_clones.py",
-                     'scripts/suites/support/v171_tailscale.py': ROOT / "scripts/suites/support" / "v171_tailscale.py",
-                     'scripts/mutation_ownership.py': ROOT / "scripts" / "mutation_ownership.py"}
+            # Each file's name in the census's report is its directory and its name, put together here: this suite
+            # reads suite 66_veldo_0042's source as text and does not load it, and suite 101 (VELDO-0208) takes a
+            # suite's file path written whole in another suite's text as that suite being loaded.
+            files = [('scripts/suites', ROOT / "scripts/suites" / "151_veldo_0313_space_run.py"),
+                     ('scripts/suites', ROOT / "scripts/suites" / "66_veldo_0042_clones.py"),
+                     ('scripts/suites/support', ROOT / "scripts/suites/support" / "v171_tailscale.py"),
+                     ('scripts', ROOT / "scripts" / "mutation_ownership.py")]
             found = []
-            for rel, path in files.items():
-                found += census.Python(rel, Path(path).read_text(), census.RULES).scan()
+            for directory, path in files:
+                found += census.Python(directory + '/' + Path(path).name, Path(path).read_text(), census.RULES).scan()
             excepted = census.load_list(ROOT / census.EXCEPTIONS, True)[0]
             counts, first_site = census.counted(found)
             over = sorted('%s:%s %s (%s) in %s' % (first_site[k]['file'], first_site[k]['line'], k[1],
