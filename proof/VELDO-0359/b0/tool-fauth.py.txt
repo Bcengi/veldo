@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+"""B0 fixture authority: control_client.bind and serve_one unchanged, on <store dir>/authority.sock,
+with a verifier that accepts no signature (no member key is enrolled). Stops when <stop file> exists.
+Usage: fauth.py <veldo .veldo dir> <store dir> <stop file>"""
+import importlib.util, os, socket, sys
+veldo, store, stop = sys.argv[1:4]
+spec = importlib.util.spec_from_file_location('control_client', os.path.join(veldo, 'control_client.py'))
+cl = importlib.util.module_from_spec(spec); spec.loader.exec_module(cl)
+authority = cl.Authority('s', 'd', os.path.join(store, 'control.sqlite3'), enrollment=None,
+                         verify=lambda data, signature: False, host_identity='b0-fixture', apply=lambda c: None)
+srv = cl.bind(os.path.join(store, cl.SOCKET_NAME))
+srv.settimeout(0.5)
+print('serving', flush=True)
+cl.serve_forever(srv, authority, until=lambda: os.path.exists(stop))

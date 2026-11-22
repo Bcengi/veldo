@@ -1,0 +1,13 @@
+#!/bin/bash
+# B0 item 4: the risky launch. The confined runner takes the codex1 login lease itself
+# (borrowed_credentials), so this script holds none; nothing else runs on codex1 meanwhile.
+set -u
+F=/var/lib/veldo/b0-0359; L=${1:-risky-2}; W=$F/runs/$L; C=~/projects/veldo-worktrees/veldo-0359
+mkdir -m 700 "$W" || exit 3
+cp /tmp/b0-359-tools/probe.py "$W/probe.py"
+cd "$W"
+env -i HOME="$HOME" USER="$USER" PATH=/usr/local/bin:/usr/bin:/bin LANG=C.UTF-8 \
+  CODEX_HOME="$HOME/.codex" CLAUDE_CONFIG_DIR="$HOME/.claude-accounts/acct1" \
+  python3 -I /tmp/b0-359-tools/risky.py "$C" codex "$W" "$F/state/authority" "$F/logs/$L-census.json" -- \
+  /usr/bin/python3 "$W/probe.py" "$F/state/authority" "$W" risky > "$F/logs/$L-stdout.txt" 2> "$F/logs/$L-stderr.txt" < /dev/null
+echo "rc=$?"
