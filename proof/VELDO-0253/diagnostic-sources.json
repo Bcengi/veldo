@@ -100,5 +100,35 @@
     "commit": "0d3adb5ac9b5c4344f502b6f22ec9b82e1311f87",
     "raw_sha256": "79641639a4ea44e503c24950e5857aece1832c5d34a30ce70a8d38ea820664c9",
     "raw_bytes": 27775
+  },
+  "fix-host-mutations": {
+    "run": "host_heavy",
+    "commit": "0d3adb5ac9b5c4344f502b6f22ec9b82e1311f87",
+    "raw_sha256": "ca6dc5fe7074651fe9df352d8f1c522545fd089d60e0faba0f23a97e010688a1",
+    "raw_bytes": 265956
+  },
+  "fix-host-setup": {
+    "run": "host_heavy",
+    "commit": "0d3adb5ac9b5c4344f502b6f22ec9b82e1311f87",
+    "raw_sha256": "b6841df03c4b93dcb00b8b8c7996ccaa6c3cdab1faec19fb06b9004cc62b77a6",
+    "raw_bytes": 17451
+  },
+  "fix-host-api-first": {
+    "run": "host_heavy",
+    "commit": "0d3adb5ac9b5c4344f502b6f22ec9b82e1311f87",
+    "raw_sha256": "9f4bba4a598cf5ddaec7c1d3d8c97c1e5b65f77e27326f9be3faed53ee96a1c6",
+    "raw_bytes": 13187
+  },
+  "fix-host-workflow": {
+    "run": "host_heavy",
+    "commit": "b0112c68a2894172b9e049ab32c1f22bbaf6e246",
+    "raw_sha256": "200855db4aa3184a4603e454cfa7345fcfbcd51ae9f34c8d6f494ea109282c98",
+    "raw_bytes": 10557
+  },
+  "fix-host-api": {
+    "run": "host_heavy",
+    "commit": "b0112c68a2894172b9e049ab32c1f22bbaf6e246",
+    "raw_sha256": "90f51cddb47b06ec381c194e2e2cf6d60f48065a6964501c28b0374e531bc803",
+    "raw_bytes": 12708
   }
 }
