@@ -121,7 +121,9 @@ def secrets(value, path, exists, problems, key='$'):
             return
         for field, child in value.items():
             at = key + '.' + str(field)
-            if SECRET_FIELD.fullmatch(str(field)) and not (isinstance(child, dict) and set(child) == {'secret'}):
+            declaration = key.rsplit('.', 1)[-1] in ('properties', 'schemas', 'securitySchemes')
+            if (not declaration and SECRET_FIELD.fullmatch(str(field))
+                    and not (isinstance(child, dict) and set(child) == {'secret'})):
                 problems.append('installation_secret_inline:%s:%s' % (path, at))
             else:
                 secrets(child, path, exists, problems, at)
@@ -243,11 +245,35 @@ def widening(previous, current):
                     add(path, key, kind)
             elif mode == 'changed' and b is not None:
                 add(path, key, kind)
+            elif mode == 'owner_role' and b is not None:
+                if (a or {}).get('role_id') != b.get('role_id'):
+                    add(path, key + '.role_id', kind)
+            elif mode in ('account_authority', 'channel_authority'):
+                for name, value in (b or {}).items():
+                    held = (a or {}).get(name)
+                    if held is None:
+                        add(path, key + '.' + name, kind)
+                        continue
+                    fields = ('binary', 'provider', 'path', 'token') if mode == 'account_authority' else ('kind', 'chat', 'token')
+                    limit = 'concurrency' if mode == 'account_authority' else 'inbound_file_cap'
+                    profiles = value.get('profiles', {})
+                    if (any(value.get(field) is not None and value.get(field) != held.get(field) for field in fields)
+                            or any(held.get('profiles', {}).get(host) != profile for host, profile in profiles.items())
+                            or value.get(limit, 0) > held.get(limit, 0)):
+                        add(path, key + '.' + name, kind)
             elif mode == 'role_grants' and b is not None:
                 prior = a or {}
-                if (prior.get('engine') != b.get('engine') or any(
-                        item not in prior.get(field, []) for field in ('native_tools', 'mcp', 'skills')
-                        for item in b.get(field, []))):
+                grants = {item['name'] for item in prior.get('native_tools', [])}
+                servers = {(item['server'], item['revision']): item['tools'] for item in prior.get('mcp', [])}
+                skills = {(item['skill'], item['revision']) for item in prior.get('skills', [])}
+                extra_mcp = False
+                for item in b.get('mcp', []):
+                    held = servers.get((item['server'], item['revision']))
+                    tools = item['tools']
+                    extra_mcp |= held is None or (held != 'all' and (tools == 'all' or bool(set(tools) - set(held))))
+                if (prior.get('engine') != b.get('engine')
+                        or any(item['name'] not in grants for item in b.get('native_tools', [])) or extra_mcp
+                        or any((item['skill'], item['revision']) not in skills for item in b.get('skills', []))):
                     add(path, key, kind)
             elif mode == 'team_grants' and b is not None:
                 prior = (a or {}).get('roles', {})

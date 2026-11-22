@@ -170,7 +170,17 @@ def _v253_suite():
                      ('services/s.yaml', {'base_url': 'https://service.example'})]
             check('ac2/classification', all(C.V.widening({}, {path: value}) for path, value in kinds)
                   and C.V.widening({'connectors/x.yaml': connector},
-                                  {'connectors/x.yaml': dict(connector, allowed_tools=[])}) == [])
+                                  {'connectors/x.yaml': dict(connector, allowed_tools=[])}) == []
+                  and C.V.widening({'installation.yaml': {'accounts': {'one': {'label': 'Old', 'concurrency': 2}},
+                        'owner': {'display_name': 'Old', 'role_id': 'owner'}}},
+                      {'installation.yaml': {'accounts': {'one': {'label': 'New', 'concurrency': 1}},
+                        'owner': {'display_name': 'New', 'role_id': 'owner'}}}) == []
+                  and C.V.widening({'projects/p.yaml': {'deploy_targets': [{'destination': 'example'}]}},
+                                   {'projects/p.yaml': {'deploy_targets': []}}) == []
+                  and C.V.widening({'roles/r.yaml': {'configuration': {'engine': 'codex', 'mcp': [
+                        {'server': 'local', 'revision': 1, 'tools': ['read', 'write']}]}}},
+                      {'roles/r.yaml': {'configuration': {'engine': 'codex', 'mcp': [
+                        {'server': 'local', 'revision': 1, 'tools': ['read']}]}}}) == [])
             unsafe = WU.shipped()
             next(edge for edge in unsafe['transitions'] if edge['id'] == 'gated')['to'] = 'land'
             parent = repo.head()
