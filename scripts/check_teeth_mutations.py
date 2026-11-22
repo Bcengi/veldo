@@ -18535,12 +18535,17 @@ def cases():
         '            self.left = remove(self.path, self.identity)\n', '            pass  # defect: endpoint retained\n', ['query/lifecycle'])
     add(359, 'store359-query-startup-sweep', query359, 'control_run_query.py',
         '            self.path.parent.mkdir(mode=0o700)  # exclusive, no startup sweep\n',
-        "            for old in self.path.parent.parent.glob('veldo-query-*/query.sock'):\n"
+        "            for old in self.path.parent.parent.glob('vq-*/query.sock'):\n"
         "                try:\n                    with socket.socket(socket.AF_UNIX) as probe:\n"
         "                        probe.connect(str(old))\n"
         "                except ConnectionRefusedError:\n"
         "                    with contextlib.suppress(OSError):\n                        remove(old)\n"
         "            self.path.parent.mkdir(mode=0o700)  # exclusive, no startup sweep\n", ['query/lifecycle'])
+    # VELDO-0359 B1 fix round 2 (N1): the endpoint under a runtime directory too long for a socket path.
+    add(359, 'store359-long-endpoint-path', query359, 'control_run_query.py',
+        '    if _fits(place):\n        return place\n    for pattern, make in SHORT:\n',
+        '    if True:  # defect: the long path, whatever its length\n        return place\n    for pattern, make in SHORT:\n',
+        ['query/place'])
     add(359, 'store359-switch-ignored', query359, 'control_launch.py',
         "        if self.store_guard['state'] == 'off':\n", "        if False:\n", ['switch/off'])
     # VELDO-0359 B1 fix round 1: one defect per review finding, each observed by its row.

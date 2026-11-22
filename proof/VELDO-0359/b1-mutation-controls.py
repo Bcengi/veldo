@@ -20,7 +20,7 @@ spec = importlib.util.spec_from_file_location('b1_registry', DRIVER)
 registry = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(registry)
 cases = [c for c in registry.cases() if c['finding'] == 359 and c['suite'] == '157_veldo_0359_run_query.py']
-assert len(cases) == 15
+assert len(cases) == 16
 
 
 def run(case, mode, directory):
