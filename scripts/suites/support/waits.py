@@ -573,6 +573,53 @@ def static_rows(path):
     return rows
 
 
+def declared_rows(path):
+    """The row names a suite file DECLARES when it emits its rows under names built at run time (most suites
+    of a specification do: they collect each row's checks and state every row at their end, as
+    expect(prefix + row ...)): the strings of the last assignment to the name ROWS that can be read from the
+    source, where a value is a tuple or list of string literals, the name of an earlier one, or a sum of
+    those. Such a row is reached when a row was stated whose last word is its name, which is how the mutation
+    driver matches a row to a case's target."""
+    try:
+        with open(path, encoding='utf-8') as f:
+            tree = ast.parse(f.read(), path)
+    except (OSError, SyntaxError, ValueError):
+        return []
+    known = {}
+
+    def value(node):
+        if isinstance(node, (ast.Tuple, ast.List)):
+            if all(isinstance(e, ast.Constant) and isinstance(e.value, str) for e in node.elts):
+                return [e.value for e in node.elts]
+            return None
+        if isinstance(node, ast.Name):
+            return known.get(node.id)
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            left, right = value(node.left), value(node.right)
+            return None if left is None or right is None else left + right
+        return None
+
+    assigned = [n for n in ast.walk(tree) if isinstance(n, ast.Assign) and len(n.targets) == 1
+                and isinstance(n.targets[0], ast.Name)]
+    for node in sorted(assigned, key=lambda n: (n.lineno, n.col_offset)):
+        found = value(node.value)
+        if found is not None:
+            known[node.targets[0].id] = found
+        elif node.targets[0].id != 'ROWS':
+            known.pop(node.targets[0].id, None)
+    rows = []
+    for name in known.get('ROWS') or []:
+        if name not in rows:
+            rows.append(name)
+    return rows
+
+
+def _undeclared(path, seen):
+    """The declared rows of a suite file that no stated row has reached."""
+    reached = {s.split()[-1] for s in seen if s.split()}
+    return [name for name in declared_rows(path) if name not in reached]
+
+
 def _pattern(name):
     return re.compile('^' + '.*'.join(re.escape(p) for p in name.split('{}')) + '$', re.S)
 
@@ -646,8 +693,8 @@ def progress(what):
 
 
 def _not_run(frame):
-    """Every row not reached, in order: the current suite's stated rows not yet seen, then every stated
-    row of each later suite."""
+    """Every row not reached, in order: the current suite's stated rows not yet seen and its declared rows
+    (declared_rows) no stated row has reached, then every stated and declared row of each later suite."""
     out = []
     if RUNTIME.active and RUNTIME.suite_file:
         seen = RUNTIME.seen
@@ -659,8 +706,9 @@ def _not_run(frame):
                 reached = name in seen
             if not reached and name not in out:
                 out.append(name)
+        out += [name for name in _undeclared(RUNTIME.suite_file, seen) if name not in out]
         for _, path in RUNTIME.later:
-            for _, name in static_rows(path):
+            for name in [n for _, n in static_rows(path)] + declared_rows(path):
                 if name not in out:
                     out.append(name)
         return out
@@ -670,6 +718,7 @@ def _not_run(frame):
         for line, name in static_rows(outer.f_code.co_filename):
             if line > outer.f_lineno and name not in out:
                 out.append(name)
+        out += [name for name in _undeclared(outer.f_code.co_filename, RUNTIME.seen) if name not in out]
     return out
 
 

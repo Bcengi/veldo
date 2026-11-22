@@ -18425,6 +18425,11 @@ def cases():
             "    subreaper = _LIBC.prctl(_PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0) == 0\n",
             "    subreaper = False  # defect: orphans go to the user manager, out of the keeper's reach\n",
             ['watchdog/hung-tree-ended'], 'scripts/suites/support')
+    # A suite that declares its rows (ROWS) and states them at its end hangs with none of them named.
+    lead358('wait358-declared-rows-unread', runtime358, 'waits.py',
+            "    return [name for name in declared_rows(path) if name not in reached]\n",
+            "    return []  # defect: only rows stated as literals are read\n",
+            ['waits/declared-rows-not-run'], 'scripts/suites/support')
     # The census stops reading AbortSignal.timeout(n) (brief H's finding 4).
     lead358('wall358-abort-signal-ignored', '158_veldo_0358_census.py', 'check_wallclock.py',
             "            values += [('AbortSignal.timeout argument 0', m.group(1)) for m in re.finditer(\n",
