@@ -1,0 +1,35 @@
+VELDO-0113 finding-113 mutation cases that need ptrace: owner landing decision
+
+Status: listed for the owner. No exemption added; scripts/gate_unconfined.json is
+protected and unchanged. Suite 114_veldo_0113_no_autostart is not in that list,
+so the gate's declared unconfined mutation leg does not cover it.
+
+Why the confined leg cannot judge them: the VELDO-0111 observer arms each
+measured client with PTRACE_TRACEME. The gate's confined worker denies ptrace
+(scripts/agent_sandbox.py), so every one of the 22 external cases ends
+`root did not reach pre-exec stop` / `[Errno 1] Operation not permitted`, the
+baseline asserts fail, and the coordinator reports invalid_baseline for all five
+(see gate-mutations.txt, a pre-rebase historical receipt).
+
+Cases (suite 114_veldo_0113_no_autostart.py, finding 113):
+1. autostart113-reaped-fallback               -> unavailable/no-client-starts-the-authority
+2. autostart113-transient-abstract-listener   -> unavailable/no-client-hosts-a-listener
+3. autostart113-incomplete-counts-as-success  -> unavailable/no-auto-start-needs-census
+4. autostart113-construction-outside-authority -> unavailable/in-process-construction-boundary
+5. autostart113-cli-direct-construction       -> unavailable/in-process-construction-boundary
+
+Owner options: (a) add 114_veldo_0113_no_autostart to the unconfined list with
+reason "ptrace: the VELDO-0111 observer traces every measured client"; or (b)
+keep it confined and accept these five as proved only by the direct runs below.
+
+Direct runs (2026-11-22, on VELDO-0111 bb0686b3, unconfined via the host-heavy
+wrapper; `run_checks.py --case <name>`, each on a temporary source copy):
+- 3: red for its stated reason. Named row FAIL incomplete_census_accepted, while
+  the mutant forces the two absence rows to PASS over 18 INCOMPLETE receipts.
+- 4: red. Construction FAIL outside_authority:.veldo/claim.py:62.
+- 5: red. Construction FAIL outside_authority:bin/veldo:307.
+- 1: NOT red. Forbidden births captured in 18 cases, but each of those receipts
+  is INCOMPLETE (unqualified syscall 436, close_range), so the row stands down.
+- 2: NOT red. Service events captured in 18 cases; same INCOMPLETE receipts.
+  Cases 1 and 2 remain blocked on the VELDO-0111 close_range gap (README).
+Restored control after all five: construction PASS, store-write GAP.
