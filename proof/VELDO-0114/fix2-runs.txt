@@ -1,0 +1,7 @@
+# VELDO-0114 fix round 2: suite runs through host_heavy.sh on this host (census complete)
+  48_veldo_0108_relay                             11 passed   18.89s
+selftest (PARTIAL, 1 of 255 suites): 37 passed, 0 failed in 18.89s
+== rc 2
+  113_veldo_0114_relay_census                      5 passed  116.88s
+selftest (PARTIAL, 1 of 255 suites): 31 passed, 0 failed in 116.88s
+== rc 2

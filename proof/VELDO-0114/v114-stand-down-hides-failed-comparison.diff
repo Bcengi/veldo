@@ -1,6 +1,6 @@
 --- scripts/suites/48_veldo_0108_relay.py
 +++ scripts/suites/48_veldo_0108_relay.py (mutant)
-@@ -75,6 +75,8 @@
+@@ -82,6 +82,8 @@
      no census, so a failed comparison is red whatever the census shows. A census that is not ready
      only withholds the pass of the no-listener part; it never turns a failed comparison into a
      stand-down, which on a leg without ptrace would leave a real regression green."""

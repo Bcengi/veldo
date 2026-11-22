@@ -125,6 +125,10 @@
    [
     "VELDO-0114 AC3 relay/listener-proof-needs-census",
     true
+   ],
+   [
+    "VELDO-0114 relay/rows-scoped-entry-moves-only-the-census-row",
+    true
    ]
   ],
   "48_veldo_0108_relay.py": [
@@ -356,9 +360,9 @@
      false
     ]
    },
-   "new_digest": "ad55ce01a611dba9d39e042519bc8d421fdd8ea9866ee29ae17d21662b56a9f8",
+   "new_digest": "7424fa924282a7f0490ff6b9364216db455368677be693ac8d02a04e51977d57",
    "noop_equals_baseline": true,
-   "old_digest": "8d2705a594f2635cefb7ad6aa860eaeb560a7e300e196b92ddb49aebe126f9cd",
+   "old_digest": "b20b9b56e58b8ed3c163aba7ccce265e58f5c893de9ca61ca57c1d62c9ca8c01",
    "rows": [
     "relay/listener-proof-needs-census",
     "relay/stand-down-is-not-green"
@@ -383,13 +387,39 @@
      false
     ]
    },
-   "new_digest": "589fc0a1b45368cbd6c98e60354803d9eb30e7ac189576c811ed1cff50d72d1b",
+   "new_digest": "7935b13559bbc764486e47d51ac86a70eb36d2d16e6a23765a21e45c0ec2cec3",
    "noop_equals_baseline": true,
-   "old_digest": "082583c606045e9e2087f039d86406f2de39b37f32ea43eadaa84f3a94d131c4",
+   "old_digest": "d6f9348d45733c377e1a295c0e03395cc9f9458e556375bd1c977a05a9d4e840",
    "rows": [
     "relay/stand-down-never-hides-a-failed-comparison"
    ],
    "suite": "48_veldo_0108_relay.py"
+  },
+  {
+   "baseline_targets": {
+    "relay/rows-scoped-entry-moves-only-the-census-row": [
+     true
+    ]
+   },
+   "case": "v114-ordinary-row-runs-unconfined",
+   "detected": true,
+   "module": "48_veldo_0108_relay.py",
+   "mutant_error": null,
+   "mutant_failed_rows": [
+    "VELDO-0114 relay/rows-scoped-entry-moves-only-the-census-row"
+   ],
+   "mutant_targets": {
+    "relay/rows-scoped-entry-moves-only-the-census-row": [
+     false
+    ]
+   },
+   "new_digest": "aaa5724809951e1b05d04fa7ec02c666a5c84ebb2a9d35dc25aacaa395b96a48",
+   "noop_equals_baseline": true,
+   "old_digest": "d6f9348d45733c377e1a295c0e03395cc9f9458e556375bd1c977a05a9d4e840",
+   "rows": [
+    "relay/rows-scoped-entry-moves-only-the-census-row"
+   ],
+   "suite": "113_veldo_0114_relay_census.py"
   }
  ],
  "schema": "veldo.v114-drive/v1"

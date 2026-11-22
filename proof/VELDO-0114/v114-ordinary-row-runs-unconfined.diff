@@ -1,0 +1,11 @@
+--- scripts/suites/48_veldo_0108_relay.py
++++ scripts/suites/48_veldo_0108_relay.py (mutant)
+@@ -167,7 +167,7 @@
+ # Every refusal path promises no answer: compare raw bytes, never parsed JSON.
+ _v108_usage = _v108_sp.run([_v108_sys.executable, str(_v108_MAIN / "control_relay.py")],
+                           input=b"", capture_output=True, timeout=5)
+-if leg_runs():
++if True:  # defect: an ordinary row that ignores the gate leg
+     expect("VELDO-0108 relay/usage-has-zero-stdout: usage failure exits 64 with exactly zero stdout bytes",
+            _v108_usage.returncode == 64 and _v108_usage.stdout == b""
+            and b"usage:" in _v108_usage.stderr)

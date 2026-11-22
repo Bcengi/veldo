@@ -54,9 +54,10 @@ the same number of rows. `results.json` holds the outcomes and digests, and each
 | v114-endpoint-helper-forked | Fork a short-lived endpoint helper before connecting | relay/no-second-process |
 | v114-snapshot-fallback | Fall back to pathname snapshot equality when census collection fails | relay/listener-proof-needs-census, relay/stand-down-is-not-green |
 | v114-stand-down-hides-failed-comparison (fix round 1) | Suite 48 lets an incomplete census decide before the comparison | relay/stand-down-never-hides-a-failed-comparison |
+| v114-ordinary-row-runs-unconfined (fix round 2) | Suite 48's usage row loses its leg_runs() guard | relay/rows-scoped-entry-moves-only-the-census-row |
 
-All four were detected, and each no-op control equals its suite's green baseline
-(suite 113: 30 rows, suite 48: 37 rows). Each mutant fails only its target rows.
+All five were detected (fix round 2 drive), and each no-op control equals its
+suite's green baseline (suite 113: 31 rows, suite 48: 37 rows). Each mutant fails only its target rows.
 
 ## Runs
 
@@ -102,6 +103,36 @@ DOWN and the suite stayed green. Fixed:
   `fault="denied"`, and the `addrfromenv` reason operand broken. See
   `fix1-demo.txt`: the composite is FAIL (comparison_failed) and the suite is red.
 
+## Fix round 2 (fix-check G1)
+
+Finding: only suite 48's composite asked `leg_runs("census")`. Its ten ordinary
+rows asked nothing, so with the rows-scoped entry the README recommends, the
+unconfined leg ran all eleven rows again instead of the composite alone. Fixed:
+
+* Each ordinary row of suite 48 now asks `leg_runs()`, as suites 100 and 101 do.
+  With the entry `48_veldo_0108_relay` rows `census`, the unconfined leg runs only
+  relay/one-endpoint-one-judgement. The confined leg runs the other ten, among them
+  relay/stand-down-never-hides-a-failed-comparison. With no entry, or a whole-suite
+  entry, every row runs where it ran before.
+* New row `relay/rows-scoped-entry-moves-only-the-census-row` (suite 0114). It runs
+  suite 48 in a fresh interpreter on each leg, with the three variables
+  gate_legs.py sets and that entry, the dispatcher's own `leg_runs` and a recording
+  `expect`. A row counts as run when it is asserted, or printed STANDS DOWN by
+  name. The unconfined leg must run exactly the composite, the confined leg exactly
+  the ten named rows, and every asserted row must be true. The row needs no census.
+* Falsifier, teeth finding 114: `v114-ordinary-row-runs-unconfined` replaces the
+  usage row's `if leg_runs():` with `if True:`. The unconfined leg then also runs
+  relay/usage-has-zero-stdout, and the new row is red. Detected, and only that row
+  fails (`results.json`, `v114-ordinary-row-runs-unconfined.diff`).
+* Consequence, accepted: with the rows entry, the confined leg does not judge the
+  endpoint/judgement comparison. The composite judges it on the unconfined leg, and
+  both legs must be green. The confined leg still judges the stand-down rule itself.
+* Runs through host_heavy.sh (`fix2-runs.txt`): `--suite 48_veldo_0108_relay` 11
+  passed, 0 failed (closure 37). `--suite 113_veldo_0114_relay_census` 5 passed,
+  0 failed (closure 31). Both exit 2, the partial-run exit. Drive: 5 of 5 detected
+  (`drive.txt`). `scripts/gate_unconfined.json` is not edited. Lint passed, and
+  `check_personal_setup.py` found 0. `scripts/verify.sh` was not run.
+
 ## Owner landing decision: entries for `scripts/gate_unconfined.json`
 
 The reviewer recommends these entries. This change does not edit that protected
@@ -112,13 +143,15 @@ file. They belong in one edit:
   refuses ptrace"}`: the whole suite. Every row except
   relay/stand-down-is-not-green needs the census. This also lets the mutation
   stage run the finding 114 cases unconfined.
-* `48_veldo_0108_relay`: preferably rows-scoped, `{"suite": "48_veldo_0108_relay",
-  "rows": "census", "reason": "nested ptrace: relay/one-endpoint-one-judgement
-  runs each relayed call under a VELDO-0111 census, and the gate domain refuses
-  ptrace"}`. Suite 48 already guards only that row with `leg_runs("census")`, so
-  the other relay rows, the new stand-down row among them, stay confined. A
-  whole-suite entry also works, but it moves every relay row out of the confined
-  leg.
+* `{"suite": "48_veldo_0108_relay", "rows": "census", "reason": "nested ptrace:
+  relay/one-endpoint-one-judgement runs each relayed call under a VELDO-0111
+  census, and the gate domain refuses ptrace"}`: rows-scoped, the recommended
+  form. Since fix round 2 the composite asks `leg_runs("census")` and each of the
+  other ten relay rows asks `leg_runs()`, so with this entry the unconfined leg
+  runs only the composite and the confined leg keeps the other ten, the stand-down
+  row among them. Suite 0114's relay/rows-scoped-entry-moves-only-the-census-row
+  drives both legs. A whole-suite entry is not recommended: it would move all
+  eleven relay rows out of the confined leg for one row's ptrace need.
 * `113_veldo_0111_census`: the whole suite, in the same edit (the VELDO-0111
   open item). VELDO-0114 consumes its receipts.
 * At landing, require a gate stamp that shows these rows green on the
