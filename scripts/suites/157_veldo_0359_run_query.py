@@ -3,13 +3,16 @@
 Real signed workspace bindings, SQLite transactions and Unix sockets. No engine,
 confinement or live store. Lifecycle launch prerequisites use explicit stand-ins;
 the production Receiver.launch/acceptance and Runner reaping paths remain in use.
-Synchronization is by events, pipes and process exit; deadlines detect hangs only.
+Synchronization is by events, pipes and process exit. HANG is the one hang detector
+(120 s); no row's result depends on a deadline being met. The protocol's own deadline
+is raised to HANG everywhere except in the two rows that exercise its refusal.
 """
 
 
 def _v359_query_suite():
     import contextlib
     import copy
+    import importlib.machinery
     import importlib.util
     import io
     import json
@@ -36,7 +39,9 @@ def _v359_query_suite():
         'runstatus.py': ROOT / ".veldo" / "runstatus.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
-    rows = {k: [] for k in ('query/journey', 'query/scope', 'query/lifecycle', 'switch/off', 'paths/canon')}
+    rows = {k: [] for k in ('query/journey', 'query/scope', 'query/lifecycle', 'query/cost', 'switch/off',
+                            'paths/canon')}
+    HANG = 120  # seconds: detects a hang, never decides a row
 
     def check(row, label, value):
         rows[row].append((label, bool(value)))
@@ -73,6 +78,10 @@ def _v359_query_suite():
         Q = load('v359_query', mods / 'control_run_query.py')
         EL = Q.EL
         L = load('v359_launch', mods / 'control_launch.py')
+        # The run-side client is the copy the entry gate loads once and keeps.
+        QC = EL._late('control_run_query')
+        for module in (Q, QC, L.RQ):
+            stack.enter_context(patch.object(module, 'SECONDS', HANG))
         S = L.S
         runtime = base / 'rt'
         runtime.mkdir()
@@ -147,8 +156,8 @@ def _v359_query_suite():
         put('decision:foreign', 'decision', dict(decision_id='foreign', blocks=['foreign']))
         put('decision:local', 'decision', dict(decision_id='local', blocks=['VELDO-9360']))
 
-        logs = []
-        server = Q.Server(config, 'journey', logs.append).start()
+        journey_log = base / 'records' / 'journey.query.log'
+        server = Q.Server(config, 'journey', log=str(journey_log)).start()
         stack.callback(server.close)
         remote_events, direct_events = [], []
         remote = Q.RemoteGate(repo, server.path, remote_events.append)
@@ -172,10 +181,13 @@ def _v359_query_suite():
                 raise sqlite3.OperationalError('fixture store inaccessible to client')
             return original_connect(database, *args, **kwargs)
 
+        operations = set()
+
         def compare(label, fn):
             direct_events.clear()
             remote_events.clear()
             a, b = fn(direct), fn(remote)
+            operations.update(e.get('operation') for e in remote_events)
             check('query/journey', label, stable(a) == stable(b) and stable(direct_events) == stable(remote_events))
             return b
 
@@ -214,7 +226,7 @@ def _v359_query_suite():
             compare('plan bundle', lambda gate: output(lambda: PL.cmd_bundle(str(plan), 'VELDO-9359', eligibility=gate)))
             check('query/journey', 'plan hash', output(lambda: PL.cmd_hash(str(plan)))[0] == 0)
             compare('frontier claimable and offers', lambda gate: FR.claimable(repo_root=repo, eligibility=gate))
-            compare('frontier withheld and observations', lambda gate: FR.withheld(repo_root=repo, eligibility=gate))
+            compare('frontier withheld', lambda gate: FR.withheld(repo_root=repo, eligibility=gate))
             compare('completion_view explicit gate', lambda gate: WS.completion_view(['VELDO-9359', 'missing'], root=repo, eligibility=gate))
             executor = EX.Executor(types.SimpleNamespace(reviewer_identity='reviewer'), context={'holder': 'builder'})
             compare('executor context and ticket', lambda gate: executor._decide(gate, 'VELDO-9359', 'review', ticket))
@@ -278,7 +290,11 @@ def _v359_query_suite():
         check('query/scope', 'frozen completion floor replication', set(remote.completion('VELDO-9359')) == set(Q.FACTS)
               and set(remote.floor_entry('VELDO-9359', 'ready')) == set(Q.FLOOR)
               and set(remote.replication_status()) == set(Q.REPLICATION))
-        check('query/scope', 'counts log only request and outcome', bool(logs) and all(set(v) == {'event', 'request', 'outcome'} for v in logs))
+        logged = [line.split(' ') for line in journey_log.read_text().splitlines()]
+        check('query/scope', 'log holds only request name and outcome', bool(logged) and all(
+            len(line) == 2 and line[0] in (*Q.REQUESTS, 'malformed')
+            and line[1] in ('ok', 'coordinate_not_served', 'unavailable_service:run_query') for line in logged)
+            and sum(server.counts.values()) == len(logged) and 'VELDO-9359' not in journey_log.read_text())
         # Freeze every nested metadata projection; injected record bodies never cross.
         real_decide = Q.EL.Gate.decide
         def planted_decide(gate, *args, **kwargs):
@@ -340,6 +356,41 @@ def _v359_query_suite():
         completed = compare('all completion facts', lambda gate: gate.completion('VELDO-9359'))
         check('query/journey', 'all completion facts present and true', completed == dict.fromkeys(Q.FACTS, True))
         compare('landed floor', lambda gate: gate.floor_entry('VELDO-9359', 'ready', gate.landed('VELDO-9359')))
+        check('query/journey', 'callbacks of every kind were compared [%s]' % sorted(map(str, operations)),
+              {'invalid_record', 'decision_dependency'} <= operations and len(operations) >= 4)
+
+        # Cost: a floor entry, a request or an entry gate loads no module once its organ is held, and a
+        # frontier pass over a store-holding gate (the marker-present path) loads none at all, as before B1.
+        executed = []
+        real_exec = importlib.machinery.SourceFileLoader.exec_module
+
+        def counting(loader, module):
+            executed.append(module.__name__)
+            return real_exec(loader, module)
+
+        ENTRIES = 25
+        EL2 = load('v359_eligibility_fresh', mods / 'control_eligibility.py')
+        fresh = EL2.enrolled_gate(repo, trust)
+        stack.callback(fresh.close)
+        FR._floor_entry(direct, 'VELDO-9359', 'ready')  # the frontier holds its floor authority, as at base
+        with patch.object(importlib.machinery.SourceFileLoader, 'exec_module', counting):
+            passed = [FR._floor_entry(fresh, unit, 'ready') for _ in range(ENTRIES) for unit in ('VELDO-9359', 'VELDO-9360')]
+        check('query/cost', 'frontier pass over a direct gate loads no module [%s]' % executed[:4],
+              not executed and 'frontier' not in EL2._LATE and len(passed) == 2 * ENTRIES
+              and stable(passed[0]) == stable(direct.floor_entry('VELDO-9359', 'ready')))
+        fresh.floor_entry('VELDO-9359', 'ready')  # any other caller: the frontier is loaded once and kept
+        with patch.object(importlib.machinery.SourceFileLoader, 'exec_module', counting):
+            for _ in range(ENTRIES):
+                fresh.floor_entry('VELDO-9359', 'ready')
+                direct.floor_entry('VELDO-9359', 'ready')
+        check('query/cost', 'direct floor entries reload nothing [%s]' % executed[:4], not executed)
+        with patch.object(importlib.machinery.SourceFileLoader, 'exec_module', counting):
+            for _ in range(ENTRIES):
+                remote.floor_entry('VELDO-9359', 'ready')
+                remote.replication_status()
+                EL.entry_gate(repo).close()
+        check('query/cost', 'served floor entries, replication and entry gates reload nothing [%s]' % executed[:4],
+              not executed)
         # An actual local replica still opens outside the authority directory in query mode.
         replica_path = Path(EL.E.git_common_dir(repo)) / S.DB_RELATIVE
         replica = S.open_store(str(replica_path))
@@ -377,16 +428,17 @@ def _v359_query_suite():
             def stall():
                 with fake.accept()[0] as client:
                     accepted.set()
-                    release.wait(10)
+                    release.wait(HANG)
             worker = threading.Thread(target=stall)
             worker.start()
             try:
                 with patch.object(Q, 'SECONDS', .1):
                     check('query/scope', 'transport deadline', stopped(lambda: Q.RemoteGate(repo, fake_path)) == 'unavailable_service:run_query')
-                check('query/scope', 'transport connected before timeout', accepted.is_set())
+                # The refusal above is the protocol's; that the peer was reached is an event, waited for.
+                check('query/scope', 'transport connected and stalled', accepted.wait(HANG))
             finally:
                 release.set()
-                worker.join(10)
+                worker.join(HANG)
                 fake.close()
                 fake_path.unlink()
             check('query/scope', 'no attempted fallback', not client_opens)
@@ -411,7 +463,7 @@ def _v359_query_suite():
             opened, unblock = threading.Event(), threading.Event()
             def delayed_gate():
                 opened.set()
-                unblock.wait(10)
+                unblock.wait(HANG)
                 raise OSError('fixture readiness')
             if failure == 'connection':
                 with patch.object(candidate, '_gate', side_effect=OSError('fixture connection')):
@@ -421,10 +473,10 @@ def _v359_query_suite():
                 with patch.object(candidate, '_gate', side_effect=delayed_gate), patch.object(Q, 'SECONDS', .1):
                     starter = threading.Thread(target=lambda: result.append(stopped(candidate.start)))
                     starter.start()
-                    assert opened.wait(10)
-                    starter.join(10)
+                    assert opened.wait(HANG)
+                    starter.join(HANG)
                     unblock.set()
-                    candidate.thread.join(10)
+                    candidate.thread.join(HANG)
                 check('query/lifecycle', 'ready deadline', result == ['unavailable_service:run_query'])
             check('query/lifecycle', failure + ' cleanup', not candidate.path.parent.exists())
         bound, listen = threading.Event(), threading.Event()
@@ -433,17 +485,17 @@ def _v359_query_suite():
         def pause_listen(sock, *args):
             if sock.getsockname() == str(first.path):
                 bound.set()
-                assert listen.wait(10)
+                assert listen.wait(HANG)
             return real_listen(sock, *args)
         results = []
         with patch.object(socket.socket, 'listen', pause_listen):
             starter = threading.Thread(target=lambda: results.append(stopped(first.start)))
             starter.start()
-            assert bound.wait(10)
+            assert bound.wait(HANG)
             later = Q.Server(other_config, 'starting-B').start()
             check('query/lifecycle', 'A survives B startup', first.path.exists())
             listen.set()
-            starter.join(10)
+            starter.join(HANG)
         check('query/lifecycle', 'A answers after listen', results == [None]
               and stopped(lambda: Q.RemoteGate(repo, first.path).completion('missing')) is None)
         first.close()
@@ -466,6 +518,7 @@ from pathlib import Path
 query = os.environ.get('VELDO_RUN_QUERY')
 opened = False
 built = False
+flood = None
 if query:
     def forbidden(*args, **kwargs):
         raise RuntimeError('run attempted a direct store open')
@@ -473,24 +526,50 @@ if query:
     spec = importlib.util.spec_from_file_location('payload_eligibility', sys.argv[2])
     EL = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(EL)
+    RQ = EL._late('control_run_query')
+    RQ.SECONDS = 120  # a hang detector here; the fixture never waits for a deadline
     gate = EL.entry_gate(sys.argv[3])
     built = gate.decide('direct_execution', 'VELDO-9359')['eligible']
     gate.close()
+    if 'flood' in sys.argv[4:]:
+        # More request lines than a pipe holds, asked while the Runner side is not reading.
+        flood = 0
+        for _ in range(3000):
+            try:
+                flood += 'answer' in RQ._exchange(query, {'operation': 'hello'})
+            except RQ.Refused:
+                break
+    if 'stray' in sys.argv[4:]:
+        (Path(query).parent / 'dropped-by-run').write_text('not the receiver\'s')
 else:
     conn = sqlite3.connect(sys.argv[1])
     conn.execute('SELECT 1 FROM entities LIMIT 1').fetchone()
     conn.close()
     opened = True
-print(json.dumps({'query': query, 'store_open': opened, 'build_reached': built}), flush=True)
+print(json.dumps({'query': query, 'store_open': opened, 'build_reached': built, 'flood': flood}), flush=True)
 sys.stdin.buffer.read(1)
 """)
         harness = base / 'receiver.py'
-        harness.write_text("""import importlib.util, json, os, subprocess, sys, time
+        harness.write_text("""import importlib.util, json, os, subprocess, sys, threading, time
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('fixture_launch', sys.argv[2])
 L = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(L)
 sys.argv = [sys.argv[0], sys.argv[1]]
+L.RQ.SECONDS = 120  # a hang detector here; the fixture never waits for a deadline
+RECEIVERS = []
+def endpoint_state(dispatch):
+    place = L.RQ.endpoint(dispatch)
+    return {'directory': os.path.lexists(place.parent), 'socket': os.path.lexists(place)}
+real_scan = L.launch_scan
+def scan(config, dispatch_id, project, environment, argv, own=()):
+    # What the VELDO-0254 launch scan was told is Veldo's own, by name only.
+    RECEIVERS[0].emit({'event': 'scan_probe', 'own': sorted(
+        name for name in ('VELDO_RUN_QUERY', 'VELDO_DISPATCH_ACCEPTANCE') if environment.get(name) in own)})
+    return real_scan(config, dispatch_id, project, environment, argv, own=own)
+L.launch_scan = scan
+# The end's scan and space belong to other briefs: the end is reported as report_end reports it.
+L.report_end = lambda receiver, contract, event: receiver.emit(event)
 class Dispatches:
     def __init__(self, receiver):
         self.receiver = receiver
@@ -510,10 +589,30 @@ class Dispatches:
         self.state = 'refused'
     def run(self, *args, **kwargs):
         self.state = 'running'
+    def exit(self, dispatch, *args, **kwargs):
+        # The production _finish records the end here: what the receiver had done to its endpoint by then.
+        self.state = 'exited'
+        self.receiver.emit({'event': 'end_probe', **endpoint_state(dispatch)})
 class Receiver(L.Receiver):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.dispatches = Dispatches(self)
+        RECEIVERS.append(self)
+        self.off_thread = []
+        write = self.emit
+        def emit(message):
+            if threading.current_thread() is not threading.main_thread():
+                # Counted, not written: only the receiver's own thread may use the launch pipe.
+                self.off_thread.append(message.get('event'))
+                return
+            write(message)
+        self.emit = emit
+    def close(self):
+        super().close()
+        dispatch = self.config['fixture_contract']['dispatch_id']
+        self.emit({'event': 'closed', **endpoint_state(dispatch)})
+    def _remove_run(self): pass
+    def _ended(self): return {}
     def _recheck(self, *args): pass
     def _qualify(self, *args): pass
     def _login(self, *args): pass
@@ -530,19 +629,17 @@ class Receiver(L.Receiver):
         return subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environment)
     def _reap(self, worker, contract, carry, **kwargs):
         payload = json.loads(worker.stdout.readline())
-        self.emit({'event': 'payload', 'pid': worker.pid, **payload})
+        self.emit({'event': 'payload', 'pid': worker.pid, 'off_thread': list(self.off_thread), **payload})
         if self.config.get('wait_payload'):
             sys.stdin.buffer.read(1)
         if worker.poll() is None:
             try:
                 worker.stdin.write(b'x'); worker.stdin.flush()
             except BrokenPipeError: pass
-        code = worker.wait(timeout=10)
+        code = worker.wait(timeout=120)
         self.emit({'event': 'payload_exit', 'code': code})
-        return code
-    def _finish(self, *args):
-        self.dispatches.state = 'exited'
-        self.emit({'event': 'exited'})
+        self.supervision = {'cause': None, 'empty': True}
+        return {'code': code, 'deadline_stop': False}
 L.Receiver = Receiver
 L.main()
 """)
@@ -555,7 +652,7 @@ L.main()
             children.append(child)
             return child
         def read_event(child, pending, wanted):
-            deadline = time.monotonic() + 30
+            deadline = time.monotonic() + HANG
             while True:
                 while b'\n' in pending[0]:
                     line, _, pending[0] = pending[0].partition(b'\n')
@@ -573,7 +670,9 @@ L.main()
                 pending[0] += data
                 assert time.monotonic() < deadline, 'receiver event deadline'
         def run_fixture(label, **options):
-            cfg = dict(config, state_root=str(base / 'state'), adapters={'fixture': {'argv': [sys.executable, '-B', str(payload), str(db), str(mods / 'control_eligibility.py'), str(repo)]}})
+            cfg = dict(config, state_root=str(base / 'state'), adapters={'fixture': {'argv': [
+                sys.executable, '-B', str(payload), str(db), str(mods / 'control_eligibility.py'), str(repo),
+                *options.pop('payload_args', ())]}})
             cfg.update(options)
             cfg_path = base / (label + '.json')
             contract = dict(dispatch_id=label, unit='VELDO-9359', station='build', capability={'adapter': 'fixture'},
@@ -583,9 +682,12 @@ L.main()
             with patch.object(L.subprocess, 'Popen', spawn_receiver), patch.object(L.Launch, 'start', lambda self, seconds: self):
                 launch = L.invoke(str(cfg_path), contract, None)
             launch.child.fixture_launch = launch
-            return launch, [b'', []]
+            launch.fixture_pending = [b'', []]
+            return launch, launch.fixture_pending
         def reap(launch):
-            launch.child.wait(timeout=30)
+            launch.child.wait(timeout=HANG)
+            # Lines this fixture read from the pipe but has not handed over are the Launch's too.
+            launch.pending, launch.fixture_pending[0] = launch.fixture_pending[0] + launch.pending, b''
             launch._end_receiver()
         for label, ending in (('normal-end', 'normal'), ('killed-engine', 'engine'), ('killed-receiver', 'receiver')):
             launch, pending = run_fixture(label, wait_payload=True)
@@ -594,9 +696,14 @@ L.main()
             accepted_events = [e for e in pending[1] if e.get('event') == 'accept_probe']
             check('query/lifecycle', label + ' ready before acceptance', accepted_events and accepted_events[0]['ready']
                   and seen['query'] == str(path) and Path(path).exists() and seen['build_reached'] and not seen['store_open'])
+            gone = {'directory': False, 'socket': False}
             if ending == 'engine':
                 os.kill(seen['pid'], signal.SIGKILL)
                 launch.child.stdin.write(b'x'); launch.child.stdin.flush()
+                # The receiver's own answer, given as its production _finish records the end and before
+                # the Runner reaps it: the Runner's removal cannot stand in for the receiver's.
+                check('query/lifecycle', label + ' removed by the receiver before its end is recorded',
+                      read_event(launch.child, pending, {'end_probe'}) | {'event': 0} == gone | {'event': 0})
                 reap(launch)
             elif ending == 'receiver':
                 # The actual supervising Launch owns cleanup after observing its receiver exit.
@@ -607,16 +714,23 @@ L.main()
                     os.kill(seen['pid'], signal.SIGKILL)
             else:
                 launch.child.stdin.write(b'x'); launch.child.stdin.flush()
+                check('query/lifecycle', label + ' removed by the receiver before its end is recorded',
+                      read_event(launch.child, pending, {'end_probe'}) | {'event': 0} == gone | {'event': 0})
                 reap(launch)
             check('query/lifecycle', label + ' endpoint removed', not path.parent.exists())
+            check('query/lifecycle', label + ' left nothing to record', launch.query_left is None)
             check('query/lifecycle', label + ' receiver exited', launch.returncode is not None)
             if ending != 'receiver':
                 check('query/lifecycle', label + ' query counts collected', bool(launch.query_counts))
         launch, pending = run_fixture('accept-refusal', fail_accept=True)
         refused = read_event(launch.child, pending, {'refused'})
+        closed = read_event(launch.child, pending, {'closed'})
+        probe = next(e for e in pending[1] if e.get('event') == 'accept_probe')
         reap(launch)
         check('query/lifecycle', 'later refusal removes endpoint', refused['refusal'] == 'fixture_accept_refused'
               and not Q.endpoint('accept-refusal').parent.exists() and not any(e.get('event') == 'payload' for e in pending[1]))
+        check('query/lifecycle', 'later refusal: made, then removed by the receiver itself',
+              probe['ready'] and closed | {'event': 0} == {'directory': False, 'socket': False, 'event': 0})
         bad_cfg = dict(config, host_trust=str(base / 'missing-trust'))
         # Creation and readiness failures reach the receiver's pre-acceptance refusal, not a spawn.
         for label, change in (('launch-creation-failure', {}), ('launch-reader-failure', {'host_trust': bad_cfg['host_trust']})):
@@ -630,6 +744,43 @@ L.main()
             check('query/lifecycle', label, refused['refusal'] == 'unavailable_service:run_query'
                   and not any(e.get('event') in ('accepted', 'payload') for e in pending[1])
                   and (bool(change) or path.parent.exists()))
+        # A Runner that is not reading: the run asks more than a pipe of request lines holds. Every answer
+        # arrives, because the serving thread writes its log to a file and nothing to the launch pipe.
+        launch, pending = run_fixture('unread-pipe', payload_args=['flood'])
+        seen = read_event(launch.child, pending, {'payload'})
+        scan_probe = next(e for e in pending[1] if e.get('event') == 'scan_probe')
+        reap(launch)
+        flood_log = Path(Q.log_path(L.ER.directory({'state_root': str(base / 'state')}), 'unread-pipe'))
+        flood_lines = flood_log.read_text().splitlines() if flood_log.exists() else []
+        check('query/lifecycle', 'answers do not wait for the Runner to read [%s %s]' % (seen['flood'], seen['off_thread'][:3]),
+              seen['flood'] == 3000 and seen['off_thread'] == [])
+        check('query/lifecycle', 'each request logged to a file, counts once on the pipe',
+              flood_lines.count('hello ok') >= 3000 and (launch.query_counts or {}).get('hello:ok', 0) >= 3000
+              and len(launch.messages) < 40 and sum(1 for m in launch.messages if m.get('event') == 'run_query_end') == 1
+              and not any(m.get('event') == 'run_query' for m in launch.messages))
+        check('query/scope', 'launch scan: the query variable is own, the acceptance is not added [%s]' % scan_probe['own'],
+              scan_probe['own'] == ['VELDO_RUN_QUERY'])
+        # A file the run drops in its endpoint directory: cleanup leaves it and says so, the production
+        # _finish still records the end, the receiver exits cleanly and the Runner's removal does not raise.
+        launch, pending = run_fixture('stray-file', payload_args=['stray'])
+        seen = read_event(launch.child, pending, {'payload'})
+        ended = read_event(launch.child, pending, {'end_probe'})
+        exited = read_event(launch.child, pending, {'exited'})
+        raised = stopped(lambda: reap(launch))
+        stray = Q.endpoint('stray-file').parent
+        receiver_log = Path(launch.receiver_log).read_text() if launch.receiver_log else ''
+        check('query/lifecycle', 'stray file: end recorded, endpoint left and recorded [%s %s %s %s]' % (
+            raised, launch.returncode, launch.query_left, sorted(x.name for x in stray.iterdir()) if stray.exists() else None),
+              raised is None and launch.returncode == 0 and ended['directory'] and not ended['socket']
+              and exited['event'] == 'exited' and launch.query_left == 'left:ENOTEMPTY'
+              and [x.name for x in stray.iterdir()] == ['dropped-by-run']
+              and receiver_log.count('run query endpoint left:ENOTEMPTY') == 2)
+        check('query/lifecycle', 'stray file: removal reports, never raises',
+              Q.remove(stray / 'query.sock') == 'left:ENOTEMPTY'
+              and Q.remove(stray / 'query.sock', (0, 0)) == 'left:replaced' and stray.exists())
+        (stray / 'dropped-by-run').unlink()
+        check('query/lifecycle', 'stray file: removal of the emptied directory', Q.remove(stray / 'query.sock') is None
+              and not stray.exists() and Q.remove(stray / 'query.sock') is None)
         # Sample once: changing the marker after acceptance never changes this run's query variable.
         launch, pending = run_fixture('sample-once', flip_after_sample=True)
         seen = read_event(launch.child, pending, {'payload'})
@@ -644,11 +795,39 @@ L.main()
         check('switch/off', 'marker restores direct reads and removes inherited variable', seen['query'] is None and seen['store_open']
               and accepted_event['store_guard']['state'] == 'off' and accepted_event['store_guard']['path'] == str(marker))
         marker.unlink()
+        # An invalid marker refuses the launch itself by name, before acceptance: never treated as off.
+        for invalid in ('symlink', 'directory'):
+            if invalid == 'symlink':
+                marker.symlink_to(db)
+            else:
+                marker.mkdir()
+            launch, pending = run_fixture('marker-' + invalid)
+            refused = read_event(launch.child, pending, {'refused'})
+            reap(launch)
+            check('switch/off', invalid + ' marker refuses the launch by name', refused['refusal'] == 'invalid_input:layout:switch'
+                  and not any(e.get('event') in ('accept_probe', 'accepted', 'payload') for e in pending[1])
+                  and not Q.endpoint('marker-' + invalid).parent.exists())
+            if invalid == 'symlink':
+                marker.unlink()
+            else:
+                marker.rmdir()
         # The namespace-less conversation receiver still launches; it grants no repository answers.
+        put('unbound', 'execution_unit', dict(revision=1, project='fixture', state='READY'))
+        put('unbound-cycle', 'pm_cycle', {k: v for k, v in cycle.items() if k != 'repository'})
         conversation = Q.Server({k: v for k, v in dict(config, receiver_kind='conversation').items()
                                  if k not in ('repository', 'workspace')}, 'conversation').start()
         check('query/scope', 'conversation has no repository',
               stopped(lambda: Q.RemoteGate(repo, conversation.path)) == 'run_query:other_repository')
+        # A raw client of that socket gets no record, including one that names no repository.
+        for request in ({'operation': 'completion', 'unit': 'unbound'},
+                        {'operation': 'floor_entry', 'unit': 'unbound', 'word': 'ready', 'landed': False},
+                        {'operation': 'decide', 'station': 'selection', 'unit': 'unbound', 'context': None, 'ticket': None},
+                        {'operation': 'decide', 'station': 'coordination', 'unit': 'unbound-cycle', 'context': None, 'ticket': None},
+                        {'operation': 'decision_blockers', 'unit': 'VELDO-9359', 'references': []}):
+            check('query/scope', 'conversation serves no record: ' + request['operation'] + ' ' + request['unit'],
+                  stopped(lambda: Q._exchange(conversation.path, request)) == 'coordinate_not_served')
+        check('query/scope', 'conversation still answers hello',
+              Q._exchange(conversation.path, {'operation': 'hello'})['answer']['repository_uuid'] is None)
         conversation.close()
 
         marker = db.parent / 'store-guard.off'

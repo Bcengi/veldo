@@ -6,6 +6,7 @@ Only the receiver and its reaping Runner remove a dispatch's endpoint; never sca
 """
 import collections
 import contextlib
+import errno
 import hashlib
 import importlib.util
 import json
@@ -26,11 +27,22 @@ def _organ(name):
     return module
 
 
+_KEPT = {}
+
+
+def _kept(name):
+    """An organ a request needs, loaded once per process: a request never loads a module again."""
+    if name not in _KEPT:
+        _KEPT[name] = _organ(name)
+    return _KEPT[name]
+
+
 EL = _organ('control_eligibility')
 SCHEMA = EL.SCHEMA
 VARIABLE = 'VELDO_RUN_QUERY'
 SECONDS = 5.0
 MAX_BYTES = 262144
+LOG_BYTES = 1 << 20  # the per-request log's size; the counts go on after it
 COORDINATES = ('domain_uuid', 'repository_uuid', 'authority_generation')
 DECISION = ('schema', 'decision_id', 'station', 'unit', 'domain_uuid', 'repository_uuid',
             'follows', 'inputs', 'watermark', 'pending', 'refusals', 'eligible', 'architecture')
@@ -65,19 +77,33 @@ def endpoint(dispatch_id, environment=None):
 
 
 def remove(path, identity=None):
-    """Only called for this dispatch after its owner is finished. Never recurse."""
+    """Only called for this dispatch after its owner is finished. Never recurse, never raise: the
+    run's end is recorded whatever is found here. None when the directory is gone, else why it is
+    left ('left:ENOTEMPTY' when something else was put in it), for the caller to record."""
     path = Path(path)
-    if identity is not None:
-        try:
-            info = path.parent.lstat()
-        except FileNotFoundError:
-            return
-        if (info.st_dev, info.st_ino) != tuple(identity):
-            return
-    with contextlib.suppress(FileNotFoundError):
-        path.unlink()
-    with contextlib.suppress(FileNotFoundError):
-        path.parent.rmdir()
+    try:
+        if identity is not None:
+            try:
+                info = path.parent.lstat()
+            except FileNotFoundError:
+                return None
+            if (info.st_dev, info.st_ino) != tuple(identity):
+                return 'left:replaced'
+        with contextlib.suppress(FileNotFoundError):
+            path.unlink()
+        with contextlib.suppress(FileNotFoundError):
+            path.parent.rmdir()
+    except OSError as error:
+        return 'left:' + errno.errorcode.get(error.errno or 0, type(error).__name__)
+    except Exception as error:  # noqa: BLE001 - cleanup never stops an end from being recorded
+        return 'left:' + type(error).__name__
+    return None
+
+
+def log_path(records, dispatch_id):
+    """Where a dispatch's requests are logged, one name and outcome per line: a file beside the run's
+    other records, never the launch pipe, so a Runner that is not reading cannot hold an answer."""
+    return os.path.join(str(records), hashlib.sha256(str(dispatch_id).encode()).hexdigest() + '.query.log')
 
 
 def switch(store):
@@ -252,6 +278,10 @@ def _scope(gate, request):
         raise Refused('coordinate_not_served')
     item = gate._entity(unit)
     data = gate._data(item) or {}
+    if gate.repository_uuid is None:
+        # A conversation receiver serves no repository: no record is its to answer about, and one
+        # without a repository field is not matched by the absence of one here.
+        raise Refused('coordinate_not_served')
     coordination = request.get('station') == 'coordination'
     if item is not None and item['value'] is not None:
         kind = item['value']['kind']
@@ -280,7 +310,7 @@ def _answer(gate, request):
     if name == 'hello':
         return {k: getattr(gate, k) for k in COORDINATES}
     if name == 'replication_status':
-        out = _pick(_organ('control_replica').replication_status(gate.conn, gate.store, time.time()), REPLICATION)
+        out = _pick(_kept('control_replica').replication_status(gate.conn, gate.store, time.time()), REPLICATION)
         out['pending'] = [_pick(p, ('seq', 'command_id', 'state')) for p in out['pending']]
         return out
     if name == 'decide':
@@ -305,11 +335,15 @@ def _answer(gate, request):
 
 
 class Server:
-    def __init__(self, config, dispatch_id, observe=None, environment=None, created=None):
+    def __init__(self, config, dispatch_id, log=None, environment=None, created=None):
         self.config = config
         self.created = created
         self.path = endpoint(dispatch_id, environment)
-        self.observe = observe or (lambda event: None)
+        self.log = log  # a file's path; None keeps the counts only
+        self.log_fd = None
+        self.logged = 0
+        self.identity = None
+        self.left = None  # why close left the endpoint directory, when it did
         self.counts = collections.Counter()
         self.ready = threading.Event()
         self.stopped = threading.Event()
@@ -325,9 +359,19 @@ class Server:
             self.path.parent.mkdir(mode=0o700)  # exclusive, no startup sweep
             self.made = True
             self.path.parent.chmod(0o700)
+            info = self.path.parent.lstat()
+            self.identity = (info.st_dev, info.st_ino)
             if self.created is not None:
-                info = self.path.parent.stat()
-                self.created((info.st_dev, info.st_ino))
+                self.created(self.identity)
+            if self.log is not None:
+                # A launch is never refused for its log: without it the counts remain.
+                with contextlib.suppress(OSError, ValueError, TypeError):
+                    os.makedirs(os.path.dirname(str(self.log)), mode=0o700, exist_ok=True)
+                    self.log_fd = os.open(str(self.log), os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_CLOEXEC
+                                          | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600)
+                    if not stat.S_ISREG(os.fstat(self.log_fd).st_mode):
+                        os.close(self.log_fd)
+                        self.log_fd = None
             self.listener = socket.socket(socket.AF_UNIX)
             self.listener.bind(str(self.path))
             self.path.chmod(0o600)
@@ -345,7 +389,7 @@ class Server:
     def _gate(self):
         # The installed receiver configuration is the verified launch binding, as
         # in Receiver._recheck. Never take workspace, store or trust from a request.
-        store = _organ('control_store')
+        store = _kept('control_store')
         workspace = self.config.get('workspace')
         conversation = self.config.get('receiver_kind') == 'conversation'
         settlements = None
@@ -420,25 +464,44 @@ class Server:
         except (OSError, ValueError):
             outcome = 'unavailable_service:run_query'
         self.counts[name + ':' + outcome] += 1
-        self.observe({'event': 'run_query', 'request': name, 'outcome': outcome})
+        self._log(name, outcome)
+
+    def _log(self, name, outcome):
+        """The request's name and outcome, never its arguments or answer, on a regular file: this
+        thread writes nothing to the launch pipe, so it never waits for the Runner to read."""
+        if self.log_fd is None or self.logged >= LOG_BYTES:
+            return
+        line = ('%s %s\n' % (name, outcome)).encode()
+        if self.logged + len(line) >= LOG_BYTES:
+            line = b'log full: the counts continue\n'
+            self.logged = LOG_BYTES
+        self.logged += len(line)
+        with contextlib.suppress(OSError):
+            os.write(self.log_fd, line)
 
     def close(self):
+        """Stop serving and remove this dispatch's endpoint. Never raises: what could not be removed
+        is left, named in `left`, and the caller goes on to record the run's end."""
         self.stopped.set()
-        if self.active is not None:
+        with contextlib.suppress(Exception):
+            if self.active is not None:
+                with contextlib.suppress(OSError):
+                    self.active.shutdown(socket.SHUT_RDWR)
+            if self.wake is not None:
+                with contextlib.suppress(OSError):
+                    self.wake[1].send(b'x')
+            if self.thread is not None:
+                self.thread.join(SECONDS)
+        for sock in (self.listener, *(self.wake or ())):
+            if sock is not None:
+                with contextlib.suppress(Exception):
+                    sock.close()
+        if self.log_fd is not None and (self.thread is None or not self.thread.is_alive()):
             with contextlib.suppress(OSError):
-                self.active.shutdown(socket.SHUT_RDWR)
-        if self.wake is not None:
-            with contextlib.suppress(OSError):
-                self.wake[1].send(b'x')
-        if self.thread is not None:
-            self.thread.join(SECONDS)
-        if self.listener is not None:
-            self.listener.close()
-        if self.wake is not None:
-            for sock in self.wake:
-                sock.close()
+                os.close(self.log_fd)
+            self.log_fd = None
         if self.made:
-            remove(self.path)
+            self.left = remove(self.path, self.identity)
             self.made = False
 
 
@@ -504,7 +567,8 @@ class RemoteGate:
     def landed(self, unit):
         return self.completion(unit)['revision_landed']
 
-    def floor_entry(self, unit, word, landed=False):
+    def floor_entry(self, unit, word, landed=False, reader=None):
+        # `reader` is the frontier's local reading, for a Gate that holds the store; never sent.
         return _remote_answer(self, {'operation': 'floor_entry', 'unit': unit, 'word': word, 'landed': landed})
 
     def replication_status(self):

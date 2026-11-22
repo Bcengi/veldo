@@ -18482,7 +18482,7 @@ def cases():
         "            _organ('control_store').open_store(os.environ['VELDO_CONTROL_DB'], mode='r')\n"
         "        raise\n", ['query/scope'])
     add(359, 'store359-query-leak', query359, 'control_run_query.py',
-        '            remove(self.path)\n', '            pass  # defect: endpoint retained\n', ['query/lifecycle'])
+        '            self.left = remove(self.path, self.identity)\n', '            pass  # defect: endpoint retained\n', ['query/lifecycle'])
     add(359, 'store359-query-startup-sweep', query359, 'control_run_query.py',
         '            self.path.parent.mkdir(mode=0o700)  # exclusive, no startup sweep\n',
         "            for old in self.path.parent.parent.glob('veldo-query-*/query.sock'):\n"
@@ -18493,6 +18493,40 @@ def cases():
         "            self.path.parent.mkdir(mode=0o700)  # exclusive, no startup sweep\n", ['query/lifecycle'])
     add(359, 'store359-switch-ignored', query359, 'control_launch.py',
         "        if self.store_guard['state'] == 'off':\n", "        if False:\n", ['switch/off'])
+    # VELDO-0359 B1 fix round 1: one defect per review finding, each observed by its row.
+    add(359, 'store359-floor-reload', query359, 'control_eligibility.py',
+        "    if name not in _LATE:\n", "    if True:  # defect: every floor entry loads its module again\n",
+        ['query/cost'])
+    add(359, 'store359-frontier-not-own-reader', query359, 'frontier.py',
+        "    return gate.floor_entry(sid, word, landed, reader=_local_floor_entry)\n",
+        "    return gate.floor_entry(sid, word, landed)  # defect: the gate loads a second frontier\n",
+        ['query/cost'])
+    add(359, 'store359-cleanup-raises', query359, 'control_run_query.py',
+        "    except OSError as error:\n        return 'left:' + errno.errorcode.get(error.errno or 0, type(error).__name__)\n",
+        "    except OSError:\n        raise  # defect: a stray file stops the cleanup\n", ['query/lifecycle'])
+    add(359, 'store359-finish-cleanup-raises', query359, 'control_launch.py',
+        "    except Exception as error:  # noqa: BLE001 - cleanup never stops an end from being recorded\n"
+        "        summary['left'] = 'left:' + type(error).__name__\n",
+        "    finally:\n        if (server.left or '').startswith('left'):\n"
+        "            raise OSError(39, 'defect: a left endpoint stops the end from being recorded')\n",
+        ['query/lifecycle'])
+    add(359, 'store359-log-on-launch-pipe', query359, 'control_run_query.py',
+        "        self._log(name, outcome)\n",
+        "        self._log(name, outcome)\n        if self.created is not None:\n"
+        "            self.created([name, outcome])  # defect: a line per request on the launch pipe\n",
+        ['query/lifecycle'])
+    add(359, 'store359-receiver-keeps-server', query359, 'control_launch.py',
+        "        server.close()\n        summary['counts'] = dict(server.counts)\n",
+        "        summary['counts'] = dict(server.counts)  # defect: the receiver never closes its server\n",
+        ['query/lifecycle'])
+    add(359, 'store359-invalid-marker-launches', query359, 'control_launch.py',
+        "        if self.store_guard['state'] == 'invalid':\n", "        if False:\n", ['switch/off'])
+    add(359, 'store359-acceptance-own', query359, 'control_launch.py',
+        "        own = [getattr(self, 'token', None), environment.get(RQ.VARIABLE)] + list(\n",
+        "        own = [getattr(self, 'token', None), environment.get(RQ.VARIABLE),\n"
+        "               environment.get('VELDO_DISPATCH_ACCEPTANCE')] + list(\n", ['query/scope'])
+    add(359, 'store359-conversation-any-record', query359, 'control_run_query.py',
+        "    if gate.repository_uuid is None:\n", "    if False:\n", ['query/scope'])
 
     # VELDO-0253: init_scaffold.py takes its asset names from the installation reader, which it loads
     # beside its own file at import, and that reader loads git_process.py (and yamlish.py) beside
