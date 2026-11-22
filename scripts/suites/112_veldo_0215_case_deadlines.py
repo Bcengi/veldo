@@ -134,7 +134,8 @@ def _v215_case_deadlines():
         maximums.extend([record_at(1, 80) == 900, record_at(31, 90) == 270])
         row('rolling-maximum', all(maximums))
 
-        def exercise(duration=150, fault=None, reuse_hit=False, measure=True, measured=True, parallel=1):
+        def exercise(duration=150, fault=None, reuse_hit=False, measure=True, measured=True, parallel=1,
+                     drawn=None):
             runroot = scratch / ('run-' + str(len(list(scratch.glob('run-*')))))
             runroot.mkdir()
             times = runroot / 'times'
@@ -202,6 +203,9 @@ def _v215_case_deadlines():
                 stack.enter_context(patch.object(gate.time, 'monotonic', lambda: clock[0]))
                 stack.enter_context(patch.object(gate.time, 'sleep', lambda _: None))
                 stack.enter_context(patch.object(gate.signal, 'setitimer', lambda *a: alarms.append(a)))
+                if drawn is not None:
+                    # The audit draw's outcome is fixed here, never the coordinator's handling of it.
+                    stack.enter_context(patch.object(gate.AUDIT, 'audit_sample', lambda records: set(drawn)))
                 receipt = gate.run_stage(runroot, runroot / '.git', parallel=parallel, measure=measure)
             return receipt, children, kills, cleaned, times, alarms
 
@@ -275,6 +279,7 @@ def _v215_case_deadlines():
             and 'inner operation expired' in bad['detail'] and 'TEST target' in bad['detail'])
         raced = exercise(fault='race')
         reused = exercise(reuse_hit=True)
+        unaudited = exercise(reuse_hit=True, drawn=())
         library = exercise(measure=False)
         record = json.loads((times / (key + '.json')).read_text()) if (times / (key + '.json')).exists() else {}
         owner = scratch / 'owner'
@@ -286,6 +291,12 @@ def _v215_case_deadlines():
             and reused[0]['status'] == 'passed' and reused[0]['reused'] == 0
             and reused[0]['executed'] == reused[0]['audit']['audited'] == 1
             and json.loads((reused[4] / (key + '.json')).read_text())['seconds'] == 150 and not list(library[4].glob('*.json')))
+        # VELDO-0215 holds beside mandatory audits: a reused case the draw passed over ran nothing,
+        # so it refreshes no time sample; only fresh and audited cases are measured.
+        row('reused-unaudited-no-sample', unaudited[0].get('status') == 'passed'
+            and unaudited[0].get('reused') == 1 and unaudited[0].get('executed') == 0
+            and unaudited[0]['audit']['audited'] == 0 and len(unaudited[0]['audit']['population']) == 1
+            and not unaudited[1] and not list(unaudited[4].glob('*.json')))
 
         # An installed authority verifies another root. Only its CLI opts into recording;
         # neither a caller environment variable nor --root grants a fixture library call this.
