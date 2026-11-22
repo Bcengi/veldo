@@ -193,3 +193,17 @@ template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
 docs hygiene: pass
 personal setup: 0 finding(s)
 remote_run[pc2 10a0b3958479 05:34:42]: rc=0 in 13s (run rr20261122053429-a2f4)
+
+v258-final-suite
+raw_sha256=e14e6b7066d8806bfeba0d6c1dd537078f8dbb0df508208a43778e80771c5a2a
+  158_veldo_0258_outside_calls                    63 passed   12.41s
+selftest (PARTIAL, 1 of 238 suites): 89 passed, 0 failed in 12.41s
+remote_run[pc2 52e17400e6c7 05:59:43]: rc=2 in 21s (run rr20261122055922-d5bc)
+
+v258-hygiene-final
+raw_sha256=e1b4507085392c6189cc348f79322d0c7529a2dfa349243d96f71908b3460407
+lint: pass (1274 python, 40 shell, 5.33s)
+template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
+docs hygiene: pass
+personal setup: 0 finding(s)
+remote_run[pc2 52e17400e6c7 06:02:18]: rc=0 in 14s (run rr20261122060204-083d)
