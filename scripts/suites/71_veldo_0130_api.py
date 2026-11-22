@@ -3541,12 +3541,12 @@ def _v130_report(observed_rows):
 
 
 _v130_compiler = _v130_load('v130_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
-with _v130_temp.TemporaryDirectory(prefix='v130-', dir=_v130_fast) as _v130_dir, \
+with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), _v130_temp.TemporaryDirectory(prefix='v130-', dir=_v130_fast) as _v130_dir, \
         _v130_compiler.compiled_sources(_v130_dir, _v130_Path(_v130_dir) / 'compiled'):
     _v130_rows = _v130_checks(_v130_Path(_v130_dir))
 _v130_report(_v130_rows)
 # Report completed API assertions before a service setup exception can hide them.
-with _v130_temp.TemporaryDirectory(prefix='v130s-', dir=_v130_fast) as _v130_dir, \
+with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), _v130_temp.TemporaryDirectory(prefix='v130s-', dir=_v130_fast) as _v130_dir, \
         _v130_compiler.compiled_sources(_v130_dir, _v130_Path(_v130_dir) / 'compiled'):
     _v130_service_rows = _v130_service_checks(_v130_Path(_v130_dir))
 _v130_report(_v130_service_rows)
