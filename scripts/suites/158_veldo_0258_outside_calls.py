@@ -277,11 +277,11 @@ def _v258_suite():
                     check('observability/effect-provenance', CP.effect_commit({'store': str(root / 'store.sqlite3')}) == first)
                     effect_configuration = {'store': str(root / 'store.sqlite3')}
                     with CP.service(first, CP.effect_observer(effect_configuration), dispatch='fixture-effect'):
-                        RN.build_live_adapter(TR.load_tracker_config())._request('GET', '/durable-effect')
+                        effect_code = refusal(lambda: RN.build_live_adapter(TR.load_tracker_config())._request('GET', '/durable-effect'))
                         refusal(lambda: CP.credential('tracker', 'literal:' + values['tracker']))
                     effect_text = CP.effect_log(effect_configuration).read_text()
                     effect_rows = [json.loads(line) for line in effect_text.splitlines()]
-                    check('observability/effect-log', len(effect_rows) == 2
+                    check('observability/effect-log', effect_code is None and len(effect_rows) == 2
                           and effect_rows[0]['installation_commit'] == first
                           and effect_rows[0]['dispatch_id'] == 'fixture-effect'
                           and all(value not in effect_text for value in values.values()))
