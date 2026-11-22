@@ -187,6 +187,18 @@ if mode == 'attacks':
     if len(sys.argv) < 5:
         child = subprocess.run([sys.executable, '-B', __file__, str(store), str(work), mode, 'child'], capture_output=True, text=True, timeout=120)
         result['child'] = json.loads(child.stdout)
+elif mode == 'socket-unlink':
+    if len(sys.argv) > 4 and sys.argv[4] == 'descendant':
+        child = subprocess.run([sys.executable, '-B', __file__, str(store), str(work), mode], capture_output=True, text=True, timeout=120)
+        result = json.loads(child.stdout)
+    else: trial('unlink', lambda: (store / 'authority.sock').unlink())
+elif mode == 'switch-attempts':
+    (work / 'source').write_bytes(b'fixture')
+    trial('create', lambda: create(store / 'store-guard.off', 'file'))
+    trial('link', lambda: link_out(work / 'source', store / 'store-guard.off'))
+    trial('rename', lambda: rename_back(work / 'source', store / 'store-guard.off'))
+    trial('store', lambda: rename_back(store, store.with_name('moved-store')))
+    trial('parent', lambda: rename_back(store.parent, store.parent.with_name('moved-parent')))
 elif mode == 'route':
     target = Path(sys.argv[4]); target = target if target.is_absolute() else Path.home() / target
     result['sentinel'] = target.read_text()
@@ -242,6 +254,7 @@ if mode.startswith('seccomp:'):
     # nr at 0, flags (third argument of create) at 32. Only the chosen form is refused.
     ins = [(0x20,0,0,0), (0x15,0,4,syscall), (0x20,0,0,32),
            (0x15,0,1,1 if step == 'probe' else 0), (0x06,0,0,0x50000 | code), (0x06,0,0,0x7fff0000), (0x06,0,0,0x7fff0000)]
+    if step == 'create': ins = [(0x20,0,0,0),(0x15,0,7,444),(0x20,0,0,32),(0x15,0,5,0),(0x20,0,0,16),(0x15,0,2,0),(0x20,0,0,20),(0x15,1,0,0),(0x06,0,0,0x50000 | code),(0x06,0,0,0x7fff0000)]
     if step in ('add','restrict'): ins = [(0x20,0,0,0),(0x15,0,1,syscall),(0x06,0,0,0x50000 | code),(0x06,0,0,0x7fff0000)]
     filters = (Filter * len(ins))(*(Filter(*item) for item in ins)); program = Program(len(ins), filters)
     libc = ctypes.CDLL(None, use_errno=True)
@@ -253,6 +266,9 @@ elif mode == 'enumeration':
         if str(path) == '/proc/self/fd': raise PermissionError('fixture')
         return original(path)
     L.os.scandir = scandir
+elif mode == 'listing':
+    def entries(path): raise PermissionError('fixture')
+    L.guard_entries = entries
 elif mode == 'inspection':
     original = L.os.readlink
     def readlink(path):
@@ -494,6 +510,9 @@ L.wrap(argv)
                     for abi in (1, 2):
                         receiver, observed = launch(receiver_probe=dict(platform='x86_64', abi=abi, reason='abi_below_3'))
                         check('launch/abi', 'actual launch low ABI ' + str(abi), receiver.store_guard.get('reason', '').endswith('abi_below_3') and not any(e['event'] == 'accepted' for e in observed))
+                    for abi in (3, 4, 5):
+                        receiver, observed = launch(risky=True, receiver_probe=dict(platform='x86_64', abi=abi, reason=None))
+                        check('launch/abi', 'actual risky launch low ABI ' + str(abi), receiver.store_guard.get('reason') == 'confined_runner_unavailable:landlock_abi_below_6' and not any(e['event'] == 'accepted' for e in observed))
                     for abi in (3, 8):
                         receiver, observed = launch(receiver_probe=dict(platform='x86_64', abi=abi, reason=None))
                         check('launch/abi', 'actual launch supported ABI ' + str(abi), outcome(receiver) == 'applied')
@@ -542,6 +561,13 @@ L.wrap(argv)
                     check('launch/guard-read', 'unguarded no competing lock holder', json.loads(off.payload_output)['lock'] == 0)
                     check('switch/off', 'off opens fixture lock', outcome(off) == 'off' and json.loads(off.payload_output)['lock'] == 0)
                     (store / 'store-guard.off').unlink()
+                    outside = work / 'defective-hardlink'; os.link(db, outside)
+                    probe = dict(platform='x86_64', abi=2, reason='abi_below_3')
+                    off, observed = launch(off=True, receiver_probe=probe)
+                    check('switch/off', 'actual launch with ABI 2 and hardlink while off', outcome(off) == 'off' and json.loads(off.payload_output)['read'] == 0)
+                    on, observed = launch(receiver_probe=probe)
+                    check('switch/off', 'removing marker restores named refusal', on.store_guard.get('reason', '').endswith('abi_below_3') and not any(e['event'] == 'accepted' for e in observed))
+                    outside.unlink()
             if needed('launch/enforce-fail', 'launch/ack'):
                 with section('launch/enforce-fail', 'launch/ack'):
                     for step in ('probe', 'create', 'add', 'restrict'):
@@ -558,7 +584,7 @@ L.wrap(argv)
                         record = Path(L.ER.path(L.ER.directory(receiver.config), receiver.contract['dispatch_id']) + '.store-guard.jsonl')
                         recorded = [json.loads(line)['store_guard'] for line in record.read_text().splitlines()]
                         check('launch/descriptors-early', slot + ' durable audit outcome', recorded[-1].get('outcome') == 'enforce_failed' and recorded[-1].get('step') == 'audit')
-                        check('launch/descriptors-early', slot + ' final audit record', outcome(receiver) == 'enforce_failed' and receiver.store_guard.get('step') == 'audit' and not receiver.payload_output)
+                        check('launch/descriptors-early', slot + ' final audit record', outcome(receiver) == 'enforce_failed' and receiver.store_guard.get('step') == 'audit' and not receiver.payload_output and receiver.dispatches.state == 'refused')
                         check('launch/descriptors-early', slot + ' unreported only for forbidden setup', receiver.store_guard.get('unreported') == (slot == 'setup'))
                     outside = work / 'ordinary.log'; outside.touch()
                     receiver, _ = launch(descriptor=(str(outside), os.O_WRONLY, 'stderr'))
@@ -567,8 +593,8 @@ L.wrap(argv)
                         target = store / name
                         if slot == 'deleted': target.write_bytes(b'sentinel')
                         receiver, _ = launch('leak', descriptor=(str(target), flags, slot))
-                        check('launch/descriptors-leaked', name + ' no inherited payload', outcome(receiver) == 'enforce_failed' and receiver.store_guard.get('step') == 'audit' and not receiver.payload_output)
-                    for injection in ('enumeration', 'inspection'):
+                        check('launch/descriptors-leaked', name + ' no inherited payload', outcome(receiver) == 'enforce_failed' and receiver.store_guard.get('step') == 'audit' and not receiver.payload_output and receiver.dispatches.state == 'refused')
+                    for injection in ('enumeration', 'inspection', 'listing'):
                         receiver, _ = launch(injection=injection)
                         check('launch/descriptors-leaked', injection, outcome(receiver) == 'enforce_failed' and receiver.store_guard.get('step') == 'audit')
                     receiver, _ = launch()
@@ -678,6 +704,8 @@ print(json.dumps({'results': results}))
                         return worker
                     off = surviving(True); on = surviving(False)
                     check('switch/transitions', 'status on after removal', L.RQ.switch(db)['state'] == 'on')
+                    following, _ = launch()
+                    check('switch/transitions', 'new launch guarded with both survivors alive', outcome(following) == 'applied' and json.loads(following.payload_output)['read'] == errno.EACCES)
                     (store / 'store-guard.off').write_text('off again')
                     for receiver, worker in processes:
                         output, errors = worker.communicate(b'x', timeout=HANG)
@@ -685,8 +713,8 @@ print(json.dumps({'results': results}))
                         check('switch/transitions', 'surviving ' + receiver.store_guard['state'], code == (0 if receiver.store_guard['state'] == 'off' else errno.EACCES))
                         worker.group.discard(worker); worker.group.close(); os.close(worker.heartbeat.fd); receiver.close()
                     (store / 'store-guard.off').unlink()
-            if needed('launch/risky-census', 'launch/risky-real'):
-                with section('launch/risky-census', 'launch/risky-real'):
+            if needed('launch/risky-census', 'launch/risky-real', 'switch/run-cannot-flip'):
+                with section('launch/risky-census', 'launch/risky-real', 'switch/run-cannot-flip'):
                     sandbox = load('v359_runner', ROOT / 'scripts/agent_sandbox.py')
                     risky_config = base / 'risky.json'
                     reuse = base / 'reuse'; reuse.mkdir(mode=0o700)
@@ -781,13 +809,26 @@ print(json.dumps({'results': results}))
                         receiver, observed = launch(risky=True)
                         result = json.loads(receiver.payload_output)
                         check('launch/risky-real', 'real runner reaches fixture', outcome(receiver) == 'runner_started' and result == {'read': errno.EACCES, 'lock': errno.EACCES})
-            if needed('layout/entries'):
-                with section('layout/entries'):
+                        attempts, _ = launch('switch-attempts', risky=True)
+                        refused = json.loads(attempts.payload_output)
+                        for name, code in refused.items():
+                            check('switch/run-cannot-flip', 'risky ' + name, code in (errno.EACCES, errno.EXDEV))
+                        following, _ = launch(risky=True)
+                        check('switch/run-cannot-flip', 'next risky launch stays guarded', outcome(following) == 'runner_started' and json.loads(following.payload_output)['read'] == errno.EACCES)
+            if needed('layout/entries', 'launch/guard-default'):
+                with section('layout/entries', 'launch/guard-default'):
                     stopped.set()
                     with socket.socket(socket.AF_UNIX) as wake: wake.connect(str(store / 'authority.sock'))
                     thread.join(HANG); listener.close()
                     stale, _ = launch()
                     check('layout/entries', 'stale authority socket actual launch', outcome(stale) == 'applied')
+                    for role in ('direct', 'descendant'):
+                        for off in (False, True):
+                            socket_path = store / 'authority.sock'
+                            if not socket_path.exists():
+                                with socket.socket(socket.AF_UNIX) as bound: bound.bind(str(socket_path))
+                            receiver, _ = launch('socket-unlink', off=off, extra=(role,))
+                            check('launch/guard-default', role + '/socket-unlink/' + str(off), json.loads(receiver.payload_output)['unlink'] == (0 if off else errno.EACCES))
         finally:
             stopped.set()
             with contextlib.suppress(OSError), socket.socket(socket.AF_UNIX) as wake:

@@ -761,7 +761,8 @@ L.main()
         check('query/lifecycle', 'each request logged to a file, counts once on the pipe',
               flood_lines.count('hello ok') >= 3000 and (launch.query_counts or {}).get('hello:ok', 0) >= 3000
               and len(launch.messages) < 40 and [m.get('event') for m in launch.query_notices] ==
-              ['store_guard', 'run_query_created', 'run_query_end']
+              ['store_guard', 'store_guard', 'run_query_created', 'run_query_end']
+              and launch.query_notices[1]['store_guard']['outcome'] == 'pending'
               and not any(m.get('event') in L.QUERY_NOTICES for m in launch.messages))
         check('query/scope', 'launch scan: the query variable is own, the acceptance is not added [%s]' % scan_probe['own'],
               scan_probe['own'] == ['VELDO_RUN_QUERY'])
