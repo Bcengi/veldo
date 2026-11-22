@@ -132,4 +132,3 @@ records its caller, destination host, operation, result, latency and accepted
 installation commit, with a unit or dispatch identifier where available. Bodies
 and credentials are omitted. Counters group calls by caller and result and
 credential refusals by scheme.
-

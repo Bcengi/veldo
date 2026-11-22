@@ -304,7 +304,7 @@ with tempfile.TemporaryDirectory() as _ted:
         expect("spec tracker_repo non-tautology: same value passes with a declaring config, fails with a config that omits it",
                V.check_spec(tmpfile(_ted, "s_nt_a.md", _s_ok), repo_root=_wired) == 0
                and V.check_spec(tmpfile(_ted, "s_nt_b.md", _s_ok), repo_root=_wired_b) > 0)
-    
+
         # PLAN contract (same rule, parsed by the plan front-matter parser)
         _p_ok = GOOD_PLAN.replace("owner: selftest\n", "owner: selftest\ntracker_repo: repo-a\n")
         _p_unknown = GOOD_PLAN.replace("owner: selftest\n", "owner: selftest\ntracker_repo: repo-zzz\n")
