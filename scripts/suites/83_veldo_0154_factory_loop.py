@@ -896,6 +896,13 @@ sys.exit(chosen['code'])
             # VELDO-0358: only a receiver this suite killed can end the run (its worker waits on a gate); with no
             # kill there is nothing to wait for, and the rows below say so instead of a wait running out.
             death = wait_pass(lambda p: bool(ended(p, U['U2'])), mark) if killed else None
+            events = A.events()
+            stops = [i for i, e in enumerate(events) if e.get('operation') == 'orphan_wait'
+                     and e.get('dispatch_id') == victim.get('dispatch_id') and e.get('stop_issued') is True]
+            completed = [i for i, e in enumerate(events) if e.get('operation') == 'loop_pass'
+                         and e.get('pass') == (death or {}).get('pass')]
+            check('loop/receiver-death', 'the service recorded the orphan stop before waiting and completing its pass',
+                  bool(stops) and bool(completed) and max(stops) < completed[0])
             # VELDO-0358: the absence of a second pass is closed by the next pass, one this suite causes itself.
             closing_from = last_pass()
             note()
