@@ -1,0 +1,24 @@
+run: v0218 at 0b0976c1; pc2 = remote_run.sh --share pc2, host = host_heavy.sh, rerun = a pc2-red suite run again through host_heavy at the same commit, mut = scripts/check_gate_mutations.py
+remote: 
+host: 159_veldo_0218_reuse_audit 112_veldo_0215_case_deadlines 115_veldo_0219_measured_admission 157_veldo_0217_declarations 158_veldo_0224_stale_declarations 157_veldo_0206_suite_reuse 99_veldo_0205_reuse 100_veldo_0207_case_reuse 101_veldo_0208_landing_reuse 98_veldo_0204_mutation_receipts 53_veldo_0123_mutations
+findings: 218,215
+  host 159_veldo_0218_reuse_audit                     37 passed, 0 failed rc=2
+  host 112_veldo_0215_case_deadlines                  44 passed, 0 failed rc=2
+  host 115_veldo_0219_measured_admission              57 passed, 0 failed rc=2
+  host 157_veldo_0217_declarations                    46 passed, 0 failed rc=2
+  host 158_veldo_0224_stale_declarations              29 passed, 7 failed rc=1
+         SELFTEST FAIL: VELDO-0224 stale-declarations/runs-fresh: [('passed', None, 2), ('failed', 'invalid_baseline: invalid_baseline: check_teeth_mutations.py:import-b
+         SELFTEST FAIL: VELDO-0224 stale-declarations/never-published: {'states': '[(\'passed\', None, 2), (\'failed\', \'invalid_baseline: invalid_baseline: check_teeth
+         SELFTEST FAIL: VELDO-0224 stale-declarations/authority-store: {'states': '[(\'passed\', None, 2), (\'failed\', \'invalid_baseline: invalid_baseline: check_teeth
+         SELFTEST FAIL: VELDO-0224 stale-declarations/stale-reasons: [{'declaration': '7a7c393e6ea54e77e0dbc4284f8a933464003898a405e07c2acfb05a39e19690', 'gate_run': 'd4
+         SELFTEST FAIL: VELDO-0224 stale-declarations/store-unavailable-runs-fresh: {'status': 'passed', 'error': None, 'detail': None, 'unpersisted': 2}
+         SELFTEST FAIL: VELDO-0224 stale-declarations/prior-mark-denies-reuse: {'warm_hit': False, 'status': 'passed', 'reused': 0, 'clean': [{'identity': 'check_teeth_m
+  host 157_veldo_0206_suite_reuse                     92 passed, 0 failed rc=2
+  host 99_veldo_0205_reuse                            55 passed, 0 failed rc=2
+  host 100_veldo_0207_case_reuse                      118 passed, 0 failed rc=2
+  host 101_veldo_0208_landing_reuse                   216 passed, 0 failed rc=2
+  host 98_veldo_0204_mutation_receipts                71 passed, 0 failed rc=2
+  host 53_veldo_0123_mutations                        40 passed, 0 failed rc=2
+  mut  mutation: unconfined leg ran 0 cases, 0 rejected: none
+  mut  mutations: passed registered=22 executed=22 reused=0 rejected=22 workers=28 elapsed=63.699s
+  mut  == mutations rc 0

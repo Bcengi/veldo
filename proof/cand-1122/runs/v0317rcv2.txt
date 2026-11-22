@@ -1,0 +1,13 @@
+run: v0317rcv2 at f5074f54
+remote: 
+host: 109_veldo_0161_adoption 116_veldo_0188_project_lines 159_veldo_0317_no_space 62_veldo_0039_dispatch 83_veldo_0154_factory_loop 127_veldo_0231_run_flags
+findings: 317
+  host 109_veldo_0161_adoption                        81 passed, 0 failed rc=2
+  host 116_veldo_0188_project_lines                   53 passed, 0 failed rc=2
+  host 159_veldo_0317_no_space                        51 passed, 0 failed rc=2
+  host 62_veldo_0039_dispatch                         51 passed, 0 failed rc=2
+  host 83_veldo_0154_factory_loop                     40 passed, 0 failed rc=2
+  host 127_veldo_0231_run_flags                       43 passed, 0 failed rc=2
+  mut  mutation: unconfined leg ran 0 cases, 0 rejected: none
+  mut  mutations: passed registered=15 executed=15 reused=0 rejected=15 workers=23 elapsed=26.960s
+  mut  == mutations rc 0

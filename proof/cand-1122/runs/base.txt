@@ -1,0 +1,23 @@
+run: base at 23318512 (main); pc2 = remote_run.sh --share pc2, host = host_heavy.sh, rerun = a pc2-red suite again through host_heavy at the same commit, mut = scripts/check_gate_mutations.py
+  host 133_veldo_0326_space_principals                56 passed, 0 failed rc=2
+host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-22T08:59:44Z
+== suite 109_veldo_0161_adoption
+selftest (PARTIAL, 1 of 236 suites): 81 passed, 0 failed in 29.08s
+== suite 116_veldo_0188_project_lines
+selftest (PARTIAL, 1 of 236 suites): 53 passed, 0 failed in 39.11s
+host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-22T08:59:44Z
+== suite 109_veldo_0161_adoption
+selftest (PARTIAL, 1 of 236 suites): 81 passed, 0 failed in 29.08s
+== suite 116_veldo_0188_project_lines
+selftest (PARTIAL, 1 of 236 suites): 53 passed, 0 failed in 39.11s
+
+main 23318512 and tip f5074f54 rechecks through host_heavy:
+bisect: 82_veldo_0129_worker_wiring 55/0 at 122d95b5 (bring-up), 30/25 at b7c6eb4c (0316: installed tree lacks control_space_admission.py), 55/0 at f5074f54; 102_veldo_0210_agent_profile_runtime 263/0 at 122d95b5, b7c6eb4c, a72dd21e, 0b0976c1 and f5074f54 (its 7 red rows in the unit leg and the 0221 run did not reproduce)
+host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-22T09:21:31Z
+== 82_veldo_0129_worker_wiring
+selftest (PARTIAL, 1 of 236 suites): 55 passed, 0 failed in 46.36s
+== 102_veldo_0210_agent_profile_runtime
+  VELDO-0210 rust/configuration checks: 12 passed, 0 failed
+selftest (PARTIAL, 1 of 236 suites): 263 passed, 0 failed in 19.70s
+== 151_veldo_0313_space_run
+selftest (PARTIAL, 1 of 236 suites): 57 passed, 6 failed in 58.44s

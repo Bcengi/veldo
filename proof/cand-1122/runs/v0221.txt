@@ -1,0 +1,58 @@
+run: v0221 at 1871c20f; pc2 = remote_run.sh --share pc2, host = host_heavy.sh, rerun = a pc2-red suite again through host_heavy at the same commit, mut = scripts/check_gate_mutations.py
+remote: 
+host: 101_veldo_0208_landing_reuse 102_veldo_0210_agent_profile_runtime 104_veldo_0210_mutation_workers 111_veldo_0214_first_use_budget 113_veldo_0112_registered_clients 113_veldo_0115_authority_store 114_veldo_0216_concurrent_stages 115_veldo_0219_measured_admission 117_veldo_0227_ui_location 14_warp_0717_subset_runner 151_veldo_0313_space_run 153_veldo_0333_leg_time_store 154_veldo_0324_batch_sandbox 155_veldo_0304_space_boundary 15_warp_1404_historical_analogy 15_warp_1404_historical_analogy_audit_b 15_warp_1404_historical_analogy_audit_c 47_veldo_0107_ipc 49_veldo_0109_unavailable 63_veldo_0040_containment 66_veldo_0047_authority 71_veldo_0130_api 73_veldo_0139_factory_setup 85_veldo_0171_setup_api 86_veldo_0189_engine_upgrade 98_veldo_0204_mutation_receipts 157_veldo_0221_suite_shards 157_veldo_0206_suite_reuse 101_veldo_0208_landing_reuse 14_warp_0717_subset_runner
+findings: 221,333,206
+  host 101_veldo_0208_landing_reuse                   216 passed, 0 failed rc=2
+  host 102_veldo_0210_agent_profile_runtime           256 passed, 7 failed rc=1
+         SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree: -9 {'home': '<tmp>/tmp-parent/veldo-agent-ae76_wjt', 'pid': 100234
+         SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-still-writes-back-refresh
+         SELFTEST FAIL: VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: 143 1.0s
+         SELFTEST FAIL: VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: True 143
+         SELFTEST FAIL: VELDO-0210 scratch/stop-during-fork-forwarded-to-child: 143
+         SELFTEST FAIL: VELDO-0210 scratch/killed-scratch-stays: ['veldo-agent-7m93zskz', 'veldo-agent-ae76_wjt']
+  host 104_veldo_0210_mutation_workers                33 passed, 0 failed rc=2
+  host 111_veldo_0214_first_use_budget                36 passed, 0 failed rc=2
+  host 113_veldo_0112_registered_clients              29 passed, 0 failed rc=2
+  host 113_veldo_0115_authority_store                 30 passed, 0 failed rc=2
+  host 114_veldo_0216_concurrent_stages               52 passed, 0 failed rc=2
+  host 115_veldo_0219_measured_admission              57 passed, 0 failed rc=2
+  host 117_veldo_0227_ui_location                     33 passed, 0 failed rc=2
+  host 14_warp_0717_subset_runner                     53 passed, 0 failed rc=2
+  host 151_veldo_0313_space_run                       50 passed, 13 failed rc=1
+         SELFTEST FAIL: VELDO-0313 ac1/declared-started-ended: in the journal: the issue, then the hold, the admission, the scratch root declared and confirmed; after th
+         SELFTEST FAIL: VELDO-0313 ac1/build-output-has-item-and-goes: at run finished the build folder and the scratch root are removed, each through its remover [{'bui
+         SELFTEST FAIL: VELDO-0313 ac1/unread-group-sends-nothing: the scratch root is present and on disk with its file, the build folder has no item and is there, and 
+         SELFTEST FAIL: VELDO-0313 fix2/returns-at-the-commands-exit: nothing of the run was judged: no census, no signal and no release are written, the scratch root is
+         SELFTEST FAIL: VELDO-0313 fix2/captured-output-ends-at-return: the run is held as before: run finished is not sent, the scratch root is present and the hold is 
+         SELFTEST FAIL: VELDO-0313 supervise/stop-after-the-command-ends-nothing: rule 3 still holds the scratch root by the supervisor, and nothing of the run was sent 
+  host 153_veldo_0333_leg_time_store                  39 passed, 0 failed rc=2
+  host 154_veldo_0324_batch_sandbox                   55 passed, 0 failed rc=2
+  host 155_veldo_0304_space_boundary                  74 passed, 3 failed rc=1
+         SELFTEST FAIL: VELDO-0304 ac1/repository: Traceback (most recent call last):
+         SELFTEST FAIL: VELDO-0304 ac2/repository: Traceback (most recent call last):
+         SELFTEST FAIL: VELDO-0304 integration/boundary: Traceback (most recent call last):
+  host 15_warp_1404_historical_analogy                77 passed, 0 failed rc=2
+  host 15_warp_1404_historical_analogy_audit_b        42 passed, 0 failed rc=2
+  host 15_warp_1404_historical_analogy_audit_c        42 passed, 0 failed rc=2
+  host 47_veldo_0107_ipc                              49 passed, 0 failed rc=2
+  host 49_veldo_0109_unavailable                      31 passed, 0 failed rc=2
+  host 63_veldo_0040_containment                      85 passed, 0 failed rc=2
+  host 66_veldo_0047_authority                        55 passed, 1 failed rc=1
+         SELFTEST FAIL: VELDO-0047 authority/installed-assets
+  host 71_veldo_0130_api                              71 passed, 0 failed rc=2
+  host 73_veldo_0139_factory_setup                    43 passed, 0 failed rc=2
+  host 85_veldo_0171_setup_api                        44 passed, 0 failed rc=2
+  host 86_veldo_0189_engine_upgrade                   60 passed, 0 failed rc=2
+  host 98_veldo_0204_mutation_receipts                71 passed, 0 failed rc=2
+  host 157_veldo_0221_suite_shards                    51 passed, 0 failed rc=2
+  host 157_veldo_0206_suite_reuse                     87 passed, 5 failed rc=1
+         SELFTEST FAIL: VELDO-0206 suite-reuse/pass-only/plan-is-honored-only-by-the-run-it-was-made-for: (['c', 'a', 'b', 'd', 'e', 't'], ['a', 'b', 'c', 'd', 'e', 't']
+         SELFTEST FAIL: VELDO-0206 suite-reuse/pass-only: only an authenticated full passing run replaces a fresh suite: false: plan-is-honored-only-by-the-run-it-was-ma
+         SELFTEST FAIL: VELDO-0206 suite-reuse/receipts/both-legs-are-covered-and-a-wholly-reused-leg-is-a-pass: ), Path(root), leg, targets, environ, emit, requires, ma
+         SELFTEST FAIL: VELDO-0206 suite-reuse/receipts/graph-node-output-is-what-the-gate-settles: ('', ' key=96bead48de59bc2cdd0c082226b0364f5b241cb6077e4841c0ec419844
+         SELFTEST FAIL: VELDO-0206 suite-reuse/receipts: exact keys and counts, full coverage, force fresh, red stays red: false: both-legs-are-covered-and-a-wholly-reus
+  host 101_veldo_0208_landing_reuse                   216 passed, 0 failed rc=2
+  host 14_warp_0717_subset_runner                     53 passed, 0 failed rc=2
+  mut  mutation: unconfined leg ran 0 cases, 0 rejected: none
+  mut  mutations: failed registered=57 executed=57 reused=0 rejected=24 workers=73 elapsed=108.319s
+  mut  == mutations rc 1

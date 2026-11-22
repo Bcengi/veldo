@@ -1,0 +1,68 @@
+run: v0317 at 7f892aba; pc2 = remote_run.sh --share pc2, host = host_heavy.sh, rerun = a pc2-red suite run again through host_heavy at the same commit, mut = scripts/check_gate_mutations.py
+remote: 129_veldo_0247_line 134_veldo_0331_space_mode 146_veldo_0308_run_finished 150_veldo_0350_end_write 151_veldo_0313_space_run 153_veldo_0336_run_worktree 156_veldo_0315_reconcile 157_veldo_0316_space_admission 158_veldo_0334_space_freed 159_veldo_0317_no_space 83_veldo_0166_usage_windows 127_veldo_0231_run_flags
+host: 106_veldo_0185_dispatch_setup 62_veldo_0039_dispatch 63_veldo_0040_containment 63_veldo_0049_floor 67_veldo_0041_heartbeat 82_veldo_0129_worker_wiring 82_veldo_0141_execution_record 83_veldo_0154_factory_loop
+findings: 317,231
+  pc2  129_veldo_0247_line                            40 passed, 0 failed rc=2
+  pc2  134_veldo_0331_space_mode                      42 passed, 0 failed rc=2
+  pc2  146_veldo_0308_run_finished                    64 passed, 0 failed rc=2
+  pc2  150_veldo_0350_end_write                       37 passed, 0 failed rc=2
+  pc2  151_veldo_0313_space_run                       44 passed, 19 failed rc=1
+         SELFTEST FAIL: VELDO-0313 ac1/declared-started-ended: in the journal: the issue, then the hold, the admission, the scratch root declared and confirmed; after th
+         SELFTEST FAIL: VELDO-0313 ac1/unread-group-sends-nothing: the scratch root is present and on disk with its file, the build folder has no item and is there, and 
+         SELFTEST FAIL: VELDO-0313 fix2/returns-at-the-commands-exit: the wrapper returns the command's own status when the command exits: the process the command left i
+         SELFTEST FAIL: VELDO-0313 fix2/end-follows-their-exit: raised AttributeError: module 'os' has no attribute 'pidfd_open' File "<home>/remote-run/runs/rr202
+         SELFTEST FAIL: VELDO-0313 fix2/captured-output-ends-at-return: the wrapper returns the command's status at once and the caller's read of its output ends at once
+         SELFTEST FAIL: VELDO-0313 fix2/captured-end-follows: raised AttributeError: module 'os' has no attribute 'pidfd_open' File "<home>/remote-run/runs/rr20261
+  pc2  153_veldo_0336_run_worktree                    47 passed, 0 failed rc=2
+  pc2  156_veldo_0315_reconcile                       54 passed, 1 failed rc=1
+         SELFTEST FAIL: space315/ac7/serve-order: Traceback (most recent call last):
+  pc2  157_veldo_0316_space_admission                 51 passed, 0 failed rc=2
+  pc2  158_veldo_0334_space_freed                     48 passed, 0 failed rc=2
+  pc2  159_veldo_0317_no_space                        31 passed, 20 failed rc=1
+         SELFTEST FAIL: VELDO-0317 space317/ac1/not-charged
+         SELFTEST FAIL: VELDO-0317 space317/ac1/behind-admission
+         SELFTEST FAIL: VELDO-0317 space317/ac1/numbers-before-cleanup
+         SELFTEST FAIL: VELDO-0317 space317/ac1/rerun-accepted
+         SELFTEST FAIL: VELDO-0317 space317/ac2/repeated-once
+         SELFTEST FAIL: VELDO-0317 space317/ac2/repeat-red
+  pc2  83_veldo_0166_usage_windows                    45 passed, 0 failed rc=2
+  pc2  127_veldo_0231_run_flags                       36 passed, 7 failed rc=1
+         SELFTEST FAIL: VELDO-0231 AC1/at-once
+         SELFTEST FAIL: VELDO-0231 AC1/run-goes-on
+         SELFTEST FAIL: VELDO-0231 AC1/observability
+         SELFTEST FAIL: VELDO-0231 AC2/codex-launch
+         SELFTEST FAIL: VELDO-0231 AC3/answered
+         SELFTEST FAIL: VELDO-0231 AC3/blocking
+  host 106_veldo_0185_dispatch_setup                  46 passed, 0 failed rc=2
+  host 62_veldo_0039_dispatch                         51 passed, 0 failed rc=2
+  host 63_veldo_0040_containment                      85 passed, 0 failed rc=2
+  host 63_veldo_0049_floor                            46 passed, 0 failed rc=2
+  host 67_veldo_0041_heartbeat                        49 passed, 0 failed rc=2
+  host 82_veldo_0129_worker_wiring                    30 passed, 25 failed rc=1
+         SELFTEST FAIL: VELDO-0129 outcome/missing-usage
+         SELFTEST FAIL: VELDO-0129 outcome/reservation
+         SELFTEST FAIL: VELDO-0129 proof/authority
+         SELFTEST FAIL: VELDO-0129 installation/assets
+         SELFTEST FAIL: VELDO-0129 build/gitdir-symlink
+         SELFTEST FAIL: VELDO-0129 build/gitdir-gitfile
+  host 82_veldo_0141_execution_record                 66 passed, 0 failed rc=2
+  host 83_veldo_0154_factory_loop                     40 passed, 0 failed rc=2
+  rerun 151_veldo_0313_space_run                       49 passed, 14 failed rc=1
+         SELFTEST FAIL: VELDO-0313 ac1/declared-started-ended: in the journal: the issue, then the hold, the admission, the scratch root declared and confirmed; after th
+         SELFTEST FAIL: VELDO-0313 ac1/unread-group-sends-nothing: the scratch root is present and on disk with its file, the build folder has no item and is there, and 
+         SELFTEST FAIL: VELDO-0313 fix2/returns-at-the-commands-exit: nothing of the run was judged: no census, no signal and no release are written, the scratch root is
+         SELFTEST FAIL: VELDO-0313 fix2/captured-output-ends-at-return: the run is held as before: run finished is not sent, the scratch root is present and the hold is 
+         SELFTEST FAIL: VELDO-0313 fix2/captured-end-follows: when the suite ends that sleep the run's end follows [label_unread waiting]
+         SELFTEST FAIL: VELDO-0313 supervise/stop-after-the-command-ends-nothing: rule 3 still holds the scratch root by the supervisor, and nothing of the run was sent 
+  rerun 156_veldo_0315_reconcile                       61 passed, 0 failed rc=2
+  rerun 159_veldo_0317_no_space                        31 passed, 20 failed rc=1
+         SELFTEST FAIL: VELDO-0317 space317/ac1/not-charged
+         SELFTEST FAIL: VELDO-0317 space317/ac1/behind-admission
+         SELFTEST FAIL: VELDO-0317 space317/ac1/numbers-before-cleanup
+         SELFTEST FAIL: VELDO-0317 space317/ac1/rerun-accepted
+         SELFTEST FAIL: VELDO-0317 space317/ac2/repeated-once
+         SELFTEST FAIL: VELDO-0317 space317/ac2/repeat-red
+  rerun 127_veldo_0231_run_flags                       43 passed, 0 failed rc=2
+  mut  mutation: unconfined leg ran 0 cases, 0 rejected: none
+  mut  mutations: failed registered=19 executed=19 reused=0 rejected=4 workers=35 elapsed=178.758s
+  mut  == mutations rc 1

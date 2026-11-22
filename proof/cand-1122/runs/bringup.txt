@@ -1,0 +1,133 @@
+run: bringup at 122d95b5; pc2 = remote_run.sh --share pc2, host = host_heavy.sh, rerun = a pc2-red suite run again through host_heavy at the same commit, mut = scripts/check_gate_mutations.py
+remote: 103_veldo_0124_macos 104_veldo_0124_control 113_veldo_0111_census 113_veldo_0117_domain_store 123_veldo_0174_conversations 125_veldo_0230_engine_census 126_veldo_0230_qualify_reproduces 127_veldo_0231_run_flags 129_veldo_0239_batch_landing 130_veldo_0176_conversation_history 131_veldo_0175_conversation_replies 131_veldo_0184_file_memory 132_veldo_0175_conversation_routes 133_veldo_0178_conversation_api 136_veldo_0180_conversation_projects 137_veldo_0181_conversation_decisions 142_veldo_0303_space_paths 153_veldo_0302_space_creators 155_veldo_0304_space_boundary 46_veldo_0029_enrollment 86_veldo_0168_text 87_veldo_0127_codex_delivery 88_veldo_0127_feature_defaults
+host: 101_veldo_0208_landing_reuse 128_veldo_0177_conversation_workspace 129_veldo_0177_assistant_setup 130_veldo_0183_memory_servers 134_veldo_0179_conversation_screens 135_veldo_0179_conversation_layout 138_veldo_0187_claude_mem_feed 66_veldo_0042_clones 79_veldo_0061_codex_adapter 85_veldo_0171_setup_api 86_veldo_0127_agent_configuration 96_veldo_0204_reservation_policies
+findings: 117,175,176,177,178,179,180,181,183,184,187,231
+  pc2  103_veldo_0124_macos                           55 passed, 0 failed rc=2
+  pc2  104_veldo_0124_control                         33 passed, 0 failed rc=2
+  pc2  113_veldo_0111_census                          39 passed, 0 failed rc=2
+  pc2  113_veldo_0117_domain_store                    27 passed, 2 failed rc=1
+         SELFTEST FAIL: VELDO-0117 enrollment/authority-refuses-domain-store-conflict: the committed store: the authority process started and reported [ok] | domain equa
+         SELFTEST FAIL: VELDO-0117 enrollment/domain-binding-survives-restart: one after the other, a first, restarted matching first, the matching store: under another 
+  pc2  123_veldo_0174_conversations                   42 passed, 22 failed rc=1
+         SELFTEST FAIL: VELDO-0174 AC2/charged-windows
+         SELFTEST FAIL: VELDO-0174 AC2/current-role-revision
+         SELFTEST FAIL: VELDO-0174 AC2/durable-recovery
+         SELFTEST FAIL: VELDO-0174 AC2/one-active-ordered
+         SELFTEST FAIL: VELDO-0174 AC2/one-offer-per-pass
+         SELFTEST FAIL: VELDO-0174 AC2/own-directory
+  pc2  125_veldo_0230_engine_census                   33 passed, 1 failed rc=1
+         SELFTEST FAIL: VELDO-0230 setup/engines-record: with claude on PATH at an unqualified 9.9.9, setup takes the engines record's copy [missing_evidence:engine_sour
+  pc2  126_veldo_0230_qualify_reproduces              28 passed, 2 failed rc=1
+         SELFTEST FAIL: VELDO-0230 qualify/reproduces: the command qualifies the engines record's binaries [exit 1 ['qualify: no such binary: <home>/.local/share/c
+         SELFTEST FAIL: VELDO-0230 qualify/covers: it wrote the engines record and both qualification records in both runtimes and the VELDO-0127 fixtures [missing ['.ve
+  pc2  127_veldo_0231_run_flags                       36 passed, 7 failed rc=1
+         SELFTEST FAIL: VELDO-0231 AC1/at-once
+         SELFTEST FAIL: VELDO-0231 AC1/run-goes-on
+         SELFTEST FAIL: VELDO-0231 AC1/observability
+         SELFTEST FAIL: VELDO-0231 AC2/codex-launch
+         SELFTEST FAIL: VELDO-0231 AC3/answered
+         SELFTEST FAIL: VELDO-0231 AC3/blocking
+  pc2  129_veldo_0239_batch_landing                   26 passed, 23 failed rc=1
+         SELFTEST FAIL: VELDO-0239 land/trunk-moved: a trunk moved after the watermark ends the batch trunk_moved, nothing forced [refused]
+         SELFTEST FAIL: VELDO-0239 single/unchanged: ran to its end (raised KeyError: 'batch-request:4f5d4cdbd23cac2b932ef70a')
+         SELFTEST FAIL: VELDO-0239 authority/unsettled-grant: a grant built from b.subject() without a settlement is refused [missing_evidence:gate]
+         SELFTEST FAIL: VELDO-0239 authority/review-commit: ran to its end (raised KeyError: 'batch-request:4f5d4cdbd23cac2b932ef70a')
+         SELFTEST FAIL: VELDO-0239 push/at-tip: a push followed by a trunk that cannot be read is unknown by name, no receipts yet [missing_evidence:gate]
+         SELFTEST FAIL: VELDO-0239 push/at-watermark: a rejected push with the trunk still at the watermark is a push failure, not trunk_moved [missing_evidence:gate]
+  pc2  130_veldo_0176_conversation_history            26 passed, 17 failed rc=1
+         SELFTEST FAIL: VELDO-0176 AC1/any-account
+         SELFTEST FAIL: VELDO-0176 AC1/capture-kept
+         SELFTEST FAIL: VELDO-0176 AC1/resume-qualified
+         SELFTEST FAIL: VELDO-0176 AC1/resume-mismatch
+         SELFTEST FAIL: VELDO-0176 AC1/observability
+         SELFTEST FAIL: VELDO-0176 AC2/continues-after-a-limit
+  pc2  131_veldo_0175_conversation_replies            27 passed, 15 failed rc=1
+         SELFTEST FAIL: VELDO-0175 AC1/reply-continues
+         SELFTEST FAIL: VELDO-0175 AC1/api-field
+         SELFTEST FAIL: VELDO-0175 AC1/api-route
+         SELFTEST FAIL: VELDO-0175 AC1/engine-text
+         SELFTEST FAIL: VELDO-0175 AC1/service-feed
+         SELFTEST FAIL: VELDO-0175 AC1/closed-refused
+  pc2  131_veldo_0184_file_memory                     32 passed, 10 failed rc=1
+         SELFTEST FAIL: VELDO-0184 AC1/memory-path
+         SELFTEST FAIL: VELDO-0184 AC1/without
+         SELFTEST FAIL: VELDO-0184 AC1/qualified
+         SELFTEST FAIL: VELDO-0184 AC1/mismatch-stop
+         SELFTEST FAIL: VELDO-0184 AC2/configuration
+         SELFTEST FAIL: VELDO-0184 AC2/write
+  pc2  132_veldo_0175_conversation_routes             27 passed, 20 failed rc=1
+         SELFTEST FAIL: VELDO-0175 AC2/open-conversation
+         SELFTEST FAIL: VELDO-0175 AC2/project-routes
+         SELFTEST FAIL: VELDO-0175 AC2/unclear-offers
+         SELFTEST FAIL: VELDO-0175 AC2/route-input
+         SELFTEST FAIL: VELDO-0175 AC2/conversation-refused
+         SELFTEST FAIL: VELDO-0175 AC2/observability
+  pc2  133_veldo_0178_conversation_api                37 passed, 5 failed rc=1
+         SELFTEST FAIL: VELDO-0178 AC1/serve
+         SELFTEST FAIL: VELDO-0178 AC1/events
+         SELFTEST FAIL: VELDO-0178 AC2/record-kept
+         SELFTEST FAIL: VELDO-0178 AC2/owner-live
+         SELFTEST FAIL: VELDO-0178 AC2/after-end
+  pc2  136_veldo_0180_conversation_projects           26 passed, 22 failed rc=1
+         SELFTEST FAIL: VELDO-0180 AC1/new-project-named-identity
+         SELFTEST FAIL: VELDO-0180 AC1/plain-words
+         SELFTEST FAIL: VELDO-0180 AC1/asks-only-without-identity
+         SELFTEST FAIL: VELDO-0180 AC1/name-from-command
+         SELFTEST FAIL: VELDO-0180 AC1/not-owner
+         SELFTEST FAIL: VELDO-0180 AC1/no-name
+  pc2  137_veldo_0181_conversation_decisions          26 passed, 19 failed rc=1
+         SELFTEST FAIL: VELDO-0181 AC1/rerun-presented
+         SELFTEST FAIL: VELDO-0181 AC1/turn-waits
+         SELFTEST FAIL: VELDO-0181 AC1/no-presentation-hint
+         SELFTEST FAIL: VELDO-0181 AC1/settles-by-reply
+         SELFTEST FAIL: VELDO-0181 AC1/move-presented
+         SELFTEST FAIL: VELDO-0181 AC1/settled-once-across
+  pc2  142_veldo_0303_space_paths                     64 passed, 0 failed rc=2
+  pc2  153_veldo_0302_space_creators                  68 passed, 0 failed rc=2
+  pc2  155_veldo_0304_space_boundary                  77 passed, 0 failed rc=2
+  pc2  46_veldo_0029_enrollment                       33 passed, 0 failed rc=2
+  pc2  86_veldo_0168_text                             52 passed, 0 failed rc=2
+  pc2  87_veldo_0127_codex_delivery                   40 passed, 180 failed rc=1
+         SELFTEST FAIL: VELDO-0127 delivery/gpt-6-sol/update_plan: (step receiver baseline: Undeliverable code configuration_stop:codex_observation message 'configuratio
+         SELFTEST FAIL: VELDO-0127 delivery/gpt-6-sol/view_image: (step receiver baseline: Undeliverable code configuration_stop:codex_observation message 'configuration
+         SELFTEST FAIL: VELDO-0127 delivery/gpt-6-sol/web_search: (step receiver baseline: Undeliverable code configuration_stop:codex_observation message 'configuration
+         SELFTEST FAIL: VELDO-0127 delivery/gpt-6-sol/jira: (step receiver baseline: Undeliverable code configuration_stop:codex_observation message 'configuration_stop:
+         SELFTEST FAIL: VELDO-0127 stop/gpt-6-sol/missing: step receiver baseline: Undeliverable code configuration_stop:codex_observation message 'configuration_stop:co
+         SELFTEST FAIL: VELDO-0127 stop/gpt-6-sol/extra: step receiver baseline: Undeliverable code configuration_stop:codex_observation message 'configuration_stop:code
+  pc2  88_veldo_0127_feature_defaults                 26 passed, 25 failed rc=1
+         SELFTEST FAIL: VELDO-0127 defaults/apps
+         SELFTEST FAIL: VELDO-0127 defaults/browser_use
+         SELFTEST FAIL: VELDO-0127 defaults/browser_use_external
+         SELFTEST FAIL: VELDO-0127 defaults/browser_use_full_cdp_access
+         SELFTEST FAIL: VELDO-0127 defaults/computer_use
+         SELFTEST FAIL: VELDO-0127 defaults/hooks
+  host 101_veldo_0208_landing_reuse                   216 passed, 0 failed rc=2
+  host 128_veldo_0177_conversation_workspace          42 passed, 0 failed rc=2
+  host 129_veldo_0177_assistant_setup                 32 passed, 0 failed rc=2
+  host 130_veldo_0183_memory_servers                  45 passed, 0 failed rc=2
+  host 134_veldo_0179_conversation_screens            33 passed, 0 failed rc=2
+  host 135_veldo_0179_conversation_layout             35 passed, 0 failed rc=2
+  host 138_veldo_0187_claude_mem_feed                 44 passed, 0 failed rc=2
+  host 66_veldo_0042_clones                           46 passed, 0 failed rc=2
+  host 79_veldo_0061_codex_adapter                    47 passed, 0 failed rc=2
+  host 85_veldo_0171_setup_api                        44 passed, 0 failed rc=2
+  host 86_veldo_0127_agent_configuration              54 passed, 0 failed rc=2
+  host 96_veldo_0204_reservation_policies             46 passed, 0 failed rc=2
+  rerun 113_veldo_0117_domain_store                    29 passed, 0 failed rc=2
+  rerun 123_veldo_0174_conversations                   64 passed, 0 failed rc=2
+  rerun 125_veldo_0230_engine_census                   34 passed, 0 failed rc=2
+  rerun 126_veldo_0230_qualify_reproduces              30 passed, 0 failed rc=2
+  rerun 127_veldo_0231_run_flags                       43 passed, 0 failed rc=2
+  rerun 129_veldo_0239_batch_landing                   49 passed, 0 failed rc=2
+  rerun 130_veldo_0176_conversation_history            43 passed, 0 failed rc=2
+  rerun 131_veldo_0175_conversation_replies            42 passed, 0 failed rc=2
+  rerun 131_veldo_0184_file_memory                     42 passed, 0 failed rc=2
+  rerun 132_veldo_0175_conversation_routes             47 passed, 0 failed rc=2
+  rerun 133_veldo_0178_conversation_api                42 passed, 0 failed rc=2
+  rerun 136_veldo_0180_conversation_projects           48 passed, 0 failed rc=2
+  rerun 137_veldo_0181_conversation_decisions          45 passed, 0 failed rc=2
+  rerun 87_veldo_0127_codex_delivery                   220 passed, 0 failed rc=2
+  rerun 88_veldo_0127_feature_defaults                 51 passed, 0 failed rc=2
+  mut  mutation: unconfined leg ran 26 cases, 9 rejected: 128_veldo_0177_conversation_workspace (8), 129_veldo_0177_assistant_setup (2), 130_veldo_0183_memory_servers (7), 134_veldo_0179_conversation_screens (3), 135_veldo_0179_conversation_layout (1), 138_veldo_0187_claude_mem_feed (5)
+  mut  mutations: failed registered=78 executed=47 reused=0 rejected=35 workers=133 elapsed=628.481s
+  mut  == mutations rc 1

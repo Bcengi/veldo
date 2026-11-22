@@ -1,0 +1,4 @@
+run: bringup3 at c17f120d; pc2 = remote_run.sh --share pc2, host = host_heavy.sh, rerun = a pc2-red suite again through host_heavy at the same commit, mut = scripts/check_gate_mutations.py
+  mut  mutation: unconfined leg ran 0 cases, 0 rejected: none
+  mut  mutations: failed registered=2 executed=2 reused=0 rejected=0 workers=4 elapsed=137.526s
+  mut  == mutations rc 1

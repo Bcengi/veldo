@@ -1,0 +1,24 @@
+run: v0334 at 636b6385; pc2 = remote_run.sh --share pc2, host = host_heavy.sh, rerun = a pc2-red suite run again through host_heavy at the same commit, mut = scripts/check_gate_mutations.py
+remote: 132_veldo_0297_space_ledger 134_veldo_0331_space_mode 135_veldo_0298_space_kinds 138_veldo_0300_space_remove 139_veldo_0301_space_signal 146_veldo_0308_run_finished 149_veldo_0312_ticket_ended 150_veldo_0350_end_write 153_veldo_0309_gate_space 156_veldo_0315_reconcile 157_veldo_0316_space_admission 158_veldo_0334_space_freed
+host: 83_veldo_0154_factory_loop
+findings: 334,316
+  pc2  132_veldo_0297_space_ledger                    57 passed, 0 failed rc=2
+  pc2  134_veldo_0331_space_mode                      42 passed, 0 failed rc=2
+  pc2  135_veldo_0298_space_kinds                     168 passed, 0 failed rc=2
+  pc2  138_veldo_0300_space_remove                    65 passed, 0 failed rc=2
+  pc2  139_veldo_0301_space_signal                    44 passed, 0 failed rc=2
+  pc2  146_veldo_0308_run_finished                    64 passed, 0 failed rc=2
+  pc2  149_veldo_0312_ticket_ended                    67 passed, 0 failed rc=2
+  pc2  150_veldo_0350_end_write                       37 passed, 0 failed rc=2
+  pc2  153_veldo_0309_gate_space                      49 passed, 1 failed rc=1
+         SELFTEST FAIL: VELDO-0309 exit/group-ended
+  pc2  156_veldo_0315_reconcile                       54 passed, 1 failed rc=1
+         SELFTEST FAIL: space315/ac7/serve-order: Traceback (most recent call last):
+  pc2  157_veldo_0316_space_admission                 51 passed, 0 failed rc=2
+  pc2  158_veldo_0334_space_freed                     48 passed, 0 failed rc=2
+  host 83_veldo_0154_factory_loop                     40 passed, 0 failed rc=2
+  rerun 153_veldo_0309_gate_space                      50 passed, 0 failed rc=2
+  rerun 156_veldo_0315_reconcile                       61 passed, 0 failed rc=2
+  mut  mutation: unconfined leg ran 0 cases, 0 rejected: none
+  mut  mutations: passed registered=31 executed=31 reused=0 rejected=31 workers=47 elapsed=44.590s
+  mut  == mutations rc 0

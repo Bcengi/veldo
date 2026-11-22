@@ -1,0 +1,4 @@
+run: bringup2 at c17f120d; pc2 = remote_run.sh --share pc2, host = host_heavy.sh, rerun = a pc2-red suite again through host_heavy at the same commit, mut = scripts/check_gate_mutations.py
+  mut  mutation: unconfined leg ran 5 cases, 5 rejected: 130_veldo_0183_memory_servers (1), 134_veldo_0179_conversation_screens (3), 135_veldo_0179_conversation_layout (1)
+  mut  mutations: failed registered=12 executed=12 reused=0 rejected=9 workers=30 elapsed=302.020s
+  mut  == mutations rc 1

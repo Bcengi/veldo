@@ -1,0 +1,101 @@
+run: v0347 at a72dd21e; pc2 = remote_run.sh --share pc2, host = host_heavy.sh, rerun = a pc2-red suite run again through host_heavy at the same commit, mut = scripts/check_gate_mutations.py
+remote: 129_veldo_0239_batch_landing 132_veldo_0297_space_ledger 134_veldo_0331_space_mode 135_veldo_0298_space_kinds 136_veldo_0299_space_probe 137_veldo_0330_space_rules 138_veldo_0300_space_remove 139_veldo_0301_space_signal 140_veldo_0345_space_keep 142_veldo_0303_space_paths 143_veldo_0305_space_census 144_veldo_0306_space_docker 145_veldo_0307_space_docker_ownership 146_veldo_0308_run_finished 147_veldo_0310_landed_contained 148_veldo_0311_git_hooks 149_veldo_0312_ticket_ended 153_veldo_0302_space_creators 153_veldo_0309_gate_space 153_veldo_0314_session_hooks 153_veldo_0323_hook_events 153_veldo_0328_images 153_veldo_0336_run_worktree 153_veldo_0337_verdict_recorded 153_veldo_0341_docker_protection 154_veldo_0324_batch_sandbox 154_veldo_0335_released 155_veldo_0304_space_boundary 156_veldo_0315_reconcile 161_veldo_0347_space_work 67_veldo_0056_candidates 70_veldo_0057_landing 158_veldo_0334_space_freed 159_veldo_0317_no_space
+host: 133_veldo_0326_space_principals 66_veldo_0042_clones
+findings: 347,330,302,324
+  pc2  129_veldo_0239_batch_landing                   26 passed, 23 failed rc=1
+         SELFTEST FAIL: VELDO-0239 land/trunk-moved: a trunk moved after the watermark ends the batch trunk_moved, nothing forced [refused]
+         SELFTEST FAIL: VELDO-0239 single/unchanged: ran to its end (raised KeyError: 'batch-request:4f5d4cdbd23cac2b932ef70a')
+         SELFTEST FAIL: VELDO-0239 authority/unsettled-grant: a grant built from b.subject() without a settlement is refused [missing_evidence:gate]
+         SELFTEST FAIL: VELDO-0239 authority/review-commit: ran to its end (raised KeyError: 'batch-request:4f5d4cdbd23cac2b932ef70a')
+         SELFTEST FAIL: VELDO-0239 push/at-tip: a push followed by a trunk that cannot be read is unknown by name, no receipts yet [missing_evidence:gate]
+         SELFTEST FAIL: VELDO-0239 push/at-watermark: a rejected push with the trunk still at the watermark is a push failure, not trunk_moved [missing_evidence:gate]
+  pc2  132_veldo_0297_space_ledger                    57 passed, 0 failed rc=2
+  pc2  134_veldo_0331_space_mode                      42 passed, 0 failed rc=2
+  pc2  135_veldo_0298_space_kinds                     169 passed, 0 failed rc=2
+  pc2  136_veldo_0299_space_probe                     71 passed, 1 failed rc=1
+         SELFTEST FAIL: VELDO-0299 reach/other-uid-let-through-counted: closed to other users and open to its group, the folder lets a process of that group through and 
+  pc2  137_veldo_0330_space_rules                     49 passed, 0 failed rc=2
+  pc2  138_veldo_0300_space_remove                    65 passed, 0 failed rc=2
+  pc2  139_veldo_0301_space_signal                    44 passed, 0 failed rc=2
+  pc2  140_veldo_0345_space_keep                      57 passed, 0 failed rc=2
+  pc2  142_veldo_0303_space_paths                     64 passed, 0 failed rc=2
+  pc2  143_veldo_0305_space_census                    52 passed, 0 failed rc=2
+  pc2  144_veldo_0306_space_docker                    55 passed, 0 failed rc=2
+  pc2  145_veldo_0307_space_docker_ownership          51 passed, 0 failed rc=2
+  pc2  146_veldo_0308_run_finished                    64 passed, 0 failed rc=2
+  pc2  147_veldo_0310_landed_contained                29 passed, 30 failed rc=1
+         SELFTEST FAIL: VELDO-0310 f1/project-repository-brought: the unit landed at the remote with the lander's workspace discard disabled: the discard was asked and d
+         SELFTEST FAIL: VELDO-0310 f2/trunk-read-at-the-attempt: a clean worktree on a branch whose commit only the trunk holds: the landing's candidate, the trunk tip, 
+         SELFTEST FAIL: VELDO-0310 f3/declared-after-the-check: the owner's branch, past its start commit and in the new trunk tip, was judged contained with its worktre
+         SELFTEST FAIL: VELDO-0310 f3/changed-after-the-check: contained was sent once for the other owner, naming its three items at the versions read at the check; ins
+         SELFTEST FAIL: VELDO-0310 keep/kept-item-not-named: the branch, past its start commit and in the new trunk tip, was judged contained with its worktree, and cont
+         SELFTEST FAIL: VELDO-0310 f4/squash-landing: the trunk is at the squash commit, which does not contain the branch's commit: the branch tip is the source commit 
+  pc2  148_veldo_0311_git_hooks                       36 passed, 21 failed rc=1
+         SELFTEST FAIL: VELDO-0311 ac1/plain-git-worktree-has-item: raised AttributeError: module 'os' has no attribute 'pidfd_open'     added = ended(command('git', '-C
+         SELFTEST FAIL: VELDO-0311 ac4/down-git-unchanged-and-spooled
+         SELFTEST FAIL: VELDO-0311 ac4/replayed-in-order-at-next-call
+         SELFTEST FAIL: VELDO-0311 ac4/service-start-before-reconcile
+         SELFTEST FAIL: VELDO-0311 ac4/delivered-twice-recorded-once
+         SELFTEST FAIL: VELDO-0311 ac4/waiting-keeps-order
+  pc2  149_veldo_0312_ticket_ended                    67 passed, 0 failed rc=2
+  pc2  153_veldo_0302_space_creators                  68 passed, 0 failed rc=2
+  pc2  153_veldo_0309_gate_space                      49 passed, 1 failed rc=1
+         SELFTEST FAIL: VELDO-0309 exit/group-ended
+  pc2  153_veldo_0314_session_hooks                   54 passed, 0 failed rc=2
+  pc2  153_veldo_0323_hook_events                     NO VERDICT rc=1
+  pc2  153_veldo_0328_images                          43 passed, 0 failed rc=2
+  pc2  153_veldo_0336_run_worktree                    47 passed, 0 failed rc=2
+  pc2  153_veldo_0337_verdict_recorded                47 passed, 0 failed rc=2
+  pc2  153_veldo_0341_docker_protection               47 passed, 0 failed rc=2
+  pc2  154_veldo_0324_batch_sandbox                   55 passed, 0 failed rc=2
+  pc2  154_veldo_0335_released                        58 passed, 0 failed rc=2
+  pc2  155_veldo_0304_space_boundary                  77 passed, 0 failed rc=2
+  pc2  156_veldo_0315_reconcile                       54 passed, 1 failed rc=1
+         SELFTEST FAIL: space315/ac7/serve-order: Traceback (most recent call last):
+  pc2  161_veldo_0347_space_work                      51 passed, 0 failed rc=2
+  pc2  67_veldo_0056_candidates                       30 passed, 7 failed rc=1
+         SELFTEST FAIL: VELDO-0056 candidate/rejection-leaves-trunk
+         SELFTEST FAIL: VELDO-0056 candidate/named-policy-refusals
+         SELFTEST FAIL: VELDO-0056 candidate/detached-held-trunk
+         SELFTEST FAIL: VELDO-0056 candidate/whole-candidate
+         SELFTEST FAIL: VELDO-0056 candidate/observations
+         SELFTEST FAIL: VELDO-0056 ran/candidate/rejection-leaves-trunk
+  pc2  70_veldo_0057_landing                          35 passed, 22 failed rc=1
+         SELFTEST FAIL: VELDO-0057 exact-tip/compare-and-swap
+         SELFTEST FAIL: VELDO-0057 unconfirmed/confirmed-remote-evidence
+         SELFTEST FAIL: VELDO-0057 completion/evidence-chain
+         SELFTEST FAIL: VELDO-0057 exact-tip/moved-tip-refused
+         SELFTEST FAIL: VELDO-0057 unconfirmed/failed-no-attempt
+         SELFTEST FAIL: VELDO-0057 exact-subject/authority
+  pc2  158_veldo_0334_space_freed                     48 passed, 0 failed rc=2
+  pc2  159_veldo_0317_no_space                        31 passed, 20 failed rc=1
+         SELFTEST FAIL: VELDO-0317 space317/ac1/not-charged
+         SELFTEST FAIL: VELDO-0317 space317/ac1/behind-admission
+         SELFTEST FAIL: VELDO-0317 space317/ac1/numbers-before-cleanup
+         SELFTEST FAIL: VELDO-0317 space317/ac1/rerun-accepted
+         SELFTEST FAIL: VELDO-0317 space317/ac2/repeated-once
+         SELFTEST FAIL: VELDO-0317 space317/ac2/repeat-red
+  host 133_veldo_0326_space_principals                54 passed, 2 failed rc=1
+         SELFTEST FAIL: VELDO-0326 ac1/packet-retry: an accepted release sent again gets the original answer [None None]
+         SELFTEST FAIL: VELDO-0326 ac1/packet-resent: an accepted release sent again after an outage gets its first answer [None None]
+  host 66_veldo_0042_clones                           46 passed, 0 failed rc=2
+  rerun 129_veldo_0239_batch_landing                   49 passed, 0 failed rc=2
+  rerun 136_veldo_0299_space_probe                     72 passed, 0 failed rc=2
+  rerun 147_veldo_0310_landed_contained                59 passed, 0 failed rc=2
+  rerun 148_veldo_0311_git_hooks                       57 passed, 0 failed rc=2
+  rerun 153_veldo_0309_gate_space                      50 passed, 0 failed rc=2
+  rerun 153_veldo_0323_hook_events                     65 passed, 1 failed rc=1
+         SELFTEST FAIL: VELDO-0323 compatibility/installed-closure
+  rerun 156_veldo_0315_reconcile                       61 passed, 0 failed rc=2
+  rerun 67_veldo_0056_candidates                       37 passed, 0 failed rc=2
+  rerun 70_veldo_0057_landing                          57 passed, 0 failed rc=2
+  rerun 159_veldo_0317_no_space                        31 passed, 20 failed rc=1
+         SELFTEST FAIL: VELDO-0317 space317/ac1/not-charged
+         SELFTEST FAIL: VELDO-0317 space317/ac1/behind-admission
+         SELFTEST FAIL: VELDO-0317 space317/ac1/numbers-before-cleanup
+         SELFTEST FAIL: VELDO-0317 space317/ac1/rerun-accepted
+         SELFTEST FAIL: VELDO-0317 space317/ac2/repeated-once
+         SELFTEST FAIL: VELDO-0317 space317/ac2/repeat-red
+  mut  mutation: unconfined leg ran 0 cases, 0 rejected: none
+  mut  mutations: failed registered=58 executed=58 reused=0 rejected=57 workers=96 elapsed=136.228s
+  mut  == mutations rc 1

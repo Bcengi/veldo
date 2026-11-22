@@ -1,0 +1,16 @@
+run: v0206 at cf9bff85; pc2 = remote_run.sh --share pc2, host = host_heavy.sh, rerun = a pc2-red suite run again through host_heavy at the same commit, mut = scripts/check_gate_mutations.py
+remote: 
+host: 157_veldo_0206_suite_reuse 14_warp_0717_subset_runner 27_veldo_0010_evidence_provenance 99_veldo_0205_reuse 101_veldo_0208_landing_reuse 113_veldo_0220_gate_host 114_veldo_0220_gate_scope 114_veldo_0216_concurrent_stages 153_veldo_0309_gate_space
+findings: 206
+  host 157_veldo_0206_suite_reuse                     92 passed, 0 failed rc=2
+  host 14_warp_0717_subset_runner                     53 passed, 0 failed rc=2
+  host 27_veldo_0010_evidence_provenance              52 passed, 0 failed rc=2
+  host 99_veldo_0205_reuse                            55 passed, 0 failed rc=2
+  host 101_veldo_0208_landing_reuse                   216 passed, 0 failed rc=2
+  host 113_veldo_0220_gate_host                       29 passed, 0 failed rc=2
+  host 114_veldo_0220_gate_scope                      27 passed, 0 failed rc=2
+  host 114_veldo_0216_concurrent_stages               52 passed, 0 failed rc=2
+  host 153_veldo_0309_gate_space                      50 passed, 0 failed rc=2
+  mut  mutation: unconfined leg ran 0 cases, 0 rejected: none
+  mut  mutations: passed registered=33 executed=33 reused=0 rejected=33 workers=41 elapsed=65.238s
+  mut  == mutations rc 0
