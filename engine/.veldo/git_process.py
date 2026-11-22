@@ -158,8 +158,11 @@ def _invoke(invoke, args, kwargs):
         options = _options(args, kwargs, private_home)
         if identity_profile:
             outside = identity_transport().organ('control_plane_calls')
-            with outside.outside('landing_push', destination, 'git_transport'):
-                return invoke(args, **options)
+            with outside.outside('landing_push', destination, 'git_transport') as observation:
+                answer = invoke(args, **options)
+                if getattr(answer, 'returncode', 0):
+                    observation['result'] = 'failed'
+                return answer
         return invoke(args, **options)
 
 

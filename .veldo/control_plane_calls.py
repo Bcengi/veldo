@@ -86,6 +86,7 @@ def credential(caller, ref, resolver=None):
     not_run(caller)
     if resolver is not None:
         return resolver(ref)
+    require_service(caller)
     return organ('secretref').resolve_for_runtime(ref, organ('control_credential_keystore').SecretService()).reveal()
 
 
@@ -102,10 +103,10 @@ def metrics():
 @contextlib.contextmanager
 def outside(caller, destination, operation, dispatch=None):
     require_service(caller)
-    started, result = time.monotonic(), 'failed'
+    started, result, outcome = time.monotonic(), 'failed', {}
     try:
-        yield
-        result = 'ok'
+        yield outcome
+        result = outcome.get('result', 'ok')
     finally:
         key = caller + ':' + result
         state.calls[key] = state.calls.get(key, 0) + 1
@@ -143,6 +144,22 @@ def service_entry(function):
     import functools
     @functools.wraps(function)
     def entered(*args, **kwargs):
-        with service(accepted_commit):
+        configuration = args[0] if args and isinstance(args[0], dict) else None
+        commit = (lambda: effect_commit(configuration)) if configuration else accepted_commit
+        with service(commit):
             return function(*args, **kwargs)
     return entered
+
+
+def effect_commit(configuration):
+    """A trusted effect child reads provenance from the accepted store record, not its environment."""
+    import sqlite3
+    path = configuration.get('store')
+    if not path:
+        return None
+    try:
+        with contextlib.closing(sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro', uri=True)) as conn:
+            return organ('installation').configuration_commit(conn)
+    except sqlite3.Error:
+        # The effect's own normal preflight reports an absent or unreadable store.
+        return None

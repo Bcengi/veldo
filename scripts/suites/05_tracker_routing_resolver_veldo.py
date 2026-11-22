@@ -617,11 +617,11 @@ expect("a mapped jira issue routes and drafts end to end", IK.draft_spec_from_it
 # AC4: the live adapter is reference-wired and fails closed without a resolvable token (C4, no raw cred)
 _ik_notoken = None
 try:
-    IK.JiraCloudAdapter("https://x.atlassian.net", "e@x.com", "keychain:NOPE_VELDO_TOKEN", resolve_secret=lambda r: None)
+    IK.JiraCloudAdapter("https://x.atlassian.net", "fixture@example.com", "keychain:NOPE_VELDO_TOKEN", resolve_secret=lambda r: None)
 except IK.TrackerAdapterError:
     _ik_notoken = "raised"
 expect("jira adapter fails closed when no token resolves (never a raw credential)", _ik_notoken == "raised")
-_ik_adapter = IK.JiraCloudAdapter("https://x.atlassian.net", "e@x.com", "keychain:X", resolve_secret=lambda r: "tok")
+_ik_adapter = IK.JiraCloudAdapter("https://x.atlassian.net", "fixture@example.com", "keychain:X", resolve_secret=lambda r: "tok")
 expect("jira adapter constructs with a resolved scoped token", isinstance(_ik_adapter, IK.TrackerAdapter))
 
 # AC5: the rendered draft is a VALID veldo.spec/v1 bound to the repo (parsed by the real validator);
@@ -723,7 +723,7 @@ expect("confluence page mapping tolerates a None page (benign item, no crash)",
 # AC4: the live Confluence adapter is reference-wired and fails closed without a token
 _ik_cnotoken = None
 try:
-    IK.ConfluenceCloudAdapter("https://x.atlassian.net/wiki", "e@x.com", "keychain:NOPE", resolve_secret=lambda r: None)
+    IK.ConfluenceCloudAdapter("https://x.atlassian.net/wiki", "fixture@example.com", "keychain:NOPE", resolve_secret=lambda r: None)
 except IK.TrackerAdapterError:
     _ik_cnotoken = "raised"
 expect("confluence adapter fails closed when no token resolves (never a raw credential)", _ik_cnotoken == "raised")
@@ -1301,7 +1301,7 @@ class _E6FakeJira:
             return {}
         return {}
 
-_e6_adapter = IK.JiraCloudAdapter("https://x.atlassian.net", "e@x.com", "keychain:X",
+_e6_adapter = IK.JiraCloudAdapter("https://x.atlassian.net", "fixture@example.com", "keychain:X",
                                   resolve_secret=lambda r: "tok", project="PROJ")
 _e6_fake = _E6FakeJira()
 _e6_adapter._request = _e6_fake.request
@@ -1334,7 +1334,7 @@ expect("live epic for a different plan creates a distinct epic (non-tautology, n
        _e6_epicB != _e6_epic1 and _e6_fake.creates == 4)
 
 # AC1/AC2 fail loud: a create with no project wired raises by name (never a silent no-op)
-_e6_noproj = IK.JiraCloudAdapter("https://x.atlassian.net", "e@x.com", "keychain:X", resolve_secret=lambda r: "tok")
+_e6_noproj = IK.JiraCloudAdapter("https://x.atlassian.net", "fixture@example.com", "keychain:X", resolve_secret=lambda r: "tok")
 _e6_noproj._request = _E6FakeJira().request
 _e6_fl = None
 try:

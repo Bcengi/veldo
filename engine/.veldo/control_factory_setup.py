@@ -290,7 +290,7 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
     if _within(host_trust, workspace):
         raise Refused('invalid_input:host_trust:inside_workspace', host_trust)
     if isinstance(token_file, str) and token_file.startswith('keychain:'):
-        IN.service_token({'bot_api': {'token_ref': token_file}})
+        check_channel_credential(token_file)
     else:
         if not isinstance(token_file, str) or not os.path.isabs(token_file):
             raise Refused('invalid_input:token_file:relative', 'the token file is named by its absolute path')
@@ -433,6 +433,14 @@ def host_files(plan, settlement_public, adoption_public=None):
                                             'host_identity': plan['host_identity'],
                                             'enrollment_signers': enrollment_signers,
                                             'settlement_signers': settlement_signers}, indent=1, sort_keys=True) + '\n'}
+
+
+def check_channel_credential(reference):
+    """Setup validates the owner's custody input; only runtime service_token delivers it."""
+    organ('control_plane_calls').reference('owner_channel', reference)
+    value = organ('control_credential_keystore').SecretService().get('keychain', reference.split(':', 1)[1])
+    if not value or any(c.isspace() for c in value):
+        raise Refused('unavailable_service:owner_channel_credential', 'the keystore item must hold one token')
 
 
 def channel_reference(plan):
@@ -687,7 +695,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             # itself is never opened here: its organs bind the store's owned entities to the code that first
             # attaches them, which must be the installed service's.
             config = IN.load_config(ingress)
-            IN.service_token(config)
+            check_channel_credential(config['bot_api']['token_ref'])
             IN.journal_signer(config['journal'])
             IN.decision_signer(config, EL.load_host_trust(plan['host_trust']).settlement_trust(workspace))
         api_files = paths(root, keys, None, plan['unit_dir'], None)
