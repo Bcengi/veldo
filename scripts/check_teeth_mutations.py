@@ -10533,14 +10533,24 @@ def cases():
     result[-1]['siblings'] = True
     add(258, 'outside258-product-routing', outside258, 'tracker.py',
         "    data = outside.settings('tracker_routing')\n",
-        "    import json\n    return json.loads(Path(path or default_config_path(repo_root)).read_text())\n"
+        "    import json\n    source = Path(path or default_config_path(repo_root))\n"
+        "    return json.loads(source.read_text()) if source.exists() else {}\n"
         "    data = outside.settings('tracker_routing')\n",
         ['ac2/accepted-site'])
     result[-1]['siblings'] = True
     add(258, 'outside258-registered-only-scan', outside258, 'control_plane_scan.py',
         "    for path in sorted(engine.rglob('*.py')):\n",
-        "    for path in sorted(engine / name for name in listed):\n",
+        "    for path in sorted(folder / name for name in listed):\n",
         ['ac3/planted-call'])
+    result[-1]['siblings'] = True
+
+    add(258, 'outside258-no-service-binding', outside258, 'control_plane_calls.py',
+        "    if state.pid != os.getpid():\n", "    if False:\n",
+        ['ac3/service-required/tracker'])
+    result[-1]['siblings'] = True
+    add(258, 'outside258-malformed-site-accepted', outside258, 'control_installation_schema.py',
+        "    if rule.get('validator') == 'outside_url':\n", "    if False:\n",
+        ['ac2/malformed-whole'])
     result[-1]['siblings'] = True
 
     # VELDO-0253: each criterion's declared falsifier, run through real Git and SQLite.

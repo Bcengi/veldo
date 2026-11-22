@@ -59,6 +59,59 @@ By default a launch starts as it always has: the host's network, shared database
 local and loopback services. No network fence, namespace, name resolution change or filesystem confinement is
 added.
 
+## Service-owned calls
+
+The tracker mirror and initialization, repository provisioning, landing transport,
+owner channel and request doorbell run on the service side of the outside gate.
+Their credentials are `keychain:<name>` references. Environment, file and literal
+references are refused as `invalid_input:control_plane_credential:<caller>:<scheme>`
+before that source is read. A run cannot inherit the service's process binding.
+Messages and files sent through the owner's activated channel require no additional
+per-call approval; channel enrollment and activation still apply.
+
+Tracker routing and doorbell settings belong in the installation repository's
+`installation.yaml`, for example:
+
+```yaml
+tracker_routing:
+  schema: veldo.tracker/v1
+  routing: {mechanism: label, label_prefix: 'repo:'}
+  repos: [{id: example, tracker: issues, project: EX}]
+  trackers:
+    issues:
+      kind: jira-cloud
+      base_url: https://issues.example.com
+      email: owner@example.com
+      token_ref: keychain:tracker
+doorbell:
+  origin: https://api.telegram.org
+  chat_id: 123456
+  token_ref: keychain:doorbell
+```
+
+Only a whole commit accepted by the installation loader becomes live. An invalid
+commit leaves the previous routing in force. Neither a product `trackers.json`,
+an uncommitted installation edit nor a state-root tracker file supplies routing.
+The shipped tracker example names no site.
+
+The tracker CLI sends an owner-signed request to the running service. Its `mirror`,
+`jira init` and `jira snapshot` commands take `--principal`, `--key` and optionally
+`--host-trust` and `--repo-root`; `--dry-run` asks the service for a preview using
+accepted settings. Site, email and event-file overrides are not accepted through
+this command path. The service chooses the enrolled repository.
+
+Setup accepts an owner-channel `--token-ref keychain:<name>`. The older
+`--token-file` setup input performs a one-time import into the keystore; the
+installed ingress contains only the resulting reference and never reads that
+file. An old ingress configuration naming a file must be migrated before restart.
+
+`control_plane_calls.json` registers the service network modules and their
+destination kinds. The static census scans unregistered modules too. Each call
+records its caller, destination host, operation, result, latency and accepted
+installation commit, with a unit or dispatch identifier where available. Bodies
+and credentials are omitted. Counters group calls by caller and result and
+credential refusals by scheme.
+
 A launch starts in the confined runner only when it is marked risky, by one of:
 
 | Mark | Where |

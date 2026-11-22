@@ -50,16 +50,17 @@ def calls(source):
 
 def findings(engine, register=None):
     engine = Path(engine)
-    register = register or json.loads((engine / 'control_plane_calls.json').read_text())
+    folder = engine / '.veldo' if (engine / '.veldo').is_dir() else engine
+    register = register or json.loads((folder / 'control_plane_calls.json').read_text())
     listed = register['modules']
-    local = register.get('local_only', {})
+    local = dict(register.get('local_only', {}), **register.get('project_calls', {}))
     problems = []
     for path in sorted(engine.rglob('*.py')):
-        module = path.relative_to(engine).as_posix()
+        module = path.relative_to(engine).as_posix().removeprefix('.veldo/')
         sites = calls(path.read_text())
         if any(function not in local.get(module, []) for function, _ in sites) and module not in listed:
             problems.append('control_plane_call_unregistered:' + module)
     for module, destination in listed.items():
-        if not (engine / module).is_file() or not isinstance(destination, str) or not destination:
+        if not (folder / module).is_file() or not isinstance(destination, str) or not destination:
             problems.append('control_plane_call_unregistered:' + module)
     return sorted(set(problems))
