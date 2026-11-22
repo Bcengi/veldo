@@ -80,7 +80,7 @@ def save(loader, document, *, principal, base, command_id, base_commit, approval
         loader.saves['accepted'] += int(result['outcome'] == 'accepted')
         loader.observe(dict(event, outcome=result['outcome']))
         return answer
-    except (Refused, I.InstallationError) as error:
+    except (Refused, loader.repo.error_type) as error:
         loader.saves['refused'] += 1
         loader.observe(dict(event, outcome='refused', reason=error.code))
         raise Refused(error.code, codes=getattr(error, 'codes', None)) from None
