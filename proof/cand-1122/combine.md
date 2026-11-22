@@ -411,6 +411,13 @@ after reconcile. Not traced to its round 4 commit; lander.py did not change in r
 The owner-approved wall-clock baseline (section 7b) is applied at 3a7cd8bd: `check_wallclock.py`
 pass (2865 sites, 2709 entries, 2829 sites in the baseline).
 
+Round 4 again, after the handed fix: STARTED, not waited for, at 382c847b6 (the record commit after
+it changes only this file), as a detached job, the same command:
+`setsid nohup myday/scripts/host_heavy.sh python3 -B scripts/selftest.py > myday/research/claude-runs/cand-1122-unit-leg-382c847b6.txt 2>&1 < /dev/null &`
+in this worktree. Log: myday `research/claude-runs/cand-1122-unit-leg-382c847b6.txt`. Expected red
+there at least: 69_0058 (12 rows) and 104_0210's worker row through it, and 160_0358
+record-taken-by-the-authority (both open above). Not run: verify.sh, the full mutation stage.
+
 ## 5. Open items for the lead
 
 Items 1, 2 and 4 are closed by round 2 (section 2a); their text below is the first record's.
