@@ -406,6 +406,24 @@ def _v258_suite():
                     conn.close()
                 check('ac1/no-canary-in-store', all(value.encode() not in (root / 'store.sqlite3').read_bytes()
                       for value in values.values()))
+                # F3: each tracker CLI refusal is named, so a crash cannot pass for one.
+                def cli_reason(name, argv):
+                    out = io.StringIO()
+                    with contextlib.redirect_stdout(out):
+                        code = getattr(JI, name)(argv)
+                    try:
+                        return code, json.loads(out.getvalue().strip().splitlines()[-1]).get('reason')
+                    except (ValueError, IndexError, AttributeError):
+                        return code, None
+                unenrolled = root / 'unenrolled'
+                git('init', '-q', unenrolled)
+                for name, argv in (('_cli', []), ('main', ['snapshot'])):
+                    label = 'init' if name == '_cli' else 'snapshot'
+                    check('ac3/cli-' + label + '-unsigned-named', cli_reason(name, argv + ['--dry-run', '--repo-root', str(unenrolled)])
+                          == (2, 'invalid_input:tracker_command:owner_identity'))
+                    check('ac3/cli-' + label + '-unenrolled-named', cli_reason(name, argv + [
+                        '--dry-run', '--repo-root', str(unenrolled), '--principal', 'owner', '--key', str(root / 'absent-key')])
+                          == (2, 'missing_authority:enrollment:not_enrolled'))
                 check('ac2/template-no-site', not json.loads((ROOT / 'engine/.veldo/trackers.json').read_text())['trackers'])
                 problems = SC.findings(ROOT / 'engine')
                 print('VELDO-0258 register findings:', problems)
