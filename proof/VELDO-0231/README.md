@@ -35,15 +35,20 @@ Built:
   `undelivered:no_conversation`. Text kept to 2000 characters. `flags`, `flag_summary`, `flag_counts` (read,
   delivered, held back, undelivered per engine and means, each delivered flag's latency).
 
-Test (rows AC1/at-once, AC1/run-goes-on, AC1/lead-conversation, AC1/observability): a fake Claude Code stamps the
-time immediately before each of 10 SendUserMessage flags, prints for 5 seconds after the last, ends normally. Every
-flag's commit time (wall clock, taken as the commit returns) minus its stamp is under 2 seconds, each committed while
-the dispatch is running, each in the run's own conversation naming the dispatch, engine and text; the outcome equals
-a run with no flag (`completed`). The service's rate window runs on the suite's clock (61 s per reading) so all ten
-are deliverable. Measured latencies (suites.txt): 0.005 to 0.022 s.
+Test (rows AC1/at-once, AC1/run-goes-on, AC1/lead-conversation, AC1/observability). Since the bring-up line
+(2026-11-21, lead decision Telegram 42829) "at once" is an ordering criterion, never a number of seconds: a fake
+Claude Code writes 10 SendUserMessage flags and, after each, writes nothing more until it reads that flag's commit
+on a FIFO (the suite acknowledges as the commit returns, or writes 'n' at once when the cycle that took the flag
+ends without committing it). The row requires each flag committed in the same dispatch cycle that took its flag
+event off the launch pipe, before the next is taken, while the dispatch is running, in the run's own conversation
+naming the dispatch, engine and text; the outcome equals a run with no flag (`completed`). The service's rate
+window runs on the suite's clock (61 s per reading) so all ten are deliverable. Measured latencies are kept as
+recorded data only (round 0, suites.txt: 0.005 to 0.022 s); the earlier 2 second bound and the 5 second
+after-last-flag window are gone.
 
-Falsifier (`flag231-delivered-at-end`, readable no longer delivers, only saw_end): latencies 5.06 to 7.73 s, every
-commit after the dispatch `exited`; AC1/at-once red. Mutation case killed alone.
+Falsifier (`flag231-delivered-at-end`, readable no longer delivers, only saw_end): no flag is committed in the cycle
+that took it, every commit after the dispatch `exited`; AC1/at-once red by event order. Mutation case killed alone
+(bringup-2026-11-21/mutations.txt).
 
 ## AC2: each engine flags with what it has, and the wire set still equals the role's
 
@@ -79,10 +84,13 @@ Falsifier (`flag231-question-unmapped`, request_user_input left out of the mappi
 Built:
 - control_agent_config: AskUserQuestion (Claude Code) and request_user_input (Codex) refused at save by name,
   `invalid_input:agent_native_tools:wait_question`.
-- The probe records the binary's own answer to request_user_input, how long it took as the bound it answered
-  within (`within_seconds`, never the measured time), whether immediate (at most
-  5 s) and whether it gave answers; `flag_grant` holds only for an immediate answer with no answers; a role saved or
-  launched with the grant where it does not hold is refused (`unsupported_configuration:codex_tool:...`).
+- The probe records the binary's own answer to request_user_input, whether it was immediate and whether it gave
+  answers. Since the bring-up line's fix round 2 (review F6, 2026-11-21) "immediate" is an event, never a time:
+  the answer is the call's output in the binary's very next request to the model, recorded as
+  `answered_in: next_request` (the old `within_seconds: 5` and its 5 s rule, `IMMEDIATE_SECONDS`, are gone;
+  `PROBE_SECONDS`, 120, only ends a hung probe run and is never a verdict). `flag_grant` holds only for an
+  immediate answer with no answers; a role saved or launched with the grant where it does not hold is refused
+  (`unsupported_configuration:codex_tool:...`).
 - The handoff adds one fixed text (`FLAG_INSTRUCTIONS`) to a role that lists a flag tool: nobody answers questions in
   this run; continue, and flag instead.
 - The receiver delivers every synchronous question as a flag; after one, an engine that writes nothing within the
@@ -90,11 +98,15 @@ Built:
   (`configuration_stop:wait_question`, a `question` event on the launch pipe, logged by the service).
 
 Test (rows AC3/save-refused, AC3/instructions, AC3/probe-answer, AC3/answered, AC3/blocking): two fake Codex runs
-with the window at 2 s: one gets the immediate empty answer and ends `completed` (question delivered, logged
-`answered`); one blocks forever and is stopped by name within the window, its question delivered.
+with the window at 2 s: one gets the immediate empty answer, written in one read with the question, and ends
+`completed` (question delivered, logged `answered`); one blocks and is stopped by name, its question delivered.
+Since the bring-up line the blocking run is stepped by events, not a deadline: once its own monotonic moment after
+the question's commit plus the window has passed, the engine writes a line on its error stream, and once that line
+is in the run's execution record (the receiver's pass after the window) it writes on.
 
-Falsifier (`flag231-question-window-dropped`): the blocking run is still running when the suite's 15 s deadline
-passes; AC3/blocking red. Mutation case killed alone.
+Falsifier (`flag231-question-window-dropped`): the receiver records the question answered and the run ends
+`completed` at once instead of `configuration_stop:wait_question`; AC3/blocking red (the earlier 15 s deadline is
+gone). Mutation case killed alone (bringup-2026-11-21/mutations.txt).
 
 ## AC4: nothing outward, and a flagging loop is rate limited with the count kept
 
@@ -102,8 +114,9 @@ Built: `flag_conversation` delivers a run's first flag at once, after it at most
 beyond is counted on the run's flag summary (`run_flag_summary`, `rate_limited:run_flag`), and the next delivered
 flag names `held_back_since_last`. Summary and records are store records.
 
-Test (rows AC4/flood, AC4/per-run-cap, AC4/nothing-outward): a fake Codex raises 500 flags in 5 s: exactly one
-delivered, the summary counts 499 held back; over a new store connection (a restarted service) a flag 61 s later on
+Test (rows AC4/flood, AC4/per-run-cap, AC4/nothing-outward): a fake Codex raises 500 flags (spread over 5 s; since the bring-up
+line the service's clock stands still through the flood, so the verdict does not depend on how long the machine
+takes to carry them): exactly one delivered, the summary counts 499 held back; over a new store connection (a restarted service) a flag 61 s later on
 the suite's clock is delivered naming 499. 25 flags 61 s apart: 20 delivered. With socket creation and every process
 start raising, the receiver's reader reads a flag and the service delivers it; the one process let through is the
 store's own journal signature for every commit (`ssh-keygen -Y sign`), named in the row (see OPEN.md). No tool that
@@ -134,7 +147,8 @@ prints the first six). Run into a scratch copy of the tree and diffed against th
   answer (0.014 in one run), a per-run value. The probe now records what it established: the forms (none reach
   the stream on this binary, so the means is the marked line and the grant does not hold), the answer, whether it
   was immediate, whether it gave answers, and `within_seconds`, the bound it answered within (5), never the
-  measured time. Suite 127's AC3/probe-answer row requires `within_seconds` and no `seconds`.
+  measured time. Suite 127's AC3/probe-answer row required `within_seconds` and no `seconds` (superseded on the
+  bring-up line: the record names `answered_in: next_request`, see AC3 above).
 - The resource fixtures were stale, not per-run: this ticket added request_user_input to the grant's mapping
   and changed the production modules whose digests they record. Regenerated, not normalized.
 
@@ -145,3 +159,12 @@ twice in the checkout: the first rewrote the seven files (commit c45f89df), the 
 After: suite 126 28 of 28; suite 127 43 of 43; suite 86 52 of 54, red only live/claude and live/codex (stale
 captures the lead retakes); suite 88 51 of 51. The four mutation cases run alone: each baseline and no-op green,
 each mutant red on its target row.
+
+## Bring-up line, 2026-11-21
+
+The ticket came onto the bring-up line (line-bringup-1120) and its review there restated AC1 and AC3 under the
+owner's rule that no gate depends on machine speed (Telegram 42829; specification History, 2026-11-21): both are
+judged by events, never seconds, as described above. Evidence: bringup-2026-11-21/ (suites.txt, falsifiers.txt,
+mutations.txt) and the live captures that suite 86's live rows bind, retaken on the line's modules
+(bringup-2026-11-21/live-capture.md, owner approval Telegram 42874): Codex 4 of 5 runs, Claude Code 5 of 5 runs,
+suite 86 28 of 28.
