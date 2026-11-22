@@ -192,7 +192,7 @@ Suites 71, 83 and final suite 151 each passed fifty of fifty loaded runs through
 the AC12 generator, with every generator alive and every CPU/byte counter positive
 ([fix-round1/load50.txt](fix-round1/load50.txt)). Neither a hang bound nor a load measurement supplied
 a verdict. The startup-log and probe-residue failures found during this round are retained in
-[fix-round1/checks.txt](fix-round1/checks.txt). Item 3 remains the owner's decision; item 4 is unresolved.
+[fix-round1/checks.txt](fix-round1/checks.txt). Item 3 remains the owner's decision; item 4's round-2 disposition is below.
 
 - Suite 83 reads the service's actual poll interests (`unwatched`), and rejects a completed pass
   whose orphan release remains pending after all launches and wakes are gone. Neither a receiver's
@@ -210,9 +210,9 @@ a verdict. The startup-log and probe-residue failures found during this round ar
   calling space_supervise in the suite process enabled subreaping and left adopted children. That
   failure is retained; a fresh fifty-run batch after isolation passed every run, including residue.
   None of the first batch's suite 151 results counts toward that proof. The inherited stop mutant is unchanged.
-- Item 3 and scripts/gate_unconfined.json are untouched. Item 4 remains open: AC12's exact real-time
-  sleep comparison conflicts with the requirement that its alone and loaded verdicts be independent
-  of external scheduling. No red is relabelled as data or accepted as a passing row.
+- Item 3 and scripts/gate_unconfined.json are untouched. At the end of round 1, item 4 remained open:
+  AC12's real-time sleep comparison conflicted with the requirement that its alone and loaded verdicts
+  be independent of external scheduling. Round 2 follows the lead's replacement ruling below.
 
 BLOCKERS FOR THE GATE (original findings, with fix-round-1 dispositions):
 
@@ -247,14 +247,35 @@ BLOCKERS FOR THE GATE (original findings, with fix-round-1 dispositions):
    confined workers did, as red controls of all thirteen cases of the suite. The rows need a cgroup they may
    write: a row-scoped entry for the suite in scripts/gate_unconfined.json, or a grant of the gate's own
    delegated group to its confinement. Both are the owner's (protected paths).
-4. Suite 160's row load/level-by-construction is red when the canary alone is run on a busy machine (three
-   controls in the first stage; green in the group stage). The lead has ruled that AC12 stands: the canary
-   must be green alone under load, and its red cannot be accepted as data. This remains unresolved in fix
-   round 1: the exact experiment compares a child's 0.1 CPU-seconds with the parent's 0.2-second sleep.
-   A permitted schedule lets the parent finish its sleep and read before the child receives its 0.1 CPU-seconds:
-   alone is then red. Delaying the parent's read until after the child finishes makes the loaded canary green.
-   Affinity does not prohibit either schedule. No canary assertion, exception, or result classification was
-   weakened here; no suite 160 fix or fifty-run proof is claimed.
+4. **Closed by fix round 2, lead ruling of 2026-11-22:** AC12's green-alone control is replaced by an
+   event-synchronized control (owner rule 42829). The earlier ruling that AC12 stood is withdrawn:
+   alone on a shared host is not quiet, and a permitted schedule lets the parent finish its 0.2-second
+   sleep before the child receives its 0.1 CPU-seconds. Waiting for child completion before reading
+   the marker makes the canary's own reading logic green independently of that schedule.
+   Suite 160 now runs that logic with its sleep replaced by a child-exit wait, leaving its marker read
+   and reap intact. A pipe holds the child until the wait releases it; if that wait is removed, the
+   marker read happens before release, so the control is red by assertion on every schedule and the
+   child still exits and is reaped. The registered reading mutant inverts the actual canary's marker
+   reading; the registered wait mutant removes the control's event wait. The ordinary sleep-synchronized
+   canary still runs under the generator, with its result recorded as data. Load remains proven by
+   generator liveness and positive CPU/byte counters; slowdown remains data. The existing affinity
+   falsifier now reads the fixture leg's actual CPU set, without depending on the canary's color.
+   Implementation: 5c91c8e94 and 9fda26203. The latter closes the first round-2 batch's run 31:
+   its separate short canary leg ended without an applied-load record. Startup readiness does not
+   prove a writer has written bytes. The canary now shares the existing CPU-work fixture and its
+   proven load record. An event-held writer falsifier reproduces the exact old assertion with a
+   live writer at zero bytes, then passes the fixed row under the same event schedule. The original
+   run-31 log lacks the inner record, so the specific zero counter in that run is not claimed.
+   Finishing proof, per owner 42987 (one test three times): suite 160 passed three sequential loaded
+   runs through host_heavy.sh, each 33 passed / 0 failed. Only its real internal generators run,
+   sequentially; no overlapping outer generator or pool of suites. Both registered canary mutants
+   ran once each and failed the new control by assertion, with no hang. The earlier 49/50 loaded
+   passes remain evidence for everything 9fda26203 did not touch; no second 50-run batch replaces them.
+   AC12, its falsifiers and the lead's exact History entry were already amended in 5c91c8e94.
+   [Round-2 proof and reproduction](fix-round2/README.md),
+   [execution order](fix-round2/batch.txt), [before/after falsifier](fix-round2/short-leg-falsifier.txt),
+   and [earlier 49 passes](fix-round2/load50-first.txt). These are targeted suite and direct-worker
+   assertion proofs; the earlier invalid full mutation stage remains recorded as invalid.
 
 OTHER:
 

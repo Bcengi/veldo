@@ -1,0 +1,17 @@
+Implementation: 9fda26203a142a76f9292922be8810eea2f22d15
+Invocation: host_heavy.sh python3 -B proof/VELDO-0358/fix-round2/drive.py.txt ROOT OUT suites
+One host-heavy scope; sequential suites, then mutants, then falsifier.
+Real suite-owned generators only; no overlapping outer generator or thread pool.
+host_heavy: all 3 builder slots busy; waiting for a slot 2026-11-22T17:13:29Z
+START suite 160 run 1
+END suite 160 run 1 exit 2 verdict ('pass', [], 160.66)
+START suite 160 run 2
+END suite 160 run 2 exit 2 verdict ('pass', [], 163.66)
+START suite 160 run 3
+END suite 160 run 3 exit 2 verdict ('pass', [], 161.37)
+START mutant load358-canary-read-inverted
+END mutant load358-canary-read-inverted REJECTED BY ASSERTION
+START mutant load358-canary-event-wait-removed
+END mutant load358-canary-event-wait-removed REJECTED BY ASSERTION
+START before/after falsifier
+END before/after falsifier: expected red and green confirmed

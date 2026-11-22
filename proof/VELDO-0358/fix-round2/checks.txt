@@ -1,0 +1,13 @@
+2026-11-22 finishing validation at implementation 9fda26203
+python3 -B scripts/check_personal_setup.py: exit 0, personal setup: 0 finding(s)
+No installation found; built-in shapes ran.
+git diff --check: exit 0
+Sequential host-heavy proof driver: exit 0
+Suite 160: 3/3 passed, 33 passed and 0 failed per run
+Registered canary mutants: 2/2 rejected by actual expect assertions, one run each
+Short-leg falsifier: original assertion red, fixed assertion green
+Protected files match the starting checkout byte for byte:
+  scripts/suites/157_veldo_0358_suite_runtime.py
+  scripts/gate_unconfined.json
+Round-2 proof remains below 1 MB; all execution logs use .txt.
+Earlier 49 passes retained by citation; run 31 and the invalid stage remain recorded.

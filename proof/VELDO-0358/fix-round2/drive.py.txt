@@ -1,0 +1,74 @@
+"""Sequential proof: host_heavy.sh python3 -B drive.py.txt ROOT OUT suites|mutants.
+The suites mode also runs the two mutants and the before/after falsifier, in order.
+Suite 160 already applies real generator load to its fixture legs. Do not add an
+outer generator: each internal generator ends before the next one starts.
+"""
+import importlib.util
+import json
+from pathlib import Path
+import runpy
+import subprocess
+import sys
+import tempfile
+
+sys.dont_write_bytecode = True
+root, out, mode = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve(), sys.argv[3]
+out.mkdir(parents=True, exist_ok=True)
+
+def module(name):
+    spec = importlib.util.spec_from_file_location(name, root / 'scripts' / (name + '.py'))
+    loaded = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(loaded)
+    return loaded
+
+
+def profile(frame, event, result):
+    if event == 'return' and frame.f_code.co_name == 'under_load' and result:
+        start, record, code, lines, gone, left = result
+        print('FIXTURE LOAD:', json.dumps(dict(name=frame.f_locals['name'], record=record,
+              code=code, all_processes_gone=gone, leftover_files=left), sort_keys=True), flush=True)
+
+
+if mode == 'one-suite':
+    sys.setprofile(profile)
+    sys.argv = [str(root / 'scripts/selftest.py'), '--suite', '160_veldo_0358_load_leg']
+    runpy.run_path(sys.argv[0], run_name='__main__')
+elif mode == 'suites':
+    legs = module('gate_legs')
+    for number in range(1, 4):
+        print('START suite 160 run', number, flush=True)
+        path = out / ('suite-160-%d.txt' % number)
+        with path.open('w') as log:
+            done = subprocess.run([sys.executable, '-B', __file__, str(root), str(out), 'one-suite'],
+                                  cwd=root, stdout=log, stderr=subprocess.STDOUT)
+        verdict = legs.judge(path.read_text().splitlines(), done.returncode, False)
+        print('END suite 160 run', number, 'exit', done.returncode, 'verdict', verdict, flush=True)
+        assert verdict[0] == 'pass', verdict
+    subprocess.run([sys.executable, '-B', __file__, str(root), str(out), 'mutants'], check=True, cwd=root)
+    print('START before/after falsifier', flush=True)
+    with (out / 'short-leg-falsifier.txt').open('w') as log:
+        subprocess.run([sys.executable, '-B', str(Path(__file__).with_name('falsifier.py.txt')), str(root)],
+                       cwd=root, stdout=log, stderr=subprocess.STDOUT, check=True, timeout=3600)
+    print('END before/after falsifier: expected red and green confirmed', flush=True)
+elif mode == 'mutants':
+    teeth = module('check_teeth_mutations')
+    for name in ('load358-canary-read-inverted', 'load358-canary-event-wait-removed'):
+        case = next(case for case in teeth.cases() if case['name'] == name)
+        with tempfile.TemporaryDirectory(prefix='v358-mutant-') as scratch:
+            made = teeth.materialize(case, 'mutant', scratch)
+            print('START mutant', name, flush=True)
+            done = subprocess.run([sys.executable, '-B', str(root / 'scripts/check_teeth_mutations.py'),
+                                   '--worker', name, '--mutant', str(made['mutant'])],
+                                  cwd=root, capture_output=True, text=True, timeout=3600)
+            assert done.returncode == 0, (done.returncode, done.stdout, done.stderr)
+            observed = json.loads(done.stdout.strip().splitlines()[-1])
+            assert observed['targets']['load/level-by-construction'] == [False], observed
+            assert any('the event-synchronized canary control is not green' in detail
+                       for row, detail in observed['failed_details']), observed
+            assert made['replacement_count'] == 1 and made['old_digest'] != made['new_digest']
+            result = dict(case=name, kill_by='assertion', observation=observed,
+                          old_digest=made['old_digest'], new_digest=made['new_digest'], replacement_count=1)
+            (out / (name + '.txt')).write_text(json.dumps(result, sort_keys=True, indent=2) + '\n')
+            print('END mutant', name, 'REJECTED BY ASSERTION', flush=True)
+else:
+    raise ValueError(mode)

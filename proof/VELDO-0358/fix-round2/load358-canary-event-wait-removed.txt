@@ -1,0 +1,188 @@
+{
+  "case": "load358-canary-event-wait-removed",
+  "kill_by": "assertion",
+  "new_digest": "124d9d24e00782d92065527bb8ba5d1bfc35374f8932a436f1559f899bff4b44",
+  "observation": {
+    "count": 32,
+    "failed_details": [
+      [
+        "VELDO-0358 load/level-by-construction",
+        "the event-synchronized canary control is not green"
+      ]
+    ],
+    "failed_rows": [
+      "VELDO-0358 load/level-by-construction"
+    ],
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0358 load/level-by-construction",
+        false
+      ],
+      [
+        "VELDO-0358 load/hang-constants-are-the-contract",
+        true
+      ],
+      [
+        "VELDO-0358 leg/proves-and-blocks",
+        true
+      ],
+      [
+        "VELDO-0358 leg/proven-and-changed-rules",
+        true
+      ],
+      [
+        "VELDO-0358 leg/graph-blocks",
+        true
+      ],
+      [
+        "VELDO-0358 leg/record-taken-by-the-authority",
+        true
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0358 load/level-by-construction",
+      "VELDO-0358 load/hang-constants-are-the-contract",
+      "VELDO-0358 leg/proves-and-blocks",
+      "VELDO-0358 leg/proven-and-changed-rules",
+      "VELDO-0358 leg/graph-blocks",
+      "VELDO-0358 leg/record-taken-by-the-authority"
+    ],
+    "targets": {
+      "load/level-by-construction": [
+        false
+      ]
+    }
+  },
+  "old_digest": "0601766375e403c162712a4e207bff895bce385f07d4bfca2e442bb947f5b343",
+  "replacement_count": 1
+}
