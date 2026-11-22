@@ -1,0 +1,91 @@
+"""Run through host_heavy.sh: python3 -B falsifier.py.txt ROOT.
+Exercise the unchanged AC12 row before/after 9fda26203 with a deterministic
+writer schedule: acknowledge startup, then release its first write at the CPU
+fixture's halfway event. A standalone short canary has no such event and ends
+with an alive writer at zero bytes. No sleep, fabricated record, or timing verdict.
+Only the AC12 prefix runs; all its original assertions are retained.
+"""
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+
+root = Path(sys.argv[1]).resolve()
+relative = 'scripts/suites/160_veldo_0358_load_leg.py'
+old = subprocess.check_output(['git', 'show', '5c91c8e94:' + relative], cwd=root, text=True)
+fixed = (root / relative).read_text()
+
+with tempfile.TemporaryDirectory(prefix='v358-short-leg-') as scratch:
+    scratch = Path(scratch)
+    fifo = scratch / 'writer-release'
+    os.mkfifo(fifo)
+    wrapper = scratch / 'gate_load.py'
+    original = (root / 'scripts/gate_load.py').read_text().split("\nif __name__ == '__main__':")[0]
+    wrapper.write_text(original + '\n' + '''
+_real_write = Generator._write
+
+def event_held_write(self, slot):
+    with open(%r, 'rb', buffering=0) as release:
+        assert release.read(1) == b'x'
+    _real_write(self, slot)
+
+Generator._write = event_held_write
+if __name__ == '__main__':
+    sys.exit(main())
+''' % str(fifo))
+
+    def profile(frame, event, result):
+        if event == 'return' and frame.f_code.co_name == 'under_load' and result:
+            start, record, code, lines, gone, left = result
+            print(json.dumps(dict(leg=frame.f_locals['name'], code=code,
+                applied=record['applied'] if record else None,
+                problems=record['problems'] if record else [],
+                writers=record['writers'] if record else [],
+                all_processes_gone=gone, leftover_files=left), sort_keys=True), flush=True)
+
+    for label, source in [('without-fix-5c91c8e94', old), ('with-fix-9fda26203', fixed)]:
+        print('START', label, flush=True)
+        rows = []
+        def expect(name, condition):
+            rows.append((name, bool(condition)))
+            print(('PASS: ' if condition else 'ASSERTION RED: ') + name, flush=True)
+
+        source = source.split('    # ------------------------------------------------------------------------ AC13:')[0]
+        source += '\n_v358d_load_leg()\n'
+        anchor = 'ROOT / "scripts" / "gate_load.py"'
+        assert source.count(anchor) == 1
+        source = source.replace(anchor, 'Path(' + repr(str(wrapper)) + ')')
+        anchor = "            elif line.startswith('fixture leg: half') and at_half and start:\n                at_half(leg, start)"
+        assert source.count(anchor) == 1
+        source = source.replace(anchor,
+            "            elif line.startswith('fixture leg: half'):\n"
+            "                with open(%r, 'wb', buffering=0) as release:\n" % str(fifo) +
+            "                    release.write(b'x')\n"
+            "                if at_half and start:\n"
+            "                    at_half(leg, start)")
+        # Observe temporary directory ownership so this prefix-only run can clean it.
+        made = []
+        real_mkdtemp = tempfile.mkdtemp
+        def track(*args, **kwargs):
+            path = real_mkdtemp(*args, **kwargs)
+            made.append(path)
+            return path
+        tempfile.mkdtemp = track
+        sys.setprofile(profile)
+        try:
+            exec(compile(source, label, 'exec'), {'ROOT': root, 'expect': expect})
+        finally:
+            sys.setprofile(None)
+            tempfile.mkdtemp = real_mkdtemp
+            for path in made:
+                shutil.rmtree(path, ignore_errors=True)
+        assert len(rows) == 1, rows
+        if label.startswith('without'):
+            assert not rows[0][1] and 'the canary leg has no applied load record' in rows[0][0], rows
+        else:
+            assert rows[0][1], rows
+        print('END', label, 'expected outcome confirmed', flush=True)
+print('FALSIFIER PASS: original row red without fix, green with fix', flush=True)

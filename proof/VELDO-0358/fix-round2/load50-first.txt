@@ -1,0 +1,11 @@
+Earlier evidence at 5c91c8e94: 49/50 loaded suite-160 runs passed.
+Retained for behavior untouched by 9fda26203; not replaced by a new 50-run batch.
+Raw evidence: /tmp/veldo-0358-round2-load50 (all 50 results retained there).
+Batch used concurrent suites under an outer generator; retained historical evidence,
+not the sequential procedure authorized for this finishing round.
+Runs 1-30 and 32-50 passed. Run 31 had this sole assertion failure:
+{"red": ["SELFTEST FAIL: VELDO-0358 load/level-by-construction: the canary leg has no applied load record"], "run": 31, "seconds": 193.15, "verdict": "FAIL"}
+The raw run-31 result does not retain its inner load record; the specific zero
+counter cannot be identified from that log. The deterministic falsifier exercises
+the alive-writer/zero-bytes instance of the premature-record failure mechanism.
+SHA256 raw output.txt: a7f19e8f7881e47a96af6b23a94c7ce197ca54555ce97a79a08602df3eea3983

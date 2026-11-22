@@ -1,0 +1,18 @@
+START without-fix-5c91c8e94
+{"all_processes_gone": true, "applied": true, "code": 0, "leftover_files": [], "leg": "alive", "problems": [], "writers": [{"alive": true, "bytes": 21678260224, "cpu_seconds": 5.386, "files": 80, "pid": 570118}]}
+{"all_processes_gone": true, "applied": false, "code": 1, "leftover_files": [], "leg": "spinner-killed", "problems": ["spinner 716964 on CPU 18 was not alive at the end"], "writers": [{"alive": true, "bytes": 22934454272, "cpu_seconds": 5.682, "files": 85, "pid": 716973}]}
+{"all_processes_gone": true, "applied": null, "code": -9, "leftover_files": [], "leg": "leg-killed", "problems": [], "writers": []}
+canary control: green (child completion event)
+{"all_processes_gone": true, "applied": false, "code": 1, "leftover_files": [], "leg": "canary", "problems": ["writer 960806 wrote no bytes"], "writers": [{"alive": true, "bytes": 0, "cpu_seconds": 0.001, "files": 0, "pid": 960806}]}
+sleep-synchronized canary under generator load: ['canary: red'] (data)
+ASSERTION RED: VELDO-0358 load/level-by-construction: the canary leg has no applied load record
+END without-fix-5c91c8e94 expected outcome confirmed
+START with-fix-9fda26203
+{"all_processes_gone": true, "applied": true, "code": 0, "leftover_files": [], "leg": "alive", "problems": [], "writers": [{"alive": true, "bytes": 22817013760, "cpu_seconds": 5.643, "files": 84, "pid": 963218}]}
+sleep-synchronized canary under generator load: ['canary: red'] (data)
+{"all_processes_gone": true, "applied": false, "code": 1, "leftover_files": [], "leg": "spinner-killed", "problems": ["spinner 1159355 on CPU 18 was not alive at the end"], "writers": [{"alive": true, "bytes": 27917287424, "cpu_seconds": 6.993, "files": 103, "pid": 1159362}]}
+{"all_processes_gone": true, "applied": null, "code": -9, "leftover_files": [], "leg": "leg-killed", "problems": [], "writers": []}
+canary control: green (child completion event)
+PASS: VELDO-0358 load/level-by-construction
+END with-fix-9fda26203 expected outcome confirmed
+FALSIFIER PASS: original row red without fix, green with fix

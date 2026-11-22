@@ -1,0 +1,193 @@
+{
+  "case": "load358-canary-read-inverted",
+  "kill_by": "assertion",
+  "new_digest": "3687862677764720695900da30f7e47b1208729bc7114d4a0670a71e0ed8fe6a",
+  "observation": {
+    "count": 32,
+    "failed_details": [
+      [
+        "VELDO-0358 load/level-by-construction",
+        "the event-synchronized canary control is not green"
+      ],
+      [
+        "VELDO-0358 leg/proves-and-blocks",
+        "the canary without its entry is not red in the leg; the red row is not named; the gate is not red: status 0; the mutation stage was started after a red leg; the gate does not say the mutation stage was not started; the stamp is not red; the stamp's load record does not name the red suite: {'canary': 'green', 'changed': ['fx_changed'], 'error': None, 'load': {'applied': True, 'cpus': 8, 'memory': {'applied': 'none: no delegated scope', 'high': None}, 'probe': {'unfinished': 'the leg ended before one CPU-second of probe work'}, 'spinner_cpu_seconds': 10.8, 'spinners': 24, 'spinners_alive': 24, 'writer_bytes': 2952790016, 'writers': 2, 'writers_alive': 2}, 'proven': 4, 'red': [], 'repetitions': 20, 'runs': 23, 'slots': 8, 'state': 'ran', 'suite_seconds': {'fx_canary': 0.51, 'fx_changed': 0.06, 'fx_clean': 0.04, 'fx_support': 0.04}, 'suites_run': 4, 'verdict': 'pass', 'waiting': 0, 'wall_seconds': 2}; the canary under the leg's load is recorded as green; gate output: == integration |    integration: pass | == security |    security: pass | == generated |    generated: pass | == docs |    docs: pass | == packaging |    packaging: pass | == personal_setup |    personal_setup: pass | == wallclock |    wallclock: pass | == extra |    extra: pass | == load-proof |    load-proof: 4 of 5 suites are proven (no baseline entry in the suite or in a file it opens); 4 run |    load-proof: fx_changed is changed (scripts/suites/fx_changed.py): 20 runs |    load-proof: the canary under this load: green (a test synchronized by a sleep is red here; data, no verdict) |    load-proof: fx_clean: pass, 1 run, 0.0s loaded |    load-proof: fx_canary: pass, 1 run, 0.5s loaded |    load-proof: fx_changed: pass, 20 runs, 0.1s loaded |    load-proof: fx_support: pass, 1 run, 0.0s loaded |    load-proof: load: 8 CPUs [12, 13, 14, 15, 16, 17, 18, 19], 3 spinners per CPU: 24 of 24 alive to the end, CPU consumed 10.8s (least 0.342s) |    load-proof: load: 2 writers: 2 alive to the end, bytes written [1342177280, 1610612736] |    load-proof: load: memory {\"applied\": \"none: no delegated scope\", \"high\": null}; probe {\"unfinished\": \"the leg ended before one CPU-second of probe work\"} (data, no verdict) |    load-proof: pass |    load-proof: pass | == mutation |    mutation: pass | == secret scan (built-in) |    secret scan: pass | == veldo contracts (built-in: fails closed if unavailable) |    contracts: pass | == shape gate (built-in: mechanizable architecture-contract rules; adoption safe, fails closed) | == review events (built-in: derived from the verdict artifacts; appends and reports, never judges) |  | catalog: 11 run, 15 not-applicable (reasons on record), 0 waived, 0 undeclared | GATE: GREEN (no-git)"
+      ]
+    ],
+    "failed_rows": [
+      "VELDO-0358 load/level-by-construction",
+      "VELDO-0358 leg/proves-and-blocks"
+    ],
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0358 load/level-by-construction",
+        false
+      ],
+      [
+        "VELDO-0358 load/hang-constants-are-the-contract",
+        true
+      ],
+      [
+        "VELDO-0358 leg/proves-and-blocks",
+        false
+      ],
+      [
+        "VELDO-0358 leg/proven-and-changed-rules",
+        true
+      ],
+      [
+        "VELDO-0358 leg/graph-blocks",
+        true
+      ],
+      [
+        "VELDO-0358 leg/record-taken-by-the-authority",
+        true
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0358 load/level-by-construction",
+      "VELDO-0358 load/hang-constants-are-the-contract",
+      "VELDO-0358 leg/proves-and-blocks",
+      "VELDO-0358 leg/proven-and-changed-rules",
+      "VELDO-0358 leg/graph-blocks",
+      "VELDO-0358 leg/record-taken-by-the-authority"
+    ],
+    "targets": {
+      "load/level-by-construction": [
+        false
+      ]
+    }
+  },
+  "old_digest": "5432e7ed53af35991797dd3d0ee23dfab1e2fcebe2097996cbb3a2e28e59786f",
+  "replacement_count": 1
+}
