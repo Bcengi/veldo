@@ -1,0 +1,6 @@
+{
+  "commit": "e223d6684132279fde776e13b6d05d93a1e86ac3",
+  "raw_sha256": "5540b2ef7bc49462db06493a384a4b58ea113e8a2f8023c785f0f84e65057cd4",
+  "redactions": "Home directory roots only; input and mutation digests retained.",
+  "scope": "Selected finding 253, not the full gate."
+}
