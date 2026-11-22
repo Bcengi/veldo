@@ -632,6 +632,66 @@ else:
 
 _v114_evidence["exchange_outcomes"] = dict(_v114_exchange_ok)
 
+# ---- fix round 2: a rows-scoped list entry moves only suite 48's census row ------------------------
+# Suite 48 runs once per gate leg under the entry the README recommends to the owner
+# (48_veldo_0108_relay, rows "census"), in a fresh interpreter with the three variables gate_legs.py
+# sets, the dispatcher's own leg_runs and a recording expect. A row counts as run when it is asserted
+# or printed STANDS DOWN by name, so the row holds whether or not this host completes the census.
+_v114_S48 = ROOT / "scripts/suites" / "48_veldo_0108_relay.py"
+_v114_S48_CENSUS = "relay/one-endpoint-one-judgement"
+_v114_S48_CONFINED = (
+    "relay/usage-has-zero-stdout", "relay/oversized-request-has-zero-stdout",
+    "relay/oversized-response-has-zero-stdout", "relay/exact-limit-request-is-carried",
+    "relay/exact-limit-response-is-carried", "relay/the-authority-judges-not-the-relay",
+    "relay/ssh-is-transport-not-authority", "relay/stand-down-never-hides-a-failed-comparison",
+    "relay/an-unreachable-authority-is-reported-not-answered", "relay/copying-is-not-what-changes-it")
+_v114_LEG_DRIVER = (
+    "import contextlib, io, json, re, sys\n"
+    "from pathlib import Path\n"
+    "shared, suite = Path(sys.argv[1]), Path(sys.argv[2])\n"
+    "sys.path.insert(0, str(shared.parents[1]))\n"
+    "ns = {'__file__': str(shared), '__name__': 'v114_leg_shared'}\n"
+    "with contextlib.redirect_stdout(io.StringIO()):\n"
+    "    exec(compile(shared.read_text(), str(shared), 'exec'), ns)\n"
+    "rows = []\n"
+    "ns['expect'] = lambda name, condition: rows.append([name.split(':', 1)[0].split()[-1], bool(condition)])\n"
+    "ns['__suite_file__'] = str(suite)\n"
+    "out = io.StringIO()\n"
+    "with contextlib.redirect_stdout(out):\n"
+    "    exec(compile(suite.read_text(), str(suite), 'exec'), ns)\n"
+    "stood = [m.group(1) for m in re.finditer(r'(relay/[a-z-]+): STANDS DOWN', out.getvalue())]\n"
+    "print(json.dumps(dict(rows=rows, stood_down=stood)))\n")
+
+
+def _v114_s48_leg(leg):
+    """The labels suite 48 asserts and stands down on one leg under the rows-scoped entry."""
+    env = dict(_v114_os.environ, VELDO_GATE_LEG=leg, VELDO_GATE_UNCONFINED="48_veldo_0108_relay:census",
+               VELDO_GATE_DECLARATION="sha256:" + "0" * 64)
+    try:
+        done = _v114_sp.run([_v114_sys.executable, "-B", "-c", _v114_LEG_DRIVER,
+                             str(ROOT / "scripts" / "suites" / "shared.py"), str(_v114_S48)],
+                            capture_output=True, text=True, env=env, timeout=_v114_HANG)
+        record = _v114_json.loads(done.stdout.strip().splitlines()[-1])
+    except (OSError, ValueError, IndexError, _v114_sp.TimeoutExpired) as error:
+        return dict(leg=leg, error=repr(error)[:300], asserted=[], stood_down=[], all_true=False)
+    return dict(leg=leg, asserted=[label for label, _ in record["rows"]], stood_down=record["stood_down"],
+                all_true=all(ok for _, ok in record["rows"]))
+
+
+_v114_legs = {leg: _v114_s48_leg(leg) for leg in ("unconfined", "confined")}
+_v114_evidence["suite48_legs"] = _v114_legs
+_v114_ran = {leg: sorted(r["asserted"] + r["stood_down"]) for leg, r in _v114_legs.items()}
+expect("VELDO-0114 relay/rows-scoped-entry-moves-only-the-census-row: suite 48 run on the unconfined "
+       "leg with the entry 48_veldo_0108_relay rows census runs only the census row, %s, asserted or "
+       "stood down by name, and run on the confined leg with the same entry runs the other ten relay "
+       "rows and not the census row, every asserted row true on both legs. So the rows-scoped entry "
+       "moves one row out of the confined leg and keeps ten in it, instead of running all eleven again "
+       "unconfined. DRIVEN: a suite 48 whose usage row has lost its leg_runs() guard also runs that row "
+       "on the unconfined leg: %r" % (_v114_S48_CENSUS, _v114_ran),
+       _v114_ran["unconfined"] == [_v114_S48_CENSUS]
+       and _v114_ran["confined"] == sorted(_v114_S48_CONFINED)
+       and all(r["all_true"] for r in _v114_legs.values()))
+
 if __name__ == "__main__":
     print(_v114_json.dumps(dict(rows=_v114_direct_rows, evidence=_v114_evidence), sort_keys=True))
     raise SystemExit(0 if all(ok for _, ok in _v114_direct_rows) else 1)
