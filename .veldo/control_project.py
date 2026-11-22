@@ -409,7 +409,7 @@ class Projects:
                 or not _NAME.match(command['project']) or any(command[k] != v for k, v in self.ids.items())):
             raise Refused('invalid_input', 'invalid project command or authority coordinates')
         op, principal, name = command['operation'], command['principal'], command['project']
-        if op == BIND and getattr(self.conn, 'installation_loader', None) is not None:
+        if op == BIND and _organ('installation').configuration_commit(self.conn) is not None:
             raise Refused('installation_managed', 'workflow bindings belong to the installation project file')
         pid = project_id(name)
         if self.conn.execute('SELECT 1 FROM entities WHERE id=? AND kind=?',
@@ -780,7 +780,7 @@ class Projects:
         execution repository, read on the transaction's connection (missing_workflow otherwise), and the change's
         record: the kind of work, the old and the new revision, the owner and his command id. The lifecycle state is
         not touched."""
-        if getattr(conn, 'installation_loader', None) is not None:
+        if _organ('installation').configuration_commit(conn) is not None:
             raise Refused('installation_managed')
         try:
             found, _definition = WU.bound_revision(self.store, conn, self.ids['domain_uuid'],
