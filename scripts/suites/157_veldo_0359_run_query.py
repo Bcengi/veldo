@@ -540,7 +540,7 @@ if query:
             except RQ.Refused:
                 break
     if 'stray' in sys.argv[4:]:
-        (Path(query).parent / 'dropped-by-run').write_text('not the receiver\'s')
+        (Path(query).parent / 'dropped-by-run').write_text('dropped by the run')
 else:
     conn = sqlite3.connect(sys.argv[1])
     conn.execute('SELECT 1 FROM entities LIMIT 1').fetchone()
