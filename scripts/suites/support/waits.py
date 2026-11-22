@@ -20,7 +20,8 @@ thread is in one poll call whose only timeout is the wait hang bound.
 The suite process's runtime (C5, C6, C7): the rows a suite emits through shared.expect are progress
 events; the progress watchdog ends a process only after PROCESS_HANG_SECONDS with no row starting or
 ending, and writes every thread's stack first; the residue reading names the threads, children and
-listening sockets a suite left behind.
+listening sockets a suite left behind; the keeper (keep_the_tree) kills and reaps every process a run
+that did not finish left behind, whoever its parent was by then.
 
 The two constants below are the only durations a suite or the gate's tooling may name (design, section 6).
 This module and its Stamp are the one place the census's rules R1 to R3 do not apply.
@@ -337,28 +338,52 @@ class Store(PathAppears):
         return 'store(%s)' % self.database
 
 
+def _cgroup_gone(error):
+    """A cgroup that is no longer there: its files answer ENOENT once it is removed, and ENODEV when it is
+    removed between the open and the read (the descriptor outlives the group). Both are the same fact."""
+    return error.errno in (errno.ENOENT, errno.ENODEV)
+
+
+def _cgroup_events(cgroup):
+    """An open descriptor on the cgroup's cgroup.events."""
+    return os.open(os.path.join(os.fspath(cgroup), 'cgroup.events'), os.O_RDONLY | os.O_CLOEXEC)
+
+
 class CgroupEmpty(Source):
     """A cgroup becoming empty (or changing population): cgroup.events, which the kernel signals with
-    POLLPRI and which is read again to re-arm it."""
+    POLLPRI and which is read again to re-arm it. A group already removed, at the open or at the first
+    read, is a source that is `gone`: it is not polled, because nothing more will come from it, and the
+    wait's conditions (cgroup_populated answers None for it) decide at their first reading."""
 
     events = select.POLLPRI | select.POLLERR
 
     def __init__(self, cgroup):
         self.cgroup = os.fspath(cgroup)
-        self.fd = os.open(os.path.join(self.cgroup, 'cgroup.events'), os.O_RDONLY | os.O_CLOEXEC)
-        self._read()
+        self.fd = -1
+        self.gone = False
+        try:
+            self.fd = _cgroup_events(self.cgroup)
+            self._read()
+        except OSError as error:
+            self.close()
+            if not _cgroup_gone(error):
+                raise
+            self.gone = True
 
     def _read(self):
         os.lseek(self.fd, 0, os.SEEK_SET)
         return os.read(self.fd, 4096)
 
     def fileno(self):
-        return self.fd
+        return None if self.gone else self.fd
 
     def fired(self):
         try:
             self._read()
-        except OSError:
+        except OSError as error:
+            if not _cgroup_gone(error):
+                raise
+            self.gone = True
             return False  # the cgroup was removed: nothing more will come from it
         return True
 
@@ -368,19 +393,25 @@ class CgroupEmpty(Source):
             self.fd = -1
 
     def describe(self):
-        return 'cgroup(%s)' % self.cgroup
+        return 'cgroup(%s%s)' % (self.cgroup, ', gone' if self.gone else '')
 
 
 def cgroup_populated(cgroup):
-    """True, False, or None when the cgroup is gone."""
+    """True, False, or None when the cgroup is gone (removed before the open, or between it and the read)."""
     try:
-        with open(os.path.join(os.fspath(cgroup), 'cgroup.events')) as f:
-            for line in f:
-                key, _, value = line.partition(' ')
-                if key == 'populated':
-                    return value.strip() == '1'
-    except FileNotFoundError:
-        return None
+        fd = _cgroup_events(cgroup)
+        try:
+            text = os.read(fd, 4096).decode('ascii', 'replace')
+        finally:
+            os.close(fd)
+    except OSError as error:
+        if _cgroup_gone(error):
+            return None
+        raise
+    for line in text.splitlines():
+        key, _, value = line.partition(' ')
+        if key == 'populated':
+            return value.strip() == '1'
     return None
 
 
@@ -585,6 +616,8 @@ class _Runtime:
         self.last_row = None
         self.watchdog = None
         self.before_exit = []  # called before a hung process ends (the opened-files record)
+        self.ended_fd = None  # the keeper's pipe (keep_the_tree), in the suite process only
+        self.ended_pid = None
 
 
 RUNTIME = _Runtime()
@@ -772,6 +805,166 @@ class SuppliedClock:
         self.at += seconds
 
 
+# -------------------------------------------------------------------------------- the tree of a run
+
+_PR_SET_PDEATHSIG = 1
+_PR_SET_CHILD_SUBREAPER = 36
+_PASSED_ON = ('SIGTERM', 'SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGABRT', 'SIGUSR1', 'SIGUSR2')
+
+
+def keep_the_tree():
+    """Called once by the dispatcher, before it starts a thread or a suite. The calling process becomes the
+    KEEPER of the run and this returns only in its child, which runs the suites.
+
+    Why: a hung row ends its process at once (hung, or the watchdog's timer when the interpreter is stuck),
+    so nothing the suite started is stopped by the suite. The keeper is what stops it. It is the child
+    subreaper of the run, so a process whose parent ended (a worker whose receiver was killed, a daemon
+    that forked twice, in a scope of its own or not) becomes the keeper's child and not the user manager's,
+    and is reaped by it at once, as the manager would. When the suite process ends WITHOUT having said that
+    it ran every suite to its end (run_ended), the keeper kills every descendant it has, reaps each one,
+    names them (SELFTEST TREE), and only then ends with the suite process's own status. An orderly end
+    kills nothing: what a suite leaves then is the residue row's to name.
+
+    The keeper sleeps in sigwaitinfo: it wakes on a child's end and on a signal sent to it, which it
+    passes on to the suite process. It reads no clock."""
+    import signal
+    sys.stdout.flush()
+    sys.stderr.flush()
+    told, tell = os.pipe()
+    watched = {signal.SIGCHLD} | {getattr(signal, name) for name in _PASSED_ON}
+    before = signal.pthread_sigmask(signal.SIG_BLOCK, watched)
+    keeper = os.getpid()
+    subreaper = _LIBC.prctl(_PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0) == 0
+    child = os.fork()
+    if child == 0:
+        os.close(told)
+        signal.pthread_sigmask(signal.SIG_SETMASK, before)
+        _LIBC.prctl(_PR_SET_PDEATHSIG, int(signal.SIGKILL), 0, 0, 0)
+        if os.getppid() != keeper:  # the keeper died before that was in place
+            os._exit(HUNG_EXIT_STATUS)
+        RUNTIME.ended_fd, RUNTIME.ended_pid = tell, os.getpid()
+        return
+    os.close(tell)
+    _keep(child, told, watched, subreaper)
+
+
+def run_ended():
+    """The dispatcher ran every suite to its end: said to the keeper, once, by the suite process only."""
+    fd, RUNTIME.ended_fd = RUNTIME.ended_fd, None
+    if fd is not None and RUNTIME.ended_pid == os.getpid():
+        os.write(fd, b'.')
+        os.close(fd)
+
+
+def _reap(child=None):
+    """Reap every child that has ended. (the status of `child` if it was among them, a child is left)."""
+    status = None
+    while True:
+        try:
+            pid, ended = os.waitpid(-1, os.WNOHANG)
+        except ChildProcessError:
+            return status, False
+        if pid == 0:
+            return status, True
+        if pid == child:
+            status = ended
+
+
+def _descendants(root):
+    """[(pid, parent)] of every process whose parents lead to `root`, read from /proc."""
+    parents = {}
+    for name in os.listdir('/proc'):
+        if name.isdigit():
+            try:
+                with open('/proc/%s/stat' % name) as f:
+                    parents[int(name)] = int(f.read().rsplit(')', 1)[1].split()[1])
+            except (OSError, ValueError, IndexError):
+                continue
+    below = {}
+    for pid, parent in parents.items():
+        below.setdefault(parent, []).append(pid)
+    out, at = [], [root]
+    while at:
+        parent = at.pop()
+        for pid in sorted(below.get(parent, ())):
+            out.append((pid, parent))
+            at.append(pid)
+    return out
+
+
+def _end_tree():
+    """Kill and reap every descendant of this process: ({pid: what} ended, {pid: what} not this account's to
+    signal). Each pass reaps what has ended, kills what /proc shows below this process and sleeps until a
+    child ends; a process that was forked meanwhile, or whose parent was just killed, is this process's
+    child by then (the subreaper) and is met by the next pass. It ends when no child is left."""
+    import signal
+    me = os.getpid()
+    ended, refused = {}, {}
+    while True:
+        if not _reap()[1]:
+            break
+        own = False
+        for pid, parent in _descendants(me):
+            if pid in refused:
+                continue
+            what = ended.get(pid) or _describe_child(pid)
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                continue
+            except PermissionError:
+                refused[pid] = what
+                continue
+            ended[pid] = what
+            own = own or parent == me
+        if not own:  # every child left is one this account may not signal: nothing more will end
+            break
+        signal.sigwaitinfo({signal.SIGCHLD})
+    return ended, refused
+
+
+def _keep(child, told, watched, subreaper):
+    import signal
+    status = None
+    while status is None:
+        got = signal.sigwaitinfo(watched)
+        if got.si_signo == signal.SIGCHLD:
+            status = _reap(child)[0]
+        elif not (got.si_signo == signal.SIGINT and got.si_code > 0):  # the terminal's own reached it already
+            try:
+                os.kill(child, got.si_signo)
+            except ProcessLookupError:
+                pass
+    os.set_blocking(told, False)
+    try:
+        orderly = os.read(told, 1) == b'.'
+    except BlockingIOError:
+        orderly = False
+    if not orderly:
+        ended, refused = _end_tree()
+        lines = ['SELFTEST TREE ended and reaped: %s' % what for _, what in sorted(ended.items())]
+        lines += ['SELFTEST TREE NOT ENDED (not this account\'s to signal): %s' % what
+                  for _, what in sorted(refused.items())]
+        if ended or refused:
+            lines.append('SELFTEST TREE: the run ended without finishing; %d process(es) it left were killed '
+                         'and reaped%s%s' % (len(ended), ', %d could not be' % len(refused) if refused else '',
+                                             '' if subreaper else ' (no child subreaper here: a process '
+                                             'whose parent had ended before was not this run\'s to find)'))
+            os.write(1, ('\n'.join(lines) + '\n').encode('utf-8', 'replace'))
+    if os.WIFSIGNALED(status):
+        number = os.WTERMSIG(status)
+        try:
+            import resource
+            resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+            signal.signal(number, signal.SIG_DFL)
+            signal.pthread_sigmask(signal.SIG_UNBLOCK, {number})
+            os.kill(os.getpid(), number)
+        except (OSError, ValueError):
+            pass
+        os._exit(128 + number)
+    os._exit(os.WEXITSTATUS(status))
+
+
 # ------------------------------------------------------------------------------------------- residue
 
 
@@ -843,7 +1036,7 @@ def _describe_child(pid):
     except OSError:
         cmd = ''
     return 'child %d (%s%s)' % (pid, 'not reaped' if state == 'Z' else 'running, state ' + state,
-                                ': ' + cmd[:120] if cmd else '')
+                                ': ' + ' '.join(cmd.split())[:120] if cmd else '')
 
 
 def residue(before):

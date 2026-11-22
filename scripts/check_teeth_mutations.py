@@ -16873,6 +16873,28 @@ def cases():
              "            self.receiver_exit = _await_exit(self.child, timeout=2)  # defect: the literal, not the table\n",
              ['timers/profile-applied', 'wave1/no-sites'], '.veldo')
     # ==== end of VELDO-0358 brief E ====
+    # ==== VELDO-0358 WAVE 1 INTEGRATION (the lead's items) ====
+    def lead358(name, suite, module, old, new, rows, directory):
+        add(358, name, suite, module, old, new, rows)
+        result[-1]['dir'] = directory
+
+    # A cgroup removed between the open and the read (the kernel answers ENODEV) is read as an error again.
+    lead358('wait358-enodev-not-gone', runtime358, 'waits.py',
+            "    return error.errno in (errno.ENOENT, errno.ENODEV)\n",
+            "    return error.errno == errno.ENOENT  # defect: a group removed after its open is an error\n",
+            ['waits/cgroup-gone-is-empty'], 'scripts/suites/support')
+    # A run that did not finish ends with what it started still running.
+    lead358('wait358-hung-tree-left', runtime358, 'waits.py',
+            "    if not orderly:\n        ended, refused = _end_tree()\n",
+            "    if False:  # defect: the processes of a run that did not finish are left\n"
+            "        ended, refused = _end_tree()\n",
+            ['watchdog/hung-tree-ended'], 'scripts/suites/support')
+    # The keeper is no child subreaper: a process whose parent ended before the hang is nobody's to find.
+    lead358('wait358-orphans-not-kept', runtime358, 'waits.py',
+            "    subreaper = _LIBC.prctl(_PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0) == 0\n",
+            "    subreaper = False  # defect: orphans go to the user manager, out of the keeper's reach\n",
+            ['watchdog/hung-tree-ended'], 'scripts/suites/support')
+    # ==== end of VELDO-0358 wave 1 integration ====
 
     return result
 

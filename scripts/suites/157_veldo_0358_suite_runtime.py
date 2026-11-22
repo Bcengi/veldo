@@ -650,3 +650,176 @@ def _v358_port():
 
 _v358_f7 = _v358_port()
 expect("ports/held-until-bound: %r" % (_v358_f7,), _v358_f7 == {"collided": False, "server_bound": True})
+
+
+# ------------------------------------------------- wave 1: a cgroup that is gone, however the kernel says it
+
+def _v358_cgroup_gone():
+    """A cgroup removed before the open answers ENOENT; one removed between the open and the read answers
+    ENODEV (the kernel's own answer here, made by removing the group once its events file is open). Both
+    are the same fact for every caller: populated is None, the source is gone and is not polled, and a
+    wait for the group to be empty is done at its first reading."""
+    w = _v358_load("v358_waits_gone", _v358_WAITS)
+    facts = {}
+
+    def tried(read):
+        try:
+            return read()
+        except OSError as error:
+            return "raised errno %d" % error.errno
+
+    try:
+        own = _v358_own_cgroup()
+
+        def group(tag):
+            g = own / ("v358-gone-%d-%s" % (_v358_os.getpid(), tag))
+            g.mkdir()
+            return g
+
+        opened = w._cgroup_events
+
+        def removed_once_open(cgroup):
+            fd = opened(cgroup)
+            _v358_os.rmdir(str(cgroup))
+            return fd
+
+        g = group("kernel")
+        fd = opened(g)
+        g.rmdir()
+        facts["kernel_read"] = tried(lambda: _v358_os.read(fd, 16))
+        _v358_os.close(fd)
+        w._cgroup_events = removed_once_open
+        try:
+            facts["populated"] = tried(lambda: w.cgroup_populated(group("populated")))
+            g = group("source")
+            source = tried(lambda: w.CgroupEmpty(g))
+            facts["source"] = source if isinstance(source, str) else (source.gone, source.fileno())
+            g = group("wait")
+            source = tried(lambda: w.CgroupEmpty(g))
+        finally:
+            w._cgroup_events = opened
+        facts["wait"] = source if isinstance(source, str) else tried(lambda: w.wait(
+            "a removed group to be empty", lambda: w.cgroup_populated(g) is not True, sources=[source]).outcome)
+        g = group("watched")
+        source = w.CgroupEmpty(g)
+        g.rmdir()
+        facts["watched"] = tried(lambda: (source.fired(), source.gone))
+        source.close()
+        never = own / ("v358-gone-%d-never" % _v358_os.getpid())
+        facts["absent"] = tried(lambda: (w.cgroup_populated(never), w.CgroupEmpty(never).gone))
+        # Any other error stays an error: a path under a file is not a cgroup that went away.
+        facts["other"] = tried(lambda: w.cgroup_populated("/proc/self/stat"))
+    except OSError as error:
+        facts["error"] = "a child cgroup could not be made here: %s" % error
+    return facts
+
+
+_v358_f8 = _v358_cgroup_gone()
+expect("waits/cgroup-gone-is-empty: %r" % (_v358_f8,),
+       _v358_f8 == {"kernel_read": "raised errno 19", "populated": None, "source": (True, None), "wait": "done",
+                    "watched": (False, True), "absent": (None, True), "other": "raised errno 20"})
+
+
+# ------------------------------------------- wave 1: a run that does not finish leaves no process behind
+
+_v358_HOLD = '''import os, subprocess, sys
+fifo, d, name, how = sys.argv[1:5]
+if how == "orphan":
+    if os.fork():
+        os._exit(0)
+    os.setsid()
+elif how == "parent":
+    subprocess.Popen([sys.executable, __file__, fifo, d, "below", "none"], stdout=subprocess.DEVNULL,
+                     stderr=subprocess.DEVNULL)
+with open(os.path.join(d, name + ".tmp"), "w") as f:
+    f.write(str(os.getpid()))
+os.rename(os.path.join(d, name + ".tmp"), os.path.join(d, name))
+open(fifo).read()  # held until a writer has opened the latch and closed it; this run's suite never does
+'''
+
+_v358_TREE = '''import os, subprocess, sys
+import waits
+_d = os.environ["V358_DIR"]
+def _hold(name, how):
+    # A holder keeps none of this run's output open: the test reads that output to its end.
+    return subprocess.Popen([sys.executable, os.path.join(_d, "hold.py"), os.path.join(_d, "latch"), _d, name, how],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+_direct = _hold("direct", "none")
+_parent = _hold("parent", "parent")
+_hold("orphan", "orphan").wait()
+_go = os.path.join(_d, "go")
+_seen = waits.wait("the test to hold every holder", lambda: os.path.exists(_go), sources=[waits.PathAppears(_go)])
+expect("fx/holders-held", _seen.done)
+if os.environ.get("V358_HANGS"):
+    waits.wait("an end nobody makes", lambda: False, sources=[waits.Pidfd(_direct)], row="fx/hung",
+               hang_bound_for_test=2)
+expect("fx/hung", True)
+'''
+
+_v358_HELD = ("direct", "parent", "below", "orphan")
+
+
+def _v358_tree_of(hangs):
+    """One run of the fixture suite: four holders it never releases (a child, a child with a child below it,
+    and a process in a session of its own whose parent ended at once). The test opens each one's pidfd
+    while it is held, lets the suite go on, and reads after the dispatcher ended whether each was reaped."""
+    import signal as _signal
+    with _v358_tempfile.TemporaryDirectory(prefix="v358-tree-") as d:
+        base = _v358_tree(_v358_Path(d) / "repo", {"fx_tree": _v358_TREE})
+        work = _v358_Path(d) / "work"
+        work.mkdir()
+        (work / "hold.py").write_text(_v358_HOLD)
+        latch = work / "latch"
+        _v358_os.mkfifo(str(latch))
+        hang_dir = _v358_Path(d) / "hang"
+        hang_dir.mkdir()
+        env = {"V358_DIR": str(work), "VELDO_HANG_DIR": str(hang_dir)}
+        if hangs:
+            env["V358_HANGS"] = "1"
+        run = _v358_subprocess.Popen(
+            [_v358_sys.executable, str(base / "scripts" / "selftest.py"), "--suite", "fx_tree"], cwd=str(base),
+            stdout=_v358_subprocess.PIPE, stderr=_v358_subprocess.PIPE, text=True,
+            stdin=_v358_subprocess.DEVNULL, env=_v358_clean_env(**env))
+        started = WAITS.wait("the fixture's holders to state their pids",
+                             lambda: all((work / name).exists() for name in _v358_HELD),
+                             terminal=lambda: run.poll() is not None,
+                             sources=[WAITS.PathAppears(work / name) for name in _v358_HELD] + [WAITS.Pidfd(run)])
+        if not started.done:
+            out, err = run.communicate()
+            return {"error": "the fixture ended before its holders started", "stdout": out, "stderr": err[-2000:]}
+        pids = {name: int((work / name).read_text()) for name in _v358_HELD}
+        held = {name: _v358_os.pidfd_open(pid) for name, pid in pids.items()}  # each is held: none has ended
+        (work / "go").write_text("")
+        out, err = run.communicate()
+
+        def reaped(fd):
+            try:
+                _signal.pidfd_send_signal(fd, 0)
+            except ProcessLookupError:
+                return True
+            return False
+
+        facts = {"rc": run.returncode, "hung": [line.split(":", 1)[0] for line in _v358_lines(out, "SELFTEST HUNG")],
+                 "reaped": sorted(name for name, fd in held.items() if reaped(fd)),
+                 "named": sorted(name for name, pid in pids.items()
+                                 if any("child %d (" % pid in line
+                                        for line in _v358_lines(out, "SELFTEST TREE ended and reaped"))),
+                 "said": len(_v358_lines(out, "SELFTEST TREE: the run ended without finishing; 4 process(es)"))}
+        # Release whatever is still held (all of them after an orderly end), and see each one end.
+        try:
+            _v358_os.close(_v358_os.open(str(latch), _v358_os.O_WRONLY | _v358_os.O_NONBLOCK))
+        except OSError:
+            pass  # no reader is left
+        for fd in held.values():
+            _v358_select.select([fd], [], [])
+            _v358_os.close(fd)
+        return facts
+
+
+_v358_f9 = {"hung": _v358_tree_of(True), "orderly": _v358_tree_of(False)}
+expect("watchdog/hung-tree-ended: %r" % (_v358_f9,),
+       _v358_f9["hung"] == {"rc": 1, "hung": ["SELFTEST HUNG fx/hung"], "reaped": sorted(_v358_HELD),
+                            "named": sorted(_v358_HELD), "said": 1}
+       and _v358_f9["orderly"].get("rc") not in (None, 0) and _v358_f9["orderly"]["hung"] == []
+       and _v358_f9["orderly"]["reaped"] == [] and _v358_f9["orderly"]["named"] == []
+       and _v358_f9["orderly"]["said"] == 0)
