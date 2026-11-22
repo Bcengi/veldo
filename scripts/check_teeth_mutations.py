@@ -11733,6 +11733,12 @@ def cases():
         '        record_case_times(root, samples, authority=False)\n',
         ['case-deadlines/authority-recording'])
     result[-1]['dir'] = 'scripts'
+    add(215, 'deadline215-reused-unaudited-sampled', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
+        '        record_case_times(root, samples, authority=measure)\n',
+        "        samples.update({time_keys[c['identity']]: 1 for c in cases if c not in fresh})\n"
+        '        record_case_times(root, samples, authority=measure)\n',
+        ['case-deadlines/reused-unaudited-no-sample'])
+    result[-1]['dir'] = 'scripts'
 
     # VELDO-0285: an unmeasured case's baseline is bounded by the ceiling, not the floor, and its
     # noop and mutant by 3 x that baseline as measured in the same stage.

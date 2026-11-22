@@ -9,7 +9,6 @@ def _v218_audit():
     import copy
     import contextlib
     import io
-    import random
     import tempfile
     import types
     from pathlib import Path
@@ -149,8 +148,6 @@ def _v218_audit():
             with patch.object(M.os, 'urandom', return_value=b'x' * 32) as entropy:
                 fixed1, fixed2 = M.audit_sample(values), M.audit_sample(values)
             row('unpredictable', first != second and fixed1 == fixed2 and entropy.call_count == 2)
-            control = random.Random(123)
-            row('fixed-seed-control', control.sample(sorted(values), 100) == random.Random(123).sample(sorted(values), 100))
 
             changes = {
                 'baseline': lambda r: r.update(baseline=observation([['changed target', True], ['fixture other', True]])),
