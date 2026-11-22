@@ -171,8 +171,10 @@ def _valid_architecture(value, event=False):
             isinstance(v, str) if event else isinstance(v, dict) and set(v) == {'module', 'role', 'path', 'digest'}
             and _flat(v, ('module', 'role', 'path', 'digest'))) for k, v in validators.items()):
         return False
-    return event or ((value['accepted'] is None or _flat(value['accepted'], ('id', 'version', 'digest')))
-                     and (value['artifact'] is None or _flat(value['artifact'], ('path', 'type', 'digest')))
+    return event or ((value['accepted'] is None or (_flat(value['accepted'], ('id', 'version', 'digest'))
+                         and set(value['accepted']) == {'id', 'version', 'digest'}))
+                     and (value['artifact'] is None or (_flat(value['artifact'], ('path', 'type', 'digest'))
+                         and set(value['artifact']) == {'path', 'type', 'digest'}))
                      and _strings(value['refusals']) and ('problems' not in value or _strings(value['problems'])))
 
 
