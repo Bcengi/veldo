@@ -2601,7 +2601,8 @@ def invoke(config_path, contract, dispatches, *, accept_seconds=ACCEPT_SECONDS, 
         os.close(errors)  # the receiver holds its own
     launch = Launch(child, contract, dispatches, clock or time.time, records=records)
     launch.receiver_log = place
-    launch.query_endpoint = RQ.endpoint(contract['dispatch_id'], environment)
+    with contextlib.suppress(RQ.Refused):  # no place for it: the receiver refuses, by name
+        launch.query_endpoint = RQ.endpoint(contract['dispatch_id'], environment)
     try:
         # The receiver's stdin stays open as its control channel: Launch.stop writes a stop request on it.
         child.stdin.write((json.dumps({'contract': contract}) + '\n').encode())
@@ -3022,9 +3023,9 @@ class Receiver:
                 log=RQ.log_path(ER.directory(self.config), contract['dispatch_id']),
                 created=lambda identity: self.emit({'event': 'run_query_created', 'identity': identity}))
             self.query_server.start()
-        except RQ.Refused:
+        except RQ.Refused as error:
             self._close_query()
-            return 'unavailable_service:run_query'
+            return error.code  # unavailable_service:run_query, or why no endpoint could be placed
         return None
 
     @_query_ended

@@ -363,6 +363,16 @@ receiver made, and spawns nothing; a later refusal of the preflight also removes
 to the engine in VELDO_RUN_QUERY, registered as Veldo's own beside VELDO_DISPATCH_ACCEPTANCE so the
 VELDO-0254 launch scan does not flag it.
 
+A socket path holds 107 bytes, so the directory is named vq- plus 32 hexadecimal digits of the digest,
+which fits a runtime directory of up to 60 characters. When the runtime directory is longer, the same
+directory is made, by a fixed rule, under the first of these that is a real directory (not a link) owned
+by the account with no group or other access: /run/user/<uid>, the account's system runtime directory;
+then /tmp/veldo-<uid>, made 0700 if absent. The first is the runtime directory itself. The second has the
+same owner and mode, is checked on every use, and sits in a sticky directory, so another account can
+neither enter nor replace it; if another account made that name first, it is not used. The Runner
+derives the same path by the same rule. Only when neither exists is the launch refused, as
+unavailable_service:run_query:no_short_private_directory. The abstract socket namespace is not used.
+
 Each request is one bounded read transaction with a deadline on the serving thread's connection; no
 transaction stays open between requests. Heartbeat and stop processing never wait on it.
 

@@ -70,10 +70,45 @@ class Unsupported(Refused, AttributeError):
         super().__init__('run_query:unsupported:' + name)
 
 
+SUN_PATH = 107  # bytes an AF_UNIX path may have (sun_path is 108 with its terminator)
+NO_PLACE = 'unavailable_service:run_query:no_short_private_directory'
+# Where the endpoint goes when the runtime directory's path is too long for a socket, in this
+# order: the account's system runtime directory, then one directory of this account in /tmp (made
+# 0700 if absent). Each is used only as the runtime directory is trusted: a real directory, owned
+# by this account, that no other account can enter.
+SHORT = (('/run/user/%d', False), ('/tmp/veldo-%d', True))
+
+
+def _fits(path):
+    return len(os.fsencode(str(path))) <= SUN_PATH
+
+
+def _private(root, make):
+    try:
+        if make:
+            with contextlib.suppress(FileExistsError):
+                os.mkdir(root, 0o700)
+        info = os.lstat(root)
+    except OSError:
+        return False
+    return stat.S_ISDIR(info.st_mode) and info.st_uid == os.getuid() and not info.st_mode & 0o077
+
+
 def endpoint(dispatch_id, environment=None):
+    """The dispatch's socket path, a fixed rule of the environment: under the user runtime directory
+    when that fits an AF_UNIX path, else under the first SHORT directory that is private. Refused,
+    by name, only when there is none."""
     env = os.environ if environment is None else environment
     runtime = env.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
-    return Path(runtime) / ('veldo-query-' + hashlib.sha256(dispatch_id.encode()).hexdigest()[:32]) / 'query.sock'
+    name = 'vq-' + hashlib.sha256(dispatch_id.encode()).hexdigest()[:32]
+    place = Path(runtime) / name / 'query.sock'
+    if _fits(place):
+        return place
+    for pattern, make in SHORT:
+        place = Path(pattern % os.getuid()) / name / 'query.sock'
+        if _fits(place) and _private(str(place.parent.parent), make):
+            return place
+    raise Refused(NO_PLACE)
 
 
 def remove(path, identity=None):
