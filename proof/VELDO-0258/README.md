@@ -79,6 +79,9 @@ PM runtime refusal `unavailable_service:runtime`; the identity and adoption suit
 pass every row. An initial Mac attempt at suite 158 stopped
 at the authority store's Linux filesystem qualification; its result is excluded.
 
-The confined finding-258 driver and VELDO-0254 launch-canary suite are queued
-through the host's shared heavy-run wrapper because pc2's Python lacks pidfd.
-Their final outcomes will be recorded separately when those runs complete.
+The VELDO-0254 launch-canary suite passed all seven rows through the host's
+shared heavy-run wrapper (33 checks including prerequisites, zero failures).
+Its first run exposed a fixture assertion still expecting two canaries; the
+corrected assertion requires seven distinct values and the rerun passed.
+The confined finding-258 driver remains queued through the same wrapper because
+pc2's Python lacks pidfd. Its outcome will be recorded when that run completes.
