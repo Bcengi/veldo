@@ -465,6 +465,8 @@ def entry_gate(repo_root, gate=None, trust=None, observe=None):
         return gate
     if not enrolled(repo_root):
         return None
+    if os.environ.get('VELDO_RUN_QUERY'):
+        return _organ('control_run_query').RemoteGate(repo_root, os.environ['VELDO_RUN_QUERY'], observe)
     if trust is None:
         trust = load_host_trust()
     if trust is None:
@@ -739,6 +741,9 @@ class Gate:
         state['revision_landed'] = state['revision_landed'] and self._landed_from(receipts, subject) is not None
         return state
 
+    def floor_entry(self, unit, word, landed=False):
+        return _organ('frontier')._local_floor_entry(self, unit, word, landed)
+
     def landed(self, unit):
         return self.completion(unit)['revision_landed']
 
@@ -994,7 +999,7 @@ class Gate:
         return ['missing_authority:unsupported/' + name]
 
     def _unit_problems(self, unit, inputs):
-        data = self._data(inputs['unit'])
+        data = self._data(inputs.get('unit'))
         if not isinstance(data, dict) or inputs['unit']['value']['kind'] != 'execution_unit' \
                 or data.get('repository_uuid') != self.repository_uuid:
             return ['missing_authority:unit']

@@ -181,6 +181,10 @@ def _held(entry, reason, lane=None, detail=()):
 
 
 def _floor_entry(gate, sid, word, landed=False):
+    return gate.floor_entry(sid, word, landed)
+
+
+def _local_floor_entry(gate, sid, word, landed=False):
     """One enrolled unit's place on the floor: {unit, record, version, state, station, lane, reason,
     detail, build_dispatch, review_dispatches}. `word` is the status the unit would otherwise have
     (the file's, through the completion reader when the frontier asks) and `landed` the completion
