@@ -97,6 +97,8 @@ def _v359_guard_suite():
                        tasks_max=128, stop_grace_seconds=1, kill_grace_seconds=1,
                        heartbeat_seconds=120, heartbeat_window_seconds=240)
         config['profile'] = profile
+        risky_config = base / 'probe-runner.json'
+        risky_config.write_text((ROOT / 'scripts/agent_sandbox.json').read_text())
         sample = L.RQ.switch(db)
         good_probe = dict(platform='x86_64', abi=8, reason=None)
         def preflight(**kwargs):
@@ -125,8 +127,17 @@ def opened(path, flags):
     fd = os.open(path, flags)
     os.close(fd)
 def rename_back(source, target):
+    existed = target.is_dir()
     os.rename(source, target)
     os.rename(target, source)
+    if existed: target.mkdir()
+def truncate_restore(path, readonly=False):
+    if readonly: opened(path, os.O_RDONLY | os.O_TRUNC)
+    else: os.truncate(path, 0)
+    path.write_bytes(b'sentinel')
+def unlink_restore(path):
+    path.unlink()
+    path.write_bytes(b'sentinel')
 def link_out(source, target):
     os.link(source, target)
     target.unlink()
@@ -147,14 +158,14 @@ if mode == 'attacks':
         trial('create/' + kind, lambda kind=kind: create(store / ('new-' + kind), kind))
     for name in ('truncate-ro', 'truncate', 'unlink', 'rename', 'link'):
         path = store / ('trial-' + name)
-        if name == 'truncate-ro': fn = lambda: opened(path, os.O_RDONLY | os.O_TRUNC)
-        elif name == 'truncate': fn = lambda: os.truncate(path, 0)
-        elif name == 'unlink': fn = lambda: path.unlink()
+        if name == 'truncate-ro': fn = lambda: truncate_restore(path, True)
+        elif name == 'truncate': fn = lambda: truncate_restore(path)
+        elif name == 'unlink': fn = lambda: unlink_restore(path)
         elif name == 'rename': fn = lambda: rename_back(path, work / 'renamed')
         else: fn = lambda: link_out(path, work / 'linked')
         trial(name, fn)
     trial('store-move', lambda: rename_back(store, store.with_name('moved')))
-    trial('store-replace', lambda: rename_back(work / 'empty', store))
+    trial('store-replace', lambda: rename_back(store, work / 'empty'))
     trial('ancestor', lambda: create(store.parent / 'new', 'file'))
     trial('outside-link', lambda: opened(work / 'outside-link', os.O_RDONLY))
     trial('marker-create', lambda: create(store / 'store-guard.off', 'file'))
@@ -176,6 +187,9 @@ if mode == 'attacks':
     if len(sys.argv) < 5:
         child = subprocess.run([sys.executable, '-B', __file__, str(store), str(work), mode, 'child'], capture_output=True, text=True, timeout=120)
         result['child'] = json.loads(child.stdout)
+elif mode == 'route':
+    target = Path(sys.argv[4]); target = target if target.is_absolute() else Path.home() / target
+    result['sentinel'] = target.read_text()
 elif mode == 'flip':
     trial('marker', lambda: Path(sys.argv[4]).write_text('fixture'))
 elif mode == 'read':
@@ -285,7 +299,7 @@ L.wrap(argv)
                     worker.group.close()
         counter = [0]
         real_popen = subprocess.Popen
-        def launch(mode='simple', *, off=False, kind='project', injection=None, descriptor=None, risky=False, extra=(), receiver_probe=None):
+        def launch(mode='simple', *, off=False, kind='project', injection=None, descriptor=None, risky=False, extra=(), receiver_probe=None, client_name=None, filter_errno=None):
             counter[0] += 1
             marker = store / 'store-guard.off'
             if off: marker.write_text('fixture recovery')
@@ -303,6 +317,8 @@ L.wrap(argv)
                             input={'context': {}}, deadline=time.time() + HANG, repository='fixture-repository')
             held_events = []
             receiver = Receiver(settings, lambda event: held_events.append(copy.deepcopy(event)))
+            if client_name:
+                receiver.binding = {'engine': 'codex' if client_name == 'codex' else 'claude_code', 'argv': settings['adapters']['fixture']['argv']}
             receiver.dispatches = Dispatches()
             receiver.dispatches.contract = contract
             receiver.environment = dict(os.environ, HOME=str(work / 'home'), TMPDIR=str(work / 'tmp'))
@@ -348,12 +364,28 @@ L.wrap(argv)
                         # Same production wrapper, with the runner argv production _spawn constructs.
                         old_invoke = receiver._invoke
                         def risky_invoke(c, a, adapter):
-                            adapter = dict(adapter, argv=L.runner_argv(settings, {'runner': 'confined'}, adapter['argv'], work))
+                            adapter = dict(adapter, argv=L.runner_argv(settings, {'runner': 'confined'}, adapter['argv'], work, client_name))
                             return old_invoke(c, a, adapter)
                         receiver._invoke = risky_invoke
+                    if filter_errno is not None:
+                        if risky:
+                            assert L.runner_refusal(settings, {'runner': 'confined'}, receiver.confined_checked) is None
+                        class Filter(ctypes.Structure):
+                            _fields_ = [('code', ctypes.c_ushort), ('jt', ctypes.c_ubyte), ('jf', ctypes.c_ubyte), ('k', ctypes.c_uint)]
+                        class Program(ctypes.Structure):
+                            _fields_ = [('length', ctypes.c_ushort), ('filters', ctypes.POINTER(Filter))]
+                        instructions = [(0x20,0,0,0), (0x15,0,3,444), (0x20,0,0,32), (0x15,0,1,1), (0x06,0,0,0x50000 | filter_errno), (0x06,0,0,0x7fff0000)]
+                        filters = (Filter * len(instructions))(*(Filter(*i) for i in instructions))
+                        program = Program(len(instructions), filters)
+                        libc = ctypes.CDLL(None, use_errno=True)
+                        assert libc.prctl(38,1,0,0,0) == 0
+                        assert libc.prctl(22,2,ctypes.byref(program),0,0) == 0
                     receiver.launch(contract)
             finally:
-                for fd in opened: os.close(fd)
+                receiver.descriptor_offsets = []
+                for fd in opened:
+                    with contextlib.suppress(OSError): receiver.descriptor_offsets.append(os.lseek(fd, 0, os.SEEK_CUR))
+                    os.close(fd)
                 receiver.close()
             return receiver, held_events
 
@@ -401,6 +433,18 @@ L.wrap(argv)
                         if sock: sock.close()
                         path.unlink()
                         if kind == 'nested-socket': path.parent.rmdir()
+                    sidecar = store / 'custom.sqlite3-journal'
+                    sidecar.unlink(missing_ok=True); sidecar.symlink_to(work / 'journal-outside')
+                    check('layout/entries', 'custom database sidecar link', preflight().get('reason') == 'invalid_input:layout:entry')
+                    sidecar.unlink()
+                    device = store / 'fixture-device'
+                    try:
+                        os.mknod(device, __import__('stat').S_IFCHR | 0o600, os.makedev(1, 3))
+                    except PermissionError as error:
+                        print('NOT RUN layout/entries device: errno=' + str(error.errno))
+                    else:
+                        check('layout/entries', 'device', preflight().get('reason') == 'invalid_input:layout:entry')
+                        device.unlink()
                     for name in ('custom.sqlite3', 'custom.sqlite3-wal', 'authority.lock'):
                         outside = work / 'hardlink'; os.link(store / name, outside)
                         check('layout/entries', 'external hardlink ' + name, preflight().get('reason') == 'invalid_input:layout:entry')
@@ -430,6 +474,29 @@ L.wrap(argv)
                         if bad == 'directory': marker.rmdir()
                         else: marker.unlink()
 
+            if needed('launch/abi'):
+                with section('launch/abi'):
+                    for code, reason in ((errno.ENOSYS, 'syscall_missing'), (errno.EPERM, 'syscall_blocked'), (errno.EOPNOTSUPP, 'landlock_disabled')):
+                        for risky in (False, True):
+                            read_fd, write_fd = os.pipe()
+                            pid = os.fork()
+                            if pid == 0:
+                                os.close(read_fd)
+                                try:
+                                    receiver, observed = launch(risky=risky, filter_errno=code)
+                                    answer = {'guard': receiver.store_guard, 'accepted': any(e['event'] == 'accepted' for e in observed)}
+                                except Exception as error: answer = {'error': repr(error)}
+                                os.write(write_fd, json.dumps(answer).encode()); os._exit(0)
+                            os.close(write_fd)
+                            assert select.select([read_fd], [], [], HANG)[0]
+                            answer = json.loads(os.read(read_fd, 65536)); os.close(read_fd); os.waitpid(pid, 0)
+                            check('launch/abi', 'receiver seccomp ' + reason + str(risky), answer.get('guard', {}).get('reason') == 'unavailable_service:confinement:store_guard:' + reason and not answer.get('accepted'))
+                    for abi in (1, 2):
+                        receiver, observed = launch(receiver_probe=dict(platform='x86_64', abi=abi, reason='abi_below_3'))
+                        check('launch/abi', 'actual launch low ABI ' + str(abi), receiver.store_guard.get('reason', '').endswith('abi_below_3') and not any(e['event'] == 'accepted' for e in observed))
+                    for abi in (3, 8):
+                        receiver, observed = launch(receiver_probe=dict(platform='x86_64', abi=abi, reason=None))
+                        check('launch/abi', 'actual launch supported ABI ' + str(abi), outcome(receiver) == 'applied')
             if needed('launch/guard-default', 'launch/ack', 'switch/run-cannot-flip', 'layout/entries'):
                 with section('launch/guard-default', 'launch/ack', 'switch/run-cannot-flip', 'layout/entries'):
                     for kind in ('project', 'conversation', 'workflow'):
@@ -449,6 +516,14 @@ L.wrap(argv)
                         applied = next(i for i, e in enumerate(observed) if e.get('store_guard', {}).get('outcome') == 'applied')
                         check('launch/ack', kind + ' pending at acceptance then applied', observed[accepted]['store_guard']['outcome'] == 'pending' and applied > accepted)
                         check('launch/guard-default', 'database bytes unchanged', state_unchanged())
+                        control, _ = launch('attacks', kind=kind, off=True)
+                        allowed = json.loads(control.payload_output)
+                        for child, answers in (('parent', allowed), ('child', allowed.get('child', {}))):
+                            for name, code in answers.items():
+                                if name not in ('child', 'socket-refusal'):
+                                    check('launch/guard-default', kind + '/control/' + child + '/' + name, code == 0)
+                            check('launch/guard-default', 'control unsigned refusal', answers.get('socket-refusal', {}).get('reason') == 'malformed_request')
+                        (store / 'store-guard.off').unlink(missing_ok=True)
                         check('switch/run-cannot-flip', 'marker absent and next decision on', not (store / 'store-guard.off').exists() and L.RQ.switch(db)['state'] == 'on')
                         for name in ('marker-create', 'marker-link', 'marker-rename', 'store-move', 'parent-move'):
                             check('switch/run-cannot-flip', name, result[name] in (errno.EACCES, errno.EXDEV))
@@ -479,6 +554,10 @@ L.wrap(argv)
                         snapshot = db.read_bytes()
                         receiver, observed = launch(descriptor=(str(db), os.O_RDWR, slot))
                         check('launch/descriptors-early', slot + ' bytes unchanged', db.read_bytes() == snapshot)
+                        if slot == 'stdin': check('launch/descriptors-early', 'forbidden stdin never read', receiver.descriptor_offsets == [0])
+                        record = Path(L.ER.path(L.ER.directory(receiver.config), receiver.contract['dispatch_id']) + '.store-guard.jsonl')
+                        recorded = [json.loads(line)['store_guard'] for line in record.read_text().splitlines()]
+                        check('launch/descriptors-early', slot + ' durable audit outcome', recorded[-1].get('outcome') == 'enforce_failed' and recorded[-1].get('step') == 'audit')
                         check('launch/descriptors-early', slot + ' final audit record', outcome(receiver) == 'enforce_failed' and receiver.store_guard.get('step') == 'audit' and not receiver.payload_output)
                         check('launch/descriptors-early', slot + ' unreported only for forbidden setup', receiver.store_guard.get('unreported') == (slot == 'setup'))
                     outside = work / 'ordinary.log'; outside.touch()
@@ -542,6 +621,45 @@ L.wrap(argv)
                     alias = work / 'store-path'; alias.symlink_to(store)
                     check('layout/mounts', 'resolved symlink store path', preflight(config=dict(config, store=str(alias / db.name)), sample=L.RQ.switch(alias / db.name))['outcome'] == 'pending')
                     alias.unlink()
+                    mount_probe = base / 'mount-probe.py'
+                    mount_probe.write_text(r'''import ctypes, importlib.util, json, os, sys
+from pathlib import Path
+libc = ctypes.CDLL(None, use_errno=True)
+def call(rc, step):
+    if rc: raise OSError(ctypes.get_errno(), step)
+try:
+    uid, gid = os.getuid(), os.getgid()
+    call(libc.unshare(0x10000000), 'user namespace')
+    Path('/proc/self/setgroups').write_text('deny')
+    Path('/proc/self/uid_map').write_text('%d %d 1' % (uid, uid))
+    Path('/proc/self/gid_map').write_text('%d %d 1' % (gid, gid))
+    call(libc.unshare(0x20000), 'mount namespace')
+    call(libc.mount(None, b'/', None, 16384 | (1 << 18), None), 'private mounts')
+except OSError as error:
+    print(json.dumps({'not_run': error.strerror, 'errno': error.errno})); sys.exit(0)
+spec = importlib.util.spec_from_file_location('mount_launch', sys.argv[1]); L = importlib.util.module_from_spec(spec); spec.loader.exec_module(L)
+config = json.loads(sys.argv[2]); store = Path(config['store']).parent
+results = []
+for index, source in enumerate((store, store.parent, Path(config['store']), store / 'authority.lock')):
+    target = Path(config['runs']) / ('bind-' + str(index))
+    if source.is_dir(): target.mkdir()
+    else: target.touch()
+    try:
+        call(libc.mount(os.fsencode(source), os.fsencode(target), None, 4096, None), 'bind')
+        result = L.guard_preflight(config, L.RQ.switch(config['store']), False, [])
+        results.append(result.get('reason'))
+    finally:
+        libc.umount2(os.fsencode(target), 0)
+        if target.is_dir(): target.rmdir()
+        else: target.unlink()
+print(json.dumps({'results': results}))
+''')
+                    tested = subprocess.run([sys.executable, '-B', str(mount_probe), str(mods / 'control_launch.py'), json.dumps(config)], capture_output=True, text=True, timeout=HANG)
+                    observed = json.loads(tested.stdout) if tested.returncode == 0 else {'not_run': tested.stderr[-500:]}
+                    if observed.get('not_run'):
+                        check('layout/mounts', 'NOT RUN actual bind namespace: ' + str(observed), False)
+                    else:
+                        check('layout/mounts', 'actual directory, ancestor, database and lock binds', observed['results'] == ['invalid_input:layout:mount'] * 4)
             if needed('switch/transitions'):
                 with section('switch/transitions'):
                     # Keep two production wrappers alive across changes using their stdin pipe.
@@ -611,13 +729,68 @@ L.wrap(argv)
                         check('launch/risky-census', 'general seed', census(body).get('reason') == 'confined_runner_unavailable:store_source')
                         body = copy.deepcopy(source_config); body['clients']['codex']['places']['unused'] = ['V359_UNUSED', str(store)]
                         check('launch/risky-census', 'unused place not a grant', census(body, 'codex').get('reason') is None)
+                        state_home = base / 'client-home'
+                        state_home.mkdir(exist_ok=True)
+                        for client_name in ('claude', 'codex'):
+                            actual = census(source_config, client_name)
+                            path, prepared = sandbox.policy_module().configuration(risky_config)
+                            prepared['deny_read'] = [*prepared.get('deny_read', []), str(sandbox.borrow_root()), *map(str, sandbox.credential_sources(prepared, work))]
+                            files = sandbox.client_files(prepared, client_name, work)
+                            extra = [*sandbox.project_roots(prepared), *(source.resolve() for source, _ in files.get('read_links', []) if source.exists())]
+                            grants, protected = sandbox.grants_for(prepared, ROOT, work, scratch, path, extra)
+                            grants += sandbox.resolver_grants()
+                            grants += [(real, sandbox.READ | sandbox.WRITE) for real, _ in sandbox.state_grants(files, [reuse, work, ROOT, *protected, path, *[Path(p).expanduser().resolve() for p in prepared['deny_read']]])]
+                            expected = sorted({(str(path), rights) for path, rights in grants})
+                            check('launch/risky-census', client_name + ' state created parity', actual.get('grants') == expected and census(source_config, client_name).get('grants') == expected)
+                        sentinel = store / 'fixture-sentinel'
+                        sentinel.write_text(json.dumps({'fixture': 'B2 fixture sentinel'}))
+                        sentinel.chmod(0o600)
+                        (store / '.runner-lease').touch(mode=0o600)
+                        ordinary_config = risky_config
+                        for route in ('read-root', 'read-link', 'configuration', 'general-seed', 'client-seed', 'credential'):
+                            body = copy.deepcopy(source_config)
+                            target, selected_client = str(sentinel), None
+                            reason = 'store_reachable'
+                            if route == 'read-root': body['read_roots'].append(str(store.parent))
+                            elif route == 'configuration':
+                                risky_config = store / 'runner-fixture.json'
+                                body['fixture_sentinel'] = 'B2 fixture sentinel'
+                                target = str(risky_config)
+                            elif route == 'general-seed':
+                                body['seed_files'] = {str(sentinel): 'fixture'}
+                                target, reason = 'fixture', 'store_source'
+                            else:
+                                selected_client, target = 'codex', '.codex/fixture'
+                                field = {'read-link': 'read_links', 'client-seed': 'seed_files', 'credential': 'credentials'}[route]
+                                body['clients']['codex'][field] = {str(sentinel): target}
+                                if route != 'read-link': reason = 'store_source'
+                            risky_config.write_text(json.dumps(body))
+                            refused, observed = launch('route', risky=True, client_name=selected_client, extra=(target,))
+                            check('launch/risky-census', route + ' refused before acceptance', refused.store_guard.get('reason') == 'confined_runner_unavailable:' + reason and not any(e['event'] in ('accepted', 'running') for e in observed))
+                            companion, observed = launch('route', risky=True, client_name=selected_client, extra=(target,), off=True)
+                            if not companion.payload_output: raise RuntimeError(route + ': ' + companion.payload_errors + repr(companion.store_guard))
+                            check('launch/risky-census', route + ' unchanged runner exposes sentinel', 'B2 fixture sentinel' in json.loads(companion.payload_output)['sentinel'])
+                            if route == 'configuration': risky_config.unlink(); risky_config = ordinary_config
+                        body = copy.deepcopy(source_config); body['read_roots'].append(str(base / 'required-missing'))
+                        risky_config.write_text(json.dumps(body))
+                        refused, observed = launch(risky=True)
+                        check('launch/risky-census', 'unresolvable root before acceptance', refused.store_guard.get('reason') == 'confined_runner_unavailable:store_reachable' and not any(e['event'] == 'accepted' for e in observed))
+                        companion, observed = launch(risky=True, off=True)
+                        check('launch/risky-census', 'unresolvable root companion accepted then runner fails', any(e['event'] == 'accepted' for e in observed) and not companion.payload_output)
                         risky_config.write_text(json.dumps(source_config))
                         receiver, observed = launch(risky=True)
                         result = json.loads(receiver.payload_output)
                         check('launch/risky-real', 'real runner reaches fixture', outcome(receiver) == 'runner_started' and result == {'read': errno.EACCES, 'lock': errno.EACCES})
+            if needed('layout/entries'):
+                with section('layout/entries'):
+                    stopped.set()
+                    with socket.socket(socket.AF_UNIX) as wake: wake.connect(str(store / 'authority.sock'))
+                    thread.join(HANG); listener.close()
+                    stale, _ = launch()
+                    check('layout/entries', 'stale authority socket actual launch', outcome(stale) == 'applied')
         finally:
             stopped.set()
-            with socket.socket(socket.AF_UNIX) as wake:
+            with contextlib.suppress(OSError), socket.socket(socket.AF_UNIX) as wake:
                 wake.connect(str(store / 'authority.sock'))
             thread.join(HANG)
             listener.close()

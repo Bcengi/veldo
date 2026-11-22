@@ -89,6 +89,12 @@ acceptance_criteria:
       fails.
   - id: AC3
     text: >
+      Amendment VELDO-0359: with the store guard on, agent runs cannot read or change the store
+      directory, default runs cannot mount or change direct entries in its ancestors, and Codex's
+      own sandbox is off. Local launches must pass the store guard's kernel, layout and placement
+      preflight; risky launches must also pass the runner floor and effective-grant/copy-source
+      census. The presence of store-guard.off restores the access described below. This amendment
+      adds no network fence and does not change the risky-runner selection rule.
       Claim: runs keep today's access, and the confined runner is used only when a launch opts into it for
       risky work. Set: by default a launch starts as today, with the host's network, shared databases,
       container tooling and local and loopback services; no network fence, namespace, name resolution

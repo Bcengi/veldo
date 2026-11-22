@@ -792,7 +792,8 @@ def guard_observe(receiver, outcome, **details):
     if not sample:
         return
     receiver.store_guard = dict(sample, outcome=outcome, **details)
-    message = {'event': 'store_guard', 'store_guard': receiver.store_guard}
+    message = {'event': 'store_guard', 'store_guard': receiver.store_guard,
+               'metrics': {'store_guard_' + outcome: 1}}
     contract = getattr(receiver, 'contract', None)
     if contract is not None:
         # Pre-acceptance refusals have no execution recorder yet. Keep their sampled decision too.
@@ -3396,6 +3397,9 @@ class Receiver:
             except (OSError, ValueError, RuntimeError):
                 locations.append(('gitdir', None, True))
         engine = (self.binding or {}).get('engine')
+        executable = (self.binding or {}).get('path')
+        if executable:
+            locations.append(('engine', executable, False))
         variable = {'codex': 'CODEX_HOME', 'claude_code': 'CLAUDE_CONFIG_DIR'}.get(engine)
         if variable:
             locations.append(('client_state', environment.get(variable) or str(Path.home() / ('.codex' if engine == 'codex' else '.claude')), True))
@@ -4070,7 +4074,8 @@ class Receiver:
         if error.settled:
             self.dispatches.refuse(dispatch_id, contract_digest, error.code, now=time.time(), expected_state='accepted')
             self._space_end(dispatch_id, getattr(self, 'contract', None))
-            refused = {'event': 'refused', 'refusal': error.code, 'group': error.group}
+            refused = {'event': 'refused', 'refusal': error.code, 'group': error.group,
+                       'store_guard': getattr(self, 'store_guard', None)}
             if error.code.startswith(SPACE_FOLDER_STATE) and error.detail:
                 refused['detail'] = error.detail  # VELDO-0305: the folder the owner has to look at
             self.emit(refused)
