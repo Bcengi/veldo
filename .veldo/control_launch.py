@@ -2548,6 +2548,9 @@ class Receiver:
             return self.store_guard['reason']
         if self.store_guard['state'] == 'off':
             return None
+        if self.runner['runner'] == 'confined':
+            # The existing risky runner has no Unix sockets (design section 14).
+            return None
         try:
             self.query_server = RQ.Server(self.config, contract['dispatch_id'], observe=self.emit,
                 created=lambda identity: self.emit({'event': 'run_query_created', 'identity': identity}))

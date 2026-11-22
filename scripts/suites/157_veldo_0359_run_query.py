@@ -647,6 +647,11 @@ L.main()
 
         marker = db.parent / 'store-guard.off'
         check('switch/off', 'absent means on', Q.switch(db)['state'] == 'on')
+        risky = object.__new__(L.Receiver)
+        risky.config, risky.runner, risky.query_server = config, {'runner': 'confined'}, None
+        risky.emit = lambda event: None
+        check('query/scope', 'risky runner has no query endpoint', risky._prepare_query({'dispatch_id': 'risky'}, {}) is None
+              and risky.query_server is None and not Q.endpoint('risky').parent.exists())
         marker.write_text('off')
         before = marker.read_bytes()
         for mode, body in ((0o000, ''), (0o600, 'arbitrary contents')):
