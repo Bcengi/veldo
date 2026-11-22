@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+"""B0 fixture store: control.sqlite3 in WAL mode with a sentinel row, held open by this process so
+-wal and -shm exist, and authority.lock. Prints the database digest. Usage: mkstore.py <store dir> <stop file>"""
+import hashlib, os, sqlite3, sys, time
+store, stop = sys.argv[1:3]
+os.makedirs(store, mode=0o700, exist_ok=True)
+db = os.path.join(store, 'control.sqlite3')
+conn = sqlite3.connect(db)
+conn.execute('PRAGMA journal_mode=WAL')
+conn.execute('CREATE TABLE IF NOT EXISTS sentinel (v TEXT)')
+conn.execute("INSERT INTO sentinel VALUES ('b0-0359-fixture')")
+conn.commit()
+os.close(os.open(os.path.join(store, 'authority.lock'), os.O_WRONLY | os.O_CREAT, 0o600))
+print('ready', flush=True)
+while not os.path.exists(stop):
+    time.sleep(0.5)
+conn.close()

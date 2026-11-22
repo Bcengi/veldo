@@ -1,0 +1,1 @@
+{"abi": 8, "probe_s": 4.864297807216644e-05, "rules_s": 0.001332756131887436, "confine_s": 0.0004708548076450825, "total_s": 0.0018522539176046848, "rules": 112, "rules_added": 112, "ancestors": {"write": ["/var/lib/veldo", "/var/lib/veldo/b0-0359", "/var/lib/veldo/b0-0359/state"], "read": ["/var/lib/veldo", "/var/lib/veldo/b0-0359", "/var/lib/veldo/b0-0359/state"]}}

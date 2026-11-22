@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+"""B0 prototype of the D 5 step 4 guard: build the ruleset with control_clone.rules (deny_read and
+deny_write on the store directory) and install it with control_clone.confine, then exec the argv.
+Usage: guard.py <veldo .veldo dir> <store dir> <timing json out> -- argv..."""
+import importlib.util, json, os, sys, time
+veldo, store, out = sys.argv[1:4]
+assert sys.argv[4] == '--'
+argv = sys.argv[5:]
+spec = importlib.util.spec_from_file_location('control_clone', os.path.join(veldo, 'control_clone.py'))
+cc = importlib.util.module_from_spec(spec); spec.loader.exec_module(cc)
+t0 = time.monotonic(); version = cc.abi(); t1 = time.monotonic()
+granted = cc.rules([store], [store]); t2 = time.monotonic()
+added = cc.confine(granted); t3 = time.monotonic()
+with open(out, 'w') as h:
+    json.dump({'abi': version, 'probe_s': t1 - t0, 'rules_s': t2 - t1, 'confine_s': t3 - t2,
+               'total_s': t3 - t0, 'rules': len(granted), 'rules_added': added,
+               'ancestors': cc.ancestors([store], [store])}, h)
+os.execvp(argv[0], argv)

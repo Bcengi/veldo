@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+"""B0 item 3: control_clone.rules and confine timing, in fresh processes, against HB.SETUP_SECONDS.
+Usage: timing.py <veldo .veldo dir> <store dir> <n>"""
+import importlib.util, json, os, statistics, subprocess, sys
+veldo, store, n = sys.argv[1], sys.argv[2], int(sys.argv[3])
+child = r'''
+import importlib.util, json, os, sys, time
+spec = importlib.util.spec_from_file_location('cc', os.path.join(sys.argv[1], 'control_clone.py'))
+t = time.monotonic(); cc = importlib.util.module_from_spec(spec); spec.loader.exec_module(cc); load = time.monotonic() - t
+t0 = time.monotonic(); v = cc.abi(); t1 = time.monotonic(); g = cc.rules([sys.argv[2]], [sys.argv[2]]); t2 = time.monotonic()
+added = cc.confine(g); t3 = time.monotonic()
+print(json.dumps({'load': load, 'probe': t1 - t0, 'rules': t2 - t1, 'confine': t3 - t2, 'total': t3 - t0, 'n': len(g), 'added': added}))
+'''
+rows = [json.loads(subprocess.run([sys.executable, '-c', child, veldo, store], capture_output=True, text=True, check=True).stdout)
+        for _ in range(n)]
+spec = importlib.util.spec_from_file_location('hb', os.path.join(veldo, 'control_heartbeat.py'))
+out = {'store': store, 'trials': n, 'rules_in_ruleset': rows[0]['n'], 'rules_added': rows[0]['added']}
+for k in ('load', 'probe', 'rules', 'confine', 'total'):
+    xs = sorted(r[k] for r in rows)
+    out[k + '_ms'] = {'median': round(statistics.median(xs) * 1000, 3), 'p95': round(xs[int(0.95 * (n - 1))] * 1000, 3),
+                      'max': round(xs[-1] * 1000, 3)}
+print(json.dumps(out))

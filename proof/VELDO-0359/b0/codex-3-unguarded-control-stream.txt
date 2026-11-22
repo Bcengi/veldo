@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a2034c-00f3-79b0-902d-edd5f27bc891"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll run the command once and return its complete output verbatim.\n"}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted"}}
+{"type":"turn.completed","usage":{"input_tokens":30838,"cached_input_tokens":24320,"cache_write_input_tokens":0,"output_tokens":82,"reasoning_output_tokens":0}}

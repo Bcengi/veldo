@@ -1,0 +1,34 @@
+#!/bin/bash
+# B0 engine run under the guard: run_engine.sh <claude|codex> <label> <extra settings or sandbox mode>
+# Takes the login's lease for the run, builds a clean environment, starts the pinned binary through guard.py.
+set -u
+. ~/projects/myday/scripts/account_lease.sh
+ENGINE=$1; LABEL=$2; MODE=$3
+F=/var/lib/veldo/b0-0359; S=$F/state/authority; W=$F/runs/$LABEL; V=~/projects/veldo-worktrees/veldo-0359/.veldo
+mkdir -m 700 "$W" || { echo "scratch exists: $W" >&2; exit 3; }
+PROMPT='Use your shell tool to run exactly this command once, in the current directory, and nothing else: sh /tmp/b0-359-tools/task.sh   Then reply with its complete output verbatim.'
+BASE=(env -i HOME="$HOME" USER="$USER" PATH=/usr/local/bin:/usr/bin:/bin LANG=C.UTF-8 TERM=dumb)
+if [ "$ENGINE" = claude ]; then
+  LOGIN="$HOME/.claude-accounts/acct1"
+  BIN="$HOME/.local/share/claude/versions/2.1.317"
+  CMD=("${BASE[@]}" CLAUDE_CONFIG_DIR="$LOGIN" CLAUDE_CODE_DISABLE_CLAUDE_MDS=1 CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 DISABLE_AUTOUPDATER=1
+       python3 /tmp/b0-359-tools/guard.py "$V" "$S" "$F/logs/$LABEL-timing.json" --
+       "$BIN" -p "$PROMPT" --setting-sources '' --strict-mcp-config --mcp-config '{"mcpServers":{}}' --disable-slash-commands
+       --settings "$MODE" --tools=Bash --allowedTools=Bash --model claude-haiku-4-5-20251001 --output-format stream-json --verbose)
+else
+  LOGIN="$HOME/.codex"
+  BIN="$HOME/.local/share/codex-versions/0.166.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex"
+  GUARD=(python3 /tmp/b0-359-tools/guard.py "$V" "$S" "$F/logs/$LABEL-timing.json" --)
+  [ "${NOGUARD:-}" = 1 ] && GUARD=()
+  CMD=("${BASE[@]}" "${GUARD[@]}"
+       "$BIN" exec --json -c check_for_update_on_startup=false -c model_reasoning_effort=low --sandbox "$MODE"
+       --skip-git-repo-check -C "$W" "$PROMPT")
+fi
+lease_take "$LOGIN" "b0-$LABEL" || exit 4
+cd "$W"
+start=$(date +%s.%N)
+lease_closed "${CMD[@]}" < /dev/null > "$F/logs/$LABEL-stream.txt" 2> "$F/logs/$LABEL-stderr.txt"
+rc=$?
+end=$(date +%s.%N)
+lease_drop
+echo "label=$LABEL engine=$ENGINE mode=$MODE exit=$rc seconds=$(echo "$end - $start" | bc)"

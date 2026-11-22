@@ -1,0 +1,11 @@
+#!/bin/sh
+# B0 engine task: the probe (store trials, worktree write, a child, the authority socket), then an
+# ordinary build step in the current directory (a C file compiled with make and cc, then run).
+S=/var/lib/veldo/b0-0359/state/authority
+L=$(basename "$PWD")
+python3 /tmp/b0-359-tools/probe.py "$S" "$PWD" "$L"
+sh -c 'echo "child-pid=$$ ok" > child.txt' && cat child.txt
+printf '#include <stdio.h>\nint main(void){puts("built-ok");return 0;}\n' > hello.c
+printf 'hello: hello.c\n\tcc -O0 -o hello hello.c\n' > Makefile
+make -s && ./hello
+echo "task-exit=$?"

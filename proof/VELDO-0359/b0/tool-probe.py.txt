@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""B0 probe: store content and name trials, allowed writes, a child, and the authority socket.
+Usage: probe.py <store dir> <work dir> [label]"""
+import errno, json, os, socket, subprocess, sys
+store, work = sys.argv[1], sys.argv[2]
+label = sys.argv[3] if len(sys.argv) > 3 else 'probe'
+db = os.path.join(store, 'control.sqlite3')
+res = {}
+def trial(name, fn):
+    try:
+        fn(); res[name] = 'ok'
+    except OSError as e:
+        res[name] = errno.errorcode.get(e.errno, str(e.errno))
+def opener(path, flags):
+    return lambda: os.close(os.open(path, flags))
+trial('db_open_read', opener(db, os.O_RDONLY))
+trial('db_open_write', opener(db, os.O_WRONLY))
+trial('db_open_rdonly_trunc', opener(db, os.O_RDONLY | os.O_TRUNC))
+for s in ('-wal', '-shm'):
+    trial('sidecar%s_read' % s, opener(db + s, os.O_RDONLY))
+    trial('sidecar%s_write' % s, opener(db + s, os.O_WRONLY))
+trial('lock_open_read', opener(os.path.join(store, 'authority.lock'), os.O_RDONLY))
+trial('db_truncate', lambda: os.truncate(db, 0))
+trial('create_file', opener(os.path.join(store, 'planted'), os.O_WRONLY | os.O_CREAT | os.O_EXCL))
+trial('create_dir', lambda: os.mkdir(os.path.join(store, 'planted.d')))
+trial('create_symlink', lambda: os.symlink('/etc/hostname', os.path.join(store, 'planted.lnk')))
+def mksock():
+    s = socket.socket(socket.AF_UNIX); s.bind(os.path.join(store, 'planted.sock')); s.close()
+trial('create_socket', mksock)
+trial('db_unlink', lambda: os.unlink(db))
+trial('db_rename_out', lambda: os.rename(db, os.path.join(work, 'stolen')))
+trial('db_link_out', lambda: os.link(db, os.path.join(work, 'linked')))
+trial('sock_unlink', lambda: os.unlink(os.path.join(store, 'authority.sock')))
+trial('sock_rename_out', lambda: os.rename(os.path.join(store, 'authority.sock'), os.path.join(work, 's2')))
+trial('store_dir_rename', lambda: os.rename(store, store + '.moved'))
+trial('ancestor_create', opener(os.path.join(os.path.dirname(os.path.dirname(store)), 'planted-anc'),
+                               os.O_WRONLY | os.O_CREAT | os.O_EXCL))
+outside = os.path.join(work, 'outside-link')
+try:
+    os.symlink(db, outside)
+except OSError:
+    pass
+trial('db_open_via_outside_symlink', opener(outside, os.O_RDONLY))
+trial('list_store', lambda: os.listdir(store))
+res['store_listing'] = sorted(os.listdir(store)) if res['list_store'] == 'ok' else None
+trial('work_write', lambda: open(os.path.join(work, label + '-written.txt'), 'w').write('w\n'))
+trial('tmp_write', lambda: (open('/tmp/b0-359-tmpwrite-%d' % os.getpid(), 'w').write('t'),
+                            os.unlink('/tmp/b0-359-tmpwrite-%d' % os.getpid())))
+child = subprocess.run([sys.executable, '-c', 'import os,errno\ntry:\n os.open(%r, os.O_RDONLY); print("ok")\n'
+                        'except OSError as e: print(errno.errorcode[e.errno])' % db,], capture_output=True, text=True)
+res['child_db_open_read'] = child.stdout.strip()
+# The authority socket: connect, send an unsigned request, then a request with a bogus signature.
+def ask(request):
+    s = socket.socket(socket.AF_UNIX)
+    s.settimeout(5)
+    s.connect(os.path.join(store, 'authority.sock'))
+    s.sendall(json.dumps(request).encode()); s.shutdown(socket.SHUT_WR)
+    data = b''
+    while True:
+        chunk = s.recv(65536)
+        if not chunk: break
+        data += chunk
+    s.close()
+    answer = json.loads(data)
+    return {'accepted': answer.get('accepted'), 'reason': answer.get('reason')}
+base = {'schema': 'veldo.control_request/v1', 'workspace': work, 'domain_uuid': 'd', 'store_uuid': 's',
+        'command': {'op': 'noop'}, 'repository_uuid': 'r', 'repository_root_commit': ['c'],
+        'clone_uuid': 'k', 'binding_digest': 'b', 'authority_generation': 1}
+for name, request in (('socket_unsigned', base), ('socket_bogus_signature', dict(base, signature='AAAA'))):
+    try:
+        res[name] = ask(request)
+    except OSError as e:
+        res[name] = errno.errorcode.get(e.errno, str(e.errno))
+text = json.dumps(res, sort_keys=True)
+open(os.path.join(work, label + '-result.json'), 'w').write(text + '\n') if res['work_write'] == 'ok' else None
+print(text)
