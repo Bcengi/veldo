@@ -27,7 +27,8 @@ def _v253_suite():
     rows = ('ac1/whole-commit', 'ac1/committed-only', 'ac1/schema', 'ac1/notification',
             'ac2/widening-waits', 'ac2/exact-decision', 'ac2/superseded', 'ac2/classification',
             'ac3/one-source', 'ac3/stale-parent', 'ac3/layout-only', 'ac3/external-edit', 'ac3/push-refused',
-            'ac4/pinned-survives', 'ac2/signed-settlement', 'ac2/forged-settlement')
+            'ac4/pinned-survives', 'ac2/signed-settlement', 'ac2/forged-settlement',
+            'ac1/setup-import', 'ac4/migrated-pins')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -198,7 +199,28 @@ def _v253_suite():
             except C.I.InstallationError:
                 gone = True
             check('ac4/pinned-survives', gone and WU.pinned(S, conn, 'domain', 'repository', pinned) == definition)
+            setup = load('v253_setup', mods / 'control_installation_setup.py')
+            migration = S.open_store(root / 'migration' / 'authority.sqlite3')
+            try:
+                S.execute(migration, command, 'setup', sign, 1)
+                legacy = WF.Workflows(S, migration, domain='domain', repository='repository', signer='setup', sign=sign)
+                legacy.save({'definition': definition}, principal='owner', base=0)
+                legacy.save({'definition': edited}, principal='owner', base=1)
+                before = legacy.versions('example')
+                imported = setup.create(S, migration, root / 'imported', settings=dict(settings, git={'branch': 'main'}),
+                    identity=identity, domain='domain', repository='repository', signer='setup', sign=sign,
+                    secret_exists=lambda name: False, observe=events.append)
+                repeated = setup.create(S, migration, root / 'imported', settings=settings,
+                    identity=identity, domain='domain', repository='repository', signer='setup', sign=sign,
+                    secret_exists=lambda name: False, observe=events.append)
+                check('ac1/setup-import', imported['outcome'] == 'accepted' and repeated['outcome'] == 'already_done'
+                      and imported['commit'] == repeated['commit'] and legacy.versions('example') == before)
+                check('ac4/migrated-pins', WU.pinned(S, migration, 'domain', 'repository', pinned) == definition
+                      and WF._entity_row(migration, 'workflow-definition:' + WF.definition_digest(definition)) is not None)
+            finally:
+                migration.close()
             claims = load('v253_claims', mods / 'control_claim.py')
+            claims.S = S
             A = load('v253_assignment', mods / 'control_assignment.py')
             P = load('v253_projection', mods / 'control_channel_projection.py')
             V = load('v253_presenter', mods / 'control_channel_presentation.py')

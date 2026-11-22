@@ -968,7 +968,7 @@ def verified_revision(store, conn, domain, repository, workflow, version):
     data = row['data']
     if store.digest_of({'kind': row['kind'], 'data': data, 'version': row['version']}) != row['digest']:
         raise Refused('missing_evidence:revision_digest', rid)
-    if 'source' in data:
+    if 'source' in data or _entity_row(conn, 'workflow-definition:' + data['definition_digest']) is not None:
         content = _entity_row(conn, 'workflow-definition:' + data['definition_digest'])
         if content is None or content['kind'] != CONTENT_KIND:
             raise Refused('missing_evidence:definition_copy', rid)

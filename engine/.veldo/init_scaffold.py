@@ -188,6 +188,7 @@ _FILES = [
     ".veldo/control_installation_schema.py",
     ".veldo/control_installation_decision.py",
     ".veldo/control_installation_service.py",
+    ".veldo/control_installation_setup.py",
     ".veldo/installation_schema/schema.json",
     ".veldo/installation_template/installation.yaml",
     # VELDO-0039: dispatch records and the runner/receiver launch path; runtime assets the

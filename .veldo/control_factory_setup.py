@@ -485,7 +485,7 @@ class _Step:
 def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust=None, install_root=None,
           unit_dir=None, profile=None, writable=None, runner=None, origin=TELEGRAM_ORIGIN, clock=time.time,
           tailscale=None, api_port=None, git_identities=None, workspace_identity=None, accounts_root=None,
-          memory=None, https_port=None, installation=None):
+          memory=None, https_port=None, installation=None, installation_remote=None, installation_keystore=None):
     """Lay the factory down, or complete one laid down with these same arguments (rerun). Returns what
     was laid down; refused by name, writing nothing, when a check fails. `tailscale` is the list of
     system paths the Tailscale CLI is looked for at (TAILSCALE_PATHS), `api_port` the API's loopback port,
@@ -506,11 +506,13 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         return rerun(state_root, owner, owner_key, workspace, chat, token_file, runner=runner, clock=clock,
                      tailscale=tailscale, port=port, git_identities=git_identities,
                      workspace_identity=workspace_identity, memory=memory, https_port=requested,
-                     installation=installation, **options)
+                     installation=installation, installation_remote=installation_remote,
+                     installation_keystore=installation_keystore, **options)
     https_port = API.HTTPS_PORT if requested is None else requested
     plan = check(state_root, owner, owner_key, workspace, chat, token_file, **options)
     # VELDO-0326: the installation folder and the key files in it are judged before the first write.
-    space_paths(installation)
+    if installation is not None and os.path.exists(installation):
+        space_paths(installation)
     identity_options(git_identities, workspace_identity)
     memory_plan = _memory(lambda: organ('control_factory_setup_memory').prepare(memory))
     if memory_plan is not None:
@@ -537,6 +539,8 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         return 'setup-%s-%s-%d' % (prefix, ids['store_uuid'][:8], serial[0])
 
     with step('directories'):
+        if installation is not None:
+            organ('installation').Repository.create(installation)
         for name in (STORE_DIR, KEYS_DIR, EDGE_DIR, HOST_DIR):
             os.mkdir(os.path.join(root, name), 0o700)
             os.chmod(os.path.join(root, name), 0o700)
@@ -716,6 +720,11 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         with step('provisioner_configuration'):
             details['provisioner_configuration'] = {'path': _private(os.path.join(host, PROVISIONER_FILE),
                                                                      provisioner_text(plan, ids))}
+        if installation is not None:
+            with step('installation_repository'):
+                details['installation_repository'] = installation_import(S, conn, plan, ids, installed,
+                    git_identities, workspace_identity, installation_remote, port, https_port,
+                    (journal_principal, journal_sign), installation_keystore)
         genesis = S.export_journal(conn)[0]
     finally:
         if conn is not None:
@@ -1313,9 +1322,23 @@ def scan_projects_reporting(plan):
                                     os.path.join(plan['root'], 'secret-scan.jsonl'))
 
 
+def installation_import(store, conn, plan, ids, installed, identities, workspace_identity, remote, port,
+                        https_port, journal, keystore):
+    module = organ('control_factory_setup_engines').organ('control_installation_service',
+        Path(installed['home']) / 'bin').setup_module()
+    try:
+        return module.factory(store, conn, plan, ids, installed, identities, workspace_identity,
+            remote=remote, port=port, https_port=https_port, journal=journal, keystore=keystore)
+    except Exception as error:
+        if hasattr(error, 'code'):
+            raise Refused(error.code, 'installation repository import refused') from None
+        raise
+
+
 def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_trust, install_root, unit_dir, profile,
           writable, origin, runner, clock, tailscale, port, git_identities=None, workspace_identity=None,
-          accounts_root=None, memory=None, https_port=None, installation=None):
+          accounts_root=None, memory=None, https_port=None, installation=None, installation_remote=None,
+          installation_keystore=None):
     """A run over a state root laid down before. Accepted only when EVERY argument equals what the store and
     the installation were laid down with (else invalid_input:state_root:holds_<argument>). Every check runs
     before the first write: an earlier step is reported already done, a missing one is run, and an existing
@@ -1485,6 +1508,8 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             raise Refused('invalid_input:state_root:service_running:' + blocked[0], stop_first(authority_unit))
         if running and space_due:
             raise Refused('invalid_input:state_root:service_running:space_principals', stop_first(authority_unit))
+        if installation is not None and running and not installed.get('installation_repository'):
+            raise Refused('invalid_input:state_root:service_running:installation_import', stop_first(authority_unit))
         # The identity records are a direct store write, so they are written only while this run is the
         # store's one writer: never while the service runs, nor after an upgrade that restarts it.
         if identities_due and (running or engine['restart_due']):
@@ -1683,6 +1708,28 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             finally:
                 if memory_conn is not None:
                     memory_conn.close()
+        if installation is not None and not running:
+            if lock == -1:
+                lock = take_lock(root)
+                if lock is None:
+                    raise Refused('invalid_input:state_root:service_running:installation_import', stop_first(authority_unit))
+            imported_conn = S.open_store(plan['store'])
+            try:
+                service_file = Path(home, 'config', 'service.json')
+                service_config = json.loads(service_file.read_text())
+                named = os.path.abspath(str(installation))
+                if service_config.get('installation', named) != named:
+                    raise Refused('invalid_input:state_root:holds_installation', 'installation path differs')
+                service_config['installation'] = named
+                API.replace_file(service_file, json.dumps(service_config, sort_keys=True) + '\n', 0o600)
+                record = installation_import(S, imported_conn, plan, ids,
+                    dict(home=home, config=str(service_file), unit_path=os.path.join(unit_dir, authority_unit)),
+                    git_identities, workspace_identity, installation_remote, port, https_port,
+                    organ('control_channel_ingress').journal_signer(laid['journal']), installation_keystore)
+                mark('installation_repository', record['outcome'] == 'accepted')
+                runner.run(['daemon-reload'])
+            finally:
+                imported_conn.close()
     finally:
         if lock is not None and lock != -1:
             os.close(lock)
@@ -1835,6 +1882,7 @@ def main(argv=None, **overrides):
                         'or 10000; a re-run keeps the port the factory was laid down with')
     parser.add_argument('--installation', help='the installation folder the keys of space-observer and '
                         'space-runner are made in (default: the folder the installation line names)')
+    parser.add_argument('--installation-remote', help='the remote of the private installation repository')
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
@@ -1865,7 +1913,9 @@ def main(argv=None, **overrides):
         if args.installation is not None:
             overrides['installation'] = args.installation
         elif not in_process:
-            overrides.setdefault('installation', installation.get('folder'))
+            overrides.setdefault('installation', organ('installation').resolve()['folder'])
+        if args.installation_remote is not None:
+            overrides['installation_remote'] = args.installation_remote
         report = setup(args.state_root, args.owner, args.owner_key, args.workspace, args.chat, args.token_file,
                        memory=args.memory, **overrides)
     except Refused as exc:
