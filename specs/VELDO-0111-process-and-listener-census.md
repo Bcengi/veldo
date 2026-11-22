@@ -132,3 +132,22 @@ Each of the four live family counterexamples must produce `escaped_reference`.
 A mutant ignoring SCM_RIGHTS must incorrectly pass those captures, and the
 named escape row must detect that falsifier. Protocol, configuration, async,
 race, implicit-address and ABI obligations within the four families remain.
+
+### Combine note, 2026-11-22: io_uring rings outside the scope rest on Yama
+
+The review of the completion kept the builder's io_uring decision: a ring
+owned and driven by an outside process is that process's effect, like a
+request to an outside daemon. The caveat the reviewer named is recorded here.
+That equivalence rests on two things: (i) the descriptor refusal, which
+refuses every path by which the measured scope could hold a ring descriptor;
+and (ii) the host's Yama ptrace scope 1, under which writing an outside
+process's memory (process_vm_writev, or ptrace) is permitted only against a
+measured descendant, which is in scope and whose ring descriptor is refused,
+or against a process that opted in with PR_SET_PTRACER. The collector does not
+inspect process_vm_writev, process_vm_readv or ptrace themselves. So a measured
+command can still induce a cooperating outside process to expose a service.
+That path exists by design: it is the out-of-scope "ask an outside daemon to
+open a port" case, and its launch and IPC policy belongs to the consumer
+tickets (VELDO-0113, VELDO-0114), not to this census. On a host whose Yama
+scope is 0 (or without Yama), (ii) does not hold, and the census's io_uring
+claim covers only rings whose descriptor the scope could hold.
