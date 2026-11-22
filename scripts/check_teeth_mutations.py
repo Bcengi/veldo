@@ -17928,6 +17928,15 @@ def cases():
               '            roots["XDG_RUNTIME_DIR"] = stand / shard_tag(job["index"])\n',
               ['suite-shards/runtime-directory-outside-the-temporary-directory'])
 
+    # VELDO-0253: init_scaffold.py takes its asset names from the installation reader, which it loads
+    # beside its own file at import, and that reader loads git_process.py (and yamlish.py) beside
+    # itself. A copy of init_scaffold.py alone stops with FileNotFoundError before any row, so each
+    # case on it runs beside unchanged copies of the three.
+    for case in result:
+        if case['module'] == 'init_scaffold.py' and not case.get('siblings'):
+            case['companions'] = sorted(set(case.get('companions', ())) | {
+                'installation.py', 'git_process.py', 'yamlish.py'})
+
     return result
 
 
