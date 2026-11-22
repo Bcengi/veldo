@@ -28,7 +28,8 @@ def _v253_suite():
             'ac2/widening-waits', 'ac2/exact-decision', 'ac2/superseded', 'ac2/classification',
             'ac3/one-source', 'ac3/stale-parent', 'ac3/layout-only', 'ac3/external-edit', 'ac3/push-refused',
             'ac4/pinned-survives', 'ac2/signed-settlement', 'ac2/forged-settlement',
-            'ac1/setup-import', 'ac4/migrated-pins', 'ac3/signed-owner-save', 'ac1/service-documents')
+            'ac1/setup-import', 'ac4/migrated-pins', 'ac3/signed-owner-save', 'ac1/service-documents',
+            'ac3/no-store-writer', 'ac1/private-template', 'ac2/signed-stale')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -230,11 +231,42 @@ def _v253_suite():
                     identity=identity, domain='domain', repository='repository', signer='setup', sign=sign,
                     secret_exists=lambda name: False, observe=events.append)
                 check('ac1/setup-import', imported['outcome'] == 'accepted' and repeated['outcome'] == 'already_done'
-                      and imported['commit'] == repeated['commit'] and legacy.history('example') == before)
+                      and imported['commit'] == repeated['commit'] and legacy.history('example') == before
+                      and legacy.load('example')['source']['commit'] == imported['commit'])
                 check('ac4/migrated-pins', WU.pinned(S, migration, 'domain', 'repository', pinned) == definition
                       and WF._entity_row(migration, 'workflow-definition:' + WF.definition_digest(definition)) is not None)
+                reader = S.open_store(root / 'migration' / 'authority.sqlite3')
+                try:
+                    detached = WF.Workflows(S, reader, domain='domain', repository='repository', signer='setup', sign=sign)
+                    try:
+                        detached.save({'definition': definition}, principal='owner', base=2)
+                        refused_writer = False
+                    except WF.Refused as error:
+                        refused_writer = error.code == 'installation_managed'
+                    check('ac3/no-store-writer', refused_writer and detached.history('example') == before)
+                finally:
+                    reader.close()
             finally:
                 migration.close()
+            fresh = S.open_store(root / 'fresh' / 'authority.sqlite3')
+            try:
+                fresh_settings = {'schema': 'veldo.installation/v1', 'git': {'branch': 'main', 'remote': str(remote)}}
+                fresh_remote = root / 'fresh-remote.git'
+                subprocess.run(['git', 'init', '--bare', str(fresh_remote)], check=True, capture_output=True, timeout=120)
+                fresh_settings['git']['remote'] = str(fresh_remote)
+                first = setup.create(S, fresh, root / 'fresh-installation', settings=fresh_settings,
+                    identity=identity, domain='fresh-domain', repository='repository', signer='setup', sign=sign,
+                    secret_exists=lambda name: False, observe=events.append)
+                fresh_repo = setup.I.Repository(root / 'fresh-installation')
+                sent = subprocess.run(['git', '--git-dir', str(fresh_remote), 'rev-parse', 'refs/heads/main'],
+                                      check=True, capture_output=True, text=True, timeout=120).stdout.strip()
+                check('ac1/private-template', first['outcome'] == 'accepted' and sent == first['commit']
+                      and fresh_repo.git('rev-list', '--count', 'HEAD').strip() == '1'
+                      and set(fresh_repo.snapshot()['files']) == {'installation.yaml'}
+                      and (root / 'fresh-installation').stat().st_mode & 0o777 == 0o700
+                      and fresh_repo.git('status', '--porcelain') == '')
+            finally:
+                fresh.close()
             claims = load('v253_claims', mods / 'control_claim.py')
             claims.S = S
             A = load('v253_assignment', mods / 'control_assignment.py')
@@ -275,6 +307,7 @@ def _v253_suite():
             command_sign = lambda who, data: SIG.sign_bytes(keys[who], data, 'veldo-command')
             loader.decisions = D.Decisions(settlement, 'owner', 'pm', lambda data: command_sign('pm', data))
             loader.reconcile()
+            signed_base = loader.accepted_commit
             signed_commit = commit({'projects/signed.yaml': {'account': 'primary'}})
             outcome = loader.reconcile()
             proposal = loader.status()['proposal']
@@ -292,7 +325,8 @@ def _v253_suite():
             settled = settlement.api_answer({'answer': body, 'signature': command_sign('api-edge', S.canonical_bytes(body))})
             result = loader.reconcile()
             check('ac2/signed-settlement', settled['outcome'] != 'refused' and result['outcome'] == 'accepted'
-                  and loader.accepted_commit == signed_commit and bool(loader.record()['decision']))
+                  and loader.accepted_commit == signed_commit and bool(loader.record()['decision'])
+                  and inbox.read(request)['data']['configuration_commit'] == signed_base)
             owner_definition = WU.shipped()
             owner_base = loader.accepted_commit
             waiting = workflows.save({'definition': owner_definition}, principal='owner', base=0,
@@ -312,6 +346,14 @@ def _v253_suite():
             check('ac3/signed-owner-save', waiting['outcome'] == 'waiting' and saved['outcome'] == 'accepted'
                   and saved['commit'] == waiting['commit'] == loader.accepted_commit
                   and workflows.load('code')['version'] == 1 and bool(loader.record()['decision']))
+            commit({'schedules/pending.yaml': {'when': 'daily'}})
+            waiting = loader.reconcile()
+            proposal = loader.status()['proposal']
+            request = A.assignment_id('repository', loader.decisions.alias(proposal))
+            replacement = commit({'schedules/pending.yaml': None})
+            reconciled = loader.reconcile()
+            check('ac2/signed-stale', waiting['outcome'] == 'waiting' and reconciled['outcome'] == 'accepted'
+                  and loader.accepted_commit == replacement and inbox.read(request)['data']['state'] == 'CANCELED')
         except Exception as error:
             errors.append(type(error).__name__ + ': ' + str(error))
         finally:

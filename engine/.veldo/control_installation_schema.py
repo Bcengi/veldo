@@ -23,7 +23,7 @@ WF = organ('control_workflow')
 I = organ('installation')
 IDENT = re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]*\Z')
 SECRET_FIELD = re.compile(r'^(token|password|passwd|credential|api_key|access_token|refresh_token|client_secret)$', re.I)
-SECRET_VALUE = re.compile(r'-----BEGIN (?:[A-Z ]+ )?PRIVATE KEY-----|\b(?:sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,})')
+SECRET_VALUES = tuple(re.compile(pattern) for _, pattern in organ('secret_scan').FORMATS)
 
 
 def schema():
@@ -128,7 +128,7 @@ def secrets(value, path, exists, problems, key='$'):
     elif isinstance(value, list):
         for index, child in enumerate(value):
             secrets(child, path, exists, problems, '%s[%d]' % (key, index))
-    elif isinstance(value, str) and SECRET_VALUE.search(value):
+    elif isinstance(value, str) and any(pattern.search(value) for pattern in SECRET_VALUES):
         problems.append('installation_secret_inline:%s:%s' % (path, key))
 
 
