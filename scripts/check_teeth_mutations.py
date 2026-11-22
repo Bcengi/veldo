@@ -10597,10 +10597,10 @@ def cases():
         ['ac3/outside-git-service-required'])
     result[-1]['siblings'] = True
     # F3: the CLI refusal is an unnamed error again, as a crash would be.
-    add(258, 'outside258-tracker-cli-unnamed', '09_action_whitelist_warp_1205.py', 'control_tracker_service.py',
+    add(258, 'outside258-tracker-cli-unnamed', outside258, 'control_tracker_service.py',
         "            raise CP.Refused('invalid_input:tracker_command:owner_identity')\n",
         "            raise ValueError('owner identity required')\n",
-        ['tracker-cli/init-unsigned-named'])
+        ['ac3/cli-init-unsigned-named'])
     result[-1]['siblings'] = True
     # F3: the service's init preview runs the mirror instead of the bootstrap.
     add(258, 'outside258-init-preview-mirrors', outside258, 'control_tracker_service.py',
