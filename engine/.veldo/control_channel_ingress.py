@@ -201,8 +201,12 @@ def decision_signer(config, settlement_trust):
 
 def service_token(config):
     """Runtime credentials never read the setup custody file."""
-    return organ('control_plane_calls').credential('owner_channel', (config['bot_api'] or {}).get('token_ref')
-                                                  or 'file:legacy_token')
+    outside = organ('control_plane_calls')
+    try:
+        return outside.credential('owner_channel', (config['bot_api'] or {}).get('token_ref')
+                                  or 'file:legacy_token')
+    except outside.Refused as error:
+        raise Refused(error.code) from None
 
 
 def open_ingress(config_path, clock=time.time):

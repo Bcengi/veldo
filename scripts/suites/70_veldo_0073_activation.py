@@ -277,10 +277,10 @@ def _v73_checks(base):
                       refused_as(lambda: call({}), 'not_activated'))
                 check(NI, '%s with the gate and no activation record (edge key and chat enrolled) refuses as not_activated' % name,
                       gate is not None and refused_as(lambda: call(kw), 'not_activated'))
-            sink = DB.TelegramSink(chat, 'env:VELDO_V73_STAND_IN', resolve_secret=lambda ref: token)
+            sink = DB.TelegramSink(chat, 'keychain:VELDO_V73_STAND_IN', resolve_secret=lambda ref: token)
             check(NI, 'TelegramSink.send with a token that resolves and no activation refuses as not_activated',
                   refused_as(lambda: sink.send('notice', 'https://tracker.invalid/X'), 'not_activated'))
-            gated_sink = DB.TelegramSink(chat, 'env:VELDO_V73_STAND_IN', resolve_secret=lambda ref: token,
+            gated_sink = DB.TelegramSink(chat, 'keychain:VELDO_V73_STAND_IN', resolve_secret=lambda ref: token,
                                          **({'activation': gate} if gate is not None else {}))
             check(NI, 'TelegramSink.send with the gate and no activation record refuses as not_activated',
                   gate is not None and refused_as(lambda: gated_sink.send('notice', 'https://tracker.invalid/X'), 'not_activated'))
@@ -483,8 +483,8 @@ def _v73_checks(base):
             loose = A.host / 'loose-token'
             loose.write_text('stand-in-token\n')
             loose.chmod(0o644)
-            check(SP, 'a token file others can read is refused', IN is not None and construct(
-                bot_api={'origin': url, 'token_file': str(loose)}) == 'invalid_input')
+            check(SP, 'a runtime token file is refused before reading it', IN is not None and construct(
+                bot_api={'origin': url, 'token_file': str(loose)}) == 'invalid_input:control_plane_credential:owner_channel:file')
 
         # AC3: a notification only wakes acquisition; only what the platform returns settles.
         with section(NW):
@@ -534,7 +534,7 @@ def _v73_checks(base):
             check(SH, 'a stopped edge accepts no answer: wake and acquisition refuse as edge_stopped',
                   woke.get('reason') == 'edge_stopped' and got == [{'outcome': 'refused', 'reason': 'edge_stopped'}]
                   and calls('bot73', 'getUpdates') == pulls and evidence_of(late) is None)
-            gated_sink = DB.TelegramSink(chat, 'env:VELDO_V73_STAND_IN', resolve_secret=lambda ref: 'stand-in-token',
+            gated_sink = DB.TelegramSink(chat, 'keychain:VELDO_V73_STAND_IN', resolve_secret=lambda ref: 'stand-in-token',
                                          **({'activation': ing.gate} if ing is not None else {}))
             check(SH, 'the doorbell refuses too', refused_as(lambda: gated_sink.send('notice', 'https://tracker.invalid/X'), 'edge_stopped'))
             check(SH, 'no fresh authority: the pending requests stay pending, unanswered and unsettled',
