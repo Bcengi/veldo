@@ -1,0 +1,26 @@
+{
+  "schema": "veldo.control_plane_calls/v1",
+  "modules": {
+    "control_plane_calls.py": "service_transport",
+    "tracker_intake.py": "tracker",
+    "tracker_mirror_runner.py": "tracker",
+    "tracker_jira_init.py": "tracker",
+    "control_repository_provisioner.py": "repository",
+    "control_repository_creation.py": "repository",
+    "control_git_identity_transport.py": "repository",
+    "control_effect_executor.py": "landing_push",
+    "control_landing_station.py": "landing_push",
+    "control_service_channel.py": "owner_channel",
+    "control_channel_activation.py": "owner_channel",
+    "control_channel_projection.py": "owner_channel",
+    "control_channel_presentation.py": "owner_channel",
+    "control_channel_attribution.py": "owner_channel",
+    "request_doorbell.py": "doorbell",
+    "control_agent_config_handoff.py": "connector_qualification"
+  },
+  "local_only": {
+    "control_memory_adapter.py": [
+      "request"
+    ]
+  }
+}

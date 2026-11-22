@@ -210,6 +210,7 @@ def take_on(config, proposal, request, trust, send=None):
     return reason if reason.startswith('not_taken_on:') else 'not_taken_on:' + reason
 
 
+@organ('control_plane_calls').service_entry
 def adopt(config, request, *, clock=time.time, signer=None, send=None):
     """Run the adoption the settled decision `request` names (module docstring). Returns {ok, reason,
     repository, state, ...} and the observations made; never raises. ok is the adoption itself (the record

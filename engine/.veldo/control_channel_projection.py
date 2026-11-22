@@ -159,6 +159,13 @@ def bot_opener(*handlers):
 
 
 def gated_open(activation, base_url, request, timeout, operation, chat=None):
+    outside = _renderer_module('control_plane_calls')
+    outside.require_service('owner_channel')
+    with outside.outside('owner_channel', base_url, operation):
+        return _activated_open(activation, base_url, request, timeout, operation, chat)
+
+
+def _activated_open(activation, base_url, request, timeout, operation, chat=None):
     """Open one Bot API exchange of `operation` for an installed Telegram entry point (VELDO-0073). With
     no gate only a loopback stand-in is reached; a resolving token alone is never activation, so any
     other origin refuses as not_activated before a byte leaves. With a gate, the gate admits the

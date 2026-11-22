@@ -144,9 +144,11 @@ def api_origin(value):
 
 def token(identity):
     """The identity's API token from the keystore, as a secretref handle's value; refused by name."""
+    outside = organ('control_plane_calls')
+    outside.reference('provisioner', identity.get('api_token'))
+    outside.not_run('provisioner')
     try:
-        return organ('secretref').resolve_for_runtime(
-            identity['api_token'], organ('control_credential_keystore').SecretService()).reveal()
+        return outside.credential('provisioner', identity['api_token'])
     except Exception as error:  # noqa: BLE001 - the reason is the keystore's code, never the value
         code = getattr(error, 'code', None)
         raise Refused('token_unavailable:%s' % (code.split(':', 1)[-1] if isinstance(code, str) else 'unresolved'))
@@ -169,7 +171,8 @@ class GitHub:
                                                   'Content-Type': 'application/json'})
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect)
         try:
-            with opener.open(request, timeout=self.timeout) as answer:
+            with organ('control_plane_calls').outside('provisioner', self.origin, method), \
+                    opener.open(request, timeout=self.timeout) as answer:
                 status, raw = answer.status, answer.read()
         except urllib.error.HTTPError as error:
             status, raw = error.code, error.read()

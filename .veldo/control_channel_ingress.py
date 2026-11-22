@@ -199,6 +199,12 @@ def decision_signer(config, settlement_trust):
     return principal, sign
 
 
+def service_token(config):
+    """Runtime credentials never read the setup custody file."""
+    return organ('control_plane_calls').credential('owner_channel', (config['bot_api'] or {}).get('token_ref')
+                                                  or 'file:legacy_token')
+
+
 def open_ingress(config_path, clock=time.time):
     """THE PRODUCTION CONSTRUCTION of the activated Telegram ingress from the host configuration."""
     config = load_config(config_path)
@@ -208,7 +214,7 @@ def open_ingress(config_path, clock=time.time):
     origin = (config['bot_api'] or {}).get('origin')
     if ACT.platform_of(origin) is None:
         raise Refused('invalid_input', 'the Bot API origin is the Telegram service or a loopback stand-in')
-    token = read_token((config['bot_api'] or {}).get('token_file'))
+    token = service_token(config)
     ids = config['authority_ids']
     generation = config['authority_generation']
     principal, sign = journal_signer(config['journal'])

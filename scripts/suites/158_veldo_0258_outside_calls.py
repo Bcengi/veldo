@@ -1,0 +1,200 @@
+"""VELDO-0258: real HTTP authentication, accepted Git trees and a fixture landing.
+
+No timing assertions: response completion and subprocess completion synchronize
+the rows. Every subprocess deadline is a 120-second hang detector.
+"""
+
+
+def _v258_suite():
+    import base64
+    import contextlib
+    import http.server
+    import importlib.util
+    import io
+    import json
+    import os
+    from pathlib import Path
+    import secrets
+    import shutil
+    import subprocess
+    import sys
+    import tempfile
+    import threading
+    from unittest.mock import patch
+
+    PRODUCTION = {
+        'control_plane_calls.py': ROOT / ".veldo" / "control_plane_calls.py",
+        'control_plane_scan.py': ROOT / ".veldo" / "control_plane_scan.py",
+        'tracker.py': ROOT / ".veldo" / "tracker.py",
+        'tracker_intake.py': ROOT / ".veldo" / "tracker_intake.py",
+        'control_installation_schema.py': ROOT / ".veldo" / "control_installation_schema.py",
+    }
+
+    def load(name, path):
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def check(row, ok):
+        expect('VELDO-0258 ' + row, bool(ok))
+
+    def refusal(call):
+        try:
+            call()
+        except Exception as error:
+            return getattr(error, 'code', str(error))
+        return None
+
+    with tempfile.TemporaryDirectory(prefix='v258-') as temporary:
+        root = Path(temporary)
+        mods = root / 'modules'
+        shutil.copytree(ROOT / '.veldo', mods, ignore=shutil.ignore_patterns('__pycache__', '*.db', '*.sqlite3'))
+        for name, source in PRODUCTION.items():
+            shutil.copyfile(source, mods / name)
+        CP = load('v258_calls', mods / 'control_plane_calls.py')
+        TR = load('v258_tracker', mods / 'tracker.py')
+        RN = load('v258_runner', mods / 'tracker_mirror_runner.py')
+        JI = load('v258_init', mods / 'tracker_jira_init.py')
+        DB = load('v258_doorbell', mods / 'request_doorbell.py')
+        IN = load('v258_ingress', mods / 'control_channel_ingress.py')
+        CR = load('v258_creation', mods / 'control_repository_creation.py')
+        SC = load('v258_scan', mods / 'control_plane_scan.py')
+        C = load('v258_config', mods / 'control_installation_config.py')
+        values = {caller: 'canary-' + secrets.token_hex(24) for caller in
+                  ('tracker', 'tracker_init', 'doorbell', 'provisioner', 'owner_channel', 'landing_push')}
+        keystore = root / 'keystore.json'
+        keystore.write_text(json.dumps(values))
+        binaries = root / 'bin'
+        binaries.mkdir()
+        tool = binaries / 'secret-tool'
+        tool.write_text('#!' + sys.executable + '\nimport json,sys\nfrom pathlib import Path\n'
+                        + 'values=json.loads(Path(' + repr(str(keystore)) + ').read_text())\n'
+                        + "sys.stdout.write(values[sys.argv[-1]])\n")
+        tool.chmod(0o700)
+        observed, authenticated = [], []
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+
+            def do_POST(self):
+                self.do_GET()
+
+            def do_GET(self):
+                body = self.rfile.read(int(self.headers.get('Content-Length', '0')))
+                header = self.headers.get('Authorization', '')
+                for caller, value in values.items():
+                    basic = base64.b64encode(('owner@example.com:' + value).encode()).decode()
+                    if header in ('Bearer ' + value, 'Basic ' + basic) or ('/bot' + value + '/') in self.path:
+                        authenticated.append(caller)
+                reply = json.dumps({'ok': True, 'result': {'message_id': 1}, 'body_bytes': len(body)}).encode()
+                self.send_response(200)
+                self.send_header('Content-Length', str(len(reply)))
+                self.end_headers()
+                self.wfile.write(reply)
+
+        server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+        thread = threading.Thread(target=server.serve_forever)
+        thread.start()
+        origin = 'http://127.0.0.1:%d' % server.server_address[1]
+        try:
+            with patch.dict(os.environ, PATH=str(binaries) + os.pathsep + os.environ.get('PATH', ''),
+                            VELDO_INSTALLATION=str(root / 'installation')):
+                def entry(ref):
+                    return {'trackers': {'fixture': {'kind': 'jira-cloud', 'base_url': origin,
+                            'email': 'owner@example.com', 'token_ref': ref}}}
+
+                constructors = {
+                    'tracker': lambda ref: RN.build_live_adapter(entry(ref)),
+                    'tracker_init': lambda ref: JI.build_live_provisioner(entry(ref)),
+                    'doorbell': lambda ref: DB.TelegramSink(123, ref),
+                    'provisioner': lambda ref: CR.GitHub(origin, CR.token({'api_token': ref})),
+                    'owner_channel': lambda ref: IN.organ('control_channel_projection').TelegramEdge(
+                        origin, IN.service_token({'bot_api': {'token_ref': ref}})),
+                }
+                with CP.service('a' * 40, observed.append):
+                    for caller, construct in constructors.items():
+                        instance = construct('keychain:' + caller)
+                        if caller in ('tracker', 'tracker_init'):
+                            instance._request('GET', '/fixture')
+                        elif caller == 'doorbell':
+                            instance.ORIGIN = origin
+                            instance.send('Notice', None)
+                        elif caller == 'provisioner':
+                            instance.call('GET', '/fixture')
+                        else:
+                            instance.send(123, 'Notice')
+                        check('ac1/authenticates/' + caller, caller in authenticated)
+                        for scheme, ref in [('env', 'env:CANARY258'), ('file', 'file:CANARY258'),
+                                            ('literal', values[caller])]:
+                            with patch.dict(os.environ, CANARY258=values[caller]):
+                                code = refusal(lambda: construct(ref))
+                            check('ac1/refuses/' + caller + '/' + scheme,
+                                  code == 'invalid_input:control_plane_credential:' + caller + ':' + scheme)
+                    check('ac1/no-canary-in-observations', all(value not in json.dumps(observed)
+                          for value in values.values()))
+                    check('observability/calls', all({'host', 'caller', 'operation', 'result', 'latency',
+                          'installation_commit', 'dispatch_id'} <= set(row)
+                          and row['installation_commit'] == 'a' * 40
+                          for row in observed if 'operation' in row))
+                # Exec cannot inherit the memory binding; a run marker refuses even an existing service binding.
+                for caller, construct in constructors.items():
+                    with patch.dict(os.environ, VELDO_DISPATCH_ID='dispatch/fixture'):
+                        check('ac3/run-refused/' + caller, refusal(lambda: construct('keychain:' + caller))
+                              == 'unauthorized:control_plane_run:' + caller)
+
+                # Real loader, Git object tree and signed SQLite record; malformed routing refuses whole.
+                S = load('v258_store', mods / 'control_store.py')
+                SIG = load('v258_signer', mods / 'control_signer.py')
+                private = root / 'journal'
+                subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(private)],
+                               check=True, capture_output=True, timeout=120)
+                sign = lambda body: SIG.sign_bytes(private, body, 'veldo-journal')
+                conn = S.open_store(root / 'store.sqlite3')
+                try:
+                    repo = C.I.Repository.create(root / 'installation')
+                    identity = {'name': 'Fixture Owner', 'email': 'owner@example.com'}
+                    routing = {'schema': 'veldo.tracker/v1', 'routing': {'mechanism': 'label', 'label_prefix': 'repo:'},
+                               'repos': [{'id': 'example', 'tracker': 'fixture', 'project': 'EX'}],
+                               'trackers': entry('keychain:tracker')['trackers']}
+                    settings = {'schema': 'veldo.installation/v1', 'git': {'branch': 'main'},
+                                'tracker_routing': routing,
+                                'doorbell': {'chat_id': 123, 'origin': origin, 'token_ref': 'keychain:doorbell'}}
+                    first = repo.commit({'installation.yaml': json.dumps(settings).encode()}, None, identity, 'Routing')
+                    repo.publish(first, None)
+                    loader = C.Loader(S, conn, repo, domain='fixture', workflow_repository='fixture',
+                                      signer='setup', sign=sign, secret_exists=lambda name: name in values,
+                                      observe=observed.append)
+                    accepted = loader.reconcile(bootstrap=True)
+                    (mods / 'trackers.json').write_text('{}')
+                    (root / 'installation' / 'installation.yaml').write_text('{}')
+                    check('ac2/accepted-site', accepted['outcome'] == 'accepted'
+                          and TR.load_tracker_config(repo_root=str(root), path=str(mods / 'trackers.json')) == routing)
+                    with CP.service(lambda: loader.accepted_commit, observed.append):
+                        RN.build_live_adapter(TR.load_tracker_config())._request('GET', '/accepted-site')
+                        DB.TelegramSink.from_installation().send('Accepted target', None)
+                    bad = json.loads(json.dumps(settings))
+                    bad['tracker_routing']['trackers']['fixture']['base_url'] = 'malformed site'
+                    second = repo.commit({'installation.yaml': json.dumps(bad).encode()}, first, identity, 'Bad routing')
+                    repo.publish(second, first)
+                    rejected = loader.reconcile()
+                    check('ac2/malformed-whole', rejected['outcome'] == 'refused'
+                          and any(p.startswith('installation_invalid:') for p in rejected['problems'])
+                          and loader.accepted_commit == first and TR.load_tracker_config() == routing)
+                finally:
+                    conn.close()
+                check('ac2/template-no-site', not json.loads((ROOT / 'engine/.veldo/trackers.json').read_text())['trackers'])
+                check('ac3/register', SC.findings(ROOT / 'engine/.veldo') == [])
+                planted = mods / 'unregistered.py'
+                planted.write_text('from urllib.request import urlopen as send\ndef planted():\n    send("https://example.com")\n')
+                check('ac3/planted-call', 'control_plane_call_unregistered:unregistered.py' in SC.findings(mods))
+                check('ac1/no-canary-in-records', all(value not in json.dumps(observed) for value in values.values()))
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=120)
+            check('fixture/server-joined', not thread.is_alive())
+
+
+_v258_suite()
