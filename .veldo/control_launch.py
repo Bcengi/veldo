@@ -213,10 +213,12 @@ import queue
 import re
 import signal
 import socket
+import stat
 import subprocess
 import sys
 import threading
 import time
+import tempfile
 import uuid
 
 
@@ -400,13 +402,13 @@ def launch_scan(config, dispatch_id, project, environment, argv, own=()):
     return 'credential_delivery_site:' + report['findings'][0]['file'].replace('/', ':', 1)
 
 
-# THE ONE LAUNCHER DECISION (VELDO-0254 AC3). By default a launch starts as today: the host's network, shared
-# databases, container tooling and local and loopback services, with no fence, namespace, name resolution change
-# or filesystem confinement added. A launch starts in the confined runner of VELDO-0208 (scripts/agent_sandbox.py,
+# THE ONE LAUNCHER DECISION (VELDO-0254 AC3, amended by VELDO-0359). A default launch keeps the host's
+# network and services, with the store guard's content/name boundary and its stated ancestor and mount costs.
+# A launch starts in the confined runner of VELDO-0208 (scripts/agent_sandbox.py,
 # named with its configuration by the receiver configuration's `confined_runner`: {program, config}) only when it
 # is marked risky: by the installation (`risky.installation`), its project (`risky.projects`) or its dispatch (the
 # contract's input context `risky`). A risky launch on a host that cannot provide the confined runner is refused as
-# confined_runner_unavailable:<reason>; no other launch is ever refused for a confinement reason. Receiver.launch is
+# confined_runner_unavailable:<reason>. Every guarded local launch also passes the store preflight. Receiver.launch is
 # the one caller, for every launch kind it accepts (engine run, conversation turn, workflow step), and names the
 # decision on the launch's accepted (or refused) line.
 def runner_decision(config, contract):
@@ -482,6 +484,318 @@ def runner_argv(config, decision, argv, worktree, client=None):
     runner = config['confined_runner']
     return [sys.executable, '-I', '-S', runner['program'], '--config', runner['config'],
             *(['--client', client] if client else []), '--worktree', str(worktree), '--', *argv]
+
+
+GUARD_FAILURE = b'G'
+GUARD_AUDIT_EXIT = 124
+GUARD_STEPS = {'audit': b'A', 'probe': b'P', 'create': b'C', 'add': b'D', 'restrict': b'R'}
+
+
+def guard_beneath(path, root):
+    path, root = Path(path), Path(root)
+    return path == root or root in path.parents
+
+
+def guard_overlap(a, b):
+    return guard_beneath(a, b) or guard_beneath(b, a)
+
+
+def guard_entries(directory):
+    """No-follow recursive inventory. Failure to enumerate is never an empty inventory."""
+    directory = Path(directory)
+    found = [(directory, directory.stat())]
+    pending = [directory]
+    while pending:
+        with os.scandir(pending.pop()) as entries:
+            for entry in entries:
+                info = entry.stat(follow_symlinks=False)
+                path = Path(entry.path)
+                found.append((path, info))
+                if stat.S_ISDIR(info.st_mode):
+                    pending.append(path)
+    return found
+
+
+def guard_mounts(directory, text=None):
+    """Translate the containing mount into filesystem coordinates before comparing aliases."""
+    if text is None:
+        text = Path('/proc/self/mountinfo').read_text()
+    def unescape(value):
+        return re.sub(r'\\([0-7]{3})', lambda m: chr(int(m[1], 8)), value)
+    mounts = []
+    for line in text.splitlines():
+        fields = line.split()
+        separator = fields.index('-')
+        if separator < 6 or len(fields) < separator + 4 or ':' not in fields[2]:
+            raise ValueError('malformed mountinfo')
+        root, target = (Path(unescape(fields[i])) for i in (3, 4))
+        if fields[separator + 1] == 'nsfs' and re.fullmatch(r'[a-z_]+:\[\d+\]', str(root)):
+            if guard_beneath(target, directory):
+                return str(target)
+            continue  # namespace handles have an identity, not a filesystem subtree root
+        if not root.is_absolute() or not target.is_absolute():
+            raise ValueError('relative mountinfo')
+        mounts.append((fields[0], fields[2], root, target))
+    directory = Path(directory)
+    containing = [m for m in mounts if guard_beneath(directory, m[3])]
+    if not containing:
+        raise ValueError('no containing mount')
+    own = max(containing, key=lambda m: len(m[3].parts))
+    coordinate = own[2] / directory.relative_to(own[3])
+    for mount in mounts:
+        if mount[0] == own[0]:
+            continue
+        if mount[1] == own[1] and guard_overlap(coordinate, mount[2]):
+            return str(mount[3])
+        # A nested filesystem is itself an aliasable subtree of the protected directory.
+        if guard_beneath(mount[3], directory):
+            for other in mounts:
+                if other[0] != mount[0] and other[1] == mount[1] and guard_overlap(other[2], mount[2]):
+                    return str(other[3])
+    return None
+
+
+def guard_preflight(config, sample, risky, locations, *, probe=None, mountinfo=None):
+    """D7 in order, read only. locations are (name, path, writable) triples."""
+    result = dict(sample, preflight={})
+    directory = Path(sample['path']).parent
+    def refuse(code, path):
+        return dict(result, outcome='refused', reason=code, element_path=str(path),
+                    recovery='fix the named layout or create ' + str(directory / 'store-guard.off') + ' to turn the guard off')
+    if sample['state'] == 'invalid':
+        return dict(result, outcome='refused')
+    if sample['state'] == 'off':
+        return dict(result, outcome='off')
+    probe = _organ('control_clone').store_guard_probe() if probe is None else probe
+    result['preflight']['kernel'] = probe
+    if probe['reason']:
+        return refuse('unavailable_service:confinement:store_guard:' + probe['reason'], directory)
+    if risky and (probe['platform'] != 'x86_64' or probe['abi'] < 6):
+        return refuse('confined_runner_unavailable:' + ('platform' if probe['platform'] != 'x86_64'
+                                                       else 'landlock_abi_below_6'), directory)
+    result['preflight']['risky_floor'] = 'passed' if risky else 'not_required'
+    try:
+        database = Path(config['store']).resolve(strict=True)
+        directory = database.parent
+        if not database.is_file() or directory.stat().st_uid != os.getuid():
+            raise ValueError('not an owned database directory')
+    except (OSError, RuntimeError, ValueError):
+        return refuse('invalid_input:layout:directory', directory)
+    result['directory'] = str(directory)
+    result['preflight']['directory'] = str(directory)
+    try:
+        for path, info in guard_entries(directory)[1:]:
+            normal = stat.S_ISDIR(info.st_mode) or (stat.S_ISREG(info.st_mode) and info.st_nlink == 1)
+            authority_socket = (path == directory / 'authority.sock' and stat.S_ISSOCK(info.st_mode)
+                                and info.st_uid == os.getuid() and info.st_nlink == 1)
+            if not (normal or authority_socket):
+                return refuse('invalid_input:layout:entry', path)
+    except OSError:
+        return refuse('invalid_input:layout:entry', directory)
+    result['preflight']['entries'] = 'passed'
+    try:
+        alias = guard_mounts(directory, mountinfo)
+    except (OSError, ValueError, UnicodeError):
+        alias = '/proc/self/mountinfo'
+    if alias:
+        return refuse('invalid_input:layout:mount', alias)
+    result['preflight']['mounts'] = 'passed'
+    runs = Path(runs_root(config)).resolve()
+    if guard_beneath(runs, directory):
+        return refuse('invalid_input:layout:runs', runs)
+    result['preflight']['runs'] = str(runs)
+    for name, path, writable in [('runs', runs, True), *locations]:
+        try:
+            real = Path(path).resolve()
+        except (OSError, RuntimeError, TypeError):
+            return refuse('invalid_input:layout:placement', path)
+        if guard_beneath(real, directory) or (writable and guard_beneath(directory, real)):
+            return refuse('invalid_input:layout:placement', real)
+    result['preflight']['placement'] = 'passed'
+    return dict(result, outcome='pending')
+
+
+def guard_audit(directory, setup):
+    """One audit before any protocol I/O. Only a proven clean setup fd can report it."""
+    safe_setup = False
+    try:
+        identities = {(i.st_dev, i.st_ino) for _, i in guard_entries(directory)}
+        def safe(fd):
+            info = os.fstat(fd)
+            target = os.readlink('/proc/self/fd/%d' % fd)
+            if target.endswith(' (deleted)'):
+                target = target[:-10]
+            return ((info.st_dev, info.st_ino) not in identities
+                    and not (target.startswith('/') and guard_beneath(target, directory)))
+        # Validate the report channel independently, even if enumeration later fails.
+        safe_setup = setup is not None and safe(setup)
+        with os.scandir('/proc/self/fd') as enumeration:
+            # Keep the iterator alive: its own fd must not disappear between listing and inspection.
+            clean = True
+            for entry in enumeration:
+                clean = safe(int(entry.name)) and clean
+        return clean and safe_setup, safe_setup
+    except (OSError, ValueError):
+        return False, safe_setup
+
+
+def guard_report_failure(setup, step):
+    if setup is not None:
+        with contextlib.suppress(OSError):
+            os.write(setup, GUARD_FAILURE + GUARD_STEPS[step])
+    os._exit(GUARD_AUDIT_EXIT if step == 'audit' else 125)
+
+
+def guard_install(directory):
+    """Reuse the single clone ruleset. Classify its existing syscall failures for the setup wire."""
+    clone = _organ('control_clone')
+    if clone.store_guard_probe()['reason']:
+        return 'probe'
+    try:
+        clone.confine(clone.rules([directory], [directory]))
+    except (clone.Refused, OSError) as error:
+        detail = str(error)
+        if 'add_rule' in detail:
+            return 'add'
+        if 'restrict_self' in detail or 'no_new_privs' in detail:
+            return 'restrict'
+        if 'ABI' in detail:
+            return 'probe'
+        return 'create'
+    return None
+
+
+def guard_status(setup, deadline):
+    """At most two bytes, bounded by the caller's existing absolute deadline."""
+    data = b''
+    while len(data) < (2 if data[:1] == GUARD_FAILURE else 1):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0 or not select.select([setup], [], [], remaining)[0]:
+            break
+        chunk = os.read(setup, 2 - len(data))
+        if not chunk:
+            break
+        data += chunk
+    return data
+
+
+def guard_observe(receiver, outcome, **details):
+    sample = getattr(receiver, 'store_guard', None)
+    if not sample:
+        return
+    receiver.store_guard = dict(sample, outcome=outcome, **details)
+    message = {'event': 'store_guard', 'store_guard': receiver.store_guard}
+    contract = getattr(receiver, 'contract', None)
+    if contract is not None:
+        # Pre-acceptance refusals have no execution recorder yet. Keep their sampled decision too.
+        location = Path(ER.path(ER.directory(receiver.config), contract['dispatch_id']) + '.store-guard.jsonl')
+        location.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        with os.fdopen(os.open(location, os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_CLOEXEC, 0o600), 'a') as record:
+            record.write(json.dumps(message, sort_keys=True) + '\n')
+    recorder = getattr(receiver, 'recorder', None)
+    if recorder is not None:
+        recorder.line('wrapper', json.dumps(message).encode())
+        recorder.batch()
+    receiver.emit(message)
+
+
+def guard_census(program, configuration, worktree, client, directory, scratch=None):
+    """Read-only model of the runner's post-exclusion grants; no state or scratch preparation.
+
+    Pure source expansion is shared with the configured runner. Grant construction is independent,
+    and the suite compares both directions against the unchanged runner's prepared grant set.
+    Called in a short-lived process with the launch's account environment.
+    """
+    spec = importlib.util.spec_from_file_location('store_guard_runner', program)
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+    path, config = runner.policy_module().configuration(configuration)
+    authority = Path(program).resolve().parents[1]
+    worktree = Path(worktree).resolve(strict=True)
+    directory = Path(directory).resolve(strict=True)
+    scratch = Path(scratch) if scratch is not None else Path('/__veldo_guard_fresh_scratch__')
+    files = runner.client_files(config, client, worktree) if client else {}
+    credentials = runner.credential_sources(config, worktree)
+    config = dict(config, deny_read=[*config.get('deny_read', []), str(runner.borrow_root()),
+                                   *map(str, credentials)])
+    def expand(value):
+        named = Path(value.format(authority=authority, worktree=worktree, scratch=scratch)).expanduser()
+        return named if guard_beneath(named, scratch) else named.resolve(strict=True)
+    store = Path(config['store']).resolve(strict=True)
+    protected = [expand(p) for p in config['deny_write']] + [authority, Path(program).resolve()]
+    writes = [expand(p) for p in config['write_roots']]
+    blocked = [store, Path('/proc'), Path('/run'), Path('/sys'), Path('/dev')]
+    blocked += [Path(p).expanduser().resolve() for p in config['deny_read']]
+    grants = []
+    def read(target):
+        if any(guard_beneath(target, p) for p in blocked):
+            return
+        if any(guard_beneath(p, target) for p in blocked):
+            for child in target.iterdir():
+                if not child.is_symlink():
+                    read(child)
+        else:
+            grants.append((target, runner.READ))
+    for target in [*[expand(p) for p in config['read_roots']], worktree, authority, scratch]:
+        read(target)
+    for target in runner.installed_tools(config):
+        read(target)
+    for target in runner.project_roots(config):
+        read(target)
+    for source, _ in files.get('read_links', []):
+        if source.exists():
+            read(source.resolve(strict=True))
+    read(path)
+    grants += [(p, runner.READ | runner.WRITE) for p in writes]
+    marker = worktree / '.git'
+    if marker.exists() or marker.is_symlink():
+        git = runner.candidate_git(authority)
+        shared = Path(config.get('git_common_dir') or git.common_directory(authority)).resolve(strict=True)
+        expected = os.environ.get('VELDO_EXPECTED_GIT_COMMON')
+        gitdir, private = git.validate(worktree, expected or shared)
+        for common in ([private, shared] if '{worktree}' in config['write_roots'] else [private]):
+            read(common)
+        if '{worktree}' in config['write_roots']:
+            if not expected or gitdir == private:
+                raise ValueError('private linked worktree required')
+            head = (gitdir / 'HEAD').read_text().strip()
+            agent, _ = runner.branch_parts(head.removeprefix('ref: '))
+            namespace = 'refs/heads/agent/' + agent
+            for target in (gitdir, private / 'objects', private / namespace, private / 'logs' / namespace):
+                grants.append((target.resolve(), runner.READ | runner.WRITE))
+    grants += [(Path('/dev/null'), 6), (Path('/dev/urandom'), 4), (Path('/dev/random'), 4)]
+    grants += runner.resolver_grants()
+    copies = [Path(p).expanduser() for p in config.get('seed_files', {})]
+    copies += [p for kind in ('seed_files', 'credentials') for p, _ in files.get(kind, [])]
+    copies = [p.resolve(strict=True) for p in copies if p.exists()]
+    for source in copies:
+        if guard_beneath(source, directory):
+            return {'reason': 'confined_runner_unavailable:store_source', 'element_path': str(source)}
+    home = files.get('home')
+    state_places = []
+    if home is not None and home.is_dir():
+        real_home = home.resolve(strict=True)
+        refused = [store, worktree, authority, *protected, path, Path(runner.policy_module().__file__).resolve(),
+                   *[p.resolve() for p in credentials], *blocked[5:]]
+        for kind, is_directory in (('state_dirs', True), ('state_files', False)):
+            for source, _ in files.get(kind, []):
+                real = source.resolve()
+                state_places.append(str(real))
+                if guard_overlap(real, directory):
+                    return {'reason': 'confined_runner_unavailable:store_reachable', 'element_path': str(real)}
+                if (real_home not in real.parents or any(guard_overlap(real, p) for p in refused)
+                        or (source.exists() and (source.is_symlink() or source.is_dir() != is_directory))):
+                    raise ValueError('client state qualification refused: ' + str(source))
+                # Every existing ancestor must be plain, as scratch_directory requires.
+                if any(p.is_symlink() for p in [source, *source.parents] if p != home and home in p.parents):
+                    raise ValueError('client state ancestor is a link')
+                grants.append((real, runner.READ | runner.WRITE))
+    for target, _ in grants:
+        if guard_overlap(target, directory):
+            return {'reason': 'confined_runner_unavailable:store_reachable', 'element_path': str(target)}
+    return {'reason': None, 'grants': sorted({(str(p), rights) for p, rights in grants}),
+            'copies': sorted(map(str, copies)), 'state_places': state_places,
+            'scratch': str(scratch), 'precondition_checked': True}
 
 
 def confined_inner(argv):
@@ -2428,7 +2742,7 @@ class Receiver:
         header = {'dispatch_id': contract['dispatch_id'], 'contract_digest': D.digest(contract),
                   'unit': contract['unit'], 'station': contract['station'],
                   'project': contract['reservation']['project'], 'account': contract['reservation']['account'],
-                  'host': self.host}
+                  'host': self.host, 'store_guard': getattr(self, 'store_guard', None)}
         argv = (self.binding or {}).get('argv', adapter['argv'])
         cwd = self._engine_cwd(argv, contract['dispatch_id'], adapter.get('identity') == 'reported')
         # The clone entrance's dispatch record supplies its work root. Direct launches may name a
@@ -2610,9 +2924,68 @@ class Receiver:
         self.store_guard = RQ.switch(self.config['store'])
         self.emit({'event': 'store_guard', 'store_guard': self.store_guard})
         if self.store_guard['state'] == 'invalid':
+            guard_observe(self, 'refused')
             return self.store_guard['reason']
         if self.store_guard['state'] == 'off':
+            guard_observe(self, 'off')
             return None
+        argv = (self.binding or {}).get('argv', adapter['argv'])
+        environment = self._login_environment(adapter) if self.login else dict(os.environ, **(adapter.get('environment') or {}))
+        worktree = self._engine_cwd(argv, contract['dispatch_id'], False)
+        locations = [('worktree', worktree, True), ('home', environment.get('HOME') or str(Path.home()), True),
+                     ('runtime', environment.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid(), True)]
+        locations += [('temporary', p, True) for p in _organ('control_clone').temporary_directories(environment)]
+        run = run_directory(runs_root(self.config), contract['dispatch_id'])
+        locations += [('run', run, True), ('configuration', Path(run) / RUN_CONFIG, True),
+                      ('runtime', Path(run) / RUN_RUNTIME, True)]
+        if worktree and (Path(worktree) / '.git').exists():
+            try:
+                git = _organ('candidate_git')
+                common = git.common_directory(worktree)
+                gitdir, _ = git.validate(worktree, common)
+                locations += [('gitdir', gitdir, True), ('git_common', common, True)]
+            except (OSError, ValueError, RuntimeError):
+                locations.append(('gitdir', None, True))
+        engine = (self.binding or {}).get('engine')
+        variable = {'codex': 'CODEX_HOME', 'claude_code': 'CLAUDE_CONFIG_DIR'}.get(engine)
+        if variable:
+            locations.append(('client_state', environment.get(variable) or str(Path.home() / ('.codex' if engine == 'codex' else '.claude')), True))
+        risky = self.runner['runner'] == 'confined'
+        if risky:
+            locations.append(('scratch_parent', environment.get('TMPDIR') or tempfile.gettempdir(), True))
+            try:
+                settings = json.loads(Path(self.config['confined_runner']['config']).read_text())
+                client = (settings.get('clients') or {}).get(RUNNER_CLIENTS.get(engine), {})
+                if client.get('state_dirs') or client.get('state_files'):
+                    variable, default = client['places']['home']
+                    place = environment.get(variable) or default
+                    account_home = Path(__import__('pwd').getpwuid(os.getuid()).pw_dir)
+                    place = account_home / place[2:] if place.startswith('~/') else account_home if place == '~' else Path(place)
+                    locations.append(('client_state', place, True))
+            except (OSError, ValueError, KeyError, TypeError):
+                locations.append(('client_state', None, True))
+        self.store_guard = guard_preflight(self.config, self.store_guard, risky, locations)
+        if self.store_guard.get('reason'):
+            guard_observe(self, 'refused')
+            return self.store_guard['reason']
+        if risky:
+            runner = self.config['confined_runner']
+            try:
+                checked = subprocess.run([sys.executable, '-B', RECEIVER, 'guard-census', runner['program'],
+                                          runner['config'], str(worktree), RUNNER_CLIENTS.get(engine) or '',
+                                          self.store_guard['directory']], env=environment, capture_output=True,
+                                         text=True, timeout=120, stdin=subprocess.DEVNULL)
+                census = json.loads(checked.stdout) if checked.returncode == 0 else {}
+            except (OSError, ValueError, subprocess.SubprocessError):
+                census = {}
+            if not census or census.get('reason'):
+                reason = census.get('reason') or 'confined_runner_unavailable:store_reachable'
+                guard_observe(self, 'refused', reason=reason,
+                              element_path=census.get('element_path') or runner['config'])
+                return reason
+            self.store_guard['preflight']['census'] = census
+            self.store_guard['precondition_checked'] = True
+        guard_observe(self, 'pending')
         if self.runner['runner'] == 'confined':
             # The existing risky runner has no Unix sockets (design section 14).
             return None
@@ -2668,7 +3041,7 @@ class Receiver:
                 reader.close()
 
         if not refusal:
-            # VELDO-0254 AC3: the one launcher decision; only a risky launch can be refused for confinement.
+            # VELDO-0254 AC3: select the runner; VELDO-0359 then checks every local store boundary.
             self.runner = runner_decision(self.config, contract)
             refusal = runner_refusal(self.config, self.runner, self.confined_checked)
             if not refusal and self.runner['runner'] == 'confined' and adapter.get('identity', 'local') == 'reported':
@@ -2682,6 +3055,7 @@ class Receiver:
             self._space_end(dispatch_id, contract)
             self.emit({'event': 'refused', 'refusal': refusal, 'runner': self.runner,
                        'dispatch_id': dispatch_id, 'repository': self.config.get('repository'),
+                       'store_guard': self.store_guard,
                        'configuration': getattr(self, 'configuration_path', None),
                        'metrics': {'host_trust_required': int(refusal == 'host_trust_required:receiver_configuration'),
                                    'turn_kind_refusals': int(refusal == 'binding_mismatch:conversation_receiver'),
@@ -3055,6 +3429,8 @@ class Receiver:
         engine = self.login['engine']
         try:
             extra = engine.baseline(self.binding, run, environment, servers=self.credentials or ())
+            if engine.PROVIDER == 'codex':
+                HANDOFF.codex_store_guard(extra, getattr(self, 'store_guard', None))
             self.binding['expected'] = extra.get('expected')
             if extra.get('expected') and engine.PROVIDER == 'claude_code' and self.metering:
                 self.metering.login_guard.expected = extra['expected']
@@ -3317,6 +3693,10 @@ class Receiver:
         channel, beat = os.pipe()
         setup, ready = os.pipe()
         held = dict(group.held(), heartbeat_setup=ready)
+        sample = getattr(self, 'store_guard', None)
+        guarded = bool(sample and sample.get('state') == 'on')
+        if guarded:
+            held['store_guard'] = dict(sample, risky=(self.runner['runner'] == 'confined'))
         wrapper = [sys.executable, '-B', RECEIVER, 'exec', '--contained', json.dumps(held),
                    '--heartbeat', str(beat), repr(float(interval))] + argv
         try:
@@ -3329,6 +3709,7 @@ class Receiver:
                     os.close(beat)
                     os.close(ready)
                 worker.group = group
+                identity_deadline = time.monotonic() + ACCEPT_SECONDS
                 try:
                     reported, refusal, _ = self._reported(worker, {'deadline': time.time() + ACCEPT_SECONDS})
                     problems = [refusal] if refusal else group.attach(worker.pid)
@@ -3343,6 +3724,15 @@ class Receiver:
                             provisioner.record_group(dispatch_id, group.report())
                 except (OSError, ValueError, TypeError, KeyError, AttributeError, subprocess.SubprocessError):
                     problems = ['spawn_failed:containment:unavailable']
+                    if guarded:
+                        status = guard_status(setup, identity_deadline)
+                        try:
+                            worker.wait(timeout=max(0, identity_deadline - time.monotonic()))
+                        except subprocess.TimeoutExpired:
+                            pass
+                        if status == GUARD_FAILURE + GUARD_STEPS['audit'] or (not status and worker.returncode == GUARD_AUDIT_EXIT):
+                            guard_observe(self, 'enforce_failed', step='audit', unreported=not bool(status))
+                            problems = ['unavailable_service:confinement:store_guard:enforce:audit']
                 if problems:
                     settled = group.discard(worker)
                     if problems[0] == 'spawn_failed:ENOENT' and settled:
@@ -3366,13 +3756,20 @@ class Receiver:
             poller = select.poll()
             poller.register(setup, select.POLLIN)
             acknowledged = poller.poll(int((HB.SETUP_SECONDS + HB.SETTLE_SECONDS + 1) * 1000))
-            status = os.read(setup, 1) if acknowledged else b''
+            status = guard_status(setup, release_deadline + HB.SETTLE_SECONDS + 1) if acknowledged else b''
             if status != b'1':
                 reason = ({b'0': 'heartbeat_setup', b'T': 'heartbeat_timeout',
                            b'': 'heartbeat_wrapper_exited'}.get(status, 'heartbeat_setup')
                           if acknowledged else 'heartbeat_report_timeout')
                 settled = group.discard(worker)
+                if guarded:
+                    step = next((name for name, code in GUARD_STEPS.items() if status == GUARD_FAILURE + code), 'unreported')
+                    guard_observe(self, 'enforce_failed', step=step)
+                    raise C.Refused('unavailable_service:confinement:store_guard:enforce:' + step,
+                                    settled=settled, group=group.report())
                 raise C.Refused('spawn_failed:containment:' + reason, settled=settled, group=group.report())
+            if guarded:
+                guard_observe(self, 'runner_started' if self.runner['runner'] == 'confined' else 'applied')
         except BaseException:
             os.close(channel)
             raise
@@ -3981,6 +4378,12 @@ def wrap(argv):
     if argv[:1] == ['--heartbeat'] and len(argv) > 3:
         # VELDO-0041: the channel the receiver passed and the profile's heartbeat interval.
         beat, argv = (int(argv[1]), float(argv[2])), argv[3:]
+    sample = held.get('store_guard') if held is not None else None
+    setup = held.get('heartbeat_setup') if held is not None else None
+    if sample and sample.get('state') == 'on':
+        clean, reportable = guard_audit(sample['directory'], setup)
+        if not clean:
+            guard_report_failure(setup if reportable else None, 'audit')
     path = shutil.which(argv[0]) if argv else None
     if not path:
         sys.stdout.write(json.dumps({'schema': WRAPPER_SCHEMA, 'refused': 'spawn_failed:ENOENT'}) + '\n')
@@ -3998,6 +4401,10 @@ def wrap(argv):
         os._exit(125)
     if beat is not None and type(release) is float:
         heartbeat_deadline = release
+    if sample and sample.get('state') == 'on' and not sample.get('risky'):
+        failed_step = guard_install(sample['directory'])
+        if failed_step:
+            guard_report_failure(setup, failed_step)
     if beat is not None:
         # Released: the heartbeat starts now, in a process of its own, and this process closes the
         # channel before it becomes the engine, so liveness never waits on anything the engine does.
@@ -4090,6 +4497,14 @@ def end_recorded(receiver, request):
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == 'guard-census':
+        try:
+            result = guard_census(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5] or None, sys.argv[6])
+        except (OSError, ValueError, KeyError, TypeError, RuntimeError) as error:
+            result = {'reason': 'confined_runner_unavailable:store_reachable',
+                      'element_path': getattr(error, 'filename', None) or sys.argv[3]}
+        print(json.dumps(result))
+        return
     if len(sys.argv) > 1 and sys.argv[1] == 'exec':
         wrap(sys.argv[2:])
         return

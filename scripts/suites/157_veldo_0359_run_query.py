@@ -557,6 +557,10 @@ L = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(L)
 sys.argv = [sys.argv[0], sys.argv[1]]
 L.RQ.SECONDS = 120  # a hang detector here; the fixture never waits for a deadline
+# This portable B1 fixture substitutes launch prerequisites, including B2's layout check.
+# Suite 158 exercises the real preflight and contained wrapper on the host route.
+L.guard_preflight = lambda config, sample, risky, locations: dict(
+    sample, outcome='pending', directory=str(Path(config['store']).resolve().parent), preflight={})
 RECEIVERS = []
 def endpoint_state(dispatch):
     place = L.RQ.endpoint(dispatch)

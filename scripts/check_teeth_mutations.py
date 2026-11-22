@@ -16529,6 +16529,52 @@ def cases():
             "        if False:  # defect: a hooks path from an included file is used as the repository's own\n",
             ['space329/fix8/included-file'])
 
+    # VELDO-0359 B2: one defect per boundary, bound to the row that observes it.
+    guard359 = '158_veldo_0359_store_guard.py'
+    def guard359_case(name, old, new, rows, module='control_launch.py'):
+        add(359, 'store359-' + name, guard359, module, old, new, rows)
+    guard359_case('guard-skipped', '        failed_step = guard_install(sample[\'directory\'])\n',
+                  '        failed_step = None\n', ['launch/guard-default', 'launch/enforce-fail', 'launch/receiver-memory'])
+    guard359_case('write-only-guard', '        clone.confine(clone.rules([directory], [directory]))\n',
+                  '        clone.confine(clone.rules([directory], []))\n', ['launch/guard-read'])
+    guard359_case('fd-check-skipped', "        clean, reportable = guard_audit(sample['directory'], setup)\n",
+                  '        clean, reportable = True, True\n', ['launch/descriptors-leaked'])
+    guard359_case('fd-check-late', "        clean, reportable = guard_audit(sample['directory'], setup)\n",
+                  "        os.write(1, b'late audit identity\\n')\n        clean, reportable = guard_audit(sample['directory'], setup)\n",
+                  ['launch/descriptors-early'])
+    guard359_case('audit-late-reader-only', '                    if guarded:\n',
+                  '                    if False:  # defect: no pre-identity audit report\n', ['launch/descriptors-early'])
+    guard359_case('ack-early', "        guard_observe(self, 'pending')\n",
+                  "        guard_observe(self, 'applied')\n", ['launch/ack'])
+    guard359_case('low-abi-accepted', "    if probe['reason']:\n",
+                  "    if probe['reason'] and probe['reason'] != 'abi_below_3':\n", ['launch/abi'])
+    guard359_case('risky-floor-skipped', "    if risky and (probe['platform'] != 'x86_64' or probe['abi'] < 6):\n",
+                  '    if False:\n', ['launch/abi'])
+    guard359_case('socket-exception-removed', '            if not (normal or authority_socket):\n',
+                  '            if not normal:\n', ['layout/entries'])
+    guard359_case('special-entries-allowed', '            if not (normal or authority_socket):\n',
+                  '            if not (normal or authority_socket or stat.S_ISSOCK(info.st_mode) or stat.S_ISFIFO(info.st_mode)):\n', ['layout/entries'])
+    guard359_case('links-allowed', 'stat.S_ISREG(info.st_mode) and info.st_nlink == 1',
+                  'stat.S_ISREG(info.st_mode)', ['layout/entries'])
+    guard359_case('file-binds-allowed', '        if mount[1] == own[1] and guard_overlap(coordinate, mount[2]):\n',
+                  '        if mount[1] == own[1] and guard_beneath(coordinate, mount[2]):\n', ['layout/mounts'])
+    guard359_case('placement-skipped', '    if guard_beneath(runs, directory):\n',
+                  '    if False:\n', ['layout/placement'])
+    guard359_case('guard-before-runner', "    if sample and sample.get('state') == 'on' and not sample.get('risky'):\n",
+                  "    if sample and sample.get('state') == 'on':\n", ['launch/risky-real'])
+    guard359_case('precondition-skipped', '        if guard_overlap(target, directory):\n',
+                  '        if False:\n', ['launch/risky-census'])
+    guard359_case('census-prefilter', '        if any(guard_beneath(p, target) for p in blocked):\n',
+                  '        if False:\n', ['launch/risky-census'])
+    guard359_case('census-places-as-grants', '    grants = []\n',
+                  "    grants = [(Path(place[1]).resolve(), runner.READ) for entry in config.get('clients', {}).values() for place in entry.get('places', {}).values()]\n",
+                  ['launch/risky-census'])
+    guard359_case('role-sandbox-wins', "    if sample and sample.get('state') == 'on':\n",
+                  '    if False:\n', ['launch/engines'], 'control_agent_config_handoff.py')
+    guard359_case('switch-outside', "        self.store_guard = RQ.switch(self.config['store'])\n",
+                  "        self.store_guard = RQ.switch(str(Path(self._engine_cwd(adapter['argv'], contract['dispatch_id'], False)) / 'database'))\n",
+                  ['switch/run-cannot-flip'])
+
     # VELDO-0359 B1: each declared query/switch falsifier is observed by its row.
     query359 = '157_veldo_0359_run_query.py'
     add(359, 'store359-events-dropped', query359, 'control_run_query.py',

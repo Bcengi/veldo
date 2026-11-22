@@ -407,6 +407,18 @@ def codex_features(listing, grants, granted=frozenset()):
     return configuration
 
 
+def codex_store_guard(extra, sample):
+    """The receiver's sampled decision wins after every role setting, including no-role runs."""
+    if sample and sample.get('state') == 'on':
+        override = 'sandbox_mode="danger-full-access"'
+        extra['argv'] += ['-c', override]
+        for name, data in list(extra['files'].items()):
+            if name == X.GENERATED_FILE:
+                text = data.decode()
+                text = '\n'.join(line for line in text.splitlines() if not line.startswith('sandbox_mode ='))
+                extra['files'][name] = (text + '\n' + override + '\n').encode()
+
+
 def codex(configuration, capability, inventory, config, *, catalog=None, feature_listing=None):
     revision = capability['revision']
     configuration.update(revision['settings'])
