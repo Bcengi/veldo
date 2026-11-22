@@ -247,13 +247,16 @@ def build(base, organs, owner_chat, origin, token, scope='project-a', token_path
     host_trust = _private(host / 'host_trust.json', json.dumps({'schema': 'veldo.host_trust/v1', 'host_identity': 'v73-host',
                                                                  'enrollment_signers': str(enrollment_signers),
                                                                  'settlement_signers': str(settlement_signers)}))
+    token_ref = 'keychain:fixture-channel-' + hashlib.sha256(str(base).encode()).hexdigest()[:24]
+    load('v73_keystore', Path(organs) / 'control_credential_keystore.py').SecretService().set(
+        token_ref.split(':', 1)[1], token_file.read_text().strip())
     config = {'schema': 'veldo.telegram_ingress/v1', 'channel': 'telegram_chat', 'store_path': str(db),
               'authority_ids': ids, 'authority_generation': 1,
               'journal': {'principal': 'authority', 'key': str(keyfile['authority'])},
               'workspace': str(repository), 'host_trust': str(host_trust),
               'signer': {'config': str(signer_config), 'edge_key_id': 'edge-telegram', 'connection_key': str(keyfile['edge-auth'])},
               'edge_principal': 'telegram-edge', 'api_edge': 'api-edge',
-              'bot_api': {'origin': origin, 'token_file': str(token_file)},
+              'bot_api': {'origin': origin, 'token_ref': token_ref},
               'decision_signer': {'principal': 'settler', 'key': str(keyfile['settler'])}}
     config_path = _private(host / 'ingress.json', json.dumps(config))
 

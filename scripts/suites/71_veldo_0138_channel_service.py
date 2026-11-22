@@ -793,4 +793,4 @@ def _v138_suite():
     print('VELDO-0138 suite seconds: %.3f' % (time.monotonic() - started))
 
 
-_v138_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v138_suite)

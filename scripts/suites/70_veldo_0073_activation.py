@@ -601,7 +601,8 @@ def _v73_checks(base):
 
 _v73_started = _v73_time.monotonic()
 _v73_fast = fast_temp()
-with _v73_temp.TemporaryDirectory(prefix='v73-', dir=_v73_fast) as _v73_dir:
+with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), \
+        _v73_temp.TemporaryDirectory(prefix='v73-', dir=_v73_fast) as _v73_dir:
     _v73_rows = _v73_checks(_v73_Path(_v73_dir))
 for _v73_name, _v73_observed in _v73_rows.items():
     _v73_ok = bool(_v73_observed) and all(ok for _, ok in _v73_observed)

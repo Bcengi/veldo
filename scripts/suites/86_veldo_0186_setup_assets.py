@@ -281,4 +281,4 @@ def _v186_suite():
         expect('VELDO-0186 ' + row, bool(observations) and all(ok for _, ok in observations))
 
 
-_v186_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v186_suite)

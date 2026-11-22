@@ -120,7 +120,7 @@ _ag_calls = []
 def _ag_fetch(url, cid, csec, aud):
     _ag_calls.append((url, aud)); return {"access_token": "tok-%d" % len(_ag_calls), "expires_in": 3600}
 _ag_clock = [1000.0]
-_ag_tm = RN.OAuthTokenManager("env:CID", "env:CSEC", resolve_secret=lambda r: "sekret-" + r,
+_ag_tm = RN.OAuthTokenManager("keychain:CID", "keychain:CSEC", resolve_secret=lambda r: "sekret-" + r,
                               fetch=_ag_fetch, clock=lambda: _ag_clock[0])
 _ag_tok1 = _ag_tm.token(); _ag_tok2 = _ag_tm.token()
 expect("WARP-0614 AC1: the token manager fetches once and CACHES within expiry (no re-fetch)",
@@ -135,14 +135,14 @@ expect("WARP-0614 AC1: the token manager never leaks the secret or the token in 
        "sekret" not in repr(_ag_tm) and "tok-" not in repr(_ag_tm))
 _ag_fc = None
 try:
-    RN.OAuthTokenManager("env:X", "env:Y", resolve_secret=lambda r: None)
+    RN.OAuthTokenManager("keychain:X", "keychain:Y", resolve_secret=lambda r: None)
 except RN.MirrorRunnerError:
     _ag_fc = "refused"
 expect("WARP-0614 AC1: the auth mode FAILS CLOSED by name when no OAuth credential resolves", _ag_fc == "refused")
 # build_live_adapter selects the mode BY REFERENCE: oauth builds the Bearer gateway adapter (offline,
 # cloud_id from config so no network), and an unknown mode is refused by name (basic stays the default).
-_ag_oauth_entry = {"kind": "jira-cloud", "auth": "oauth-client-credentials", "client_id_ref": "env:CID",
-                   "client_secret_ref": "env:CSEC", "cloud_id": "cid-xyz", "project": "PROJ"}
+_ag_oauth_entry = {"kind": "jira-cloud", "auth": "oauth-client-credentials", "client_id_ref": "keychain:CID",
+                   "client_secret_ref": "keychain:CSEC", "cloud_id": "cid-xyz", "project": "PROJ"}
 _ag_oad = RN.build_live_adapter({"trackers": {"j": _ag_oauth_entry}}, resolve_secret=lambda r: "v")
 expect("WARP-0614 AC1: auth oauth-client-credentials builds the Bearer gateway adapter (cloud_id from config, offline)",
        isinstance(_ag_oad, RN.OAuthJiraCloudAdapter) and _ag_oad._base == "https://api.atlassian.com/ex/jira/cid-xyz")
@@ -242,8 +242,8 @@ expect("WARP-0614: fence agent_group and approver_group must DIFFER (fail closed
 # agent-writer board (it used to provision one and report fenced:false). A basic-only board (no agent
 # identity) is UNAFFECTED: the fence stays optional there. JI.MirrorRunnerError is the exact class the
 # resolver raises through its own runner load (the alias at tracker_jira_init.py's top).
-_ag_ai_entry = {"kind": "jira-cloud", "auth": "oauth-client-credentials", "client_id_ref": "env:CID",
-                "client_secret_ref": "env:CSEC", "base_url": "https://example.invalid"}
+_ag_ai_entry = {"kind": "jira-cloud", "auth": "oauth-client-credentials", "client_id_ref": "keychain:CID",
+                "client_secret_ref": "keychain:CSEC", "base_url": "https://example.invalid"}
 _ag_f2_nofence = {"schema": "veldo.tracker/v1", "routing": {}, "repos": [], "trackers": {"j": _ag_ai_entry},
                   "bootstrap": {"project_key": "PROJ", "issue_types": ["Epic", "Task"]}}
 _ag_f2_refused = None
@@ -339,7 +339,7 @@ _ag_t3_calls = []
 def _ag_t3_fetch(u, c, s, a):
     _ag_t3_calls.append(1); return {"access_token": "x-%d" % len(_ag_t3_calls), "expires_in": 3600}
 _ag_t3_clk = [0.0]
-_ag_t3_tm = _ag_t3g["OAuthTokenManager"]("env:C", "env:S", resolve_secret=lambda r: "v",
+_ag_t3_tm = _ag_t3g["OAuthTokenManager"]("keychain:C", "keychain:S", resolve_secret=lambda r: "v",
                                          fetch=_ag_t3_fetch, clock=lambda: _ag_t3_clk[0])
 _ag_t3_tm.token(); _ag_t3_clk[0] += 100000; _ag_t3_tm.token()  # well past expiry
 expect("WARP-0614 AC6 T3: neutralizing the token-expiry check STOPS the re-fetch (mutant fetches once; real re-fetched)",

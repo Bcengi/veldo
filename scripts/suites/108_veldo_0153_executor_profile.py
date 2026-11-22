@@ -131,5 +131,5 @@ def _v153_process_boundary_rows():
                    'https://github.com/alpha/repo.git')['owner'] == 'alpha')
 
 
-_v153_global_config_rows()
-_v153_process_boundary_rows()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v153_global_config_rows)
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v153_process_boundary_rows)

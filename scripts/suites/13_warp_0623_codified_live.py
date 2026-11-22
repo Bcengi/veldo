@@ -34,7 +34,7 @@ def _lp_real(project="PROJ"):
     """The REAL composed live provisioner instance (JI.JiraCompanyManagedProvisioner: the shipped factory
     over the shipped JiraCloudAdapter base), constructed offline with an injected secret resolver."""
     return JI.JiraCompanyManagedProvisioner("https://jira.invalid", "svc@example.invalid",
-                                            "env:WARP_0623_ABSENT_TOKEN",
+                                            "keychain:WARP_0623_ABSENT_TOKEN",
                                             resolve_secret=lambda _ref: "a-token-never-used",
                                             project=project)
 

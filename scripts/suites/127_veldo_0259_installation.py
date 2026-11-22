@@ -700,4 +700,4 @@ def _v259_installation_suite():
         expect('VELDO-0259 ' + row + (': ' + failed[0] if failed else ''), bool(values) and not failed)
 
 
-_v259_installation_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v259_installation_suite)
