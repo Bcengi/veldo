@@ -62,6 +62,8 @@ def install(base, cache):
         if function.__name__ == 'runtime_assets':
             runtime = directory / 'runtime' if (directory / 'runtime').is_dir() else directory.parent / 'runtime'
             paths += sorted(p for p in runtime.rglob('*') if p.is_file())
+            for name in ('installation_schema', 'installation_template'):
+                paths += sorted(p for p in (directory / name).rglob('*') if p.is_file())
         for path in paths:
             digest.update(str(path.relative_to(directory.parent)).encode() + b'\0')
             digest.update(hashlib.sha256(path.read_bytes()).digest())

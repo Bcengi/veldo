@@ -108,8 +108,11 @@ def factory(store, conn, plan, ids, installed, identities, workspace_identity, *
     if not ks.contains(token_name):
         token = organ('control_channel_ingress').read_token(plan['token_file'])
         ks.set(token_name, token)
+    approvers = [eid for eid, raw in conn.execute("SELECT id, data FROM entities WHERE kind='verification_key'")
+                 if (value := json.loads(raw)).get('principal') == plan['owner']
+                 and value.get('revoked_at') is None and value.get('retired_at') is None]
     settings = {'schema': I.SCHEMA, 'owner': {'display_name': identity['name'], 'role_id': 'owner'},
-                'git_identities': {plan['owner']: identity}, 'approvers': ['key:%s:1' % plan['owner']],
+                'git_identities': {plan['owner']: identity}, 'approvers': sorted(approvers),
                 'git': {'branch': 'main'}, 'channels': {'main': {'kind': 'telegram_chat', 'chat': str(plan['chat']),
                                                                'token': {'secret': token_name}}},
                 'hosts': {'authority': config['host_identity']},
@@ -117,11 +120,22 @@ def factory(store, conn, plan, ids, installed, identities, workspace_identity, *
     if remote is not None:
         settings['git']['remote'] = remote
     # Preserve additional previously declared installation kinds and settings at import.
-    reader = I.Installation({'folder': folder, 'how': 'environment', 'found': True})
-    try:
-        existing = reader.settings()
-    except I.InstallationError:
-        existing = {}
+    record = WF._entity_row(conn, 'installation:' + C.V.digest([ids['domain_uuid'], str(Path(folder).resolve())]))
+    if record is not None:
+        existing = record['data']['configuration']['installation.yaml']
+    else:
+        repository = I.Repository.create(folder)
+        try:
+            parent = repository.head()
+        except I.InstallationError:
+            parent = None
+        files = repository.snapshot(parent)['files'] if parent else repository.import_files()
+        existing = C.V.decode(files.get('installation.yaml', b'{}'))
+    for field in ('channels', 'hosts', 'ports', 'git_identities'):
+        settings[field] = dict(existing.get(field, {}), **settings[field])
+    settings['git'] = dict(existing.get('git', {'branch': 'main'}))
+    if remote is not None:
+        settings['git']['remote'] = remote
     settings = dict(existing, **settings)
     result = create(store, conn, folder, settings=settings, identity=identity, domain=ids['domain_uuid'],
                   repository=ids['repository_uuid'], signer=journal[0], sign=journal[1],
@@ -133,5 +147,6 @@ def factory(store, conn, plan, ids, installed, identities, workspace_identity, *
     (directory / 'installation.conf').write_text('[Service]\nEnvironment=' + value + '\n')
     os.chmod(directory / 'installation.conf', 0o600)
     config['installation_repository'] = result['commit']
+    config['installation_branch'] = settings['git'].get('branch', 'main')
     Path(installed['config']).write_text(json.dumps(config, sort_keys=True) + '\n')
     return result

@@ -58,6 +58,8 @@ footprint:
   - "scripts/suites/*_veldo_0253_*.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
+  - "scripts/suites/support/setup_runtime.py"
+  - "proof/VELDO-0186/fixtures.py"
   - "scripts/check_teeth_mutations.py"
   - "specs/VELDO-0253-configuration-comes-from-the-installation-repository.md"
   - "specs/index.md"

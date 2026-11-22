@@ -139,6 +139,11 @@ def validate(files, *, secret_exists, resolve=None):
         before = len(problems)
         secrets(value, path, secret_exists, problems)
         rule = entry.get('kind')
+        if rule in ('project', 'role', 'team', 'service', 'connector', 'schedule'):
+            if not IDENT.fullmatch(Path(path).stem):
+                problems.append('installation_invalid:%s:id:identifier' % path)
+            if isinstance(value, dict) and 'id' in value and value['id'] != Path(path).stem:
+                problems.append('installation_invalid:%s:id:path_mismatch' % path)
         if rule in declared['definitions']:
             check(value, rule, declared['definitions'], path, '$', problems)
         if rule == 'workflow':
@@ -180,6 +185,11 @@ def validate(files, *, secret_exists, resolve=None):
                 problems.append('installation_invalid:%s:allowed_tools:unknown_reference' % path)
             if value.get('transport', 'stdio') != 'stdio' or any('://' in arg for arg in value.get('args', [])):
                 problems.append('installation_invalid:%s:transport:outside_service_required' % path)
+        elif path.startswith('services/') and path.endswith('.yaml'):
+            for field, suffix in (('openapi', '.openapi.json'), ('tools_snapshot', '.tools.json')):
+                if field in value and ('services/' + value[field] not in files
+                                      or value[field] != Path(path).stem + suffix):
+                    problems.append('installation_invalid:%s:%s:unknown_reference' % (path, field))
         elif path.endswith('.layout.json'):
             definition = config.get(path[:-len('.layout.json')] + '.json')
             errors = WF.layout_problems(value, definition) if definition else ['missing_definition']
