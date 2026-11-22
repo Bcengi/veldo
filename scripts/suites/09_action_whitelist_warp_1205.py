@@ -1242,15 +1242,38 @@ expect("jira init AC4: re-running the whole bootstrap forks no epic/child and le
 _ji_veldo = (ROOT / "bin/veldo").read_text()
 expect("jira init AC5: veldo jira init is a bin/veldo subcommand, guarded like mirror (existence check)",
        '"jira"' in _ji_veldo and "tracker_jira_init.py" in _ji_veldo and 'cmd == "jira"' in _ji_veldo)
+# VELDO-0258: the CLI module beside the service that signs its command (a mutation driver swaps that
+# directory for a copy holding a mutant service).
+_v258_jispec = importlib.util.spec_from_file_location(
+    "veldo_tracker_jira_init_v258", (ROOT / ".veldo" / "control_tracker_service.py").parent / "tracker_jira_init.py")
+_v258_JI = importlib.util.module_from_spec(_v258_jispec); _v258_jispec.loader.exec_module(_v258_JI)
+
+
+def _v258_cli(name, argv):
+    """VELDO-0258: (exit code, the printed refusal reason) of a tracker CLI command. A crash has no reason."""
+    import contextlib as _v258_contextlib
+    import io as _v258_io
+    _out = _v258_io.StringIO()
+    with _v258_contextlib.redirect_stdout(_out):
+        _rc = getattr(_v258_JI, name)(argv)
+    try:
+        return _rc, json.loads(_out.getvalue().strip().splitlines()[-1]).get("reason")
+    except (ValueError, IndexError, AttributeError):
+        return _rc, None
+
+
 with tempfile.TemporaryDirectory() as _jid:
     (Path(_jid) / ".veldo").mkdir()
     (Path(_jid) / ".veldo" / "trackers.json").write_text(json.dumps(_ji_cfg))
-    expect("jira init AC5: unsigned CLI preview refuses before contacting the service",
-           JI._cli(["--dry-run", "--repo-root", _jid]) == 2)
-    # a repo with no tracker config is a clean no-op (return 0), reported honestly
+    expect("jira init AC5 tracker-cli/init-unsigned-named: unsigned CLI preview refuses by name before contacting the service",
+           _v258_cli("_cli", ["--dry-run", "--repo-root", _jid])
+           == (2, "invalid_input:tracker_command:owner_identity"))
+    # VELDO-0258: a signed request from an unenrolled repository is refused by name, never skipped.
     _jid2 = Path(_jid) / "empty"; _jid2.mkdir()
-    expect("jira init AC5: an unenrolled repo refuses instead of silently skipping the service",
-           JI._cli(["--dry-run", "--repo-root", str(_jid2)]) == 2)
+    expect("jira init AC5 tracker-cli/init-unenrolled-named: an unenrolled repo refuses by name instead of silently skipping the service",
+           _v258_cli("_cli", ["--dry-run", "--repo-root", str(_jid2), "--principal", "owner",
+                               "--key", str(Path(_jid) / "absent-key")])
+           == (2, "missing_authority:enrollment:not_enrolled"))
 
 # AC5: the live company-managed provisioner is REFERENCE-WIRED and never run here - build_live_provisioner
 # FAILS CLOSED by name when no jira-cloud tracker is configured (never guesses a connection).
@@ -1382,11 +1405,14 @@ expect("jira snapshot AC1: the module hardcodes no company/board config value (B
 with tempfile.TemporaryDirectory() as _jsd:
     (Path(_jsd) / ".veldo").mkdir()
     (Path(_jsd) / ".veldo" / "trackers.json").write_text(json.dumps(_js_cfg))
-    expect("jira snapshot AC6: unsigned CLI preview refuses before contacting the service",
-           JI.main(["snapshot", "--dry-run", "--repo-root", _jsd]) == 2)
+    expect("jira snapshot AC6 tracker-cli/snapshot-unsigned-named: unsigned CLI preview refuses by name before contacting the service",
+           _v258_cli("main", ["snapshot", "--dry-run", "--repo-root", _jsd])
+           == (2, "invalid_input:tracker_command:owner_identity"))
     _jsd2 = Path(_jsd) / "empty"; _jsd2.mkdir()
-    expect("jira snapshot AC6: an unenrolled repo refuses instead of silently skipping the service",
-           JI.main(["snapshot", "--dry-run", "--repo-root", str(_jsd2)]) == 2)
+    expect("jira snapshot AC6 tracker-cli/snapshot-unenrolled-named: an unenrolled repo refuses by name instead of silently skipping the service",
+           _v258_cli("main", ["snapshot", "--dry-run", "--repo-root", str(_jsd2), "--principal", "owner",
+                               "--key", str(Path(_jsd) / "absent-key")])
+           == (2, "missing_authority:enrollment:not_enrolled"))
 _js_veldo = (ROOT / "bin/veldo").read_text()
 expect("jira snapshot AC6: bin/veldo routes 'jira' to the repo-only module (snapshot dispatched inside main, bin/veldo unchanged)",
        '"jira"' in _js_veldo and "tracker_jira_init.py" in _js_veldo)

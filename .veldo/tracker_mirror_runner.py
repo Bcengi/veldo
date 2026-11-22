@@ -249,7 +249,7 @@ def _accessible_resources(token):
                                  method="GET")
     req.add_header("Authorization", "Bearer " + token)
     req.add_header("Accept", "application/json")
-    with _IK._CP.http('tracker', req, unit=getattr(self, '_unit', None)) as resp:
+    with _IK._CP.http('tracker', req) as resp:
         return json.loads(resp.read().decode())
 
 

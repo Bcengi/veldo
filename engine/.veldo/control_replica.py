@@ -82,8 +82,14 @@ def _kill_point(name):
 
 
 def _git(args, cwd, input_bytes=None, check=True, timeout=60):
-    r = _git_process.run(["git"] + list(args), cwd=cwd, input=input_bytes, capture_output=True, identity=("veldo-authority", "authority@veldo.local"), timeout=timeout,
-                       stdin=None if input_bytes is not None else subprocess.DEVNULL)
+    # VELDO-0258: a push to or read of an outside audit remote is made only by the service.
+    try:
+        r = _git_process.run(["git"] + list(args), cwd=cwd, input=input_bytes, capture_output=True, identity=("veldo-authority", "authority@veldo.local"), timeout=timeout,
+                           stdin=None if input_bytes is not None else subprocess.DEVNULL, caller="audit_replica")
+    except ValueError as error:
+        if not getattr(error, "code", "").startswith("unauthorized:control_plane"):
+            raise
+        raise ReplicaRefused(error.code, "the audit remote is reached only by the service") from None
     if check and r.returncode != 0:
         raise subprocess.CalledProcessError(r.returncode, r.args, r.stdout, r.stderr)
     return r
@@ -270,7 +276,10 @@ class Publisher:
 
     def push(self, commit, expected_old):
         lease = "--force-with-lease=%s:%s" % (self.ref, expected_old or "")
-        r = _git(["push", "-q", lease, self.remote, "%s:%s" % (commit, self.ref)], cwd=self.audit_dir, check=False, timeout=120)
+        try:
+            r = _git(["push", "-q", lease, self.remote, "%s:%s" % (commit, self.ref)], cwd=self.audit_dir, check=False, timeout=120)
+        except ReplicaRefused as error:
+            return False, error.code
         return r.returncode == 0, r.stderr.decode("utf-8", "replace").strip()[-400:]
 
 

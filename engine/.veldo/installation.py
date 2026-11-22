@@ -457,9 +457,15 @@ class Repository:
     def git(self, *args, body=None, identity=None, profile='isolated', binary=False):
         try:
             result = _git_process.run(['git', '-C', self.folder, *args], input=body,
-                                      capture_output=True, timeout=120, identity=identity, profile=profile)
+                                      capture_output=True, timeout=120, identity=identity, profile=profile,
+                                      caller='installation_repository')
         except (OSError, subprocess.SubprocessError):
             raise InstallationError('installation_unreadable:git_unavailable') from None
+        except ValueError as error:
+            # VELDO-0258: the push to an outside installation remote is the service's call alone.
+            if not getattr(error, 'code', '').startswith('unauthorized:control_plane'):
+                raise
+            raise InstallationError('installation_push_failed:control_plane_service') from None
         if result.returncode:
             # Git diagnostics may quote credentials from configuration or URLs. Do not copy them.
             reason = 'stale_version' if args[0] == 'update-ref' else 'installation_unreadable:' + args[0]
@@ -543,7 +549,9 @@ class Repository:
             raise InstallationError('installation_push_failed:remote_missing')
         try:
             self.git('push', '--', remote, commit + ':' + self.ref, profile='network')
-        except InstallationError:
+        except InstallationError as error:
+            if error.code == 'installation_push_failed:control_plane_service':
+                raise
             raise InstallationError('installation_push_failed:remote_refused') from None
 
     def import_files(self):

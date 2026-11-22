@@ -80,11 +80,16 @@ def cli(action, args):
     CP = organ('control_plane_calls')
     try:
         CP.not_run('tracker')
-        if not args.principal or not args.key or args.email or getattr(args, 'events_path', None):
-            raise ValueError('owner identity and installation settings required')
+        # Each refusal is named, so a crash is never mistaken for one.
+        if args.email or getattr(args, 'events_path', None):
+            raise CP.Refused('invalid_input:tracker_command:override')
+        if not args.principal or not args.key:
+            raise CP.Refused('invalid_input:tracker_command:owner_identity')
         workspace = os.path.realpath(args.repo_root or os.getcwd())
         E, EL = organ('control_enrollment'), organ('control_eligibility')
         binding = E.read_binding(workspace)
+        if binding is None:
+            raise CP.Refused('missing_authority:enrollment:not_enrolled')
         trust = EL.load_host_trust(args.host_trust)
         sign = organ('control_channel_activation').ssh_signer(os.path.realpath(args.key))
         command = {k: binding[k] for k in ('domain_uuid', 'store_uuid', 'repository_uuid')}
