@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0218",
-  "commit": "8c4640d95312221ec3811682655ad3bfa18e41ce",
+  "commit": "3bc13bb91fe2b8b863dbb8e86aa3add202b7c83d",
   "producer": "Codex implementation agent; not an independent reviewer",
   "criteria": [
     {
@@ -88,6 +88,11 @@
       "name": "landing-fixture-replay",
       "status": "passed",
       "detail": "landing-replay.txt: 25 existing suite-101 assertions replayed after isolating the engine provenance negative control. No production code changed after the full Linux regression run."
+    },
+    {
+      "name": "fix-round-1",
+      "status": "passed",
+      "detail": "fix-round1.txt: suite 112 row reused-unaudited-no-sample with falsifier deadline215-reused-unaudited-sampled; reuse-audit module loaded per stage so all 30 check_gate_mutations.py mutants are judged (30/30 rejected); suites 53, 98, 99, 100, 101, 112, 115, 157, 158, 159 zero failed. Selected diagnostics, not the canonical unit gate."
     }
   ],
   "assumptions": [
