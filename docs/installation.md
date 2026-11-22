@@ -27,22 +27,45 @@ the product needs is a named key with a schema:
   host or path.
 - `installation_invalid:<key>` when the file is present and the value fails its schema.
 
-Factory setup's answer and the API's status record name the installation folder and its revision (the
-commit id when the folder is a git checkout) that the running service loaded.
+Factory setup creates a private Git repository from the shipped installation template. Use
+`--installation` to choose its path and `--installation-remote` to declare its remote. The service's
+environment records `VELDO_INSTALLATION`. A setup re-run imports existing live configuration once;
+workflow versions and their definition digests stay unchanged.
+
+The service reads the configured branch's committed tree and watches reference changes through the
+operating system. Working-copy edits have no effect. It validates the whole tree before accepting it;
+one bad file keeps the previous accepted configuration live and reports every problem to the owner.
+Status names the accepted commit, pending widening, refusals and configuration age.
+
+Changes that widen authority wait for an ordinary signed owner decision naming the exact commit and
+the digest of its widening list. A later commit makes the earlier pending decision stale. Narrowing
+changes need no new decision. Git authorship records provenance and grants no authority.
+
+Veldo sends commits it makes to the declared remote after local acceptance, without force. A refused
+send reports `installation_push_failed` and keeps the accepted commit live locally.
 
 ## Layout
 
-The layout is the one installation schema the installation loader declares (it builds on this reader). This reader
-uses these of its kinds:
+The closed, machine-readable declaration is `.veldo/installation_schema/schema.json`. Unknown files
+and unknown fields refuse the entire commit. Runtime state has no installation kind.
 
 ```
 installation.yaml          the deployment's settings (below)
+projects/<id>.yaml         account, repository, workflow bindings and work commands
+roles/<id>.yaml            capability grants and role configuration
+teams/<id>.yaml            teams and their roles
 connectors/<id>.yaml       local tool servers; same id as a product connector overrides it
 services/<id>.yaml         outside services; same id as a product service overrides it
 workflows/<id>.json        workflow definitions; same id as a product workflow overrides it
+workflows/<id>.layout.json canvas layout, versioned separately from the definition
+services/<id>.openapi.json optional service API description
+services/<id>.tools.json   pinned service tool snapshot
+memory/*.yaml             stores, servers and the session history sink
+schedules/<id>.yaml        declared schedules, never schedule occurrences
 patterns/*.yaml            the personal-setup patterns (below), read only by the personal-setup check
 decisions/*.yaml           the map from a decision reference to its source message and quote
-records/                   history records; listed, never read as configuration
+records/                   history with records/digests.json; never configuration
+research/, notes/          explicitly ignored
 ```
 
 ### installation.yaml
@@ -55,6 +78,7 @@ owner:
 git_identities:
   owner: {name: Example Owner, email: owner@example.com}
 approvers: [owner-key-1]           # approver key ids
+git: {branch: main, remote: origin}
 channels:
   main:
     kind: chat
@@ -73,9 +97,23 @@ trackers:
 publisher: {name: Example Publisher, email: publisher@example.com}
 ```
 
-Every key is optional; an action that needs one and does not find it refuses by name. A key not listed
-here is `installation_invalid:<key>`. Under `channels`, `accounts` and `trackers`, a field whose name says
-it holds a credential (token, secret, password, credential, api key) must be `{secret: <name>}`.
+The schema discriminator is required; an action needing another absent key refuses by name.
+Validation reports `installation_invalid:<path>:<key>:<reason>`, `installation_unknown_file:<path>`,
+`installation_secret_inline:<path>:<key>` or `installation_secret_missing:<name>`. Credentials use
+`{secret: <name>}`. Validation checks keystore metadata only; credentials are resolved at use time.
+
+## Workflow saves and pins
+
+A canvas save names its base version and accepted configuration commit. It validates the proposed
+whole tree, builds a Git commit with the editor's declared identity, and publishes the branch with a
+compare-and-swap. A moved branch refuses `stale_version`. A widening save returns its pending commit;
+the owner's signed save names that commit and carries its ordinary signed settlement answer.
+
+The loader records immutable canonical definition copies by digest. A layout-only commit updates the
+layout without allocating a definition version. Existing runs retain their pinned version and digest
+even if the original Git commit is deleted. Project files declare workflow bindings; the former
+binding command refuses `installation_managed`. An installed `code` workflow overrides the shipped
+version 0 for new units; the shipped definition is never copied into the installation by default.
 
 ### decisions/*.yaml
 

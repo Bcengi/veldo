@@ -70,7 +70,7 @@ class Loader:
         pending = self.pending
         if self.repo.head() != pending['parameters']['commit'] or self.accepted_commit != pending['previous']:
             raise Refused('stale_version')
-        _, problems = self.validate(pending['files'])
+        _, problems = self.validate(pending['files']) if pending['parameters']['mode'] != 'refused' else ({}, [])
         if problems:
             raise Refused(problems[0], codes=problems)
         if pending.get('decision') is not None:
@@ -114,6 +114,10 @@ class Loader:
             old_status = self.status()
             if old_status.get('outcome') == 'waiting' and old_status.get('commit') != commit and self.decisions:
                 self.decisions.stale(old_status['proposal'])
+            if problems and old_status.get('outcome') == 'waiting' and old_status.get('commit') != commit:
+                self._write({self.status_id: {'kind': WF.INSTALLATION_KIND,
+                    'data': {'outcome': 'refused', 'commit': commit, 'problems': problems}}},
+                    snapshot, previous, mode='refused')
             if problems:
                 return self._event(commit, previous, 'refused', problems)
             if commit == previous:
