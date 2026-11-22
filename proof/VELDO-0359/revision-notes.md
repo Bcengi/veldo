@@ -369,3 +369,37 @@ binding; the supervising Launch drains its reaped receiver's remaining notices a
 that reported directory identity. This preserves an existing endpoint on exclusive-creation failure.
 No connection-based startup sweep exists. Request logs contain only request name and outcome;
 termination counts are collected before or with the receiver's final messages.
+
+## B1 fix round 1 (2026-11-22, review verdict FIX, findings 0 to 6)
+
+Lead decisions applied; B1's scope and its "Do not" list are unchanged.
+
+- Finding 0. Receiver.launch keeps its body and its name. The query endpoint is closed by a module
+  function, close_query, which _finish calls first and a wrapper on launch calls however the launch
+  ends; it reads the receiver's server with getattr, so a stand-in receiver without one (suite
+  63_veldo_0040_containment calls Receiver._finish on its own) is served unchanged. That missing
+  method on the stand-in was the cause of that suite's six failures. runstatus's status line is the
+  VELDO-0024 text again: _replication obtains the remote gate from the entry gate itself. No row of
+  suites 37, 127 or 63 was edited.
+- Finding 1. control_eligibility loads the run query client and the frontier once per process
+  (_late) and control_run_query its organs once (_kept). The frontier passes its own floor reading
+  to Gate.floor_entry, so a frontier pass over a store-holding Gate loads no module, as before B1,
+  with the marker present or not. Row query/cost counts module executions over repeated entries.
+- Finding 2. control_run_query.remove never raises and returns why a directory was left
+  (left:ENOTEMPTY, left:replaced). Server.close and close_query never raise. The receiver names what
+  it left on its final run_query_end line and in its receiver log; the Runner's Launch keeps it in
+  query_left and appends it to the same log. The end is recorded first in every case.
+- Finding 3. Each request's name and outcome is written by the serving thread to a regular file
+  beside the run's records (<digest>.query.log, at most 1 MiB, then the counts alone). The serving
+  thread writes nothing to the launch pipe; the pipe carries the endpoint's creation and one final
+  count line, written after the end is recorded, so Launch.messages no longer grows with requests.
+- Finding 4. The suite has one hang detector of 120 s. The protocol deadline is raised to it in the
+  suite, its receiver harness and its payload, except in the two rows that exercise the deadline's
+  refusal; "the peer was reached" is now waited for as an event.
+- Finding 5. The fixture runs the production _finish. Removal by the receiver is observed from
+  inside the receiver as the end is recorded, before the Runner reaps it. Symlink and directory
+  markers are launched and refused by name before acceptance.
+- Finding 6. The launch scan's own list gains only VELDO_RUN_QUERY; the acceptance value is no
+  longer added. A conversation receiver, which serves no repository, answers no record request of a
+  raw client. The frontier label that claimed observations is renamed, and a row requires that the
+  compared callbacks included every kind. The scaffold row is a baseline failure, recorded as such.

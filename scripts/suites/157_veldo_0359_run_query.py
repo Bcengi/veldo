@@ -775,12 +775,17 @@ L.main()
               and exited['event'] == 'exited' and launch.query_left == 'left:ENOTEMPTY'
               and [x.name for x in stray.iterdir()] == ['dropped-by-run']
               and receiver_log.count('run query endpoint left:ENOTEMPTY') == 2)
+        def removal(*arguments):
+            try:
+                return Q.remove(*arguments)
+            except Exception as error:
+                return 'raised:' + type(error).__name__
         check('query/lifecycle', 'stray file: removal reports, never raises',
-              Q.remove(stray / 'query.sock') == 'left:ENOTEMPTY'
-              and Q.remove(stray / 'query.sock', (0, 0)) == 'left:replaced' and stray.exists())
+              removal(stray / 'query.sock') == 'left:ENOTEMPTY'
+              and removal(stray / 'query.sock', (0, 0)) == 'left:replaced' and stray.exists())
         (stray / 'dropped-by-run').unlink()
-        check('query/lifecycle', 'stray file: removal of the emptied directory', Q.remove(stray / 'query.sock') is None
-              and not stray.exists() and Q.remove(stray / 'query.sock') is None)
+        check('query/lifecycle', 'stray file: removal of the emptied directory', removal(stray / 'query.sock') is None
+              and not stray.exists() and removal(stray / 'query.sock') is None)
         # Sample once: changing the marker after acceptance never changes this run's query variable.
         launch, pending = run_fixture('sample-once', flip_after_sample=True)
         seen = read_event(launch.child, pending, {'payload'})
