@@ -59,6 +59,25 @@ By default a launch starts as it always has: the host's network, shared database
 local and loopback services. No network fence, namespace, name resolution change or filesystem confinement is
 added.
 
+A launch starts in the confined runner only when it is marked risky, by one of:
+
+| Mark | Where |
+|:-|:-|
+| Installation | receiver configuration `"risky": {"installation": true}` |
+| Project | receiver configuration `"risky": {"projects": ["<project>"]}` |
+| Dispatch | the dispatch's input context `"risky": true` |
+
+The confined runner is named in the receiver configuration:
+
+```json
+"confined_runner": {"program": "<checkout>/scripts/agent_sandbox.py", "config": "<checkout>/scripts/agent_sandbox.json"}
+```
+
+A risky launch on a host that cannot provide the confined runner (none configured, its namespace helper
+missing, or its own `namespace-selftest` failing) is refused as `confined_runner_unavailable:<reason>`. No other
+launch is affected, and no launch that is not marked risky is ever refused for a confinement reason. Each
+launch's accepted (or refused) line names the runner it used and why.
+
 ## Service-owned calls
 
 The tracker mirror and initialization, repository provisioning, landing transport,
@@ -112,21 +131,3 @@ installation commit, with a unit or dispatch identifier where available. Bodies
 and credentials are omitted. Counters group calls by caller and result and
 credential refusals by scheme.
 
-A launch starts in the confined runner only when it is marked risky, by one of:
-
-| Mark | Where |
-|:-|:-|
-| Installation | receiver configuration `"risky": {"installation": true}` |
-| Project | receiver configuration `"risky": {"projects": ["<project>"]}` |
-| Dispatch | the dispatch's input context `"risky": true` |
-
-The confined runner is named in the receiver configuration:
-
-```json
-"confined_runner": {"program": "<checkout>/scripts/agent_sandbox.py", "config": "<checkout>/scripts/agent_sandbox.json"}
-```
-
-A risky launch on a host that cannot provide the confined runner (none configured, its namespace helper
-missing, or its own `namespace-selftest` failing) is refused as `confined_runner_unavailable:<reason>`. No other
-launch is affected, and no launch that is not marked risky is ever refused for a confinement reason. Each
-launch's accepted (or refused) line names the runner it used and why.
