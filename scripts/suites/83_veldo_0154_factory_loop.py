@@ -793,6 +793,10 @@ sys.exit(chosen['code'])
             first = wait_pass(lambda p: True, before)
             phase1['quiet_start'] = [p for p in passes() if first is not None and p['pass'] < first['pass']]
             phase1['first'] = first
+            inspected = send({'operation': 'inspect', 'entity_ids': []})
+            loop_state = ((inspected or {}).get('result') or {}).get('loop') or {}
+            check('loop/review-offered', 'the service records which held launches its poll set omits',
+                  loop_state.get('available') is True and loop_state.get('unwatched') == [])
             both = offered(first, station='build')
             wanted = {U['U1'], U['U2']}
             check('loop/journal-wake-offers', 'the signed packet that advanced the journal started one pass, with the '
