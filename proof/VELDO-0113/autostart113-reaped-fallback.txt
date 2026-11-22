@@ -24,7 +24,7 @@
       "status": "GAP",
       "reason": "no_process_specific_write_grant",
       "observation": {
-        "pid": 3452888,
+        "pid": 1317268,
         "writable": true
       }
     }
@@ -36,11 +36,11 @@
     "fault_cases": 176,
     "construction_cases": 20,
     "invocations_completed": 22,
-    "complete_censuses": 0,
+    "complete_censuses": 4,
     "forbidden_launches": 18,
-    "observation_failures": 22
+    "observation_failures": 18
   },
   "qualification": "INCOMPLETE",
   "faults_ok": true,
-  "receipt_sha256": "6c163fa5903723e18bbb65c5879988062ef279c42c85552933e062bb2740fe68"
+  "receipt_sha256": "8111482921a6ce4e3aab31d50f7c1408a489a885be49cc678a02c0399869c0c7"
 }
