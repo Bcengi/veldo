@@ -1,0 +1,898 @@
+Diagnostic transcript; partial suites are not unit verification or landing evidence.
+Raw SHA-256: 73dee308909a5f06e465916393f9d0f0628faa21125fd06e6e6b58869e80b54e
+Home roots and node addresses redacted.
+
+remote_run[pc2 f437cb0a66bf 09:42:02]: selected node pc2 (dmitry-pc2); mode=share, slots=3
+remote_run[pc2 f437cb0a66bf 09:42:02]: commit already on dmitry-pc2
+remote_run[pc2 f437cb0a66bf 09:42:02]: run rr20261122094201-c783 started on dmitry-pc2 (VELDO-0253: a space change that lets Veldo remove more or protect less); node log ~/remote-run/runs/rr20261122094201-c783/log
+[remote_run pc2 09:42:02] run rr20261122094201-c783 selected node pc2 (Linux-x86_64)
+[remote_run pc2 09:42:03] setup 0s; f437cb0a66bfa8fe8932d1ee60c236a8a60941dc in <home>/remote-run/runs/rr20261122094201-c783/work; python 3.12.13, node 22.22.0
+[remote_run pc2 09:42:03] command: python3 -B proof/VELDO-0253/registered_workers.py 
+{
+  "commit": "f437cb0a66bfa8fe8932d1ee60c236a8a60941dc",
+  "results": [
+    {
+      "case": "install253-partial-commit",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "4f234c521146221352c551f5074f445614041807d321985338df08c934cbbc4e",
+          "old_digest": "4f234c521146221352c551f5074f445614041807d321985338df08c934cbbc4e",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/whole-commit": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac1/whole-commit",
+            "VELDO-0253 ac1/cross-references",
+            "VELDO-0253 ac1/plain-credential",
+            "VELDO-0253 ac2/widening-waits",
+            "VELDO-0253 ac2/exact-decision",
+            "VELDO-0253 ac2/superseded",
+            "VELDO-0253 ac2/classification",
+            "VELDO-0253 ac3/one-source",
+            "VELDO-0253 ac3/stale-parent",
+            "VELDO-0253 ac3/layout-only",
+            "VELDO-0253 ac3/external-edit",
+            "VELDO-0253 ac3/push-refused",
+            "VELDO-0253 ac4/pinned-survives",
+            "VELDO-0253 ac2/signed-settlement",
+            "VELDO-0253 ac2/forged-settlement",
+            "VELDO-0253 ac1/setup-import",
+            "VELDO-0253 ac4/migrated-pins",
+            "VELDO-0253 ac3/signed-owner-save",
+            "VELDO-0253 ac3/no-store-writer",
+            "VELDO-0253 ac1/private-template",
+            "VELDO-0253 ac2/signed-stale",
+            "VELDO-0253 ac1/approval-validation",
+            "VELDO-0253 ac4/installation-bindings",
+            "VELDO-0253 ac1/last-good-reader"
+          ],
+          "new_digest": "a3a35d140d4e41d2cd0ade30715d57abf678dbf03cbb15456da65a029508c596",
+          "old_digest": "4f234c521146221352c551f5074f445614041807d321985338df08c934cbbc4e",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/whole-commit": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "4f234c521146221352c551f5074f445614041807d321985338df08c934cbbc4e",
+          "old_digest": "4f234c521146221352c551f5074f445614041807d321985338df08c934cbbc4e",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/whole-commit": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac1/whole-commit"
+      ]
+    },
+    {
+      "case": "install253-tool-not-widening",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/widening-waits": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac2/widening-waits",
+            "VELDO-0253 ac2/exact-decision",
+            "VELDO-0253 ac2/superseded",
+            "VELDO-0253 ac2/classification",
+            "VELDO-0253 ac3/one-source",
+            "VELDO-0253 ac3/stale-parent",
+            "VELDO-0253 ac3/layout-only",
+            "VELDO-0253 ac3/external-edit",
+            "VELDO-0253 ac3/push-refused",
+            "VELDO-0253 ac4/pinned-survives",
+            "VELDO-0253 ac2/signed-settlement",
+            "VELDO-0253 ac2/forged-settlement",
+            "VELDO-0253 ac1/setup-import",
+            "VELDO-0253 ac4/migrated-pins",
+            "VELDO-0253 ac3/signed-owner-save",
+            "VELDO-0253 ac3/no-store-writer",
+            "VELDO-0253 ac1/private-template",
+            "VELDO-0253 ac2/signed-stale",
+            "VELDO-0253 ac1/approval-validation",
+            "VELDO-0253 ac4/installation-bindings",
+            "VELDO-0253 ac1/last-good-reader"
+          ],
+          "new_digest": "b6857e8bfd9f53e065ce50fba968cb16e2a7777de9774d81b5caa6d37cee4c6e",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/widening-waits": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/widening-waits": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac2/widening-waits"
+      ]
+    },
+    {
+      "case": "install253-store-save",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "b88a417045c5aa7ef3ae17fe429f6f55a6cacf05a94ec2efa4ed81fad84825e1",
+          "old_digest": "b88a417045c5aa7ef3ae17fe429f6f55a6cacf05a94ec2efa4ed81fad84825e1",
+          "replacement_count": 1,
+          "targets": {
+            "ac3/one-source": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac3/one-source",
+            "VELDO-0253 ac3/working-copy-follows",
+            "VELDO-0253 ac3/stale-parent",
+            "VELDO-0253 ac3/layout-only",
+            "VELDO-0253 ac3/external-edit",
+            "VELDO-0253 ac3/push-refused",
+            "VELDO-0253 ac4/pinned-survives",
+            "VELDO-0253 ac2/signed-settlement",
+            "VELDO-0253 ac2/forged-settlement",
+            "VELDO-0253 ac1/setup-import",
+            "VELDO-0253 ac4/migrated-pins",
+            "VELDO-0253 ac3/signed-owner-save",
+            "VELDO-0253 ac3/no-store-writer",
+            "VELDO-0253 ac1/private-template",
+            "VELDO-0253 ac2/signed-stale",
+            "VELDO-0253 ac4/installation-bindings",
+            "VELDO-0253 ac1/last-good-reader"
+          ],
+          "new_digest": "a3d6e1b77c2514ea3612a6cabb36a7ebc5211496c09c20c53011dbc1374f7b3b",
+          "old_digest": "b88a417045c5aa7ef3ae17fe429f6f55a6cacf05a94ec2efa4ed81fad84825e1",
+          "replacement_count": 1,
+          "targets": {
+            "ac3/one-source": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "b88a417045c5aa7ef3ae17fe429f6f55a6cacf05a94ec2efa4ed81fad84825e1",
+          "old_digest": "b88a417045c5aa7ef3ae17fe429f6f55a6cacf05a94ec2efa4ed81fad84825e1",
+          "replacement_count": 1,
+          "targets": {
+            "ac3/one-source": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac3/one-source"
+      ]
+    },
+    {
+      "case": "install253-pin-from-git",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "b88a417045c5aa7ef3ae17fe429f6f55a6cacf05a94ec2efa4ed81fad84825e1",
+          "old_digest": "b88a417045c5aa7ef3ae17fe429f6f55a6cacf05a94ec2efa4ed81fad84825e1",
+          "replacement_count": 1,
+          "targets": {
+            "ac4/pinned-survives": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac4/pinned-survives",
+            "VELDO-0253 ac2/signed-settlement",
+            "VELDO-0253 ac2/forged-settlement",
+            "VELDO-0253 ac1/setup-import",
+            "VELDO-0253 ac4/migrated-pins",
+            "VELDO-0253 ac3/signed-owner-save",
+            "VELDO-0253 ac3/no-store-writer",
+            "VELDO-0253 ac1/private-template",
+            "VELDO-0253 ac2/signed-stale",
+            "VELDO-0253 ac4/installation-bindings",
+            "VELDO-0253 ac1/last-good-reader"
+          ],
+          "new_digest": "7d75ea9cb69d41c5c78b71b827e7fb0a9af69191bdbbb58ec70ed972e68b02a3",
+          "old_digest": "b88a417045c5aa7ef3ae17fe429f6f55a6cacf05a94ec2efa4ed81fad84825e1",
+          "replacement_count": 1,
+          "targets": {
+            "ac4/pinned-survives": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "b88a417045c5aa7ef3ae17fe429f6f55a6cacf05a94ec2efa4ed81fad84825e1",
+          "old_digest": "b88a417045c5aa7ef3ae17fe429f6f55a6cacf05a94ec2efa4ed81fad84825e1",
+          "replacement_count": 1,
+          "targets": {
+            "ac4/pinned-survives": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac4/pinned-survives"
+      ]
+    },
+    {
+      "case": "install253-removal-not-widening",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/binding-removed": [
+              true
+            ],
+            "ac2/connector-removal": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac2/binding-removed",
+            "VELDO-0253 ac2/connector-removal"
+          ],
+          "new_digest": "f67837d0bb9d5f53323bd7692fa9a926659771f93dfd9bd671c81c37e188a648",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/binding-removed": [
+              false
+            ],
+            "ac2/connector-removal": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/binding-removed": [
+              true
+            ],
+            "ac2/connector-removal": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac2/binding-removed",
+        "ac2/connector-removal"
+      ]
+    },
+    {
+      "case": "install253-deleted-binding-narrows",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/binding-removed": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac2/binding-removed"
+          ],
+          "new_digest": "0832d21afa62ad218969c6cf8f1806ef0b52df7f5885f741bbd5140a76230f86",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/binding-removed": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/binding-removed": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac2/binding-removed"
+      ]
+    },
+    {
+      "case": "install253-deletion-widens",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/narrowing-direct": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac2/narrowing-direct"
+          ],
+          "new_digest": "e4ea2fdac6cef3a89b231f0ea79bc0673ef290b6cf95ec1c6fcd210a39debd9a",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/narrowing-direct": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/narrowing-direct": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac2/narrowing-direct"
+      ]
+    },
+    {
+      "case": "install253-memory-unclassified",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "old_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/memory-server": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac2/memory-server"
+          ],
+          "new_digest": "90a4cfc9f8f7072514f56f1d71e0750054cc47d00a84ed2570415d163e8abd61",
+          "old_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/memory-server": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "old_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/memory-server": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac2/memory-server"
+      ]
+    },
+    {
+      "case": "install253-memory-references",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/cross-references": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac1/cross-references"
+          ],
+          "new_digest": "638f93d8c4d29a2ca78bc065591ab1a4cc5c74d4ca856826c0bfe6206822ac58",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/cross-references": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/cross-references": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac1/cross-references"
+      ]
+    },
+    {
+      "case": "install253-schedule-references",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/cross-references": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac1/cross-references"
+          ],
+          "new_digest": "bad54ae71a366a43f4734333fd030affd2ed27ae599ceebf3fcdd12707372161",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/cross-references": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/cross-references": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac1/cross-references"
+      ]
+    },
+    {
+      "case": "install253-deploy-references",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/cross-references": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac1/cross-references"
+          ],
+          "new_digest": "8a0b1f4fe130e33bf167e0eefa4b27f77e463e8fb1c28f683721e569b8987103",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/cross-references": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/cross-references": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac1/cross-references"
+      ]
+    },
+    {
+      "case": "install253-project-remote",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "old_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/project-remote": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac2/project-remote"
+          ],
+          "new_digest": "da961300677928b3da4fcb61832cf8f18c1ca5f5930f99ff7fe14461594c3b67",
+          "old_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/project-remote": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "old_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/project-remote": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac2/project-remote"
+      ]
+    },
+    {
+      "case": "install253-bot-not-widening",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "old_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/other-widening": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac2/other-widening"
+          ],
+          "new_digest": "51868030c49a15e3b41cc4392d39e58c5d7a78fd60a79e7f5c48a4c32f878a1b",
+          "old_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/other-widening": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "old_digest": "f741487d0d2df6fe20c9108fe0224e1bea723207b3f005e12b4f603717b7cff5",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/other-widening": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac2/other-widening"
+      ]
+    },
+    {
+      "case": "install253-plain-credential",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/plain-credential": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac1/plain-credential"
+          ],
+          "new_digest": "2dc46c0d93107f63a594ff93519d5c623bf5776abfd5d5dfb1fd5268b6c9e2fd",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/plain-credential": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/plain-credential": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac1/plain-credential"
+      ]
+    },
+    {
+      "case": "install253-unread-import",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "35192da6d7108ebac84ba6e111cef663e73d5def0759b708cbc196a3baf9df74",
+          "old_digest": "35192da6d7108ebac84ba6e111cef663e73d5def0759b708cbc196a3baf9df74",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/unread-secret-import": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac1/unread-secret-import"
+          ],
+          "new_digest": "471029f140aede1136057bd157d0aac9ca7130e4f4da14a5cf76859c48e08dfc",
+          "old_digest": "35192da6d7108ebac84ba6e111cef663e73d5def0759b708cbc196a3baf9df74",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/unread-secret-import": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "35192da6d7108ebac84ba6e111cef663e73d5def0759b708cbc196a3baf9df74",
+          "old_digest": "35192da6d7108ebac84ba6e111cef663e73d5def0759b708cbc196a3baf9df74",
+          "replacement_count": 1,
+          "targets": {
+            "ac1/unread-secret-import": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac1/unread-secret-import"
+      ]
+    },
+    {
+      "case": "install253-checkout-left-behind",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "c21b471c665d2623f2344dc465739d9c1af4169f57b143995fd56b32e9912529",
+          "old_digest": "c21b471c665d2623f2344dc465739d9c1af4169f57b143995fd56b32e9912529",
+          "replacement_count": 1,
+          "targets": {
+            "ac3/working-copy-follows": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac3/working-copy-follows"
+          ],
+          "new_digest": "475f889c2643aab95e1ac75af8cb5ed10cce3f555526cb2c7621e95f225f860e",
+          "old_digest": "c21b471c665d2623f2344dc465739d9c1af4169f57b143995fd56b32e9912529",
+          "replacement_count": 1,
+          "targets": {
+            "ac3/working-copy-follows": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "c21b471c665d2623f2344dc465739d9c1af4169f57b143995fd56b32e9912529",
+          "old_digest": "c21b471c665d2623f2344dc465739d9c1af4169f57b143995fd56b32e9912529",
+          "replacement_count": 1,
+          "targets": {
+            "ac3/working-copy-follows": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac3/working-copy-follows"
+      ]
+    },
+    {
+      "case": "install253-space-protect-direct",
+      "expected_red_green": true,
+      "modes": {
+        "baseline": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/space-protect-removed": [
+              true
+            ]
+          }
+        },
+        "mutant": {
+          "count": 67,
+          "failed_rows": [
+            "VELDO-0253 ac2/space-protect-removed"
+          ],
+          "new_digest": "60aa035284f2abb51fab32b1b958fd16014026bb4e0395843757488f0e834e76",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/space-protect-removed": [
+              false
+            ]
+          }
+        },
+        "noop": {
+          "count": 67,
+          "failed_rows": [],
+          "new_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "old_digest": "f435d5b1e908ce7a86a41184856d4b111dd168ef55a24181557b236a605458a6",
+          "replacement_count": 1,
+          "targets": {
+            "ac2/space-protect-removed": [
+              true
+            ]
+          }
+        }
+      },
+      "rows": [
+        "ac2/space-protect-removed"
+      ]
+    }
+  ],
+  "scope": "registered worker diagnostics; not the confined coordinator or full gate"
+}
+[remote_run pc2 09:51:10] command exit 0 after 547s
+[remote_run pc2 09:51:12] run ended rc=0
+remote_run[pc2 f437cb0a66bf 09:51:14]: rc=0 in 553s (run rr20261122094201-c783)

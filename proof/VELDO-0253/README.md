@@ -127,3 +127,25 @@ Host results (host_heavy.sh, an immutable clone, diagnostics, not a gate pass):
   installation schema and template and changes no assertion. Suite 65 did not report in that run.
 - At b0112c68a289, suite 65 had 42 passed and 0 failed (`fix-host-workflow.txt`), and suite 71 had 71
   passed and 0 failed (`fix-host-api.txt`).
+
+## Fix round 2 (fix-check FIX, N1)
+
+The installation's `space` section is classified (`space_authority`). A change that lets Veldo remove
+more or protect less waits for the owner; narrowing applies directly. The owner's ruling on this
+classification is requested in the spec History, like the round 1 items.
+
+| Kind of change | Row | Falsifier |
+| --- | --- | --- |
+| Removals turned on (from off, and from no section) | ac2/space-enabled | |
+| A protect entry dropped, each of the six protect lists | ac2/space-protect-removed | install253-space-protect-direct |
+| An engine added | ac2/space-engine-added | |
+| A build root, scratch root, plain repository or client account added | ac2/space-root-added | |
+| Removals off, an engine or root removed, a protect entry added, the section removed: direct | ac2/space-narrowing-direct | |
+
+docs/installation.md lists the space changes on both sides.
+
+Fix-round 2 pc2 results at f437cb0a66bf (diagnostics, not a gate pass): suite 157 has 41 rows passed
+and 0 failed, 67 with its prerequisite closure (`fix2-ticket-pc2.txt`). The registered worker
+diagnostic passes all seventeen cases (`fix2-workers-pc2.txt`): baselines and no-ops are green at 67
+observations, and install253-space-protect-direct fails only ac2/space-protect-removed. The confined
+coordinator and the host-only suites were not rerun in this round.
