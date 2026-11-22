@@ -1,0 +1,4 @@
+commit dacb4e00a01e4aa8f714a03895d37c4cf3dc9503 cores 12 (taskset 0-11) started 2026-11-22T00:05:27Z load 2.35 6.05 12.57
+== unconfined sharded start 2026-11-22T00:05:27Z load 2.35 6.05 12.57
+   unconfined sharded exit 0 end 2026-11-22T00:10:01Z load 5.10 7.34 11.68
+done 2026-11-22T00:10:01Z

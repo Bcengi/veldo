@@ -7,8 +7,8 @@
    42829); each ratio was measured once.** One paired run measured 0.148 and 0.448 (`legs.md`), with
    the unconfined figure 0.225 to the end of the last shard and the rest the round 1 isolation
    check's 300 second wait for files other sessions left in /tmp. That wait is gone at the top of
-   /tmp since fix round 2 (item 5); the round 2 run of the unconfined leg as shards is in `legs.md`,
-   and it was not paired with a new ordered run. The load on the host changed between the runs.
+   /tmp since fix round 2 (item 5); the round 2 run of the unconfined leg as shards (green, 273.8 s,
+   0.1 s of it the isolation check) is in `legs.md`, and it was not paired with a new ordered run. The load on the host changed between the runs.
 3. **Six unconfined suites run without an instance name** (`run_scope.UNNAMED`: 85_veldo_0171,
    86_veldo_0189, 91_veldo_0167, 106_veldo_0185, 117_veldo_0227 and 127_veldo_0234, each of which
    runs the current engine over a host an older engine laid down), and
