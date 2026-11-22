@@ -1466,17 +1466,16 @@
   },
   "widening": {
     "installation": {
-      "accounts": "added",
+      "accounts": "account_authority",
       "ports": "added",
-      "channels": "added",
+      "channels": "channel_authority",
       "approvers": "added",
-      "owner": "changed",
-      "git_identities": "added"
+      "owner": "owner_role"
     },
     "project": {
       "workflows": "changed",
       "render_command": "changed",
-      "deploy_targets": "changed",
+      "deploy_targets": "added",
       "renumber_hook": "changed",
       "account": "changed"
     },
