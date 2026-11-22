@@ -267,8 +267,7 @@ def receive(config, contract, accepted):
 
 
 def identity_metrics(conn):
-    return dict(E.metrics(conn), identities=_git_process.identity_transport().metrics(conn),
-                control_plane=E.organ('control_plane_calls').metrics())
+    return dict(E.metrics(conn), identities=_git_process.identity_transport().metrics(conn))
 
 
 def execute(config, request, principal, challenge, signature):
@@ -297,8 +296,9 @@ def execute(config, request, principal, challenge, signature):
         contract = accepted
         config = dict(config, _identity_events=[])
         try:
-            with E.organ('control_plane_calls').service(
-                    lambda: E.organ('installation').configuration_commit(conn), dispatch=accepted.get('dispatch_id')):
+            outside = E.organ('control_plane_calls')
+            with outside.service(lambda: E.organ('installation').configuration_commit(conn),
+                                 observe=outside.effect_observer(config), dispatch=accepted.get('dispatch_id')):
                 observation = receive(config, contract, accepted)
             if isinstance(observation, dict) and observation.get('status') == 'refused':
                 # A receiver that ran may already have acted, so its own "refused" is not

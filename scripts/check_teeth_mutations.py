@@ -10485,6 +10485,12 @@ def cases():
         "    data = outside.settings('tracker_routing')\n",
         ['ac2/accepted-site'])
     result[-1]['siblings'] = True
+
+    add(258, 'outside258-literal-in-refusal', outside258, 'control_plane_calls.py',
+        "name=match[2] if match and scheme in ('env', 'file') else None",
+        "name=match[2] if match else None",
+        ['ac1/no-canary-in-observations'])
+    result[-1]['siblings'] = True
     add(258, 'outside258-registered-only-scan', outside258, 'control_plane_scan.py',
         "    for path in sorted(engine.rglob('*.py')):\n",
         "    for path in sorted(folder / name for name in listed):\n",

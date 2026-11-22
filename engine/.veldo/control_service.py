@@ -2405,6 +2405,7 @@ class Service:
                 'service': self.config['service'], 'unit': self.config['unit'],
                 'counts': dict(self.counts, refusals=dict(self.refusals)), 'pending': self.pending(),
                 'control_plane': _organ('control_plane_calls').metrics(),
+                'control_plane_effects': _organ('control_plane_calls').effect_metrics(self.config),
                 'channel': self.channel_status(), 'api': self.api_status(), 'loop': self.loop_status(),
                 'receivers': receiver_status(self.config), 'instance': dict(self.instance),
                 'repositories': sorted(self.repositories)}
