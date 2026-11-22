@@ -421,6 +421,15 @@ class JiraCloudAdapter(TrackerAdapter):
         if not self._token:
             raise TrackerAdapterError("no token resolved from %r (set the secret, never inline it)" % token_ref)
 
+    @_CP.contextlib.contextmanager
+    def trace(self, unit):
+        previous = getattr(self, '_unit', None)
+        self._unit = unit
+        try:
+            yield
+        finally:
+            self._unit = previous
+
     # --- HTTP (reference-wired; stdlib urllib; not run in the gate) ----------
     def _request(self, method, path, body=None):
         import base64
@@ -433,7 +442,7 @@ class JiraCloudAdapter(TrackerAdapter):
         req.add_header("Accept", "application/json")
         if data is not None:
             req.add_header("Content-Type", "application/json")
-        with _CP.http(self._caller, req) as resp:
+        with _CP.http(self._caller, req, unit=getattr(self, '_unit', None)) as resp:
             raw = resp.read().decode()
             return json.loads(raw) if raw else {}
 
@@ -633,7 +642,7 @@ class ConfluenceCloudAdapter(TrackerAdapter):
         req.add_header("Accept", "application/json")
         if data is not None:
             req.add_header("Content-Type", "application/json")
-        with _CP.http(self._caller, req) as resp:
+        with _CP.http(self._caller, req, unit=getattr(self, '_unit', None)) as resp:
             raw = resp.read().decode()
             return json.loads(raw) if raw else {}
 

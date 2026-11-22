@@ -201,7 +201,7 @@ class OAuthTokenManager:
                                        "client_secret": client_secret, "audience": audience}).encode()
         req = urllib.request.Request(token_url, data=body, method="POST")
         req.add_header("Content-Type", "application/x-www-form-urlencoded")
-        with _IK._CP.http('tracker', req) as resp:
+        with _IK._CP.http('tracker', req, unit=getattr(self, '_unit', None)) as resp:
             return json.loads(resp.read().decode())
 
     def __repr__(self):
@@ -237,7 +237,7 @@ class OAuthJiraCloudAdapter(JiraCloudAdapter):
         req.add_header("Accept", "application/json")
         if data is not None:
             req.add_header("Content-Type", "application/json")
-        with _IK._CP.http('tracker', req) as resp:
+        with _IK._CP.http('tracker', req, unit=getattr(self, '_unit', None)) as resp:
             raw = resp.read().decode()
             return json.loads(raw) if raw else {}
 
@@ -249,7 +249,7 @@ def _accessible_resources(token):
                                  method="GET")
     req.add_header("Authorization", "Bearer " + token)
     req.add_header("Accept", "application/json")
-    with _IK._CP.http('tracker', req) as resp:
+    with _IK._CP.http('tracker', req, unit=getattr(self, '_unit', None)) as resp:
         return json.loads(resp.read().decode())
 
 

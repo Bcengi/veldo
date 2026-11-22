@@ -101,7 +101,7 @@ def metrics():
 
 
 @contextlib.contextmanager
-def outside(caller, destination, operation, dispatch=None):
+def outside(caller, destination, operation, dispatch=None, unit=None):
     require_service(caller)
     started, result, outcome = time.monotonic(), 'failed', {}
     try:
@@ -113,7 +113,7 @@ def outside(caller, destination, operation, dispatch=None):
         commit = state.commit() if callable(state.commit) else state.commit
         emit(dict(caller=caller, host=urlsplit(destination).hostname, operation=operation,
                   result=result, latency=time.monotonic() - started,
-                  installation_commit=commit, dispatch_id=dispatch or state.dispatch))
+                  installation_commit=commit, dispatch_id=dispatch or state.dispatch, unit_id=unit))
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -122,9 +122,9 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 @contextlib.contextmanager
-def http(caller, request, timeout=120):
+def http(caller, request, timeout=120, unit=None):
     """No ambient proxy and no redirect of a credential; errors contain no URL or body."""
-    with outside(caller, request.full_url, request.get_method()):
+    with outside(caller, request.full_url, request.get_method(), unit=unit):
         try:
             with urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect()).open(
                     request, timeout=timeout) as response:
