@@ -319,6 +319,14 @@ print(json.dumps(result))
         landed = call(r)
         actual = git('ls-remote', str(remote), 'refs/heads/main').split()[0]
         row('real-publication', landed.get('result', {}).get('completed') is True and actual == tip and call(r) == landed)
+        outside = E.organ('control_plane_calls')
+        outside_log = outside.effect_log({'store': str(db)})
+        outside_records = [_v28_json.loads(line) for line in outside_log.read_text().splitlines()] if outside_log.exists() else []
+        expect('VELDO-0028 effects/publication-call-observed', any(
+            item.get('caller') == 'landing_push' and item.get('dispatch_id') == r['dispatch_id']
+            and item.get('result') == 'ok' and {'host', 'operation', 'latency', 'installation_commit'} <= set(item)
+            for item in outside_records)
+            and outside.effect_metrics({'store': str(db)})['calls'].get('landing_push:ok', 0) > 0)
         # R2: the trusted clone's own configuration widens an ordinary push (followTags with
         # an annotated tag on the tip, push.default=matching with another branch), and a
         # remote hook changes a second ref. Publication sends exactly the authorized ref, and
