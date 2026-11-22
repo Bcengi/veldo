@@ -601,14 +601,16 @@ L.main()
                 reap(launch)
             check('query/lifecycle', label + ' endpoint removed', not path.parent.exists())
             check('query/lifecycle', label + ' receiver exited', launch.returncode is not None)
+            if ending != 'receiver':
+                check('query/lifecycle', label + ' query counts collected', bool(launch.query_counts))
         launch, pending = run_fixture('accept-refusal', fail_accept=True)
         refused = read_event(launch.child, pending, {'refused'})
         reap(launch)
         check('query/lifecycle', 'later refusal removes endpoint', refused['refusal'] == 'fixture_accept_refused'
               and not Q.endpoint('accept-refusal').parent.exists() and not any(e.get('event') == 'payload' for e in pending[1]))
-        bad_cfg = dict(config, store=str(db), workspace=str(base / 'missing-workspace'))
+        bad_cfg = dict(config, host_trust=str(base / 'missing-trust'))
         # Creation and readiness failures reach the receiver's pre-acceptance refusal, not a spawn.
-        for label, change in (('launch-creation-failure', {}), ('launch-reader-failure', {'workspace': bad_cfg['workspace']})):
+        for label, change in (('launch-creation-failure', {}), ('launch-reader-failure', {'host_trust': bad_cfg['host_trust']})):
             path = Q.endpoint(label)
             if not change:
                 path.parent.mkdir()
