@@ -1,13 +1,13 @@
 Check transcript.
-Raw SHA-256: b548e77783cf3d3dba632512ddbc2b34a729e8dd00be56ae1370df4ca27818ed
+Raw SHA-256: b885af6fe48887051727aa23e626bd3b317b9fcb6c01a2c744307acd4c773f3f
 Home roots redacted; remote cleanup after command exit omitted.
 
-[remote_run pc2 03:25:07] run rr20261122032505-2cba selected node pc2 (Linux-x86_64)
-[remote_run pc2 03:25:07] setup 0s; beee4741169247bc1d34f3c19488152660dde615 in <home>/remote-run/runs/rr20261122032505-2cba/work; python 3.12.13, node 22.22.0
-[remote_run pc2 03:25:07] command: bash -c bash\ scripts/check_lint.sh\ \&\&\ bash\ scripts/check_template_sync.sh\ \&\&\ python3\ -B\ scripts/check_personal_setup.py\ --base\ 199d0b6f 
-lint: pass (1259 python, 40 shell, 4.68s)
+[remote_run pc2 03:29:27] run rr20261122032925-d743 selected node pc2 (Linux-x86_64)
+[remote_run pc2 03:29:28] setup 1s; 4883f8a4193b74a75647c6e8caa01af5b1d29943 in <home>/remote-run/runs/rr20261122032925-d743/work; python 3.12.13, node 22.22.0
+[remote_run pc2 03:29:28] command: bash -c bash\ scripts/check_lint.sh\ \&\&\ bash\ scripts/check_template_sync.sh\ \&\&\ python3\ -B\ scripts/check_personal_setup.py\ --base\ 199d0b6f 
+lint: pass (1260 python, 40 shell, 4.71s)
 template sync: pass (333 pair(s) compared, 6 declared per-repo, 367 engine-only)
 veldo installation: none found (looked at <home>/remote-run/cache/veldo<home>/veldo/installation, the documented default under the configuration root)
 personal setup: no installation found; ran the built-in shapes only
 personal setup: 0 finding(s)
-[remote_run pc2 03:25:14] command exit 0 after 7s
+[remote_run pc2 03:29:34] command exit 0 after 6s

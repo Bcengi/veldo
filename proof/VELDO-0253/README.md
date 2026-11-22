@@ -62,7 +62,7 @@ home roots are redacted and remote cleanup messages after command exit are omitt
 - Ticket diagnostic: 26 ticket rows and 24 existing workflow-binding rows, zero failed (plus 26 shared validator rows).
 - Workflow binding diagnostic: 24 existing VELDO-0241 rows and 25 ticket rows, zero failed.
 - Setup diagnostic: 30 existing space/setup rows and 25 ticket rows, zero failed.
-- Static checks: 1,259 Python files and 40 shell files; 333 template pairs; zero personal-setup findings.
+- Static checks: 1,260 Python files and 40 shell files; 333 template pairs; zero personal-setup findings.
 - UI: locked dependencies installed on pc2 and `npm run typecheck` exited zero. Node emitted dependency
   engine-version warnings; no dependency or lockfile changed.
 
@@ -78,3 +78,6 @@ The following pc2 reds were compared with the pre-implementation parent c1cbb7c3
 The paired transcripts are retained. These are not waived product failures or counted passes. The host
 recheck is still queued; its completion and the lead's full gate/independent review remain outstanding.
 The canonical verification command was not run, as instructed. No approval is asserted.
+
+The queued host request is recorded in `host-request.json`; it leaves its immutable checkout and raw
+results under the named temporary output pattern. Those future results are not claimed by this bundle.
