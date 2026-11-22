@@ -15,7 +15,8 @@
     "control_channel_projection.py": "owner_channel",
     "control_channel_presentation.py": "owner_channel",
     "control_channel_attribution.py": "owner_channel",
-    "request_doorbell.py": "doorbell"
+    "request_doorbell.py": "doorbell",
+    "git_process.py": "identity_transport"
   },
   "local_only": {
     "candidate_git.py": [
