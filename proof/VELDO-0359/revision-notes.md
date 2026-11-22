@@ -342,3 +342,30 @@ Applied as described.
 ## Lead correction after round 6 (2026-11-22, validation-narrow4 finding 4, LOW)
 
 Grant-set parity is limited to fixtures on which the runner's grant preparation succeeds (design section 6, row launch/risky-census, spec AC4). The unresolvable required-root fixture is judged by the named pre-acceptance census refusal and, with only the census skipped, acceptance followed by runner failure and no payload. A component fixture whose unchanged runner qualification refuses is judged by its expected refusal outcome. The successful shipped-configuration, credential-exclusion, absent-home and newly-created-state parity fixtures are kept. Applied by the lead exactly as the validator wrote it; findings 1 to 3 of validation-narrow4 passed.
+
+
+## B0 lead disposition and B1 boundary (2026-11-22)
+
+The lead authorized B1, then B2: both engines' tools work under the ruleset, setup takes at most
+3.3 ms against the 5 s deadline, and the authority socket connection receives the designed refusal.
+The fourth exit condition has no live layout to inspect on this host. Preflight runs at the first
+real installation, with the design's named refusal and marker recovery. No live store is involved
+in B1; it uses fixtures and no live engine. The requested suite runs replace running the full
+verification script for this brief; no full-verification claim follows from those partial runs.
+
+B0 findings retained, without product changes to address them: Codex workspace-write fails because
+AppArmor blocks bwrap on this host, including without the ruleset. Claude Code's optional sandbox
+switches itself off because socat is absent. Neither finding is caused by the ruleset.
+
+B1's serving Gate uses the same installed receiver configuration and host/settlement trust as
+Receiver._recheck, with its own read-only connection opened on the serving thread. The configured
+binding supplies workspace and coordinates; no client can supply them. A conversation receiver
+has no repository, so its hello cannot match any enrolled checkout. The client reads only its
+local enrollment binding to compare repository identity. No store-opening behavior of an existing
+Veldo process is changed.
+
+Cleanup has the two designed owners. The receiver reports the new directory's device/inode before
+binding; the supervising Launch drains its reaped receiver's remaining notices and removes only
+that reported directory identity. This preserves an existing endpoint on exclusive-creation failure.
+No connection-based startup sweep exists. Request logs contain only request name and outcome;
+termination counts are collected before or with the receiver's final messages.
