@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -309 +309 @@
+@@ -312 +312 @@
 -    return dict(registered=registered, aliases=aliases, unexplained=unexplained)
 +    return dict(registered=registered, aliases=aliases, unexplained=[])

@@ -1,4 +1,4 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -1215,0 +1216 @@
+@@ -1284,0 +1285 @@
 +            r["state"] = "sealing"

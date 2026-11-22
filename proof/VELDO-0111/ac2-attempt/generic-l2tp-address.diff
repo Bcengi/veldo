@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -353 +353 @@
+@@ -356 +356 @@
 -    if protocol != L2TP_IP:
 +    if True:

@@ -35,7 +35,7 @@ def main():
     assert all(case['completed'] for case in report['cases'])
     for label in ('baseline', 'final-control'):
         case, = [c for c in report['cases'] if c['label'] == label]
-        assert len(case['rows']) == 22 and all(ok for _, ok in case['rows'])
+        assert len(case['rows']) == 23 and all(ok for _, ok in case['rows'])
     for mode in ('owned', 'sendmmsg', 'imported'):
         for label in ('green', 'ignore-scm-rights', 'ignore-scm-rights-and-release'):
             case, = [c for c in report['cases'] if c['label'] == 'escaped-reference-' + mode + '-' + label]
@@ -73,7 +73,10 @@ def main():
                                                      'ignore-sctp-bindx', 'ignore-l2tp-conn-id')),
             ('census/io-uring-refused-in-scope', ('skip-inherited-ring-scan', 'ignore-installed-rings')),
             ('census/compat-abi-qualified', ('drop-i386-socket-map', 'native-compat-message-layout',
-                                             'drop-compat-socketcall-messages', 'compat-aliases-native'))):
+                                             'drop-compat-socketcall-messages', 'compat-aliases-native')),
+            ('census/close-range-accounted', ('refuse-close-range', 'ignore-close-range', 'cloexec-closes-now',
+                                              'ignore-exec-closes', 'allow-unknown-close-range-flags',
+                                              'ignore-shared-close-range'))):
         for label in labels:
             case, = [c for c in report['cases'] if c['label'] == label + '-red']
             assert case['completed'] and dict(case['rows'])[row] is False, label
@@ -96,7 +99,7 @@ def main():
     total = sum(p.stat().st_size for p in HERE.parent.rglob('*') if p.is_file())
     assert total < 1_000_000, total
     print('Receipt, source, suite, spec, witness and protected-declaration digests: valid')
-    print('Baseline/final: 22 green rows each, no qualification gaps; 13 continuation-2 mutants red; escape, release, control/memory-ABA matrices and eight fault receipts: valid')
+    print('Baseline/final: 23 green rows each, no qualification gaps; 13 continuation-2 and 6 close_range mutants red; escape, release, control/memory-ABA matrices and eight fault receipts: valid')
     print('Retained zero-context diffs: apply cleanly')
     print('Proof bytes:', total, '(below 1 MB)')
     spec = importlib.util.spec_from_file_location('personal_setup', ROOT / 'scripts/check_personal_setup.py')

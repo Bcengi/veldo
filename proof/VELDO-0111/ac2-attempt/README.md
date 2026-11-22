@@ -1,6 +1,6 @@
 # AC2 continuation, 2026-11-21
 
-Base: `b36e4781`, branch `veldo-0111-complete`. The lead's 2026-11-21 decision
+Base: `bb0686b3`, branch `veldo-0111-complete`. The lead's 2026-11-21 decision
 is recorded in the specification History. The owner's 2026-10-28 amendment is
 kept and not weakened. **All retained AC2 obligations are addressed; AC2
 acceptance awaits independent review.**
@@ -8,9 +8,11 @@ acceptance awaits independent review.**
 ## Results
 
 One recheck through the owner's external `host_heavy.sh` completed with exit 0
-(`recheck.txt`, `validation.txt`). Baseline and final control: 22/22 rows.
-All whole-suite mutants, witness mutants and the 13 new continuation-2
-mutants were detected; all controls were green. The baseline host receipt
+(`recheck.txt`, `validation.txt`), base `bb0686b3` plus the close_range
+follow-up. Baseline and final control: 23/23 rows. All whole-suite mutants,
+witness mutants, the 13 continuation-2 mutants and the 6 close_range mutants
+were detected (each close_range mutant reddens only
+`census/close-range-accounted`); all controls were green. The baseline host receipt
 names **no qualification gaps**: `protocol_inventory_bounds`,
 `operation_configuration` and `io_uring_socket_effects` no longer appear, and
 compat i386 calls are qualified. A plain measured call on this host (for
@@ -19,6 +21,43 @@ consumer rows. The inventory drive itself stays INCOMPLETE because it creates
 sockets of families outside the four. No named-gap replay remains to run.
 These are regression and falsifier results; acceptance needs independent
 review.
+
+## Follow-up, 2026-11-22: close_range
+
+Found by VELDO-0113: the collector refused close_range (syscall 436), which
+Python's subprocess issues before every exec, so most of its client runs ended
+INCOMPLETE. close_range is now accounted exactly like close on every descriptor
+in its range. The range is read from the kernel descriptor table at the entry
+stop and checked against the exit stop; each socket in it gets a `close` event
+(`syscall: 436`) and a `descriptor_closes` entry. Release is still proven only
+by the file-release observer, so a reference already queued elsewhere by
+SCM_RIGHTS stays `escaped_reference`. CLOSE_RANGE_CLOEXEC emits
+`close_on_exec_marked` and closes nothing; a successful exec then emits a
+`close` (`cause: close_on_exec`) for each socket it closed. Refused by name
+(`descriptor_operation`): flags outside UNSHARE|CLOEXEC, and close_range on a
+descriptor table another live task shares (its contents can change between the
+entry stop and the kernel's close). A vfork child shares memory, not the table,
+so it is not refused.
+
+Row `census/close-range-accounted` (live drives, each checked against the
+probe's own acknowledgements):
+
+* `subprocess`: a client holding a listener runs `git --version` through
+  subprocess; the receipt is COMPLETE and the child's close_range closes the
+  listener (`syscall: 436`) before the client's own close.
+* `only`: a TCP and a Unix listener are closed only by one close_range; both
+  are observed released, and the client rebinds the same port and abstract
+  name (only a released listener frees them).
+* `cloexec`: CLOSE_RANGE_CLOEXEC leaves the listener open until exec; the
+  close is accounted at exec, not at close_range.
+* `escaped`: a listener sent by SCM_RIGHTS to an outside receiver, then closed
+  by close_range(3, ~0U), yields exactly the send-attributed and the
+  referenced-after-drain `escaped_reference`; the receiver gets a live listener.
+* `shared` (thread) and a unit replay with flag 0x8 are refused by name.
+
+Mutants (whole suite, each reddens the row): `refuse-close-range` (the old
+behaviour), `ignore-close-range`, `cloexec-closes-now`, `ignore-exec-closes`,
+`allow-unknown-close-range-flags`, `ignore-shared-close-range`.
 
 ## Continuation 2: the four retained obligations
 

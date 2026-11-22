@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -985 +985 @@
+@@ -1050 +1050 @@
 -            for fd, link in sorted(self.installed(pid, entry).items()):
 +            for fd, link in []:  # trust received control memory

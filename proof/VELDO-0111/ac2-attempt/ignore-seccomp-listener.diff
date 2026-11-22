@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -967 +967 @@
+@@ -1032 +1032 @@
 -        if nr == 317 and a[0] == 1 and a[1] & 8:
 +        if False:

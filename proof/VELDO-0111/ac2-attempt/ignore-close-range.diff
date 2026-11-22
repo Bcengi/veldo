@@ -1,0 +1,5 @@
+--- a/scripts/fixtures/lifecycle_census.py
++++ b/scripts/fixtures/lifecycle_census.py
+@@ -1157 +1157 @@
+-            self.close_range(pid, entry)
++            pass  # ignore close_range

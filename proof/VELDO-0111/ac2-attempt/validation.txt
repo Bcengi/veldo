@@ -1,7 +1,7 @@
 Receipt, source, suite, spec, witness and protected-declaration digests: valid
-Baseline/final: 22 green rows each, no qualification gaps; 13 continuation-2 mutants red; escape, release, control/memory-ABA matrices and eight fault receipts: valid
+Baseline/final: 23 green rows each, no qualification gaps; 13 continuation-2 and 6 close_range mutants red; escape, release, control/memory-ABA matrices and eight fault receipts: valid
 Retained zero-context diffs: apply cleanly
-Proof bytes: 477401 (below 1 MB)
+Proof bytes: 504979 (below 1 MB)
 personal setup: no installation found; ran the built-in shapes only
 personal setup: 0 finding(s)
 Whitespace check: passed

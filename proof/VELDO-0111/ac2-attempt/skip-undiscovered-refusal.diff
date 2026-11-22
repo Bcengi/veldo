@@ -1,5 +1,5 @@
 --- a/scripts/fixtures/lifecycle_census.py
 +++ b/scripts/fixtures/lifecycle_census.py
-@@ -475 +475 @@
+@@ -478 +478 @@
 -    if undiscovered:
 +    if False:

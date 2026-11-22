@@ -72,15 +72,15 @@
       }
     ]
   },
-  "source_digest": "39f06584c5f2426f8a56bc97b9c7d44895334c914cb775c143c228d1af2805ca",
-  "suite_digest": "16186fa2f4dee1844af95c9912d236b5519f37e4a8a2ef05394d548414e11e6f",
-  "spec_digest": "8df8ec438086c033a0e9fb8475ed7c557a95d36be01ab16caac5ee299e12456c",
+  "source_digest": "c0b68a31629d9455df5bb6d293be3c8e985553e030f486e5354abfe3df00703a",
+  "suite_digest": "2058ef4c0a94d3a2aee5f108ab254051a1c076c7be075596aaf9fcdf368a5f33",
+  "spec_digest": "f21028d65e99df441dfad9d5e57ef2f2fbecffbbac488c2ae246c596c2e8adc7",
   "acceptance": {
     "AC2": false,
     "pending": "independent review"
   },
   "next_obligation": null,
   "current_receipt": "ac2-attempt/receipt.json",
-  "receipt_digest": "7d9fc6653959245ab89c6b89d6da3491f537c71216ecef563e6d457ab021665d",
+  "receipt_digest": "94d88997fdde88d289266f6a4810eb698c0ec1e7a2c019d68076115f44bac768",
   "scope": "Live regression and counterexample evidence; retained AC2 obligations are addressed; acceptance awaits independent review"
 }
