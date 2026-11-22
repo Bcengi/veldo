@@ -9,6 +9,7 @@ and deadline metadata are fixture values; frozen contents, authentication and re
 
 def _v224_stale():
     import copy
+    import hashlib
     import json
     from pathlib import Path
     import subprocess
@@ -59,6 +60,9 @@ def _v224_stale():
             entry['review'] = 'proof/VELDO-0217/reviews/fixture.json'
             review['cases'][name] = dict(declaration=C.declaration_digest(entry), traces=['trace'] * 4)
         files['proof/VELDO-0217/reviews/fixture.json'] = (0o644, R.canonical(review))
+        # VELDO-0217 fix round 2: a reviewed declaration binds the record's exact bytes.
+        for entry in document['cases'].values():
+            entry['review_sha256'] = hashlib.sha256(files[entry['review']][1]).hexdigest()
         files[I.DECLARATIONS] = (0o644, R.canonical(document))
 
     with tempfile.TemporaryDirectory(prefix='v224-') as temporary:
