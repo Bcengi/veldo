@@ -79,7 +79,8 @@ def reference(caller, ref):
     scheme = prefix[1] if prefix else 'literal'
     if scheme != 'keychain':
         state.refusals[scheme] = state.refusals.get(scheme, 0) + 1
-        emit(dict(caller=caller, scheme=scheme, name=match[2] if match else None, result='refused'))
+        emit(dict(caller=caller, scheme=scheme,
+                  name=match[2] if match and scheme in ('env', 'file') else None, result='refused'))
         raise Refused('invalid_input:control_plane_credential:%s:%s' % (caller, scheme))
     try:
         return organ('secretref').wire(ref)
@@ -104,6 +105,50 @@ def settings(key):
 
 def metrics():
     return {'calls': dict(state.calls), 'credential_refusals': dict(state.refusals)}
+
+
+def effect_log(configuration):
+    path = configuration.get('store')
+    return Path(path).with_name('control-plane-calls.jsonl') if path else None
+
+
+def effect_observer(configuration):
+    """Effect children retain observations beside their private store, outside run trees."""
+    path = effect_log(configuration)
+    if path is None:
+        return None
+
+    def record(event):
+        fd = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_CLOEXEC, 0o600)
+        with os.fdopen(fd, 'a') as handle:
+            handle.write(json.dumps(event, sort_keys=True) + '\n')
+    return record
+
+
+def effect_metrics(configuration):
+    """Read child counters without adding process-local state to replayable effect replies."""
+    counts = {'calls': {}, 'credential_refusals': {}}
+    path = effect_log(configuration)
+    if path is None:
+        return counts
+    try:
+        handle = path.open()
+    except FileNotFoundError:
+        return counts
+    with handle:
+        for line in handle:
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue  # An interrupted last append is not a completed observation.
+            if 'operation' in event:
+                group, key = 'calls', event['caller'] + ':' + event['result']
+            elif event.get('result') == 'refused' and 'scheme' in event:
+                group, key = 'credential_refusals', event['scheme']
+            else:
+                continue
+            counts[group][key] = counts[group].get(key, 0) + 1
+    return counts
 
 
 @contextlib.contextmanager
@@ -152,7 +197,7 @@ def service_entry(function):
     def entered(*args, **kwargs):
         configuration = args[0] if args and isinstance(args[0], dict) else None
         commit = (lambda: effect_commit(configuration)) if configuration else accepted_commit
-        with service(commit):
+        with service(commit, observe=effect_observer(configuration) if configuration else None):
             return function(*args, **kwargs)
     return entered
 

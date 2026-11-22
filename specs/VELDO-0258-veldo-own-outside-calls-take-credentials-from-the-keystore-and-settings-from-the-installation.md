@@ -88,6 +88,7 @@ footprint:
   - "scripts/suites/127_veldo_0259_installation.py"
   - "scripts/suites/129_veldo_0254_canary_launch.py"
   - "scripts/suites/13_warp_0623_codified_live.py"
+  - "scripts/suites/58_veldo_0028_effects.py"
   - "scripts/suites/60_veldo_0064_inbox.py"
   - "scripts/suites/62_veldo_0065_presentations.py"
   - "scripts/suites/63_veldo_0066_attribution.py"

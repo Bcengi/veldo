@@ -138,13 +138,14 @@ def _v258_suite():
                             check('observability/unit/' + caller, observed[-1].get('unit_id') == 'VELDO-0258')
                         check('ac1/authenticates/' + caller, caller in authenticated)
                         for scheme, ref in [('env', 'env:CANARY258'), ('file', 'file:CANARY258'),
-                                            ('literal', values[caller])]:
+                                            ('literal', values[caller]), ('literal', 'literal:' + values[caller])]:
                             before = len(authenticated)
                             with patch.dict(os.environ, CANARY258=values[caller]):
                                 # With the old resolver restored, this really authenticates
                                 # using the environment canary, as AC1's falsifier states.
                                 code = refusal(lambda: authenticate(caller, construct(ref)))
-                            check('ac1/refuses/' + caller + '/' + scheme,
+                            label = 'literal-tagged' if ref.startswith('literal:') else scheme
+                            check('ac1/refuses/' + caller + '/' + label,
                                   code == 'invalid_input:control_plane_credential:' + caller + ':' + scheme
                                   and len(authenticated) == before)
                     check('ac1/no-canary-in-observations', all(value not in json.dumps(observed)
@@ -274,6 +275,18 @@ def _v258_suite():
                             check('ac3/tampered-command-refused', TS.execute(service, packet, 'fixture') ==
                                   {'ok': False, 'reason': 'unauthorized:tracker_call'})
                     check('observability/effect-provenance', CP.effect_commit({'store': str(root / 'store.sqlite3')}) == first)
+                    effect_configuration = {'store': str(root / 'store.sqlite3')}
+                    with CP.service(first, CP.effect_observer(effect_configuration), dispatch='fixture-effect'):
+                        RN.build_live_adapter(TR.load_tracker_config())._request('GET', '/durable-effect')
+                        refusal(lambda: CP.credential('tracker', 'literal:' + values['tracker']))
+                    effect_text = CP.effect_log(effect_configuration).read_text()
+                    effect_rows = [json.loads(line) for line in effect_text.splitlines()]
+                    check('observability/effect-log', len(effect_rows) == 2
+                          and effect_rows[0]['installation_commit'] == first
+                          and effect_rows[0]['dispatch_id'] == 'fixture-effect'
+                          and all(value not in effect_text for value in values.values()))
+                    check('observability/effect-counters', CP.effect_metrics(effect_configuration) ==
+                          {'calls': {'tracker:ok': 1}, 'credential_refusals': {'literal': 1}})
                     bad = json.loads(json.dumps(settings))
                     bad['tracker_routing']['trackers']['fixture']['base_url'] = 'malformed site'
                     second = repo.commit({'installation.yaml': json.dumps(bad).encode()}, first, identity, 'Bad routing')

@@ -1060,7 +1060,8 @@ print(json.dumps(result))
             T.check_remote = lambda record, remote, _raw=raw, _judged=judged, **kw: real_check(
                 record, _judged if remote == _raw else remote, **kw)
             try:
-                result = _v28_executor.receive(local, contract, accepted)
+                with E.organ('control_plane_calls').service(None):
+                    result = _v28_executor.receive(local, contract, accepted)
             except Exception as error:
                 result = {'error': type(error).__name__ + ': ' + str(getattr(error, 'code', ''))}
             finally:
