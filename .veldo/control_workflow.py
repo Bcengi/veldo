@@ -168,7 +168,8 @@ TAXONOMY = {
 
 def taxonomy(code):
     """The error class of a refusal code; a code with no class is an unknown outcome, never success."""
-    return TAXONOMY.get(str(code).split(':', 1)[0], 'unknown_outcome')
+    head = str(code).split(':', 1)[0]
+    return TAXONOMY.get(head, _organ('installation').ERROR_CLASSES.get(head, 'unknown_outcome'))
 
 
 class Refused(Exception):

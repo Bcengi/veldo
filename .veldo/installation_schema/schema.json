@@ -1490,11 +1490,11 @@
     "role": {
       "capabilities": "added",
       "tools": "added",
-      "configuration": "changed"
+      "configuration": "role_grants"
     },
     "team": {
       "roles": "added",
-      "configuration": "changed"
+      "configuration": "team_grants"
     },
     "service": {
       "base_url": "changed",

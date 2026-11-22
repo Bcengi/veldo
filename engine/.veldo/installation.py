@@ -44,6 +44,13 @@ COMMIT_ENVIRONMENT = ENVIRONMENT + '_COMMIT'
 BRANCH_ENVIRONMENT = ENVIRONMENT + '_BRANCH'
 SETTINGS_FILE = 'installation.yaml'
 PRODUCT_ASSETS = ('installation_schema/schema.json', 'installation_template/' + SETTINGS_FILE)
+ERROR_CLASSES = {
+    'installation_invalid': 'invalid_input', 'installation_unknown_file': 'invalid_input',
+    'installation_secret_inline': 'invalid_input', 'installation_secret_missing': 'unavailable_service',
+    'installation_waiting_approval': 'unauthorized', 'installation_managed': 'unauthorized',
+    'installation_unreadable': 'unavailable_service', 'installation_push_failed': 'unavailable_service',
+    'installation_missing': 'invalid_input',
+}
 OVERRIDE_KINDS = {'connectors': '.yaml', 'services': '.yaml', 'workflows': '.json'}
 
 _IDENT = re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]*\Z')

@@ -168,6 +168,7 @@ CLASSES = {'missing_authority': 'unauthorized', 'stale_subject': 'stale_version'
            'unavailable_service': 'unavailable_service', 'unauthenticated': 'unauthenticated',
            'incomplete_roster': 'invalid_input', 'not_authorized': 'unauthorized', 'not_owner': 'unauthorized',
            'not_accepted': 'unauthorized', 'unauthorized': 'unauthorized', 'stale_version': 'stale_version', 'unknown_outcome': 'unknown_outcome'}
+CLASSES.update(organ('installation').ERROR_CLASSES)
 
 
 class Refused(Exception):
