@@ -131,6 +131,12 @@ def rename_back(source, target):
     os.rename(source, target)
     os.rename(target, source)
     if existed: target.mkdir()
+def exchange_back(source, target):
+    libc = ctypes.CDLL(None, use_errno=True)
+    for _ in range(2):
+        if libc.renameat2(-100, os.fsencode(source), -100, os.fsencode(target), 2):
+            code = ctypes.get_errno()
+            raise OSError(code, os.strerror(code))
 def truncate_restore(path, readonly=False):
     if readonly: opened(path, os.O_RDONLY | os.O_TRUNC)
     else: os.truncate(path, 0)
@@ -166,6 +172,8 @@ if mode == 'attacks':
         trial(name, fn)
     trial('store-move', lambda: rename_back(store, store.with_name('moved')))
     trial('store-replace', lambda: rename_back(store, work / 'empty'))
+    trial('store-exchange', lambda: exchange_back(store, work / 'empty'))
+    trial('store-exchange-in', lambda: exchange_back(work / 'empty', store))
     trial('ancestor', lambda: create(store.parent / 'new', 'file'))
     trial('outside-link', lambda: opened(work / 'outside-link', os.O_RDONLY))
     trial('marker-create', lambda: create(store / 'store-guard.off', 'file'))
@@ -518,6 +526,21 @@ L.wrap(argv)
                         check('launch/abi', 'actual launch supported ABI ' + str(abi), outcome(receiver) == 'applied')
             if needed('launch/guard-default', 'launch/ack', 'switch/run-cannot-flip', 'layout/entries'):
                 with section('launch/guard-default', 'launch/ack', 'switch/run-cannot-flip', 'layout/entries'):
+                    for reason, metric in (
+                            ('invalid_input:layout:switch', 'refused_switch'),
+                            ('unavailable_service:confinement:store_guard:abi_below_3', 'refused_kernel'),
+                            ('confined_runner_unavailable:landlock_abi_below_6', 'refused_risky_floor'),
+                            ('invalid_input:layout:mount', 'refused_layout'),
+                            ('confined_runner_unavailable:store_source', 'refused_census')):
+                        notices = []
+                        observer = types.SimpleNamespace(store_guard=dict(state='on', reason=reason), emit=notices.append)
+                        L.guard_observe(observer, 'refused')
+                        check('launch/ack', 'named metric ' + metric, notices[-1]['metrics'] == {'store_guard_' + metric: 1})
+                    for step in ('audit', 'probe', 'create', 'add', 'restrict', 'unreported'):
+                        notices = []
+                        observer = types.SimpleNamespace(store_guard=dict(state='on'), emit=notices.append)
+                        L.guard_observe(observer, 'enforce_failed', step=step)
+                        check('launch/ack', 'failure metric ' + step, notices[-1]['metrics'] == {'store_guard_enforce_failed_' + step: 1})
                     for kind in ('project', 'conversation', 'workflow'):
                         prepare_attacks()
                         receiver, observed = launch('attacks', kind=kind)
