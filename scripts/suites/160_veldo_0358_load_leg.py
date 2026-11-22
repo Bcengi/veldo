@@ -99,7 +99,14 @@ def _v358d_load_leg():
     leg_command = [python, '-c', fixture_leg]
 
     # 1. Sixty seconds beside the fixture leg: the load record, every generator alive.
-    start, record, code, lines, gone, left = under_load('alive', leg_command)
+    # The ordinary canary shares this whole live fixture leg. A separate, very short canary
+    # leg can end before every generator has recorded work; the existing CPU-work fixture
+    # already supplies that evidence without a timing threshold or a second load level.
+    live_leg_command = [python, '-c', fixture_leg +
+                        'import subprocess\n'
+                        'status = subprocess.run([sys.executable, "-I", "-S", sys.argv[1], "--canary"]).returncode\n'
+                        'print("fixture canary exit: %s" % status, flush=True)\n', str(load_source)]
+    start, record, code, lines, gone, left = under_load('alive', live_leg_command)
     problems = []
     if not (start and record):
         problems.append('no load record: %s' % lines[-3:])
@@ -127,6 +134,14 @@ def _v358d_load_leg():
             'slowdown' not in record['probe'] and 'no probe reading: %s' % record['probe'],
             not gone and 'a generator process was left',
             left and 'a writer left files: %s' % left]
+
+    canary_result = [line for line in lines if line.startswith('canary: ')]
+    canary_exit = [line for line in lines if line.startswith('fixture canary exit: ')]
+    print('sleep-synchronized canary under generator load: %s (data)' % canary_result, flush=True)
+    problems += [
+        (canary_result, canary_exit) not in [(['canary: green'], ['fixture canary exit: 0']),
+                                           (['canary: red'], ['fixture canary exit: 1'])]
+        and 'the canary did not record a valid result: %s, %s' % (canary_exit, canary_result)]
 
     # 2. The same with one spinner killed midway: load_not_applied, by name.
     def kill_spinner(leg, start):
@@ -215,14 +230,6 @@ def _v358d_load_leg():
     problems += [not control_green and 'the event-synchronized canary control is not green']
     print('canary control: %s (child completion event)' % ('green' if control_green else 'red'), flush=True)
 
-    start, record, code, lines, gone, left = under_load('canary', [python, '-I', '-S', str(load_source), '--canary'])
-    canary_result = [line for line in lines if line.startswith('canary: ')]
-    print('sleep-synchronized canary under generator load: %s (data)' % canary_result, flush=True)
-    problems += [
-        (code not in (0, 1) or canary_result != ['canary: ' + ('green' if code == 0 else 'red')])
-        and 'the canary did not record a valid result: status %s, %s' % (code, canary_result),
-        not (record and record['applied']) and 'the canary leg has no applied load record',
-        not gone and 'canary: a generator process was left']
     row('load/level-by-construction', problems)
 
     # ------------------------------------------------------------------------ AC13: leg/proves-and-blocks
