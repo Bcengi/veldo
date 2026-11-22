@@ -6,7 +6,9 @@ WHAT IS KEPT. One append-only file per dispatch on the Linux host (`path`), unde
 `records` directory unless the receiver's configuration names `records` (`directory`), mode 0600 in a 0700
 directory, written only by the launch receiver (control_launch), which alone holds the worker's pipes. Its
 first line is the HEADER binding the record to the dispatch and run it belongs to: schema, dispatch id,
-contract digest, unit, station, project, account and host. Every other line is one line the run printed,
+contract digest, unit, station, project, account and host, and for a local launch the store guard's
+sampled decision (`store_guard`, VELDO-0359: pending or off with the marker path at acceptance; a launch the
+guard refused before acceptance keeps a record of this header alone). Every other line is one line the run printed,
 in the order the receiver read it, as one JSON object:
 
   seq       gapless per dispatch, from 1
@@ -466,9 +468,11 @@ class Recorder:
         self.redactions = {}
         self.sent = {'hints': 0, 'dropped': 0}
         self.closed = None
-        self._write(dict({k: header.get(k) for k in ('dispatch_id', 'contract_digest', 'unit', 'station', 'project',
-                                                     'account', 'host')}, schema=SCHEMA, opened_at=self.clock(),
-                         **binding(header)))
+        bound = {k: header.get(k) for k in ('dispatch_id', 'contract_digest', 'unit', 'station', 'project',
+                                            'account', 'host')}
+        if isinstance(header.get('store_guard'), dict):
+            bound['store_guard'] = header['store_guard']  # VELDO-0359: the launch's sampled guard decision
+        self._write(dict(bound, schema=SCHEMA, opened_at=self.clock(), **binding(header)))
 
     def _write(self, entry):
         data = encode(entry)

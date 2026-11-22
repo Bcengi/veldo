@@ -820,9 +820,15 @@ L.main()
         nowhere = object.__new__(L.Receiver)
         nowhere.config, nowhere.runner, nowhere.query_server = config, {'runner': 'plain'}, None
         nowhere.emit = lambda event: None
-        with patch.dict(os.environ, long_env), patch.object(L.RQ, 'SHORT', ((str(public_dir) + '%.0s', False),)):
+        # The B2 guard samples and checks the launch's places before the endpoint is placed: the bare
+        # receiver carries what that reads (no engine binding, no login, a working directory), and the
+        # layout check is this portable suite's substitute, as in its other fixtures (suite 158 runs the real one).
+        nowhere.binding = nowhere.login = None
+        nowhere._engine_cwd = lambda *args: str(base)
+        with patch.dict(os.environ, long_env), patch.object(L.RQ, 'SHORT', ((str(public_dir) + '%.0s', False),)), \
+                patch.object(L, 'guard_preflight', return_value=dict(state='on', directory=str(Path(config['store']).resolve().parent), preflight={})):
             check('query/place', 'the launch refusal carries that name',
-                  nowhere._prepare_query({'dispatch_id': 'nowhere'}, {}) == Q.NO_PLACE and nowhere.query_server is None)
+                  nowhere._prepare_query({'dispatch_id': 'nowhere'}, {'argv': [sys.executable]}) == Q.NO_PLACE and nowhere.query_server is None)
         # The real launch, with the production rule and this account's real short directories.
         with patch.dict(os.environ, long_env):
             path = placed_real()

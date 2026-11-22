@@ -18502,8 +18502,12 @@ def cases():
                   'stat.S_ISREG(info.st_mode)', ['layout/entries'])
     guard359_case('file-binds-allowed', '        if mount[1] == own[1] and guard_overlap(coordinate, mount[2]):\n',
                   '        if mount[1] == own[1] and guard_beneath(coordinate, mount[2]):\n', ['layout/mounts'])
-    guard359_case('placement-skipped', '    if guard_beneath(runs, directory):\n',
-                  '    if False:\n', ['layout/placement'])
+    # Fix round 2 (F1): the runs check and the placement check both go, so the runs fallback launch is
+    # accepted; the row observes that acceptance. The placement check alone has its own mutant.
+    placement359 = '        if guard_beneath(real, directory) or (writable and guard_beneath(directory, real)):\n'
+    add(359, 'store359-placement-skipped', guard359, 'control_launch.py', '    if guard_beneath(runs, directory):\n',
+        '    if False:\n', ['layout/placement'], also=[(placement359, '        if False:\n')])
+    guard359_case('placement-check-skipped', placement359, '        if False:\n', ['layout/placement'])
     guard359_case('guard-before-runner', "    if sample and sample.get('state') == 'on' and not sample.get('risky'):\n",
                   "    if sample and sample.get('state') == 'on':\n", ['launch/risky-real'])
     guard359_case('precondition-skipped', "            if not census or census.get('reason'):\n",
@@ -18515,6 +18519,18 @@ def cases():
                   ['launch/risky-census'])
     guard359_case('role-sandbox-wins', "    if sample and sample.get('state') == 'on':\n",
                   '    if False:\n', ['launch/engines'], 'control_agent_config_handoff.py')
+    # Fix round 2 (A2, A3, F2).
+    guard359_case('role-sandbox-duplicated', "                at += 2\n                continue\n",
+                  "                pass  # defect: the role's own pair stays beside the guarded one\n",
+                  ['launch/engines'], 'control_agent_config_handoff.py')
+    guard359_case('census-failure-as-reachable',
+                  "            result = {'reason': 'confined_runner_unavailable:census_failed:' + guard_census_failure(error),\n",
+                  "            result = {'reason': 'confined_runner_unavailable:store_reachable',\n", ['launch/risky-census'])
+    guard359_case('record-header-dropped', "        if isinstance(header.get('store_guard'), dict):\n",
+                  "        if False:  # defect: the guard decision never reaches the record header\n",
+                  ['launch/ack', 'switch/off'], 'control_execution_record.py')
+    guard359_case('refusal-record-skipped', "            guard_refusal_record(self, contract)\n",
+                  "            pass  # defect: a refusal before acceptance keeps no record\n", ['switch/off'])
     guard359_case('switch-outside', "        self.store_guard = RQ.switch(self.config['store'])\n",
                   "        self.store_guard = RQ.switch(str(Path(self._engine_cwd(adapter['argv'], contract['dispatch_id'], False)) / 'database'))\n",
                   ['switch/run-cannot-flip'])

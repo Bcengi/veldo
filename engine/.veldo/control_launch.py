@@ -801,7 +801,7 @@ def guard_observe(receiver, outcome, **details):
             metric = 'refused_kernel'
         elif reason in ('confined_runner_unavailable:platform', 'confined_runner_unavailable:landlock_abi_below_6'):
             metric = 'refused_risky_floor'
-        elif reason.startswith('confined_runner_unavailable:store_'):
+        elif reason.startswith(('confined_runner_unavailable:store_', 'confined_runner_unavailable:census_failed:')):
             metric = 'refused_census'
         else:
             metric = 'refused_layout'
@@ -821,6 +821,43 @@ def guard_observe(receiver, outcome, **details):
         recorder.line('wrapper', json.dumps(message).encode())
         recorder.batch()
     receiver.emit(message)
+
+
+GUARD_HEADER = ('state', 'path', 'outcome', 'reason', 'element_path', 'recovery', 'directory', 'modified_at',
+                'precondition_checked')
+
+
+def guard_header(sample):
+    """The sampled decision as an execution record's header carries it: bounded, never the census grants."""
+    return {k: sample[k] for k in GUARD_HEADER if k in sample} if sample else None
+
+
+def guard_refusal_record(receiver, contract):
+    """A launch the guard refused before acceptance has no worker and so no lines: its execution record is
+    the header alone, carrying the refusal, its reason and its fix (AC7)."""
+    sample = getattr(receiver, 'store_guard', None)
+    if not sample or sample.get('outcome') != 'refused':
+        return
+    header = {'dispatch_id': contract['dispatch_id'], 'contract_digest': D.digest(contract),
+              'unit': contract.get('unit'), 'station': contract.get('station'),
+              'project': (contract.get('reservation') or {}).get('project'),
+              'account': (contract.get('reservation') or {}).get('account'),
+              'host': getattr(receiver, 'host', None), 'store_guard': guard_header(sample)}
+    with contextlib.suppress(OSError):
+        ER.Recorder(ER.directory(receiver.config), header, None).close()
+
+
+def guard_census_failure(error):
+    """The named item of a census that could not be completed. It is never read as store reachability."""
+    if isinstance(error, FileNotFoundError):
+        return 'missing_item'
+    if isinstance(error, OSError):
+        return 'unreadable_item'
+    if isinstance(error, (json.JSONDecodeError, KeyError, TypeError)):
+        return 'configuration'
+    if isinstance(error, ValueError):
+        return 'qualification'
+    return 'runner'
 
 
 def guard_census(program, configuration, worktree, client, directory, scratch=None):
@@ -3036,7 +3073,7 @@ class Receiver:
         header = {'dispatch_id': contract['dispatch_id'], 'contract_digest': D.digest(contract),
                   'unit': contract['unit'], 'station': contract['station'],
                   'project': contract['reservation']['project'], 'account': contract['reservation']['account'],
-                  'host': self.host, 'store_guard': getattr(self, 'store_guard', None)}
+                  'host': self.host, 'store_guard': guard_header(getattr(self, 'store_guard', None))}
         # VELDO-0178: a conversation turn's record header names its conversation id and turn sequence.
         header.update(ER.binding(dict(contract)))
         argv = (self.binding or {}).get('argv', adapter['argv'])
@@ -3455,7 +3492,7 @@ class Receiver:
             except (OSError, ValueError, subprocess.SubprocessError):
                 census = {}
             if not census or census.get('reason'):
-                reason = census.get('reason') or 'confined_runner_unavailable:store_reachable'
+                reason = census.get('reason') or 'confined_runner_unavailable:census_failed:process'
                 guard_observe(self, 'refused', reason=reason,
                               element_path=census.get('element_path') or runner['config'])
                 return reason
@@ -3535,6 +3572,7 @@ class Receiver:
         if refusal:
             self.dispatches.refuse(dispatch_id, record['contract_digest'], refusal, now=time.time(),
                                    expected_state='prepared')
+            guard_refusal_record(self, contract)
             self._space_end(dispatch_id, contract)
             self.emit({'event': 'refused', 'refusal': refusal, 'runner': self.runner,
                        'dispatch_id': dispatch_id, 'repository': self.config.get('repository'),
@@ -5257,7 +5295,7 @@ def main():
         try:
             result = guard_census(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5] or None, sys.argv[6])
         except (OSError, ValueError, KeyError, TypeError, RuntimeError) as error:
-            result = {'reason': 'confined_runner_unavailable:store_reachable',
+            result = {'reason': 'confined_runner_unavailable:census_failed:' + guard_census_failure(error),
                       'element_path': getattr(error, 'filename', None) or sys.argv[3]}
         print(json.dumps(result))
         return
