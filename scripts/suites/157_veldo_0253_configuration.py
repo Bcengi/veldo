@@ -284,6 +284,7 @@ def _v253_suite():
                     imported_repo.publish(binding_commit, imported_repo.head())
                     imported_loader.decisions = decisions
                     waiting_binding = imported_loader.reconcile()
+                    assert waiting_binding['outcome'] == 'waiting', waiting_binding
                     decisions.approve(decisions.requests[binding_commit])
                     accepted_binding = imported_loader.reconcile()
                     bound_pin, bound_code = WU.resolve(S, migration, 'domain', 'repository', {'name': 'example'})
@@ -326,8 +327,8 @@ def _v253_suite():
             keys = {}
             def fixture(eid, kind, data):
                 before = WF._entity_row(conn, eid)
-                token = 'signed-fixture-' + eid
-                S.execute(conn, dict(command_id=token, principal='setup', operation='upsert_entity', nonce=token,
+                command_id = 'signed-fixture-' + eid
+                S.execute(conn, dict(command_id=command_id, principal='setup', operation='upsert_entity', nonce=command_id,
                     artifact_digests=[], expected_versions={eid: before['version'] if before else 0},
                     parameters=dict(entity_id=eid, kind=kind, data=data)), 'setup', sign, 1)
             for who in ('owner', 'pm', 'api-edge'):
