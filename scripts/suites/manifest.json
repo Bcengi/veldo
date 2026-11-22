@@ -2183,7 +2183,7 @@
    "requires": [
     "157_veldo_0359_run_query"
    ],
-   "regions": "VELDO-0359 B1: query/journey, query/scope, query/lifecycle, query half of switch/off. Fix round 1: query/cost (floor entries, requests and entry gates load no module again; a frontier pass over a direct gate loads none), and rows for a file dropped in the endpoint directory, a Runner that is not reading the launch pipe, removal by the receiver before its end is recorded, an invalid marker at launch, the launch scan's own list and a conversation receiver's raw client.",
+   "regions": "VELDO-0359 B1: query/journey, query/scope, query/lifecycle, query half of switch/off. Fix round 1: query/cost (floor entries, requests and entry gates load no module again; a frontier pass over a direct gate loads none), and rows for a file dropped in the endpoint directory, a Runner that is not reading the launch pipe, removal by the receiver before its end is recorded, an invalid marker at launch, the launch scan's own list and a conversation receiver's raw client. Fix round 2: query/place (a runtime directory too long for a socket path: the short name, the fixed rule for a short private directory, the named refusal, and a launch under a 70-character runtime directory).",
    "requires_note": "Only ROOT, expect and fast_temp. Signed fixture bindings, SQLite, sockets and child processes; no sandbox, pidfd, systemd or live engine."
   }
  ],

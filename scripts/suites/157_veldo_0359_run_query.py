@@ -39,8 +39,8 @@ def _v359_query_suite():
         'runstatus.py': ROOT / ".veldo" / "runstatus.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
-    rows = {k: [] for k in ('query/journey', 'query/scope', 'query/lifecycle', 'query/cost', 'switch/off',
-                            'paths/canon')}
+    rows = {k: [] for k in ('query/journey', 'query/scope', 'query/lifecycle', 'query/cost', 'query/place',
+                            'switch/off', 'paths/canon')}
     HANG = 120  # seconds: detects a hang, never decides a row
 
     def check(row, label, value):
@@ -59,6 +59,9 @@ def _v359_query_suite():
         if isinstance(value, (tuple, list)):
             return [stable(v) for v in value]
         return value
+
+    def stat_mode(path):
+        return os.lstat(path).st_mode & 0o7777
 
     def stopped(fn):
         try:
@@ -722,6 +725,68 @@ L.main()
             check('query/lifecycle', label + ' receiver exited', launch.returncode is not None)
             if ending != 'receiver':
                 check('query/lifecycle', label + ' query counts collected', bool(launch.query_counts))
+        # Fix round 2 (N1): a runtime directory too long for a socket path is an ordinary environment.
+        uid = os.getuid()
+        digest = Q.hashlib.sha256(b'long-runtime').hexdigest()[:32]
+        fits = Path('/' + 'r' * 59)  # with the short name, 60 characters still hold the endpoint
+        check('query/place', 'the endpoint stays under a runtime directory of 60 characters',
+              Q.endpoint('long-runtime', {'XDG_RUNTIME_DIR': str(fits)}) == fits / ('vq-' + digest) / 'query.sock'
+              and len(str(Q.endpoint('long-runtime', {'XDG_RUNTIME_DIR': str(fits)}))) == Q.SUN_PATH)
+        long_runtime = base / ('r' * max(8, 70 - len(str(base)) - 1))
+        long_runtime.mkdir(mode=0o700)
+        long_env = {'XDG_RUNTIME_DIR': str(long_runtime)}
+        first, second, public_dir, absent = base / 's1', base / 's2', base / 's3', base / 's4'
+        first.mkdir(mode=0o700)
+        public_dir.mkdir(mode=0o700)
+        public_dir.chmod(0o755)
+        (base / 's5').symlink_to(first)
+        # This launch's endpoint is in a directory other runs of this suite share: its id is this run's own.
+        long_label = 'long-runtime-' + base.name
+        def placed_real():
+            try:
+                return Q.endpoint(long_label)
+            except Q.Refused as error:
+                return error.code
+        def placed(*short):
+            with patch.object(Q, 'SHORT', tuple((str(root) + '%.0s', make) for root, make in short)):
+                try:
+                    return Q.endpoint('long-runtime', long_env).parent.parent
+                except Q.Refused as error:
+                    return error.code
+        check('query/place', 'fixed rule: the first private short directory, in order',
+              placed((first, False), (second, True)) == first and not second.exists())
+        check('query/place', 'fixed rule: a directory another account can enter, a link or an absent one is passed over',
+              placed((public_dir, True), (base / 's5', True), (absent, False), (second, True)) == second
+              and stat_mode(second) == 0o700 and not absent.exists())
+        check('query/place', 'no private short directory is refused by name',
+              placed((public_dir, True), (base / 's5', True), (absent, False)) == Q.NO_PLACE
+              and placed((base / ('s' * 90), True)) == Q.NO_PLACE and not (base / ('s' * 90)).exists())
+        nowhere = object.__new__(L.Receiver)
+        nowhere.config, nowhere.runner, nowhere.query_server = config, {'runner': 'plain'}, None
+        nowhere.emit = lambda event: None
+        with patch.dict(os.environ, long_env), patch.object(L.RQ, 'SHORT', ((str(public_dir) + '%.0s', False),)):
+            check('query/place', 'the launch refusal carries that name',
+                  nowhere._prepare_query({'dispatch_id': 'nowhere'}, {}) == Q.NO_PLACE and nowhere.query_server is None)
+        # The real launch, with the production rule and this account's real short directories.
+        with patch.dict(os.environ, long_env):
+            path = placed_real()
+            launch, pending = run_fixture(long_label, wait_payload=True)
+            seen = read_event(launch.child, pending, {'payload', 'refused'})
+            root = Path(path).parent.parent if isinstance(path, Path) else None
+            check('query/place', 'a 70-character runtime directory launches [%s, %s]' % (len(str(long_runtime)), seen.get('refusal')),
+                  seen['event'] == 'payload' and seen['query'] == str(path) and Path(path).exists()
+                  and len(os.fsencode(str(path))) <= Q.SUN_PATH and seen['build_reached'] and not seen['store_open'])
+            check('query/place', 'its endpoint is in a short directory only this account can enter [%s]' % root,
+                  root is not None and str(root) in ('/run/user/%d' % uid, '/tmp/veldo-%d' % uid)
+                  and not root.is_symlink() and root.is_dir() and root.lstat().st_uid == uid and stat_mode(root) == 0o700
+                  and stat_mode(Path(path).parent) == 0o700)
+            if seen['event'] == 'payload':
+                launch.child.stdin.write(b'x'); launch.child.stdin.flush()
+                read_event(launch.child, pending, {'end_probe'})
+            reap(launch)
+            check('query/place', 'its endpoint is removed at the end and nothing is left in the runtime directory',
+                  root is not None and not Path(path).parent.exists() and launch.query_left is None
+                  and not list(long_runtime.iterdir()))
         launch, pending = run_fixture('accept-refusal', fail_accept=True)
         refused = read_event(launch.child, pending, {'refused'})
         closed = read_event(launch.child, pending, {'closed'})
