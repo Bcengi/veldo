@@ -49,6 +49,9 @@ _Y = _yaml_importlib.module_from_spec(_yaml_spec)
 _yaml_spec.loader.exec_module(_Y)
 
 _HERE = Path(__file__).resolve().parent
+_cpspec = importlib.util.spec_from_file_location('tracker_control_plane', _HERE / 'control_plane_calls.py')
+_CP = importlib.util.module_from_spec(_cpspec)
+_cpspec.loader.exec_module(_CP)
 
 _trspec = importlib.util.spec_from_file_location("veldo_tracker", _HERE / "tracker.py")
 _tracker = importlib.util.module_from_spec(_trspec)
@@ -402,7 +405,7 @@ class JiraCloudAdapter(TrackerAdapter):
     reference mobile/web runners (live driver = reference, mapping + logic = tested)."""
 
     def __init__(self, base_url, email, token_ref, resolve_secret=None, jql_intake="labels = veldo-intake",
-                 project=None, epic_issue_type="Epic", child_issue_type="Task"):
+                 project=None, epic_issue_type="Epic", child_issue_type="Task", caller="tracker"):
         super().__init__()
         self._base = base_url.rstrip("/")
         self._email = email
@@ -413,8 +416,8 @@ class JiraCloudAdapter(TrackerAdapter):
         self._project = project
         self._epic_issue_type = epic_issue_type
         self._child_issue_type = child_issue_type
-        resolver = resolve_secret or _default_secret_resolver
-        self._token = resolver(token_ref)
+        self._caller = caller
+        self._token = _CP.credential(caller, token_ref, resolve_secret)
         if not self._token:
             raise TrackerAdapterError("no token resolved from %r (set the secret, never inline it)" % token_ref)
 
@@ -430,7 +433,7 @@ class JiraCloudAdapter(TrackerAdapter):
         req.add_header("Accept", "application/json")
         if data is not None:
             req.add_header("Content-Type", "application/json")
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with _CP.http(self._caller, req) as resp:
             raw = resp.read().decode()
             return json.loads(raw) if raw else {}
 
@@ -610,13 +613,13 @@ class ConfluenceCloudAdapter(TrackerAdapter):
     requirements pages (by id, and by CQL label search) so the intake logic can draft specs from them;
     status/epic writes are the tracker's job (Jira), not the wiki's, so they raise by name here."""
 
-    def __init__(self, base_url, email, token_ref, resolve_secret=None, cql_intake='label = "veldo-intake"'):
+    def __init__(self, base_url, email, token_ref, resolve_secret=None, cql_intake='label = "veldo-intake"', caller="tracker"):
         super().__init__()
         self._base = base_url.rstrip("/")
         self._email = email
         self._cql = cql_intake
-        resolver = resolve_secret or _default_secret_resolver
-        self._token = resolver(token_ref)
+        self._caller = caller
+        self._token = _CP.credential(caller, token_ref, resolve_secret)
         if not self._token:
             raise TrackerAdapterError("no token resolved from %r (set the secret, never inline it)" % token_ref)
 
@@ -630,7 +633,7 @@ class ConfluenceCloudAdapter(TrackerAdapter):
         req.add_header("Accept", "application/json")
         if data is not None:
             req.add_header("Content-Type", "application/json")
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with _CP.http(self._caller, req) as resp:
             raw = resp.read().decode()
             return json.loads(raw) if raw else {}
 
@@ -671,11 +674,8 @@ class ConfluenceCloudAdapter(TrackerAdapter):
 
 
 def _default_secret_resolver(token_ref):
-    """Resolve a token from an environment variable named by token_ref (e.g. 'env:JIRA_TOKEN' or a
-    bare var name). Never returns a raw credential embedded in a config file."""
-    import os
-    name = token_ref.split(":", 1)[1] if token_ref and token_ref.startswith("env:") else token_ref
-    return os.environ.get(name) if name else None
+    """The service reads only the named keystore item."""
+    return _CP.credential('tracker', token_ref)
 
 
 def _urlquote(s):

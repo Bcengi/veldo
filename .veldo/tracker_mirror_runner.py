@@ -171,9 +171,8 @@ class OAuthTokenManager:
     def __init__(self, client_id_ref, client_secret_ref, resolve_secret=None, fetch=None,
                  clock=None, token_url="https://auth.atlassian.com/oauth/token",
                  audience="api.atlassian.com"):
-        resolver = resolve_secret or _IK._default_secret_resolver
-        self._client_id = resolver(client_id_ref)
-        self._client_secret = resolver(client_secret_ref)
+        self._client_id = _IK._CP.credential('tracker', client_id_ref, resolve_secret)
+        self._client_secret = _IK._CP.credential('tracker', client_secret_ref, resolve_secret)
         if not self._client_id or not self._client_secret:
             raise MirrorRunnerError(
                 "no OAuth client credential resolved from %r / %r (set the secrets, never inline "
@@ -202,7 +201,7 @@ class OAuthTokenManager:
                                        "client_secret": client_secret, "audience": audience}).encode()
         req = urllib.request.Request(token_url, data=body, method="POST")
         req.add_header("Content-Type", "application/x-www-form-urlencoded")
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with _IK._CP.http('tracker', req) as resp:
             return json.loads(resp.read().decode())
 
     def __repr__(self):
@@ -238,7 +237,7 @@ class OAuthJiraCloudAdapter(JiraCloudAdapter):
         req.add_header("Accept", "application/json")
         if data is not None:
             req.add_header("Content-Type", "application/json")
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with _IK._CP.http('tracker', req) as resp:
             raw = resp.read().decode()
             return json.loads(raw) if raw else {}
 
@@ -250,7 +249,7 @@ def _accessible_resources(token):
                                  method="GET")
     req.add_header("Authorization", "Bearer " + token)
     req.add_header("Accept", "application/json")
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with _IK._CP.http('tracker', req) as resp:
         return json.loads(resp.read().decode())
 
 

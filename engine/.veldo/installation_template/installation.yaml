@@ -1,2 +1,15 @@
-schema: veldo.installation/v1
-git: {branch: main}
+{
+  "schema": "veldo.installation/v1",
+  "git": {
+    "branch": "main"
+  },
+  "tracker_routing": {
+    "schema": "veldo.tracker/v1",
+    "routing": {
+      "mechanism": "label",
+      "label_prefix": "veldo-repo:"
+    },
+    "repos": [],
+    "trackers": {}
+  }
+}

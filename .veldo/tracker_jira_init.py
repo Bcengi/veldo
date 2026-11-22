@@ -543,7 +543,7 @@ def build_live_provisioner(config, tracker_id=None, email=None, resolve_secret=N
             "raw credential)" % tid)
     try:
         return JiraCompanyManagedProvisioner(base_url, email or entry.get("email"), token_ref,
-                                             resolve_secret=resolve_secret, project=entry.get("project"))
+                                             resolve_secret=resolve_secret, project=entry.get("project"), caller="tracker_init")
     except _ADAPTER_ERRORS as ex:
         raise BootstrapError("could not build the live Jira provisioner: %s" % ex)
 
