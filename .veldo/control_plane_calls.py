@@ -154,6 +154,8 @@ def effect_metrics(configuration):
 @contextlib.contextmanager
 def outside(caller, destination, operation, dispatch=None, unit=None):
     require_service(caller)
+    commit = state.commit() if callable(state.commit) else state.commit
+    dispatch = dispatch or state.dispatch
     started, result, outcome = time.monotonic(), 'failed', {}
     try:
         yield outcome
@@ -161,10 +163,9 @@ def outside(caller, destination, operation, dispatch=None, unit=None):
     finally:
         key = caller + ':' + result
         state.calls[key] = state.calls.get(key, 0) + 1
-        commit = state.commit() if callable(state.commit) else state.commit
         emit(dict(caller=caller, host=urlsplit(destination).hostname, operation=operation,
                   result=result, latency=time.monotonic() - started,
-                  installation_commit=commit, dispatch_id=dispatch or state.dispatch, unit_id=unit))
+                  installation_commit=commit, dispatch_id=dispatch, unit_id=unit))
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):

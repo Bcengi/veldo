@@ -91,6 +91,8 @@ def _v258_suite():
                     if header in ('Bearer ' + value, 'Basic ' + basic) or ('/bot' + value + '/') in self.path:
                         authenticated.append(caller)
                 failed = self.path == '/failure'
+                if self.path == '/commit-changes':
+                    self.server.commit_change()
                 reply = (values['tracker'].encode() if failed else json.dumps({'ok': True,
                          'result': {'message_id': 1, 'date': 1, 'chat': {'id': 123}, 'text': 'Notice'},
                          'body_bytes': len(body)}).encode())
@@ -160,6 +162,12 @@ def _v258_suite():
                     check('observability/counts', CP.metrics()['calls'].get('tracker:failed', 0) >= 1
                           and all(CP.metrics()['credential_refusals'].get(scheme, 0) >= len(constructors)
                                   for scheme in ('env', 'file', 'literal')))
+                    changing_commit = ['a' * 40]
+                    server.commit_change = lambda: changing_commit.__setitem__(0, 'b' * 40)
+                    with CP.service(lambda: changing_commit[0], observed.append):
+                        RN.build_live_adapter(entry('keychain:tracker'))._request('GET', '/commit-changes')
+                    check('observability/commit-pinned', changing_commit[0] == 'b' * 40
+                          and observed[-1]['installation_commit'] == 'a' * 40)
                 # Exec cannot inherit the memory binding; a run marker refuses even an existing service binding.
                 for caller, construct in constructors.items():
                     check('ac3/service-required/' + caller, refusal(lambda: construct('keychain:' + caller))
