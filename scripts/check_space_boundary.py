@@ -150,6 +150,15 @@ REVIEWED[('engine/.veldo/control_clone.py', 'conversation_clone')] = (
     'os.mkdir before git init, so it is refused when the path already exists and the folder removed is provably '
     "the call's own; the commit is fetched into no ref, so no ref is deleted); pending review with design 6.10.")
 
+# VELDO-0206, found when the tickets were combined (cand-1122, 2026-11-22; 0206's own tip already failed this check)
+# and not yet reviewed with design 6.10: the unit dispatcher runs each isolated suite in a process of its own,
+# with a home, temporary folder and run directory made fresh for it in one mkdtemp folder, removed after it.
+CREATORS[('scripts/selftest.py', '_isolate')] = (
+    'Creates one private temporary folder (veldo-suite- prefix) for one isolated suite process; pending review '
+    'with design 6.10.')
+REVIEWED[('scripts/selftest.py', '_isolate')] = (
+    'Removes only the one mkdtemp result this call created, in its finally; pending review with design 6.10.')
+
 
 def canonical(path):
     path = str(path)
