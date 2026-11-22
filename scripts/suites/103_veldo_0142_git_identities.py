@@ -575,4 +575,4 @@ def _v142_suite():
         Path(os.environ['VELDO_0142_OBSERVATIONS']).write_text(json.dumps(dict(rows=observations, facts=facts), indent=2) + '\n')
 
 
-_v142_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v142_suite)

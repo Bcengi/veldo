@@ -1030,4 +1030,4 @@ else:
         expect('VELDO-0185 ' + row + (': ' + failed[0][:300] if failed else ''), len(observations) >= 1 and not failed)
 
 
-_v185_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v185_suite)

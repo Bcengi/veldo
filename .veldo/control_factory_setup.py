@@ -289,15 +289,18 @@ def check(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         raise Refused('invalid_input:workspace:overlaps_state_root', workspace)
     if _within(host_trust, workspace):
         raise Refused('invalid_input:host_trust:inside_workspace', host_trust)
-    if not isinstance(token_file, str) or not os.path.isabs(token_file):
-        raise Refused('invalid_input:token_file:relative', 'the token file is named by its absolute path')
-    try:
-        IN.read_token(token_file)
-    except IN.Refused as exc:
-        raise Refused('missing_authority:token_file:absent' if exc.code == 'missing_authority'
-                      else 'invalid_input:token_file:unusable', token_file) from None
-    if _within(token_file, workspace):
-        raise Refused('invalid_input:token_file:inside_workspace', token_file)
+    if isinstance(token_file, str) and token_file.startswith('keychain:'):
+        IN.service_token({'bot_api': {'token_ref': token_file}})
+    else:
+        if not isinstance(token_file, str) or not os.path.isabs(token_file):
+            raise Refused('invalid_input:token_file:relative', 'the token file is named by its absolute path')
+        try:
+            IN.read_token(token_file)
+        except IN.Refused as exc:
+            raise Refused('missing_authority:token_file:absent' if exc.code == 'missing_authority'
+                          else 'invalid_input:token_file:unusable', token_file) from None
+        if _within(token_file, workspace):
+            raise Refused('invalid_input:token_file:inside_workspace', token_file)
     key = os.path.realpath(str(owner_key))
     if not os.path.isfile(key):
         raise Refused('invalid_input:owner_key:absent', 'the owner key is his OpenSSH private key file')
@@ -432,6 +435,23 @@ def host_files(plan, settlement_public, adoption_public=None):
                                             'settlement_signers': settlement_signers}, indent=1, sort_keys=True) + '\n'}
 
 
+def channel_reference(plan):
+    """The installed reference; a setup-only file import keeps its stable keystore name."""
+    if plan['token_file'].startswith('keychain:'):
+        return plan['token_file']
+    import hashlib
+    return 'keychain:owner-channel-' + hashlib.sha256((plan['root'] + '\0' + plan['token_file']).encode()).hexdigest()[:24]
+
+
+def import_channel_credential(plan):
+    """Explicit setup custody transfer. Runtime never reads or retains the input file path."""
+    reference = channel_reference(plan)
+    if not plan['token_file'].startswith('keychain:'):
+        value = organ('control_channel_ingress').read_token(plan['token_file'])
+        organ('control_credential_keystore').SecretService().set(reference.split(':', 1)[1], value)
+    return reference
+
+
 def ingress_files(plan, ids):
     """The protected signer's configuration and the VELDO-0073 ingress configuration: {path: text}."""
     E, IN = organ('control_channel_enrollment'), organ('control_channel_ingress')
@@ -447,7 +467,7 @@ def ingress_files(plan, ids):
                  'signer': {'config': signer_config, 'edge_key_id': E.edge_key_id(CHANNEL),
                             'connection_key': os.path.join(root, EDGE_DIR, CONNECTION_KEY)},
                  'edge_principal': EDGE_PRINCIPAL, 'api_edge': API_EDGE,
-                 'bot_api': {'origin': plan['origin'], 'token_file': plan['token_file']},
+                 'bot_api': {'origin': plan['origin'], 'token_ref': channel_reference(plan)},
                  'decision_signer': {'principal': SETTLEMENT_PRINCIPAL, 'key': os.path.join(keys, SETTLEMENT_KEY)}},
                 indent=1, sort_keys=True) + '\n'}
 
@@ -658,6 +678,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
                 factory = factory_repository(plan, ids, S, conn, git_identities, workspace_identity, clock)
                 details['factory_repository'] = {k: factory[k] for k in ('path', 'repository_uuid', 'commit')}
         with step('ingress_configuration'):
+            import_channel_credential(plan)
             texts = ingress_files(plan, ids)
             signer_config = _private(os.path.join(host, 'signer.json'), texts[os.path.join(host, 'signer.json')])
             ingress = _private(os.path.join(host, 'ingress.json'), texts[os.path.join(host, 'ingress.json')])
@@ -666,7 +687,7 @@ def setup(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
             # itself is never opened here: its organs bind the store's owned entities to the code that first
             # attaches them, which must be the installed service's.
             config = IN.load_config(ingress)
-            IN.read_token(config['bot_api']['token_file'])
+            IN.service_token(config)
             IN.journal_signer(config['journal'])
             IN.decision_signer(config, EL.load_host_trust(plan['host_trust']).settlement_trust(workspace))
         api_files = paths(root, keys, None, plan['unit_dir'], None)
@@ -1402,7 +1423,7 @@ def rerun(state_root, owner, owner_key, workspace, chat, token_file, *, host_tru
         holds('workspace')
     if (json.loads(row[0]) if row else {}).get('chat_id') != plan['chat']:
         holds('chat')
-    if (laid.get('bot_api') or {}).get('token_file') != plan['token_file']:
+    if (laid.get('bot_api') or {}).get('token_ref') != channel_reference(plan):
         holds('token_file')
     if laid.get('host_trust') != plan['host_trust']:
         holds('host_trust')
@@ -1895,7 +1916,7 @@ def main(argv=None, **overrides):
     parser.add_argument('--workspace', required=True, help='the Git clone the factory serves')
     parser.add_argument('--memory', help='five-part memory manifest')
     parser.add_argument('--chat', required=True, type=int, help='his numeric Telegram user id')
-    parser.add_argument('--token-file', required=True, help='this account\'s own 0600 bot token file; named, never copied')
+    parser.add_argument('--token-ref', '--token-file', dest='token_file', required=True, help='keychain reference; --token-file imports a private file once into the keystore')
     parser.add_argument('--git-identities', help='JSON identity records containing only keystore references')
     parser.add_argument('--workspace-identity', help='the explicit identity id for this repository')
     parser.add_argument('--https-port', help='the tailnet HTTPS port Serve maps to the API: 443 (the default), 8443 '

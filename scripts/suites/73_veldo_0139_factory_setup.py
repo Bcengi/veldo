@@ -589,7 +589,7 @@ def _v139_suite():
                 config = {'refused': exc.code}
             check(IC, 'the ingress configuration is a 0600 VELDO-0073 configuration naming the account\'s own token file',
                   mode_of(config_path) == ('0o600', os.getuid())
-                  and (config.get('bot_api') or {}).get('token_file') == str(token_file)
+                  and (config.get('bot_api') or {}).get('token_ref', '').startswith('keychain:owner-channel-')
                   and (config.get('bot_api') or {}).get('origin') == url and config.get('store_path') == str(store))
             copied = home / 'config' / 'channel-ingress.json'
             service_json = json.loads((home / 'config' / 'service.json').read_text())
@@ -903,4 +903,4 @@ def _v139_suite():
     print('VELDO-0139 suite seconds: %.3f' % (time.monotonic() - started))
 
 
-_v139_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v139_suite)
