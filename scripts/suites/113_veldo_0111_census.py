@@ -353,6 +353,16 @@ elif mode=='cloexec':
     os.execv(sys.executable,[sys.executable,'-B','-c',
         'import json,os,sys\ntry:\n os.fstat(int(sys.argv[1])); gone=False\nexcept OSError: gone=True\n'
         'os.write(1,(json.dumps(dict(after_exec_gone=gone))+chr(10)).encode())',str(fd)])
+elif mode=='threaded_exec':
+    # A threaded process shares its table with its threads at exec entry; exec
+    # still closes the close-on-exec listener and that close must be recorded.
+    s=listener(); fd=s.detach(); link=inode(fd)
+    result=close_range(fd,fd,4)
+    threading.Thread(target=threading.Event().wait,daemon=True).start()
+    ack(result=result,inode=link,threads=threading.active_count())
+    os.execv(sys.executable,[sys.executable,'-B','-c',
+        'import json,os,sys\ntry:\n os.fstat(int(sys.argv[1])); gone=False\nexcept OSError: gone=True\n'
+        'os.write(1,(json.dumps(dict(after_exec_gone=gone))+chr(10)).encode())',str(fd)])
 elif mode=='escaped':
     s=listener(); d=socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM)
     sent=d.sendmsg([b'x'],[(socket.SOL_SOCKET,socket.SCM_RIGHTS,array.array('i',[s.fileno()]))],0,'\0'+sys.argv[2])
@@ -1089,7 +1099,7 @@ s.close()
     outside_name = 'v111-close-range-outside-%d' % os.getpid()  # abstract; argv cannot carry NUL
     outside.bind('\0' + outside_name)
     ranged = {mode: run('close_range_' + mode, CLOSE_RANGE_PROBE, mode, *extra) for mode, *extra in (
-        ('subprocess',), ('only',), ('cloexec',), ('escaped', outside_name), ('shared',))}
+        ('subprocess',), ('only',), ('cloexec',), ('threaded_exec',), ('escaped', outside_name), ('shared',))}
     received = []
     try:
         _, fds, _, _ = socket.recv_fds(outside, 16, 4, socket.MSG_DONTWAIT)
@@ -1133,6 +1143,19 @@ s.close()
                   and [e['cause'] for e in closes(marked, link) if e['sequence'] > exec_seq[1]]
                   == ['close_on_exec'] and len(closes(marked, link)) == 1
                   and any((o.get('closed') or {}).get('released') for o in marked['sockets'] if o['inode'] == link))
+    # Exec from a threaded process: the table was shared at exec entry, and the
+    # exec's close of the close-on-exec listener is still recorded.
+    threaded_exec, te_acks = ranged['threaded_exec']
+    te_exec = [e['sequence'] for e in threaded_exec['events'] if e['kind'] == 'exec']
+    te_link = te_acks[0]['inode'] if te_acks else None
+    threaded_exec_ok = (complete_capture(threaded_exec) and len(te_acks) == 2 and te_acks[0]['result'] == 0
+                        and te_acks[0]['threads'] == 2 and te_acks[1] == dict(after_exec_gone=True)
+                        and len(te_exec) == 2
+                        and [(e['cause'], e['syscall']) for e in closes(threaded_exec, te_link)
+                             if e['sequence'] > te_exec[1]] == [('close_on_exec', 59)]
+                        and len(closes(threaded_exec, te_link)) == 1
+                        and any((o.get('closed') or {}).get('released')
+                                for o in threaded_exec['sockets'] if o['inode'] == te_link))
     escaped, escaped_acks = ranged['escaped']
     gone_listener = [o for o in escaped['sockets'] if escaped_acks and o['inode'] == escaped_acks[0]['inode']]
     escape_reasons = sorted(f['reason'] for f in escaped['failures'] if f['capability'] == 'escaped_reference')
@@ -1159,10 +1182,10 @@ s.close()
     flags_ok = [(f['capability'], f['reason']) for f in unit.r['failures']] == [
         ('descriptor_operation', 'close_range flags 0x8 are not qualified')]
     evidence['close_range'] = dict(subprocess=subprocess_ok, only=only_ok, cloexec=cloexec_ok,
-                                   escaped=escaped_ok, shared=shared_ok, flags=flags_ok,
+                                   threaded_exec=threaded_exec_ok, escaped=escaped_ok, shared=shared_ok, flags=flags_ok,
                                    received=received)
     emit('census/close-range-accounted',
-         subprocess_ok and only_ok and cloexec_ok and escaped_ok and shared_ok and flags_ok)
+         subprocess_ok and only_ok and cloexec_ok and threaded_exec_ok and escaped_ok and shared_ok and flags_ok)
     evidence.update(run_round3_checks(census, emit))
     return evidence
 
