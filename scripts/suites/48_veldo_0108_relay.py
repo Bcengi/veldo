@@ -17,6 +17,14 @@ SSH SERVER on this machine, so the leg where sshd authenticates the remote princ
 unknown one is NOT exercised. That leg is sshd's, not this program's. The rows exercise the listed carrying, size, usage and refusal cases, and this boundary: the relay is given SSH's
 own environment, including a principal, and it changes nothing about the answer, because the relay
 never reads it and the authority never sees it.
+
+THE NO-LISTENER PART OF relay/one-endpoint-one-judgement (VELDO-0114 AC3). The row's relayed calls run
+as the root of a VELDO-0111 lifecycle census (scripts/fixtures/lifecycle_census.py), one complete
+receipt per invocation, from before the relay executable runs through its exit and descendant drain.
+The row passes only when every receipt is complete and records no service event and no task the
+relay created. A missing or INCOMPLETE receipt makes the row STAND DOWN by name with
+census_incomplete, printed and never passed, whatever a fixture-local socket snapshot would show.
+The census-only rows of the same claim are scripts/suites/113_veldo_0114_relay_census.py.
 """
 import hashlib as _v108_hashlib
 import hmac as _v108_hmac
@@ -258,19 +266,6 @@ else:
         p = _v108_Path(cfg["applied_log"])
         return [] if not p.is_file() else [_v108_json.loads(ln) for ln in p.read_text().splitlines() if ln.strip()]
 
-    def _v108_unix_paths(prefix):
-        """The kernel's own table of unix sockets, filtered to this fixture's directory."""
-        try:
-            text = open("/proc/net/unix").read()
-        except OSError:
-            return None
-        out = set()
-        for line in text.splitlines()[1:]:
-            parts = line.split()
-            if len(parts) >= 8 and parts[-1].startswith(prefix):
-                out.add(parts[-1])
-        return out
-
     def _v108_stop_all():
         for _proc, cfg in _v108_children:
             _v108_Path(cfg["stop_flag"]).write_text("stop\n")
@@ -298,6 +293,36 @@ else:
             _v108_ADDR_B = CC108.socket_path_for(_v108_bB)
             _v108_pA, _v108_cA = _v108_start("A", _v108_MAIN, _v108_ADDR_A, "dom-a", "store-a", _v108_PA)
             _v108_pB, _v108_cB = _v108_start("B", _v108_MAIN, _v108_ADDR_B, "dom-b", "store-b", _v108_PB)
+
+            # The relay as the root of a VELDO-0111 census: a launcher puts the request on standard
+            # input and execs the relay, never forking, so the root launch is the relay's own.
+            _v108_spec = _v108_ilu.spec_from_file_location(
+                "v108_lifecycle_census", ROOT / "scripts" / "fixtures" / "lifecycle_census.py")
+            LC108 = _v108_ilu.module_from_spec(_v108_spec)
+            _v108_spec.loader.exec_module(LC108)
+            _v108_LAUNCHER = ("import json, os, sys\n"
+                              "c = json.load(open(sys.argv[1]))\n"
+                              "fd = os.open(c['stdin'], os.O_RDONLY)\n"
+                              "os.dup2(fd, 0)\n"
+                              "os.close(fd)\n"
+                              "os.execve(c['argv'][0], c['argv'], dict(os.environ, **c['env']))\n")
+
+            def _v108_relay_census(tag, relay_dir, address, payload, extra_env=None):
+                """One relayed call measured by one census; returns (exit, parsed answer, receipt)."""
+                (_v108_tmp / ("census-" + tag + ".in")).write_bytes(payload)
+                launch = _v108_tmp / ("census-" + tag + ".json")
+                launch.write_text(_v108_json.dumps(dict(
+                    stdin=str(_v108_tmp / ("census-" + tag + ".in")), env=extra_env or {},
+                    argv=[_v108_sys.executable, "-B", str(relay_dir / "control_relay.py"), address])))
+                receipt = LC108.census([_v108_sys.executable, "-B", "-c", _v108_LAUNCHER, str(launch)],
+                                       identity="VELDO-0108/AC3/" + tag, cwd=str(_v108_tmp))
+                status = receipt.get("root_status")
+                try:
+                    answer = _v108_json.loads(receipt.get("stdout") or "null")
+                except ValueError:
+                    answer = None
+                return (_v108_os.waitstatus_to_exitcode(status) if isinstance(status, int) else None,
+                        answer if isinstance(answer, dict) else {}, receipt)
 
             def _v108_relay(relay_dir, address, payload, extra_env=None, raw_stdout=False):
                 """The relay as sshd runs it: a child process with the request on stdin."""
@@ -391,15 +416,13 @@ else:
                    and _v108_ans_m2.get("accepted") is True)
 
             # ---- AC3: one endpoint, one judgement, and no listener ----------------------------
-            _v108_before = _v108_unix_paths(str(_v108_tmp))
             _v108_local = CC108.send(_v108_A, {"operation": "upsert", "id": "same-command"}, EN108,
                                      _v108_verify, _v108_sign, _v108_HOST)
-            _v108_rc_r, _v108_ans_r, _ = _v108_relay(
-                _v108_MAIN, _v108_ADDR_A,
+            _v108_rc_r, _v108_ans_r, _v108_census_r = _v108_relay_census(
+                "same-command", _v108_MAIN, _v108_ADDR_A,
                 _v108_json.dumps(CC108.build_request(_v108_A, _v108_bA,
                                                      {"operation": "upsert", "id": "same-command"},
                                                      _v108_sign)).encode())
-            _v108_after = _v108_unix_paths(str(_v108_tmp))
             _v108_log = _v108_applied(_v108_cA)
             # Guarded, because a mutant that stops the relay forwarding leaves this log EMPTY, and a
             # suite that raises IndexError there hangs the row instead of reporting it red. An
@@ -408,9 +431,19 @@ else:
             _v108_nobind = "bind(" not in _v108_relay_src and ".listen(" not in _v108_relay_src
             # The endpoint is an ARGUMENT. Pointing the environment at the other RUNNING authority
             # changes nothing, because nothing reads it.
-            _v108_rc_amb, _v108_ans_amb, _ = _v108_relay(
-                _v108_MAIN, _v108_ADDR_A, _v108_raw,
+            _v108_rc_amb, _v108_ans_amb, _v108_census_amb = _v108_relay_census(
+                "ambient-environment", _v108_MAIN, _v108_ADDR_A, _v108_raw,
                 {"VELDO_CONTROL_SOCKET": _v108_ADDR_B, "VELDO_CONTROL_DB": _v108_PB})
+            # The no-listener part, from the census alone: one complete receipt per relayed call,
+            # each with no service event and no task beyond the relay's own root launch.
+            _v108_receipts = (_v108_census_r, _v108_census_amb)
+            _v108_census_ready = (
+                all(row["status"] == "READY" for r in _v108_receipts
+                    for row in LC108.consumer_rows(r, "VELDO-0114"))
+                and len({r.get("input_identity") for r in _v108_receipts}) == len(_v108_receipts))
+            _v108_census_clean = _v108_census_ready and not any(
+                e.get("kind") == "service" for r in _v108_receipts for e in r["events"]) and not any(
+                not t["root"] for r in _v108_receipts for t in r["processes"])
             _v108_B_log = _v108_applied(_v108_cB)
             _v108_MUT3, _ = _v108_organ("addrfromenv", [
                 (ADDRESS_108, '    address = os.environ.get("VELDO_CONTROL_SOCKET") or argv[1]')])
@@ -418,22 +451,31 @@ else:
                 _v108_MUT3, _v108_ADDR_A, _v108_raw,
                 {"VELDO_CONTROL_SOCKET": _v108_ADDR_B, "VELDO_CONTROL_DB": _v108_PB})
 
-            expect("VELDO-0108 AC3 relay/one-endpoint-one-judgement: the same command sent locally and through "
-                   "the relay produces the same judgement and the same entry in the authority's applied log, "
-                   "so a relayed command is not a second code path. No additional fixture-local socket remains: the kernel's "
-                   "pathname Unix socket table under the fixture is identical before invocation and after exit; the source "
-                   "carries no bind and no listen, because sshd is the network service and this is a command "
-                   "it runs. The endpoint is an ARGUMENT: with the environment pointed at the other RUNNING "
-                   "authority the relay still reaches the one it was given and the other's log does not grow. "
-                   "DRIVEN: a copy that prefers an environment variable for the endpoint reaches the other "
-                   "authority, which is the routing decision moved out of the signed binding to the one place "
-                   "the binding is not read",
-                   _v108_ans_r.get("accepted") is True and _v108_local.get("accepted") is True
-                   and _v108_same_two and _v108_nobind
-                   and _v108_before == _v108_after and _v108_before is not None
-                   and _v108_ans_amb.get("accepted") is True
-                   and _v108_ans_m3.get("accepted") is False
-                   and _v108_ans_m3.get("reason") == "coordinate_not_served")
+            _v108_comparison = (_v108_rc_r == 0 and _v108_ans_r.get("accepted") is True
+                                and _v108_local.get("accepted") is True
+                                and _v108_same_two and _v108_nobind
+                                and _v108_rc_amb == 0 and _v108_ans_amb.get("accepted") is True
+                                and _v108_ans_m3.get("accepted") is False
+                                and _v108_ans_m3.get("reason") == "coordinate_not_served")
+            if not _v108_census_ready:
+                # VELDO-0114 AC3: the comparison ran, but it cannot make the composite pass.
+                print("   VELDO-0108 AC3 relay/one-endpoint-one-judgement: STANDS DOWN (census_incomplete), "
+                      "recorded and NOT passed: a relayed call has no complete VELDO-0111 census receipt "
+                      "here, so the no-listener part is unproven (endpoint/judgement comparison %s)"
+                      % ("held" if _v108_comparison else "FAILED"))
+            else:
+                expect("VELDO-0108 AC3 relay/one-endpoint-one-judgement: the same command sent locally and "
+                       "through the relay produces the same judgement and the same entry in the authority's "
+                       "applied log, so a relayed command is not a second code path. Each relayed call ran as "
+                       "the root of a VELDO-0111 census with its own complete receipt, from before the relay "
+                       "executable ran through exit and descendant drain: no service event of any family or "
+                       "address and no task beyond the relay's own launch, because sshd is the network service "
+                       "and this is a command it runs. The endpoint is an ARGUMENT: with the environment "
+                       "pointed at the other RUNNING authority the relay still reaches the one it was given and "
+                       "the other's log does not grow. DRIVEN: a copy that prefers an environment variable for "
+                       "the endpoint reaches the other authority, which is the routing decision moved out of "
+                       "the signed binding to the one place the binding is not read",
+                       _v108_comparison and _v108_census_clean)
 
             # ---- the authority goes away: reported, never invented -----------------------------
             _v108_count = len(_v108_applied(_v108_cA))

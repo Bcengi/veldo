@@ -22,10 +22,11 @@ VELDO-0029 exists to keep in the signed binding, at the one point in the system 
 not being read.
 
 NO LISTENER. This introduces no network service. It has no bind and no listen: sshd is the network
-service, already installed, already audited, and this program is a command it runs. That property is
-supported by source inspection for bind/listen calls and snapshots of fixture-local pathname Unix
-sockets before invocation and after relay exit. Those snapshots show no additional socket remains;
-a general listener/process census is INTENDED and NOT YET DEMONSTRATED.
+service, already installed, already audited, and this program is a command it runs. VELDO-0114
+measures that with the VELDO-0111 lifecycle census: each invocation is traced from before this
+program runs through its exit and descendant drain, and must show no listen or service receive
+binding of any family or address, even a transient one, and no second process. Where that census is
+unavailable or incomplete the property stands down as unproven; socket snapshots never substitute.
 
 WHAT IT IS NOT. Not a proxy for many authorities, not a daemon, not a session. One request, one
 answer, exit. Standard library only.

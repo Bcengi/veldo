@@ -451,7 +451,7 @@
    "requires": [
     "48_veldo_0108_relay"
    ],
-   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_relay.py, .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the relay under a temporary directory. It runs the relay as a REAL CHILD PROCESS with the request on its standard input, which is how sshd runs it, against real authority child processes started through scripts/suites/support/v107_authority_runner.py and stopped by a flag file in a finally block. It also binds one bare echo socket of its own under the temporary directory to measure the relay's carrying promise byte for byte, and reads /proc/net/unix to show the relay opens no listener. It writes only under that temporary directory and sets environment variables only in the child it starts, never in this process. The rows that need a real repository stand down by name when git is absent; the carrying promise does not need one and runs anyway. The leg where sshd authenticates a remote principal STANDS DOWN BY NAME because no SSH server is installed on this machine, and the row says so rather than passing silently."
+   "requires_note": "Post-cut fragment declaring its closure as ITSELF ALONE. It loads .veldo/control_relay.py, .veldo/control_client.py and .veldo/control_enrollment.py by path, and mutated copies of the relay under a temporary directory. It runs the relay as a REAL CHILD PROCESS with the request on its standard input, which is how sshd runs it, against real authority child processes started through scripts/suites/support/v107_authority_runner.py and stopped by a flag file in a finally block. It also binds one bare echo socket of its own under the temporary directory to measure the relay's carrying promise byte for byte, and runs the relay calls of relay/one-endpoint-one-judgement as roots of the VELDO-0111 lifecycle census (scripts/fixtures/lifecycle_census.py, ptrace); that row stands down by name with census_incomplete when a receipt is not complete. It writes only under that temporary directory and sets environment variables only in the child it starts, never in this process. The rows that need a real repository stand down by name when git is absent; the carrying promise does not need one and runs anyway. The leg where sshd authenticates a remote principal STANDS DOWN BY NAME because no SSH server is installed on this machine, and the row says so rather than passing silently."
   },
   {
    "name": "49_veldo_0109_unavailable",
@@ -2195,6 +2195,15 @@
    ],
    "regions": "Kernel process and socket events, observer isolation and census failure propagation.",
    "requires_note": "Only ROOT and expect. Repository-only ptrace fixture with independently acknowledged tracees and private scratch output. Full host qualification remains explicitly incomplete."
+  },
+  {
+   "name": "113_veldo_0114_relay_census",
+   "file": "113_veldo_0114_relay_census.py",
+   "requires": [
+    "113_veldo_0114_relay_census"
+   ],
+   "regions": "VELDO-0114: the relay measured by the VELDO-0111 census over every exchange outcome, qualified by transient listener and child probes, and stand-down propagation over the census fault matrix.",
+   "requires_note": "Only ROOT and expect. Loads scripts/fixtures/lifecycle_census.py, the relay and the authority modules by path, writes relay copies and endpoints under private temporary directories, and runs the relay as a PTRACE_TRACEME census root. Rows stand down by name with census_incomplete wherever the census is not complete (no ptrace, the confined gate leg)."
   },
   {
    "name": "103_veldo_0124_macos",
