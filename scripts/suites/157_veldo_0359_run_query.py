@@ -845,10 +845,19 @@ L.main()
         marker = db.parent / 'store-guard.off'
         check('switch/off', 'absent means on', Q.switch(db)['state'] == 'on')
         risky = object.__new__(L.Receiver)
-        risky.config, risky.runner, risky.query_server = config, {'runner': 'confined'}, None
+        runner_config = base / 'query-only-runner.json'
+        runner_config.write_text('{}')
+        risky.config = dict(config, confined_runner={'program': 'fixture', 'config': str(runner_config)})
+        risky.runner, risky.query_server = {'runner': 'confined'}, None
+        risky.binding = risky.login = None
+        risky._engine_cwd = lambda *args: str(base / 'plain-work')
         risky.emit = lambda event: None
-        check('query/scope', 'risky runner has no query endpoint', risky._prepare_query({'dispatch_id': 'risky'}, {}) is None
-              and risky.query_server is None and not Q.endpoint('risky').parent.exists())
+        # B1 tests endpoint selection; B2's kernel/layout/census prerequisites have their own host suite.
+        with patch.object(L, 'guard_preflight', return_value=dict(state='on', directory=str(db.parent), preflight={})), \
+                patch.object(L.subprocess, 'run', return_value=types.SimpleNamespace(returncode=0, stdout='{"reason": null}')):
+            check('query/scope', 'risky runner has no query endpoint',
+                  risky._prepare_query({'dispatch_id': 'risky'}, {'argv': ['fixture']}) is None
+                  and risky.query_server is None and not Q.endpoint('risky').parent.exists())
         marker.write_text('off')
         before = marker.read_bytes()
         for mode, body in ((0o000, ''), (0o600, 'arbitrary contents')):

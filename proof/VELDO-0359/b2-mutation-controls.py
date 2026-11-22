@@ -35,9 +35,10 @@ def run(case, mode, directory):
     observed = json.loads(result.stdout)
     targets = observed['targets']
     present = all(targets.get(row) for row in case['rows'])
-    passed = present and (all(not all(targets[row]) for row in case['rows']) if mode == 'mutant' else not observed['failed_rows'])
+    passed = present and (all(not all(targets[row]) for row in case['rows']) if mode == 'mutant' else all(all(targets[row]) for row in case['rows']))
     return dict(case=case['name'], mode=mode, passed=passed, targets=targets,
                 failed_rows=observed['failed_rows'], failed_details=observed['failed_details'],
+                rows={name.split()[-1]: ok for name, ok in observed['observations']},
                 source_sha256=prepared['old_digest'], tested_sha256=prepared['new_digest'])
 
 
@@ -47,7 +48,10 @@ with tempfile.TemporaryDirectory(prefix='v359-b2-mutants-') as scratch:
     for case in cases:
         modules.setdefault(case['module'], case)
     for case, mode in [*( (case, 'noop') for case in modules.values()), *((case, 'mutant') for case in cases)]:
-        results.append(run(case, mode, Path(scratch) / (mode + '-' + case['name'])))
+        if mode == 'mutant' and not all(results[0].get('rows', {}).get(row) for row in case['rows']):
+            results.append(dict(case=case['name'], mode=mode, passed=False, status='NOT RUN', reason='unmutated target row incomplete on this host'))
+        else:
+            results.append(run(case, mode, Path(scratch) / (mode + '-' + case['name'])))
         print(case['name'], mode, results[-1]['passed'], flush=True)
     report = dict(commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
                   suite_sha256=hashlib.sha256((ROOT / 'scripts/suites/158_veldo_0359_store_guard.py').read_bytes()).hexdigest(),

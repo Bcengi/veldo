@@ -16539,9 +16539,14 @@ def cases():
                   '        clone.confine(clone.rules([directory], []))\n', ['launch/guard-read'])
     guard359_case('fd-check-skipped', "        clean, reportable = guard_audit(sample['directory'], setup)\n",
                   '        clean, reportable = True, True\n', ['launch/descriptors-leaked'])
-    guard359_case('fd-check-late', "        clean, reportable = guard_audit(sample['directory'], setup)\n",
-                  "        os.write(1, b'late audit identity\\n')\n        clean, reportable = guard_audit(sample['directory'], setup)\n",
-                  ['launch/descriptors-early'])
+    audit359 = ("    if sample and sample.get('state') == 'on':\n"
+                "        clean, reportable = guard_audit(sample['directory'], setup)\n"
+                "        if not clean:\n"
+                "            guard_report_failure(setup if reportable else None, 'audit')\n")
+    add(359, 'store359-fd-check-late', guard359, 'control_launch.py', audit359, '',
+        ['launch/descriptors-early'], also=[(
+            '    if beat is not None and type(release) is float:\n',
+            audit359 + '    if beat is not None and type(release) is float:\n')])
     guard359_case('audit-late-reader-only', '                    if guarded:\n',
                   '                    if False:  # defect: no pre-identity audit report\n', ['launch/descriptors-early'])
     guard359_case('ack-early', "        guard_observe(self, 'pending')\n",
@@ -16562,8 +16567,8 @@ def cases():
                   '    if False:\n', ['layout/placement'])
     guard359_case('guard-before-runner', "    if sample and sample.get('state') == 'on' and not sample.get('risky'):\n",
                   "    if sample and sample.get('state') == 'on':\n", ['launch/risky-real'])
-    guard359_case('precondition-skipped', '        if guard_overlap(target, directory):\n',
-                  '        if False:\n', ['launch/risky-census'])
+    guard359_case('precondition-skipped', "            if not census or census.get('reason'):\n",
+                  '            if False:\n', ['launch/risky-census'])
     guard359_case('census-prefilter', '        if any(guard_beneath(p, target) for p in blocked):\n',
                   '        if False:\n', ['launch/risky-census'])
     guard359_case('census-places-as-grants', '    grants = []\n',
