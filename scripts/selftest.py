@@ -583,6 +583,10 @@ if _LEDGER is not None:
 WAITS = None
 if (SUITES / "support" / "waits.py").is_file():
     WAITS = _protected("waits", SUITES / "support" / "waits.py")
+    # THE KEEPER (VELDO-0358, wave 1): from here this process is the run's keeper and its child runs the
+    # suites. A run that ends without finishing (a hung row, the watchdog, a signal) has every process it
+    # left killed and reaped by the keeper before the keeper ends with the run's own status.
+    WAITS.keep_the_tree()
     WAITS.arm_watchdog()
     if _LEDGER is not None:
         WAITS.RUNTIME.before_exit.append(_claim_opened)
@@ -658,6 +662,7 @@ if WAITS is not None:
     WAITS.disarm_watchdog()
     for _hook in WAITS.RUNTIME.before_exit:
         _hook()
+    WAITS.run_ended()
 elif _LEDGER is not None:
     _claim_opened()
 

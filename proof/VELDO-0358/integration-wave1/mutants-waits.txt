@@ -1,0 +1,36 @@
+====================================================================================================
+CASE wait358-enodev-not-gone targets ['waits/cgroup-gone-is-empty']
+baseline rc 0 rows 35 failed [] targets {'waits/cgroup-gone-is-empty': [True]}
+noop rc 0 rows 35 failed [] targets {'waits/cgroup-gone-is-empty': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -344 +344 @@
+-    return error.errno in (errno.ENOENT, errno.ENODEV)
++    return error.errno == errno.ENOENT  # defect: a group removed after its open is an error
+mutant rc 0 rows 35 failed ['waits/cgroup-gone-is-empty'] targets {'waits/cgroup-gone-is-empty': [False]}
+   detail waits/cgroup-gone-is-empty {'kernel_read': 'raised errno 19', 'populated': 'raised errno 19', 'source': 'raised errno 19', 'wait': 'raised errno 19', 'watched': 'raised errno 19', 'absent': (None, True), 'other': 'raised errno 20'}
+====================================================================================================
+CASE wait358-hung-tree-left targets ['watchdog/hung-tree-ended']
+baseline rc 0 rows 35 failed [] targets {'watchdog/hung-tree-ended': [True]}
+noop rc 0 rows 35 failed [] targets {'watchdog/hung-tree-ended': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -943 +943 @@
+-    if not orderly:
++    if False:  # defect: the processes of a run that did not finish are left
+mutant rc 0 rows 35 failed ['watchdog/hung-tree-ended'] targets {'watchdog/hung-tree-ended': [False]}
+   detail watchdog/hung-tree-ended {'hung': {'rc': 1, 'hung': ['SELFTEST HUNG fx/hung'], 'reaped': [], 'named': [], 'said': 0}, 'orderly': {'rc': 1, 'hung': [], 'reaped': [], 'named': [], 'said': 0}}
+====================================================================================================
+CASE wait358-orphans-not-kept targets ['watchdog/hung-tree-ended']
+baseline rc 0 rows 35 failed [] targets {'watchdog/hung-tree-ended': [True]}
+noop rc 0 rows 35 failed [] targets {'watchdog/hung-tree-ended': [True]}
+DIFF (proves the mutant landed):
+--- subject
++++ mutant
+@@ -837 +837 @@
+-    subreaper = _LIBC.prctl(_PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0) == 0
++    subreaper = False  # defect: orphans go to the user manager, out of the keeper's reach
+mutant rc 0 rows 35 failed ['watchdog/hung-tree-ended'] targets {'watchdog/hung-tree-ended': [False]}
+   detail watchdog/hung-tree-ended {'hung': {'rc': 1, 'hung': ['SELFTEST HUNG fx/hung'], 'reaped': [], 'named': [], 'said': 0}, 'orderly': {'rc': 1, 'hung': [], 'reaped': [], 'named': [], 'said': 0}}
