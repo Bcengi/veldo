@@ -47,8 +47,8 @@
     records the worker's end in between makes the result stale_version, which the API returns as a refusal of an
     owner's stop that was in fact asked. The fix is the same as Runner._stop_result; no row reaches it today.
 
-12. Brief F's lead item 6b is fixed here (69961820, d1b18d13); suite 83 with both briefs: 10 of 10 idle, 49 of 50
-    loaded with no hang. Its one loaded red is loop/reset-timer-wake, brief F's row (runs.md, round 2).
+12. Brief F's lead item 6b is fixed here (69961820, d1b18d13); suite 83 with both briefs: 10 of 10 idle (and 10
+    of 10 again with d1b18d13), 49 of 50 loaded with no hang. Its one loaded red is loop/reset-timer-wake, brief F's row (runs.md, round 2).
 
 13. Every proof run of round 2 is local: pc2's Python has no os.pidfd_open and its runs have no systemd user
     manager, so these suites cannot run there (runs.md, round 2).
