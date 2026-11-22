@@ -2,8 +2,9 @@
 
 Base: main 23318512. Each ready branch was brought on with `git cherry-pick` of its own commits
 (`git log <base>..<branch>`), in dependency order. Conflicts were resolved keeping both intents.
-Not brought (the lead adds them later): VELDO-0358, 0258, 0113, 0147. Round 3 (sections 1.11 to 1.13,
-2b) added VELDO-0253, the VELDO-0111 completion and VELDO-0114.
+Not brought (the lead adds them later): VELDO-0147. Round 3 (sections 1.11 to 1.13, 2b) added VELDO-0253,
+the VELDO-0111 completion and VELDO-0114; round 4 (sections 1.14 to 1.18, 2c) the VELDO-0111 fix,
+VELDO-0113, VELDO-0258, VELDO-0358 wave 1 and VELDO-0359.
 `scripts/verify.sh` was not run (the lead queues the gate). Suite and falsifier results: section 3.
 
 ## 1. Tickets, commits, conflicts
@@ -143,6 +144,94 @@ whose descriptor the scope could hold.
 No conflict. `scripts/gate_unconfined.json` is not edited (the owner decides 0114's and 0111's
 entries at landing, section 7).
 
+### 1.14 Round 4: VELDO-0111 fix (veldo-0111-complete, ef330df69 and 06e279291), 4 commits
+
+The fix and its row sit on 3d87f11c3 (close_range accounted) and a41c2095a (its recheck), which
+were not on the candidate (round 3 ended the completion at bb0686b3), so those two came with them:
+568d3303d (06e279291), 093908ce7 (ef330df69), da612409c (3d87f11c3), 2d49b8313 (a41c2095a).
+Conflicts: `scripts/suites/113_veldo_0111_census.py` (ef330df69 before its base: the threaded-exec
+row and the close_range rows both kept) and `specs/VELDO-0111-process-and-listener-census.md`
+(3d87f11c3: both History entries kept).
+
+### 1.15 Round 4: VELDO-0113 (veldo-0113, a41c2095a..fd99daaf2, 38 commits)
+
+8f60b4778..fb1aa408d. Conflicts: 19942d0e3 in `scripts/check_teeth_mutations.py` (0113's five
+autostart113 cases beside the line's registrations) and `scripts/suites/manifest.json` /
+`requires.json` (0113's two suites beside the line's). Every suite of the candidate before the round
+and of each ticket's tip is in the combined manifest (checked by name).
+
+### 1.16 Round 4: VELDO-0258 (veldo-0258 at 92624b9bf, restacked onto the 0253 on the candidate)
+
+54 commits (336fa3004..fec2c0c12): the 0258 commits of `23318512..92624b9bf`; its 29 VELDO-0253
+commits are the 0253 already on the candidate and were not picked again. Conflicts:
+- 39e96bb71 and 0927b4c29: `control_service.py` (both copies): the service's command dispatch keeps
+  0113's `work` and 0258's `tracker_call` branches; manifest and requires: both.
+- 6eb3ec57f, 78554645e: `71_veldo_0138_channel_service.py`, `71_veldo_0130_api.py`: 0258's installation
+  assets beside round 3's 58a08f0f copies of `installation_schema/` and `installation_template/`.
+- 1b65768a5: `84_veldo_0169_project_handouts.py`, `86_veldo_0168_text.py`: 0258's channel custody and
+  shipped service dependencies beside the line's rows (7f8c07e8's owner notice and git send in 0168's
+  inventory kept).
+
+### 1.17 Round 4: VELDO-0358 wave 1 (veldo-0358-w1 at 4bb3fefe3, 115 commits)
+
+9c2b7bfbe..4f92fc89c, every commit of `8656888f8..veldo-0358-w1`. Conflicts, each keeping both
+intents:
+- 0bea09015 (brief A): `check_teeth_mutations.py`, manifest, requires: both; `selftest.py`: 0358's
+  wait runtime and residue row inside the candidate's dispatcher (0206 isolation, 0221 shards).
+- 52e37e151 (A): `selftest.py`: the candidate's loop (0221 shard target, the REUSED/ISOLATED filter,
+  the residue row before PER_SUITE, the counts) under 0358's `WAITS is not None` guards.
+- 34187cb5c: `check_space_boundary.py`: the line's 0124/0177/0206 entries and 0358's gate_legs and
+  gate_load entries.
+- 87a83e258 (brief C): `check_teeth_mutations.py`: 0358 moved and restated the 0214/0215 block; the
+  move is taken and the candidate's `deadline215-reused-unaudited-sampled` (e4f142c66) carried into
+  the moved block. `check_gate_mutations.py` (both copies): the line's reuse audit (0218/0224) and
+  stale-snapshot rerun kept, the stage alarm removed as 0358 does (the rerun's re-arm becomes
+  `estimate_seconds`), case receipts carry both `audited`/`reuse_key` and `kill_by`/`kills`.
+  `check_first_use.py`: 0358's `heavy_run` under the hang bound, passing 0221's `shard_fds`.
+- 5f71c7f23 (the opened-files record taken by the authority): `agent_sandbox.py` (both): 0221's
+  `--inherit` channels and 0358's `--keep-fd` ledger both kept; prepared_launch admits a pipe or socket
+  above 2, or the append-only ledger (`kept_descriptor_problem`). `gate_legs.py` (both): `_env` drops
+  the ledger fd and 0221's shard variables; `confined`/`unconfined` take `keep` beside 0221's
+  channels (gate_candidate.py `--keep-fd` with no channels, the launcher's `--keep-fd` with them);
+  the leg keeps 0221's ShardClaims/metrics try/finally and hands `handed_env(environment)`.
+  `verify.sh`: 0206's suite-state trap also removes `VELDO_OPENED_RECORD`.
+- ad63ce183, 9f9dd8b1c: the ledger only when taken (gate_legs), and the line's keyword-only inherit
+  call (agent_sandbox), which already passes nothing when there is nothing.
+- 6414e4c50: `verify.sh`: all three traps, 0206's included, read `${VELDO_OPENED_RECORD:-}`.
+- 5b23bad75 (brief G): `check_teeth_mutations.py`: brief G's cases, then the line's 0253
+  init_scaffold companions loop, kept last so it covers every case.
+- 2a727affa (brief F): `control_service.py` (both): 0358's apply_timers_profile/tell_passes and the
+  line's domain-registry functions before serve's 0258 organ decorator; serve logs 0358's timers
+  start record and keeps 0258's control-plane-call observer.
+- 3af9ef1b3 (F): suite 110: 0258's outside_fixture run of `_v143_suite`; 0358's removal of the
+  wall-clock seconds print.
+- 6a23d6c12 (brief E): `control_engine_claude.py`: the line's `_probing()` condition with 0358's
+  table-read init deadline; `control_containment.py`: 0221's instance-named slice and 0358's
+  SETTLE/TOOL timers registered in the table.
+- 59956905e, 0fba128a3 (E): `control_launch.py`: 0231's question stop kept; the deadline comparison
+  reads 0358's wall clock (`_wall(self)`).
+Every `.veldo/` copy equals its `engine/.veldo/` original (template sync passes).
+
+### 1.18 Round 4: VELDO-0359 (veldo-0359-b2 at d62ee3faf, 29 commits)
+
+e250d5ba3..5a682858c (`git cherry-pick -x`, base 23318512). The real bind-mount cases are deferred
+by owner approval (43030) and print as deferred. Conflicts:
+- f21f9c2ce (B1): manifest and requires: both. `control_launch.py`: Launch keeps 0231's flags and
+  session and adds the query endpoint; Receiver keeps 0231/0176's fields and adds the query server
+  and store guard; `launch()` does the line's `receiver_space` set-up first.
+- eb7eee007, f6fb69abc (B1): Launch records both 0358's `ended` (last report) and 0359's query
+  identity and counts; 0359's falsifiers go before the 0253 companions loop.
+- 0e7bdc29c, 647d1f421 (B1 fix 1): 0359's `@_query_ended` launch body with the `receiver_space`
+  set-up at its top; query notices taken apart as 0359 does, 0358's `ended` kept; `QUERY_NOTICES`
+  beside 0358's `_wall`/`_await_exit` (RECEIVER_EXIT_SECONDS stays in 0358's timers table).
+- 034e44f8c (B2): `control_agent_config_handoff.py`: 0359's `codex_store_guard`, `codex` keeps 0231's
+  `probe`. `control_launch.py`: the record header carries the store guard and 0178's conversation
+  binding; 0184's memory hold and 0359's Codex guard both applied; the wrapper gets 0358's
+  `--timers` and 0359's held store guard; the setup acknowledgement keeps 0358's table-read
+  `HB.setup()`/`HB.settle()` and uses 0359's `guard_status`.
+- 350652220 (B2 fix 2): `control_execution_record.py`, `control_launch.py`: the header carries both
+  0359's `guard_header` decision and 0178's binding.
+
 ## 2. Combine fixes found by the re-runs (after all ten were picked)
 
 Each is its own commit, each confirmed by the suites and falsifiers named in section 3.
@@ -225,6 +314,14 @@ was rejected on its rows with full output.
 7f8c07e8 changes product code of 0253 (one line rendered), 7aac081b the UI's route table and
 9693c8c5 the order of hint_after's steps; they need the review's eye.
 
+## 2c. Combine fixes, round 4
+
+| Commit | Ticket pair | What was red | Fix |
+| - | - | - | - |
+| 786aa07b | 0358 with every other ticket of the line | 0358's wall-clock census (`check_wallclock.py`, a gate stage): RED, 366 wallclock_site (387 sites) and 9 baseline_stale, all in files of the line's other tickets, which 0358's baseline (written at its base) never saw | not fixed here: the baseline grows only by an owner-approved change to the protected `wallclock_baseline.json`. The baseline of what is found at the combined tip is `wallclock-baseline-proposal.json`, the census output `wallclock-at-combine.txt` (section 7). Main has no baseline, so the landing gate's authority judges nothing; the first gate after landing does |
+| c3cfee20 | 0359 B2 with the installation closure (0253/0258) | `control_service.closure()` refused `control_launch.py` (`invalid_input:closure:unresolved`, guard_census's runner load), so every suite deriving the closure stopped (seen at 58_0028's baseline in finding 258) | `EXTERNAL_LOADERS = ("guard_census",)` in control_launch.py (both copies), as control_verification declares its policy loader; closure() derives 196 modules again |
+| c3cfee20 | 0358 with 0113, 0359 with 0308, the combine's own resolutions with 0358 | anchors no longer found once: autostart113-construction-outside-authority (claim.py's window is now 0358's contract timer; finding 113's control failed), space308-refusal-reported-before-the-space-end (0359's guard refusal record sits between), opened358-tree-drops-ledger and firstuse358-total-budget (the lines as section 1.17 wrote them) | re-anchored, same defects. A static scan of every registered case finds no other moved anchor (fixture-module cases excluded) |
+
 ## 3. Suite and falsifier results
 
 Logs: `runs/<run>.txt` (one per run; round 3 in `runs/v1122r3.txt`, row names and counts; pc2 reds were run again on this host,
@@ -251,6 +348,7 @@ commit. The rest ran through host_heavy. Falsifiers: `scripts/check_gate_mutatio
 | 0114 | 2f385fb3, af2f3d2e | 113_0114 31/31, 48 37/37, 113_0111 48/48; at af2f3d2e 113_0114 31/31, 01 648/648, 14 53/53 | drive.py: 5/5 detected (at 4a19fa62 2/5, the crash af2f3d2e fixes) |
 | Round 3 fixes | 58a08f0f, 246167d6, 7f8c07e8, c18b9188 | 71_0138 39/39, 83_0154 40/40, 86_0148 52/52, 103_0142 49/49, 127_0254 48/48, 128_0247 46/46, 66_0047 56/56, 86_0168 52/52, 86_0186 37/37, 94_0162 52/52, 95_0203 62/62, 106_0185 46/46 | 47: 38/38; at c18b9188 253+168+186: 76 of 77, text168-prompt-collapsed survives on intake/delivery, as it already does at 4a37d23c (44 of 45; open item 8) |
 | Round 3 after the leg | 7aac081b, 9693c8c5 | at 7aac081b: 113_0117 29/29, 116_0188 53/53, 113_0145 33/33, 155_0304 77/77, 156_0315 61/61, 92_0088 56/56, 93_0152 50/50, 96_0204 46/46, 110_0143 135/135, 132_0175 47/47, 149_0312 67/67, 102_0210 263/263, 120_0131 40/40, 121_0131 28/28, 122_0131 28/28, 124_0131 34/34, 13_0623 exit 2 (pc2); at 9693c8c5: 157_0253 69/69, 110_0143 135/135, 65_0132 42/42, 71_0130 71/71, 82_0144 55/55, 156_0315 61/61, 158_0334 48/48 | at 9693c8c5: 130+132+144+253+304+145+117+188+204: 274/274; 315+334: 39 of 40; 143: 62 of 64. The three not rejected fail the same way at 4a37d23c (open item 10) |
+| Round 4 (sections 1.14 to 1.18, 2c) | 786aa07b, c3cfee20 | Logs in `/home/dmitry/projects/myday/research/claude-runs/r4/` (`suite-<name>.txt`, `finding-<n>.txt`, summaries `suites-summary.txt`, `findings-summary.txt`, second pass `findings2-summary.txt`, `suites2-summary.txt`). Finished when this was written: 113_0111 50/50 (host, the threaded-exec row included). The rest of the first pass (114_0113, 115_0113, 158_0258, 71_0138, 71_0130, 84_0169, 86_0168, 110_0143, 157_0358, 158_0358, 160_0358, 62_0039, 63_0040, 83_0154, 157_0359, 158_0359, 156_0315, 62_0065) runs from 15:19 on the tree at c3cfee20 | first pass at 786aa07b: 113, 258, 359 stopped at a control (control_failed): 113 and 258 by the two reds c3cfee20 fixes; 359 by 158_0359_store_guard's baseline, which makes its run directory under /var/lib/veldo and is refused in the confined mutation leg (`Permission denied`): the owner's B2 gate_unconfined entry (section 7a). Second pass (113, 258, 358 at c3cfee20, then 58_0028, 66_0047, 71_0138, 71_0130) is queued detached after the first (chain2.sh). 315, 143, 168 running |
 
 ## 4. The full unit leg (once)
 
@@ -316,6 +414,20 @@ Items 1, 2 and 4 are closed by round 2 (section 2a); their text below is the fir
 11. The full unit leg ran at c18b9188, before 7aac081b, 60e50380 and 9693c8c5; those three are
     confirmed by the suites and findings in section 3, not by another full leg.
 
+
+Round 4 status of items 8 to 11 (where this run stopped: their runs are not finished):
+- 8 (text168-prompt-collapsed): the case names `lines/prompt` and `intake/delivery`; since VELDO-0181
+  the delivered question reads its presentation, so `intake/delivery` cannot see the prompt's
+  rendering. Finding 168 runs at c3cfee20 (`finding-168.txt`); if `lines/prompt` rejects the mutant,
+  the case is re-anchored by dropping `intake/delivery` from its rows. Not changed yet.
+- 10 (143): the no-op control of newproject143-pick-unmapped and -ambiguous-choices-presented copies
+  control_channel_presentation.py beside RENDERER_COMPANIONS (text, v1, plane_calls), but the module
+  also loads control_conversation_decisions.py beside itself on first use (VELDO-0181, `_decisions()`),
+  the likely cause of the eleven 62_0065 reds. Finding 143 runs (`finding-143.txt`); not changed yet.
+- 10 (315): space315-periodic-call ran to the 120 s worker deadline; under 0358 a case ends on
+  evidence or at its hang bound, not a worker deadline. Finding 315 runs (`finding-315.txt`).
+- 9: the 0258 restack met it (sections 1.16, 2c). 11: superseded by the round 4 unit leg (section 4).
+
 ## 6. Protected paths this candidate changes against main 23318512
 
 From .veldo/policy_check.py protected_patterns, with the tickets that change each:
@@ -342,6 +454,60 @@ Round 3 (0253, the 0111 completion, 0114 and the section 2b fixes) adds no prote
 same 32 files, recomputed against 23318512 at 9693c8c5 with the policy's patterns.
 `scripts/gate_unconfined.json` is unchanged by round 3.
 
+Round 4, recomputed at c3cfee20 against 23318512 with the policy's patterns (`.veldo/policy_check.py`
+protected_patterns, the candidate's policy.yaml, which 0358 widens), all of them, 46 files; the round
+3 tickets that change each are listed above. 0111, 0113, 0258 and 0359 change no protected path;
+0358 adds 14 and changes 13 of the earlier 32; the combine's resolutions (section 1.17) touch
+selftest.py, verify.sh, gate_legs.py, agent_sandbox.py, check_gate_mutations.py and
+check_first_use.py. `scripts/gate_unconfined.json` is unchanged by round 4 (no diff from 8656888f8).
+
+- `.veldo/policy.yaml` (also 0358 in round 4)
+- `.veldo/reuse_evidence.py`
+- `engine/.veldo/reuse_evidence.py`
+- `engine/scripts/agent_sandbox.py` (also 0358 in round 4)
+- `engine/scripts/case_inputs.py`
+- `engine/scripts/case_reuse.py`
+- `engine/scripts/case_trace.py`
+- `engine/scripts/check_gate_mutations.py` (also 0358 in round 4)
+- `engine/scripts/check_wallclock.py` (new in round 4: 0358)
+- `engine/scripts/gate_candidate.py` (new in round 4: 0358)
+- `engine/scripts/gate_host.py` (new in round 4: 0358)
+- `engine/scripts/gate_legs.py` (also 0358 in round 4)
+- `engine/scripts/gate_load.py` (new in round 4: 0358)
+- `engine/scripts/gate_reuse.py`
+- `engine/scripts/gate_schedule.py` (also 0358 in round 4)
+- `engine/scripts/mutation_observer.py` (new in round 4: 0358)
+- `engine/scripts/mutation_reuse.py`
+- `engine/scripts/reuse_stamp.py`
+- `engine/scripts/verify.sh` (also 0358 in round 4)
+- `proof/VELDO-0217/reviews/README.md`
+- `scripts/agent_sandbox.py` (also 0358 in round 4)
+- `scripts/case_inputs.py`
+- `scripts/case_reuse.py`
+- `scripts/case_trace.py`
+- `scripts/check_first_use.py` (also 0358 in round 4)
+- `scripts/check_gate_mutations.py` (also 0358 in round 4)
+- `scripts/check_wallclock.py` (new in round 4: 0358)
+- `scripts/gate_candidate.py` (new in round 4: 0358)
+- `scripts/gate_graph.json` (new in round 4: 0358)
+- `scripts/gate_host.py` (new in round 4: 0358)
+- `scripts/gate_legs.py` (also 0358 in round 4)
+- `scripts/gate_load.py` (new in round 4: 0358)
+- `scripts/gate_reuse.py`
+- `scripts/gate_schedule.py` (also 0358 in round 4)
+- `scripts/gate_unconfined.json`
+- `scripts/mutation_case_inputs.json`
+- `scripts/mutation_observer.py` (new in round 4: 0358)
+- `scripts/mutation_reuse.py`
+- `scripts/propose_case_inputs.py`
+- `scripts/reuse_stamp.py`
+- `scripts/run_scope.py`
+- `scripts/selftest.py` (also 0358 in round 4)
+- `scripts/suites/shared.py` (new in round 4: 0358)
+- `scripts/suites/wallclock.json` (new in round 4: 0358)
+- `scripts/suites/wallclock_baseline.json` (new in round 4: 0358)
+- `scripts/verify.sh` (also 0358 in round 4)
+
 ## 7. Owner items for the landing ask
 
 - Protected-path approval for every path in section 6.
@@ -358,7 +524,10 @@ same 32 files, recomputed against 23318512 at 9693c8c5 with the policy's pattern
 - Live recapture: the 0231 captures approved in 42874 are stale on this candidate (open item 3);
   a fresh capture run needs the owner's approval, and whether 42874 also covers the 0127 rows on the
   combined line (combine list).
-- VELDO-0358 items (policy.yaml, gate scripts) come with 0358, which is not in this candidate.
+- VELDO-0358 (round 4): the protected paths of section 6 (its integration-wave1.md section 6), the
+  combined wall-clock baseline (section 7a), suites 126 requalify and 86 live recapture before the gate.
+- VELDO-0359: spec status to ready; the real bind-mount cases deferred by approval 43030 (follow-up
+  spec for a privileged fixture host).
 - VELDO-0253 (spec History): the wider footprint (F8, including suite 71 and now the section 2b
   fixtures and suites), and treating project remote, landing destination, repository and trunk
   changes, and the space section's widening changes, as needing an owner decision (F4, fix round 2).
@@ -367,3 +536,34 @@ same 32 files, recomputed against 23318512 at 9693c8c5 with the policy's pattern
   for rows (census) or whole; 113_veldo_0111_census (and 0113's cases when it comes). Not edited here.
 - VELDO-0111: the Yama / process_vm_writev caveat is recorded in its spec History (1.12); it
   states a host assumption (Yama ptrace scope 1) the owner may want named for other hosts.
+
+## 7a. scripts/gate_unconfined.json: the entries for the owner's landing decision
+
+The file is protected and unchanged by this candidate's round 3 and round 4. Every entry the line's
+tickets ask for, in one place, for one edit:
+
+1. VELDO-0358 wave 1, suite 157_veldo_0358_suite_runtime, rows waits/no-idle-wake and
+   waits/cgroup-gone-is-empty: no child cgroup can be made under the gate's confinement
+   (proof/VELDO-0358/integration-wave1.md section 7, item 3). A row-scoped entry, or a grant of the
+   gate's delegated cgroup.
+2. VELDO-0113, suite 114_veldo_0113_no_autostart: the five ptrace mutation cases
+   (autostart113-reaped-fallback, -transient-abstract-listener, -incomplete-counts-as-success,
+   -construction-outside-authority, -cli-direct-construction), proof/VELDO-0113/ptrace-mutation-cases.txt:
+   the VELDO-0111 observer traces every measured client, and the confined worker denies ptrace.
+3. VELDO-0359 B2, suite 158_veldo_0359_store_guard (proof/VELDO-0359/b2-gate-unconfined-proposal.txt):
+   "Fixture receiver launches use the systemd user manager, pidfds, Landlock and the namespace helper;
+   nested gate confinement cannot exercise this boundary." Its falsifiers stop at the baseline in the
+   confined leg (/var/lib/veldo refused, section 3, round 4).
+4. The census and 113 rows already listed (section 7): 113_veldo_0114_relay_census whole;
+   48_veldo_0108_relay for its census rows, or whole; 113_veldo_0111_census.
+
+## 7b. The wall-clock baseline (VELDO-0358 census) for the owner
+
+`check_wallclock.py` at the combined tip against the candidate's own baseline: RED, 366
+wallclock_site and 9 baseline_stale (`wallclock-at-combine.txt`), every one in a file of a ticket
+other than 0358 (0111, 0113, 0114, 0124, 0127, 0175 to 0187, 0206, 0217, 0221, 0224, 0231, 0253,
+0258, 0316, 0317, 0334, 0347, 0359 and the e2e conversation files). The design lets the baseline
+grow only by an owner-approved change; `wallclock-baseline-proposal.json` is the baseline of what
+is found (2709 entries, 2829 sites): approving it as `scripts/suites/wallclock_baseline.json` makes
+the census green on this line. Not applied here.
+
