@@ -388,6 +388,7 @@ class Installation:
 
 
 class Repository:
+    error_type = InstallationError
     """The committed installation boundary. Object operations never touch the index or work tree."""
 
     def __init__(self, folder, branch='main'):
@@ -464,6 +465,8 @@ class Repository:
 
     def send(self, commit, remote):
         """Send exactly the accepted commit, without force. A refusal keeps it live locally."""
+        if remote is None:
+            return
         if not isinstance(remote, str) or not remote or remote.startswith('-'):
             raise InstallationError('installation_push_failed:remote_missing')
         try:

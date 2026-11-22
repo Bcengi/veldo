@@ -141,11 +141,11 @@ class Loader:
             if made or (old_status.get('commit') == commit and old_status.get('made')):
                 try:
                     self.repo.send(commit, config['installation.yaml'].get('git', {}).get('remote'))
-                except I.InstallationError as error:
+                except self.repo.error_type as error:
                     event['push_refusal'] = error.code
                     self.notify(dict(event, outcome='push_failed', problems=[error.code]))
             return event
-        except (I.InstallationError, Refused, self.store.StoreRefused) as error:
+        except (self.repo.error_type, Refused, self.store.StoreRefused) as error:
             return self._event(commit, previous, 'refused', getattr(error, 'codes', [error.code]))
 
     def environment(self):
