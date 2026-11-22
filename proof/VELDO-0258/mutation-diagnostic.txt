@@ -1,13 +1,17 @@
-Developer diagnostic only: registered materializer and worker, without confinement.
-Source commit e16512eb3a9b; node pc2; run rr20261122041928-7e1c.
-raw_sha256=135c3472a7c8030fb78af4790814df044e1631786b0f0ff5bf5d3bb04927a43a
+Developer diagnostics only: registered materializer and worker, without confinement.
+Eight registered cases; baseline/no-op green and intended mutant rows red.
 
+v258-six-final
+raw_sha256=18a158c0a59fbf53e1903fee5f7758b253dd55ceb00387d24757f79e4ef54ea9
 {"case": "outside258-env-resolver", "mode": "baseline", "targets": {"ac1/refuses/tracker/env": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-env-resolver", "mode": "noop", "targets": {"ac1/refuses/tracker/env": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-env-resolver", "mode": "mutant", "targets": {"ac1/refuses/tracker/env": [false]}, "failed_rows": ["VELDO-0258 ac1/refuses/tracker/env", "VELDO-0258 observability/counts"], "matched": true}
 {"case": "outside258-product-routing", "mode": "baseline", "targets": {"ac2/accepted-site": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-product-routing", "mode": "noop", "targets": {"ac2/accepted-site": [true]}, "failed_rows": [], "matched": true}
-{"case": "outside258-product-routing", "mode": "mutant", "targets": {"ac2/accepted-site": [false]}, "failed_rows": ["VELDO-0258 ac2/accepted-site", "VELDO-0258 ac2/accepted-route-authenticates", "VELDO-0258 ac3/signed-service-command", "VELDO-0258 ac2/malformed-whole", "VELDO-0258 ac2/previous-still-live"], "matched": true}
+{"case": "outside258-product-routing", "mode": "mutant", "targets": {"ac2/accepted-site": [false]}, "failed_rows": ["VELDO-0258 ac2/accepted-site", "VELDO-0258 ac2/accepted-route-authenticates", "VELDO-0258 ac3/signed-service-command", "VELDO-0258 observability/effect-log", "VELDO-0258 observability/effect-counters", "VELDO-0258 ac2/malformed-whole", "VELDO-0258 ac2/previous-still-live"], "matched": true}
+{"case": "outside258-literal-in-refusal", "mode": "baseline", "targets": {"ac1/no-canary-in-observations": [true]}, "failed_rows": [], "matched": true}
+{"case": "outside258-literal-in-refusal", "mode": "noop", "targets": {"ac1/no-canary-in-observations": [true]}, "failed_rows": [], "matched": true}
+{"case": "outside258-literal-in-refusal", "mode": "mutant", "targets": {"ac1/no-canary-in-observations": [false]}, "failed_rows": ["VELDO-0258 ac1/no-canary-in-observations", "VELDO-0258 observability/failed-body-private", "VELDO-0258 observability/effect-log", "VELDO-0258 ac1/no-canary-in-records"], "matched": true}
 {"case": "outside258-registered-only-scan", "mode": "baseline", "targets": {"ac3/planted-call": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-registered-only-scan", "mode": "noop", "targets": {"ac3/planted-call": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-registered-only-scan", "mode": "mutant", "targets": {"ac3/planted-call": [false]}, "failed_rows": ["VELDO-0258 ac3/planted-call", "VELDO-0258 ac3/planted-script"], "matched": true}
@@ -17,3 +21,18 @@ raw_sha256=135c3472a7c8030fb78af4790814df044e1631786b0f0ff5bf5d3bb04927a43a
 {"case": "outside258-malformed-site-accepted", "mode": "baseline", "targets": {"ac2/malformed-whole": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-malformed-site-accepted", "mode": "noop", "targets": {"ac2/malformed-whole": [true]}, "failed_rows": [], "matched": true}
 {"case": "outside258-malformed-site-accepted", "mode": "mutant", "targets": {"ac2/malformed-whole": [false]}, "failed_rows": ["VELDO-0258 ac2/malformed-whole", "VELDO-0258 ac2/previous-still-live"], "matched": true}
+remote_run[pc2 c92ac8be5414 05:51:46]: rc=0 in 207s (run rr20261122054819-1017)
+
+v258-effect-tooth
+raw_sha256=77a850bb9cf7f12efc784b6b998097512612d206f16250cfc949bfca33aa242f
+{"case": "outside258-effect-observer-dropped", "mode": "baseline", "targets": {"effects/publication-call-observed": [true]}, "failed_rows": [], "matched": true}
+{"case": "outside258-effect-observer-dropped", "mode": "noop", "targets": {"effects/publication-call-observed": [true]}, "failed_rows": [], "matched": true}
+{"case": "outside258-effect-observer-dropped", "mode": "mutant", "targets": {"effects/publication-call-observed": [false]}, "failed_rows": ["VELDO-0028 effects/publication-call-observed"], "matched": true}
+remote_run[pc2 e3b653e35e1c 05:55:57]: rc=0 in 164s (run rr20261122055313-2771)
+
+v258-trace-tooth
+raw_sha256=3de9d54e17e62e31ecdd2cc6d77473583efcdd2cbe3cf571c5885f39af893559
+{"case": "outside258-commit-read-after-call", "mode": "baseline", "targets": {"observability/commit-pinned": [true]}, "failed_rows": [], "matched": true}
+{"case": "outside258-commit-read-after-call", "mode": "noop", "targets": {"observability/commit-pinned": [true]}, "failed_rows": [], "matched": true}
+{"case": "outside258-commit-read-after-call", "mode": "mutant", "targets": {"observability/commit-pinned": [false]}, "failed_rows": ["VELDO-0258 observability/commit-pinned"], "matched": true}
+remote_run[pc2 dfd533d46f4c 05:57:09]: rc=0 in 41s (run rr20261122055628-56b3)

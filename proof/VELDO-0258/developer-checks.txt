@@ -101,3 +101,95 @@ raw_sha256=257fd7c615f1bca1975e3cfccb2fcb78a55e22e34e01bdfa6d0f3b22a6025423
 VELDO-0172 fake/capture:0254_canary_launch: 8 fake lines compared, events ['claude:assistant', 'claude:control_response', 'claude:result/success', 'claude:system/init', 'codex:item.completed', 'codex:thread.started', 'codex:turn.completed', 'codex:turn.started']
   129_veldo_0254_canary_launch                     7 passed    5.34s
 selftest (PARTIAL, 1 of 238 suites): 33 passed, 0 failed in 5.34s
+
+v258-effects
+raw_sha256=71157fa5ca4b740b94b7bf2168f5d530810008c6a055257f8c2615ae9ff70f13
+  SELFTEST FAIL: VELDO-0028 effects/publication-record-scrubs-destination
+  SELFTEST FAIL: VELDO-0028 effects/completion/publication
+  SELFTEST FAIL: VELDO-0148 install/land-station
+  SELFTEST FAIL: VELDO-0148 reland/stale-subject
+  SELFTEST FAIL: VELDO-0148 reland/review-kept
+  SELFTEST FAIL: VELDO-0148 reland/conflict-rebuild
+  SELFTEST FAIL: VELDO-0148 reland/never-forced
+  SELFTEST FAIL: VELDO-0148 reland/end-wakes-pass
+  SELFTEST FAIL: VELDO-0148 lease/trunk-moved
+  SELFTEST FAIL: VELDO-0148 lease/contains-unknown
+  SELFTEST FAIL: VELDO-0148 grant/fresh-request
+  SELFTEST FAIL: VELDO-0148 grant/never-granted
+  SELFTEST FAIL: VELDO-0148 grant/mixed-approvals
+  SELFTEST FAIL: VELDO-0148 grant/mixed-proof
+  SELFTEST FAIL: VELDO-0148 grant/once-per-dispatch
+  SELFTEST FAIL: VELDO-0148 grant/revoked-before-answer
+  SELFTEST FAIL: VELDO-0148 format/fake-lines
+  SELFTEST FAIL: VELDO-0148 receiver/normal-exit
+  SELFTEST FAIL: VELDO-0148 receiver/settled-scope
+  SELFTEST FAIL: VELDO-0148 receiver/fast-exit
+  SELFTEST FAIL: VELDO-0148 receiver/pre-release-budget
+  SELFTEST FAIL: VELDO-0148 receiver/placement-error
+  SELFTEST FAIL: VELDO-0148 receiver/placement-timeout
+  SELFTEST FAIL: VELDO-0148 receiver/report-timeout
+  SELFTEST FAIL: VELDO-0148 receiver/late-wrapper
+  SELFTEST FAIL: VELDO-0148 receiver/wrapper-exited
+  SELFTEST FAIL: VELDO-0172 fake/capture:0148_re_land
+  58_veldo_0028_effects                           50 passed   55.70s
+  86_veldo_0148_re_land                            1 passed    3.63s
+selftest (PARTIAL, 2 of 238 suites): 77 passed, 27 failed in 59.33s
+remote_run[pc2 10a0b3958479 05:38:52]: rc=1 in 65s (run rr20261122053747-3f68)
+
+v258-parent-effects
+raw_sha256=cea6f0059c7d8d47317e5df6e43946638c5d97ff1602deda6ddcc399693b10ea
+  SELFTEST FAIL: VELDO-0148 install/land-station
+  SELFTEST FAIL: VELDO-0148 reland/stale-subject
+  SELFTEST FAIL: VELDO-0148 reland/review-kept
+  SELFTEST FAIL: VELDO-0148 reland/conflict-rebuild
+  SELFTEST FAIL: VELDO-0148 reland/never-forced
+  SELFTEST FAIL: VELDO-0148 reland/end-wakes-pass
+  SELFTEST FAIL: VELDO-0148 lease/trunk-moved
+  SELFTEST FAIL: VELDO-0148 lease/contains-unknown
+  SELFTEST FAIL: VELDO-0148 grant/fresh-request
+  SELFTEST FAIL: VELDO-0148 grant/never-granted
+  SELFTEST FAIL: VELDO-0148 grant/mixed-approvals
+  SELFTEST FAIL: VELDO-0148 grant/mixed-proof
+  SELFTEST FAIL: VELDO-0148 grant/once-per-dispatch
+  SELFTEST FAIL: VELDO-0148 grant/revoked-before-answer
+  SELFTEST FAIL: VELDO-0148 format/fake-lines
+  SELFTEST FAIL: VELDO-0148 receiver/normal-exit
+  SELFTEST FAIL: VELDO-0148 receiver/settled-scope
+  SELFTEST FAIL: VELDO-0148 receiver/fast-exit
+  SELFTEST FAIL: VELDO-0148 receiver/pre-release-budget
+  SELFTEST FAIL: VELDO-0148 receiver/placement-error
+  SELFTEST FAIL: VELDO-0148 receiver/placement-timeout
+  SELFTEST FAIL: VELDO-0148 receiver/report-timeout
+  SELFTEST FAIL: VELDO-0148 receiver/late-wrapper
+  SELFTEST FAIL: VELDO-0148 receiver/wrapper-exited
+  SELFTEST FAIL: VELDO-0172 fake/capture:0148_re_land
+  58_veldo_0028_effects                           52 passed   54.45s
+  86_veldo_0148_re_land                            1 passed    3.41s
+selftest (PARTIAL, 2 of 237 suites): 79 passed, 25 failed in 57.86s
+remote_run[pc2 c65fcc2c7427 05:38:51]: rc=1 in 64s (run rr20261122053747-21de)
+
+v258-effects-fixed
+raw_sha256=30bff76172dce4bc82aa628c1a92a03c3e840ae1a2eedc9132ec151576afa9dc
+  58_veldo_0028_effects                           52 passed   53.53s
+  158_veldo_0258_outside_calls                    62 passed   11.34s
+selftest (PARTIAL, 2 of 238 suites): 140 passed, 0 failed in 64.87s
+remote_run[pc2 8311a9d8dd6e 05:45:35]: rc=2 in 73s (run rr20261122054422-f255)
+
+v258-durable-service
+raw_sha256=be832f7595f06f5eee800bb02f014eba690fbf2032daa42290e326057dda2302
+  SELFTEST FAIL: VELDO-0143 pm/new-project-run
+  SELFTEST FAIL: VELDO-0143 pm/graph-stage-own
+  SELFTEST FAIL: VELDO-0143 format/fake-lines
+  71_veldo_0138_channel_service                   13 passed   40.86s
+  109_veldo_0161_adoption                         55 passed   54.53s
+  110_veldo_0143_new_project                     106 passed   72.66s
+selftest (PARTIAL, 3 of 238 suites): 200 passed, 3 failed in 168.05s
+remote_run[pc2 8311a9d8dd6e 05:49:30]: rc=1 in 176s (run rr20261122054634-b671)
+
+v258-registry-checks
+raw_sha256=2975f09f87237aa0a352c54b11eaf6de26adc56d8c165feb8cb83b7f75b1726f
+lint: pass (1274 python, 40 shell, 4.75s)
+template sync: pass (342 pair(s) compared, 6 declared per-repo, 367 engine-only)
+docs hygiene: pass
+personal setup: 0 finding(s)
+remote_run[pc2 10a0b3958479 05:34:42]: rc=0 in 13s (run rr20261122053429-a2f4)
