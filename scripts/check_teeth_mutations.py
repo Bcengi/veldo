@@ -138,6 +138,15 @@ def cases():
         '    if not comparison:\n        return "FAIL", "comparison_failed"\n',
         ['relay/stand-down-never-hides-a-failed-comparison'])
     result[-1]['dir'] = 'scripts/suites'
+    # Fix round 2: a rows-scoped entry (48_veldo_0108_relay, rows "census") must move only suite 48's
+    # composite to the unconfined leg. The falsifier drops one ordinary row's leg_runs() guard, so the
+    # unconfined leg runs that row again; suite 0114 runs the mutant copy of suite 48 on both legs.
+    add(114, 'v114-ordinary-row-runs-unconfined', S114, S48,
+        'if leg_runs():\n    expect("VELDO-0108 relay/usage-has-zero-stdout',
+        'if True:  # defect: an ordinary row that ignores the gate leg\n'
+        '    expect("VELDO-0108 relay/usage-has-zero-stdout',
+        ['relay/rows-scoped-entry-moves-only-the-census-row'])
+    result[-1]['dir'] = 'scripts/suites'
     def grammar(name, module, old, new, row):
         add(118, name, '54_veldo_0118_grammar.py', module, old, new, ['grammar/' + row])
         result[-1]['fixture'] = True
