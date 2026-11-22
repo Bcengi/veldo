@@ -70,6 +70,18 @@ def _v108_organ(tag, edits=()):
     return d, _v108_load("v108_relay_" + tag, d / "control_relay.py")
 
 
+def _v108_composite(census_ready, census_clean, comparison):
+    """The composite row's verdict (VELDO-0114 fix round 1). The endpoint/judgement comparison needs
+    no census, so a failed comparison is red whatever the census shows. A census that is not ready
+    only withholds the pass of the no-listener part; it never turns a failed comparison into a
+    stand-down, which on a leg without ptrace would leave a real regression green."""
+    if not comparison:
+        return "FAIL", "comparison_failed"
+    if not census_ready:
+        return "STANDS DOWN", "census_incomplete"
+    return ("PASS", None) if census_clean else ("FAIL", "relay_listener")
+
+
 def _v108_sign_with(key, payload):
     return "hmac-sha256:" + _v108_hmac.new(key, payload, _v108_hashlib.sha256).hexdigest()
 
@@ -307,7 +319,7 @@ else:
                               "os.close(fd)\n"
                               "os.execve(c['argv'][0], c['argv'], dict(os.environ, **c['env']))\n")
 
-            def _v108_relay_census(tag, relay_dir, address, payload, extra_env=None):
+            def _v108_relay_census(tag, relay_dir, address, payload, extra_env=None, fault=None):
                 """One relayed call measured by one census; returns (exit, parsed answer, receipt)."""
                 (_v108_tmp / ("census-" + tag + ".in")).write_bytes(payload)
                 launch = _v108_tmp / ("census-" + tag + ".json")
@@ -315,7 +327,8 @@ else:
                     stdin=str(_v108_tmp / ("census-" + tag + ".in")), env=extra_env or {},
                     argv=[_v108_sys.executable, "-B", str(relay_dir / "control_relay.py"), address])))
                 receipt = LC108.census([_v108_sys.executable, "-B", "-c", _v108_LAUNCHER, str(launch)],
-                                       identity="VELDO-0108/AC3/" + tag, cwd=str(_v108_tmp))
+                                       identity="VELDO-0108/AC3/" + tag, cwd=str(_v108_tmp),
+                                       fault=fault)
                 status = receipt.get("root_status")
                 try:
                     answer = _v108_json.loads(receipt.get("stdout") or "null")
@@ -436,11 +449,13 @@ else:
                 {"VELDO_CONTROL_SOCKET": _v108_ADDR_B, "VELDO_CONTROL_DB": _v108_PB})
             # The no-listener part, from the census alone: one complete receipt per relayed call,
             # each with no service event and no task beyond the relay's own root launch.
+            def _v108_ready(receipts):
+                return (all(row["status"] == "READY" for r in receipts
+                            for row in LC108.consumer_rows(r, "VELDO-0114"))
+                        and len({r.get("input_identity") for r in receipts}) == len(receipts))
+
             _v108_receipts = (_v108_census_r, _v108_census_amb)
-            _v108_census_ready = (
-                all(row["status"] == "READY" for r in _v108_receipts
-                    for row in LC108.consumer_rows(r, "VELDO-0114"))
-                and len({r.get("input_identity") for r in _v108_receipts}) == len(_v108_receipts))
+            _v108_census_ready = _v108_ready(_v108_receipts)
             _v108_census_clean = _v108_census_ready and not any(
                 e.get("kind") == "service" for r in _v108_receipts for e in r["events"]) and not any(
                 not t["root"] for r in _v108_receipts for t in r["processes"])
@@ -457,13 +472,19 @@ else:
                                 and _v108_rc_amb == 0 and _v108_ans_amb.get("accepted") is True
                                 and _v108_ans_m3.get("accepted") is False
                                 and _v108_ans_m3.get("reason") == "coordinate_not_served")
-            if not _v108_census_ready:
-                # VELDO-0114 AC3: the comparison ran, but it cannot make the composite pass.
+            _v108_status, _v108_reason = _v108_composite(_v108_census_ready, _v108_census_clean,
+                                                         _v108_comparison)
+            if not leg_runs("census"):
+                pass  # the gate's list moved this row to the unconfined leg, where ptrace is allowed
+            elif _v108_status == "STANDS DOWN":
+                # VELDO-0114 AC3: the comparison held, but without the census it cannot pass the row.
                 print("   VELDO-0108 AC3 relay/one-endpoint-one-judgement: STANDS DOWN (census_incomplete), "
                       "recorded and NOT passed: a relayed call has no complete VELDO-0111 census receipt "
-                      "here, so the no-listener part is unproven (endpoint/judgement comparison %s)"
-                      % ("held" if _v108_comparison else "FAILED"))
+                      "here, so the no-listener part is unproven (endpoint/judgement comparison held)")
             else:
+                if _v108_status == "FAIL":
+                    print("   VELDO-0108 AC3 relay/one-endpoint-one-judgement: FAIL (%s), census %s"
+                          % (_v108_reason, "complete" if _v108_census_ready else "INCOMPLETE"))
                 expect("VELDO-0108 AC3 relay/one-endpoint-one-judgement: the same command sent locally and "
                        "through the relay produces the same judgement and the same entry in the authority's "
                        "applied log, so a relayed command is not a second code path. Each relayed call ran as "
@@ -475,7 +496,25 @@ else:
                        "the other's log does not grow. DRIVEN: a copy that prefers an environment variable for "
                        "the endpoint reaches the other authority, which is the routing decision moved out of "
                        "the signed binding to the one place the binding is not read",
-                       _v108_comparison and _v108_census_clean)
+                       _v108_status == "PASS")
+
+            # The stand-down rule itself, on a real relayed call whose census is refused ptrace, as on
+            # the confined gate leg. Runs on every leg: it needs no census, only an incomplete one.
+            _v108_rc_d, _v108_ans_d, _v108_census_d = _v108_relay_census(
+                "denied", _v108_MAIN, _v108_ADDR_A, _v108_raw, fault="denied")
+            _v108_denied_ready = _v108_ready((_v108_census_d,))
+            expect("VELDO-0114 relay/stand-down-never-hides-a-failed-comparison: a relayed call measured "
+                   "under a census that is refused ptrace leaves an INCOMPLETE receipt, which is not ready. "
+                   "With that receipt a failed endpoint/judgement comparison makes the composite FAIL "
+                   "(comparison_failed), never STANDS DOWN, and a comparison that held makes it STANDS DOWN "
+                   "(census_incomplete), never PASS: a standing-down census withholds a pass and never turns "
+                   "a falsified comparison green",
+                   _v108_census_d.get("status") == "INCOMPLETE" and not _v108_denied_ready
+                   and _v108_composite(_v108_denied_ready, False, False) == ("FAIL", "comparison_failed")
+                   and _v108_composite(_v108_denied_ready, False, True) == ("STANDS DOWN", "census_incomplete")
+                   and _v108_composite(True, True, False) == ("FAIL", "comparison_failed")
+                   and _v108_composite(True, False, True) == ("FAIL", "relay_listener")
+                   and _v108_composite(True, True, True) == ("PASS", None))
 
             # ---- the authority goes away: reported, never invented -----------------------------
             _v108_count = len(_v108_applied(_v108_cA))
