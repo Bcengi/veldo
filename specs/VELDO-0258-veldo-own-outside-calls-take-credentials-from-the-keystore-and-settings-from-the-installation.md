@@ -96,7 +96,10 @@ footprint:
   - "scripts/suites/60_veldo_0064_inbox.py"
   - "scripts/suites/62_veldo_0065_presentations.py"
   - "scripts/suites/63_veldo_0066_attribution.py"
+  - "scripts/suites/70_veldo_0057_landing.py"
   - "scripts/suites/70_veldo_0073_activation.py"
+  - "scripts/suites/128_veldo_0235_land_locally.py"
+  - "scripts/suites/129_veldo_0239_batch_landing.py"
   - "scripts/suites/71_veldo_0130_api.py"
   - "scripts/suites/71_veldo_0138_channel_service.py"
   - "scripts/suites/72_veldo_0075_andon.py"
@@ -229,4 +232,5 @@ for one (VELDO-0254 AC1), and the Context and threat model say the same.
 profiles, an opener held in a variable and network tools, so batch landing, the lander, the landing
 station's remote read, the audit replica and the installation remote are registered by destination
 kind; local-only exemptions carry their reason. The Git boundary refuses transport to an off-host
-destination outside the service. The footprint adds control_batch.py and control_replica.py for that.
+destination outside the service. The footprint adds control_batch.py and control_replica.py for that, and the three landing
+suites that now run inside the service fixture (they already failed at the parent commit without it).
