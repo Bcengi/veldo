@@ -3,7 +3,7 @@
 
 One external tracker project (a Jira project, say) commonly spans many VELDO repositories, so
 routing is first-class: every ticket and epic declares which repo it targets, and this resolver
-answers that deterministically and offline. It reads a per-org config (.veldo/trackers.json,
+answers that deterministically and offline. It reads the accepted installation tracker_routing config (
 veldo.tracker/v1) and exposes pure functions - resolve_repo(ticket, config),
 tracker_for_repo(repo_id, config), and the fleet eligibility triple is_eligible(ticket, config) -
 that everything downstream (intake, the mirror, the epic structure, the tracker-driven fleet)

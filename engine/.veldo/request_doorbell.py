@@ -214,7 +214,7 @@ def _resolve_secret_ref(token_ref):
 class TelegramSink:
     """REFERENCE-WIRED real send, NEVER run in the gate. Posts the doorbell notice to a chat channel
     (a Telegram bot) via stdlib urllib. The bot token is a SECRET REFERENCE resolved at the seam
-    (token_ref, e.g. env:TELEGRAM_BOT_TOKEN), never a raw credential in a config, prompt, proof, or
+    (token_ref, e.g. keychain:doorbell), never a raw credential in a config, prompt, proof, or
     log; it FAILS CLOSED (DoorbellError) when no token resolves. The chat channel gives no
     read-back, so idempotency is the caller's key plus a DURABLE keyed marker the adopter wires;
     this reference keeps no marker of its own (it always attempts a send), so it is paired with a
