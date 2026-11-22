@@ -318,9 +318,8 @@ expect("WARP-0623 AC5: the module docstring records WHY the collision survived a
        "CODIFIED FROM A PROVEN SCRIPT IS NOT THE SAME AS THE CODIFIED PATH RAN" in _lp_src
        and "FakeTracker defines its OWN" in _lp_src)
 
-# AC5: the capability entry, byte-identical across all eight capabilities.yaml copies, honestly marked
-# repo-only (the tracker board-bootstrap cluster does not ship in the engine) and stating plainly that the
-# live provisioning path itself is still UNEXECUTED against a real board until WARP-0620.
+# AC5: the historical capability entry remains conservative about real-board qualification.
+# Shipping the service dependencies in VELDO-0258 does not claim the separate WARP-0620 proof.
 _lp_caps = (ROOT / ".veldo/capabilities.yaml").read_bytes()
 _lp_caps_text = _lp_caps.decode()
 expect("WARP-0623 AC5: the tracker_provisioner_shadow_check capability is present and byte-identical across all eight capabilities.yaml copies",
@@ -333,15 +332,13 @@ expect("WARP-0623 AC5: the capability entry is mechanical, homed in the live mod
        "status: mechanical" in _lp_caps_entry and "home: .veldo/tracker_jira_live.py" in _lp_caps_entry
        and "scope: repo-only" in _lp_caps_entry and "UNEXECUTED" in _lp_caps_entry
        and "WARP-0620" in _lp_caps_entry)
-# The honest engine-sync truth, asserted rather than assumed: the live provisioner is REPO-ONLY. It has
-# never been part of the canonical engine (engine), so there is no shipped copy to sync and no
-# pack carries one; capabilities.yaml is the artifact that does ship, and it is byte-identical above.
+# VELDO-0258 ships the tracker dependencies so the signed authority-service command can load them.
+# Distribution does not claim the separate real-board qualification described above.
 _lp_engine = set(PK.engine_files(str(ROOT / "engine")))
-expect("WARP-0623 AC5: the live board provisioners and adapter remain repository-only; the shared-parser intake source has an identical engine mirror",
-       not [_m for _m in ("tracker_jira_live.py", "tracker_jira_init.py", "tracker_adapter.py") if (".veldo/" + _m) in _lp_engine]
-       and not (ROOT / "engine/.veldo/tracker_jira_live.py").exists()
-       and (ROOT / ".veldo/tracker_intake.py").read_bytes()
-       == (ROOT / "engine/.veldo/tracker_intake.py").read_bytes())
+expect("WARP-0623 AC5: the service's live board provisioners, adapter and intake ship with identical engine copies",
+       all(".veldo/" + _m in _lp_engine
+           and (ROOT / ".veldo" / _m).read_bytes() == (ROOT / "engine/.veldo" / _m).read_bytes()
+           for _m in ("tracker_jira_live.py", "tracker_jira_init.py", "tracker_adapter.py", "tracker_intake.py")))
 # --- A HISTORICAL SPEC'S FOOTPRINT AGAINST THE PROTECTED SET IN FORCE FOR IT ---------------------
 # The dogfood rows in this file assert that a landed spec's footprint touched no protected path. The
 # set that answers that is the one in force WHEN THE FOOTPRINT WAS APPROVED, not today's: comparing
