@@ -372,6 +372,19 @@ attempts this round did not finish (one stopped in 71_0138, one at the 2 h backg
 reds are listed in `unit-leg-3.txt` and are fixed by 58a08f0f to c18b9188. The full leg was not run
 again after 7aac081b.
 
+Round 4: STARTED, not waited for (owner cost rule, 2026-11-22), at 711cebf0b (the record commit after
+it changes only this file), as a detached job:
+`setsid nohup myday/scripts/host_heavy.sh python3 -B scripts/selftest.py > myday/research/claude-runs/cand-1122-unit-leg-711cebf0b.txt 2>&1 < /dev/null &`
+in this worktree (the command round 3 used, `python3 -B scripts/selftest.py` through host_heavy).
+Log: myday `research/claude-runs/cand-1122-unit-leg-711cebf0b.txt`. Started while the round 4
+suite and finding passes (section 3) were still running beside it under host_heavy's shared slots.
+
+Where this run stopped (turn limit): every ticket is picked and committed, the reds found so far are
+fixed (2c), and the record is written; open are the results of the first suite pass, findings 315,
+143 and 168 (items 8 and 10), the queued second pass (findings 113, 258, 358; suites 58_0028,
+66_0047, 71_0138, 71_0130), and the unit leg. Not run: finding 359 again (its store-guard baseline
+needs the owner's unconfined entry, 7a), the full mutation stage, verify.sh.
+
 ## 5. Open items for the lead
 
 Items 1, 2 and 4 are closed by round 2 (section 2a); their text below is the first record's.
