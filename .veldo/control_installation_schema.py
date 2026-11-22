@@ -121,7 +121,8 @@ def secrets(value, path, exists, problems, key='$'):
             return
         for field, child in value.items():
             at = key + '.' + str(field)
-            declaration = key.rsplit('.', 1)[-1] in ('properties', 'schemas', 'securitySchemes')
+            declaration = (path.endswith(('.openapi.json', '.tools.json'))
+                           and key.rsplit('.', 1)[-1] in ('properties', 'schemas', 'securitySchemes'))
             if (not declaration and SECRET_FIELD.fullmatch(str(field))
                     and not (isinstance(child, dict) and set(child) == {'secret'})):
                 problems.append('installation_secret_inline:%s:%s' % (path, at))
