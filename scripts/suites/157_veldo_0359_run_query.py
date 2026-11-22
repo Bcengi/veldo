@@ -808,7 +808,8 @@ L.main()
             else:
                 marker.mkdir()
             launch, pending = run_fixture('marker-' + invalid)
-            refused = read_event(launch.child, pending, {'refused'})
+            read_event(launch.child, pending, {'closed'})  # the receiver's last line, whatever came before it
+            refused = next((e for e in pending[1] if e.get('event') == 'refused'), {'refusal': None})
             reap(launch)
             check('switch/off', invalid + ' marker refuses the launch by name', refused['refusal'] == 'invalid_input:layout:switch'
                   and not any(e.get('event') in ('accept_probe', 'accepted', 'payload') for e in pending[1])
