@@ -62,7 +62,7 @@ def _v359_query_suite():
         except Exception as error:
             return getattr(error, 'code', getattr(error, 'reason', type(error).__name__))
 
-    with tempfile.TemporaryDirectory(prefix='v359-', dir='/tmp') as directory, contextlib.ExitStack() as stack:
+    with tempfile.TemporaryDirectory(prefix='v359-', dir=fast_temp()) as directory, contextlib.ExitStack() as stack:
         base = Path(directory)
         mods = base / 'repo' / '.veldo'
         mods.mkdir(parents=True)
@@ -255,6 +255,9 @@ def _v359_query_suite():
             check('query/scope', 'coordination scope ' + unit,
                   stopped(lambda: remote.decide('coordination', unit)) == 'coordinate_not_served')
         check('query/scope', 'foreign reference', stopped(lambda: remote.decision_blockers('VELDO-9359', ['decision:foreign'])) == 'coordinate_not_served')
+        check('query/scope', 'oversized context', stopped(lambda: remote.decide('selection', 'VELDO-9359', context={'body': 'x' * Q.MAX_BYTES})) == 'unavailable_service:run_query')
+        check('query/scope', 'extra path refused', stopped(lambda: Q._exchange(server.path, {'operation': 'completion', 'unit': 'VELDO-9359', 'path': str(db)})) == 'coordinate_not_served')
+        check('query/scope', 'immutable coordinates', stopped(lambda: setattr(remote, 'repository_uuid', 'repo-two')) == 'AttributeError')
         check('query/scope', 'other checkout', stopped(lambda: Q.RemoteGate(other_repo, server.path)) == 'run_query:other_repository')
         for name in ('conn', '_reading', 'unit_record', 'read', 'open_dispatch', 'launch', 'handle', 'close_dispatch', 'dispatch'):
             check('query/scope', 'unsupported ' + name, stopped(lambda: getattr(remote, name)) == 'run_query:unsupported:' + name
