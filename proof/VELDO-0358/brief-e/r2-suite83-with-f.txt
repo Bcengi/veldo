@@ -16,3 +16,17 @@ runs 10, green 10
       1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.94s
       1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.99s
       1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 60.02s
+
+Again with d1b18d13's _await_gone applied to the same combination (still uncommitted), ten runs, four at a time:
+start 2026-11-22T00:01:54Z
+end 2026-11-22T00:05:01Z
+runs 10, green 10
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.71s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.73s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.95s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 59.99s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 60.03s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 60.05s
+      2 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 67.25s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 67.42s
+      1 selftest (PARTIAL, 1 of 239 suites): 42 passed, 0 failed in 67.44s

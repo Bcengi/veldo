@@ -24,3 +24,12 @@ Restated cases (README.md): five anchors moved; dispatch-closed-output-late-dead
 judgment; dispatch261-stop-leaves-record-running ends the receiver on the stop instead of sleeping forever;
 containment-runtime-cap-one-second-late at the row's cap. Each is rejected by assertion in the stage above
 (the last one after its restatement, pending the re-drive).
+
+## Round 2 (mutation-stage-r2.txt)
+
+All 135 registered cases of suites 62, 63, 78 and 106 again through the gate's driver, at d1b18d13: 135 executed,
+135 rejected, every one kill_by assertion, none hung_not_killed, no control_failed. The former survivor,
+containment-runtime-cap-one-second-late, is rejected by VELDO-0040 containment/runtime-cap. Suites 78 (36 cases)
+and 106 (20 cases) are kill_by assertion now that the files they open have no baseline entry (190c4e90).
+The new row dispatch/owner-stop-ends-first is falsified by the code before 69961820 (r2-idle-and-falsifier.txt);
+it is not a registered case.

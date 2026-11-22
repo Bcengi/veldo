@@ -60,6 +60,8 @@ there; the suites of this brief need this host. The generator itself needs no de
 | r2-load50 (r2-load50-summary.txt) | 190c4e90, slowdown 4.7 | 78 50/50, 106 50/50; 62 49/50: run 45 red (r2-red-62-enodev.txt), below |
 | r2-load50b (r2-load50b-summary.txt) | d1b18d13, slowdown 4.9 | 62 50/50, 78 50/50, 106 50/50; 12 of 12 spinners and the writer alive to the end |
 | Suite 83 with brief F (r2-suite83-with-f.txt) | temporary combination of 190c4e90 and d5450c70, uncommitted | 10 of 10 green, idle, four at a time (brief F saw 8 of 8 hang there) |
+| Suite 83 with brief F, again (same file) | the combination with d1b18d13's _await_gone applied | 10 of 10 green, idle, four at a time |
+| Mutation stage (mutation-stage-r2.txt, mutants.md) | d1b18d13 | 135 of 135 rejected, all kill_by assertion; containment-runtime-cap-one-second-late rejected |
 | Suite 83 with brief F, loaded (r2-load50-suite83-with-f.txt) | same combination, slowdown 4.8 | 49 of 50 green, no hang; one red, loop/reset-timer-wake (brief F's row, below) |
 | Affected suites (r2-affected-suites.txt) | 190c4e90 moving to d1b18d13 | the 42 suites that open the converted files: 39 green; 86_veldo_0127 live/claude, live/codex (lead item 8, digests); 86_veldo_0189 residue (brief F); 86_veldo_0168 three rows, fixed in 481bd6fc and green after |
 
