@@ -1,0 +1,23 @@
+VELDO-0358 fix round 1; implementation 202635627.
+host_heavy.sh; gate_load.py --slots 6; check_gate_mutations.py, force-fresh, 12 workers.
+Suite 151 used the confined mutation worker; suites 71 and 83 used their declared unconfined leg.
+No quiet run, timeout reduction, or load-sampled classification.
+Stage: passed; executed=14; rejected=14; invalid=0; error=None.
+
+loop154-account-slot-kept: assertion; target VELDO-0154 loop/receiver-death
+loop154-ask-reruns: assertion; target VELDO-0154 loop/ask-before-rerun
+loop154-orphan-not-stopped: assertion; target VELDO-0154 loop/receiver-death
+loop154-pipe-not-polled: assertion; target VELDO-0154 loop/review-offered
+loop358-orphan-stop-record-false: assertion; target VELDO-0154 loop/receiver-death
+loop358-poll-record-missing: assertion; target VELDO-0154 loop/review-offered
+owner-command-unrouted: assertion; target VELDO-0138 command/owner
+probe-on-the-real-bot: assertion; target VELDO-0138 qualification/recorded-by-service
+resume-drops-backlog: assertion; target VELDO-0138 command/stop-keeps-pending
+service-skips-open-ingress: assertion; target VELDO-0138 served/settlement
+space313-stop-after-the-command-ends-the-supervisor: assertion; target VELDO-0313 supervise/stop-after-the-command-ends-nothing
+space313-unread-bounded-by-a-read-parent: assertion; target VELDO-0313 fix3/unread-process-holds
+space313-unread-process-not-counted: assertion; target VELDO-0313 fix3/unread-process-holds
+space313-unread-started-after-the-run-left-out: assertion; target VELDO-0313 fix3/unread-process-holds
+
+Load: applied=True; all 18 spinners and 2 writers alive=True; probe slowdown=4.822 (data).
+Every spinner consumed CPU: True; every writer wrote bytes: True.

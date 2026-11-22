@@ -184,6 +184,30 @@ exceptions) is not changed by wave 1.
 
 ## 7. Open, for the lead and the owner
 
+Fix round 1 (base 850f7a1d): implementation commits a57c5b5f2, 48e9ec291, c4e83a70d and
+9209989ae and 202635627 address items 1 and 2. The loaded mutation stage rejected all fourteen
+cases by assertion with every control green and no invalid result
+([fix-round1/mutants.txt](fix-round1/mutants.txt)). The fifty-run proof is still pending; the blockers
+below are not yet closed. The initial loaded control found and fixed an absent-log read during service startup;
+[fix-round1/checks.txt](fix-round1/checks.txt) retains that failure and the static checks.
+
+- Suite 83 reads the service's actual poll interests (`unwatched`), and rejects a completed pass
+  whose orphan release remains pending after all launches and wakes are gone. Neither a receiver's
+  exit nor a relaxed idle answer is a verdict. The runner reports `orphan_wait` to the service's own
+  log, with the stop result, before awaiting its disappearance. An unissued stop cannot enter that
+  wait. The death row requires the record before the completed pass; two new falsifiers remove the
+  poll and stop records.
+- Suite 71 closes each request wait after a complete channel pass that follows its supplied input,
+  or when the channel is unavailable. It wakes on the existing STATUS notification and store events,
+  and rereads the result after the status to avoid racing a completed write.
+- Suite 151 ends the churn wait when the supervisor's own holder list omitted the process whose
+  exit should wake it. The stop row additionally invokes the installed handler through its return:
+  an acknowledgement written before an eventual SystemExit cannot prove the handler returned.
+  The inherited stop mutant is unchanged.
+- Item 3 and scripts/gate_unconfined.json are untouched. Item 4 remains open: AC12's exact real-time
+  sleep comparison conflicts with the requirement that its alone and loaded verdicts be independent
+  of external scheduling. No red is relabelled as data or accepted as a passing row.
+
 BLOCKERS FOR THE GATE:
 
 1. Four inherited mutants of suite 83 hang it (mutants-suite83.txt): loop154-pipe-not-polled (the pass after a
@@ -214,8 +238,11 @@ BLOCKERS FOR THE GATE:
    write: a row-scoped entry for the suite in scripts/gate_unconfined.json, or a grant of the gate's own
    delegated group to its confinement. Both are the owner's (protected paths).
 4. Suite 160's row load/level-by-construction is red when the canary alone is run on a busy machine (three
-   controls in the first stage; green in the group stage). AC12 asks for the canary green alone; the owner
-   rules whether that fact is asserted, or recorded as data like the canary's red in the leg.
+   controls in the first stage; green in the group stage). The lead has ruled that AC12 stands: the canary
+   must be green alone under load, and its red cannot be accepted as data. This remains unresolved in fix
+   round 1: the exact experiment compares a child's 0.1 CPU-seconds with the parent's 0.2-second sleep.
+   Scheduling can delay either process across the marker read, independently of the generator's correctness.
+   No canary assertion, exception, or result classification was weakened here.
 
 OTHER:
 
