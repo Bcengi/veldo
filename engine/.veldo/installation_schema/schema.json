@@ -1477,7 +1477,8 @@
       "hosts": "added",
       "tailnet_names": "added",
       "publisher": "changed",
-      "receiver": "receiver_limits"
+      "receiver": "receiver_limits",
+      "space": "space_authority"
     },
     "project": {
       "workflows": "changed",

@@ -46,6 +46,10 @@ These changes wait for the owner's decision (the schema's `widening` and `deleti
 - installation: a new or changed account or channel chat, a new port, a new approver, a changed owner
   role, a new or changed remote, a changed bot token reference, a new or changed tracker, host or
   tailnet name, a changed publisher identity, a raised inbound file cap;
+- space (what Veldo may remove): removals turned on, a protect entry dropped (a path, volume,
+  container, image, network or compose project), an engine, scratch root, build root, plain
+  repository or client account added, a changed session pattern, time zone or process reader, a
+  pool dropped or its floor or needs lowered;
 - projects: a new project; a changed, added or removed workflow binding, account, landing
   destination, remote, repository, trunk, render command or renumber hook; a new or changed deploy
   target; deleting a project file that declares bindings (its work falls back to the default);
@@ -62,8 +66,10 @@ These changes wait for the owner's decision (the schema's `widening` and `deleti
 Everything else applies as soon as the commit is valid, because it only reduces authority: removing a
 tool from an allowed list, adding a never rule, removing a port, account, channel, approver or
 deploy target, lowering a limit, and deleting a connector, service, schedule, role, team, memory
-server or a project file with no bindings. Metadata such as labels and display names also applies
-directly.
+server or a project file with no bindings. In the space section: turning removals off, adding a
+protect entry, removing an engine, root, plain repository or client account, adding a pool or
+raising its floor or needs, and removing the section (space management off). Metadata such as
+labels and display names also applies directly.
 
 Every cross reference is checked: a project's account, workflow bindings and deploy target services,
 a schedule's workflow and project, a memory server's service and a store's server, a team's roles, a

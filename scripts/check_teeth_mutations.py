@@ -10557,6 +10557,11 @@ def cases():
     add(253, 'install253-checkout-left-behind', install253, 'control_installation_commit.py',
         "            loader.repo.follow(base_commit, commit)\n", "",
         ['ac3/working-copy-follows'])
+    # Fix round 2: a dropped protect entry in the space section goes live with no owner decision.
+    add(253, 'install253-space-protect-direct', install253, 'control_installation_schema.py',
+        "            found.append('protect.' + name)\n",
+        "            pass\n",
+        ['ac2/space-protect-removed'])
 
     # VELDO-0241: each criterion's declared falsifier, against the suite 127 row it names.
     def unit_workflow(name, module, old, new, row):
