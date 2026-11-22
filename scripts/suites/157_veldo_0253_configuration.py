@@ -42,7 +42,9 @@ def _v253_suite():
             'ac1/unread-secret-import', 'ac3/working-copy-follows',
             # Fix round 2: the installation's space section. One row per kind of widening change.
             'ac2/space-enabled', 'ac2/space-protect-removed', 'ac2/space-engine-added', 'ac2/space-root-added',
-            'ac2/space-narrowing-direct')
+            'ac2/space-narrowing-direct',
+            # Fix round 3: each remaining space setting is tested on the side it belongs to.
+            'ac2/space-safeguard-loosened', 'ac2/space-unread-direct')
     emitted, errors = set(), []
 
     def check(row, condition):
@@ -659,6 +661,25 @@ def _v253_fix_rows(root, mods, load, check, errors):
         and direct(with_space(wider), with_space(dict(wider, build_roots=['/srv/example/build'])))
         and direct(with_space(wider), with_space(dict(wider, protect=dict(space['protect'], volumes=['prod_db_*', 'keep_*']))))
         and direct(with_space(wider), {'installation.yaml': settings})))
+    # A changed session pattern adopts other directories as scratch, a process reader frees in-use work for
+    # removal, and a lowered or dropped floor admits runs on less free disk: each waits for the owner.
+    pool = space['pools']['host']
+    reader = 'a' * 64
+    isolated('ac2/space-safeguard-loosened', lambda: (
+        waits(with_space(space), spaced(scratch_roots=dict(space['scratch_roots'], session_pattern='{session_id}')),
+              'installation.yaml:space.scratch_roots.session_pattern')
+        and waits(with_space(space), spaced(process_reader=reader), 'installation.yaml:space.process_reader')
+        and waits(spaced(process_reader=reader), spaced(process_reader='b' * 64), 'installation.yaml:space.process_reader')
+        and waits(with_space(space), spaced(pools={'host': dict(pool, floor=1000 * mb)}), 'installation.yaml:space.pools.host')
+        and waits(with_space(space), spaced(pools={}), 'installation.yaml:space.pools.host')))
+    # Nothing reads the time zone or a pool's needs at runtime, so changing them cannot let Veldo remove
+    # more: they apply at once, as do a raised floor, an added pool and a reader removed.
+    isolated('ac2/space-unread-direct', lambda: (
+        direct(with_space(space), spaced(time_zone='Europe/Berlin'))
+        and direct(with_space(space), spaced(pools={'host': dict(pool, needs=dict(pool['needs'], build=100 * mb))}))
+        and direct(with_space(space), spaced(pools={'host': dict(pool, floor=3000 * mb)}))
+        and direct(with_space(space), spaced(pools={'host': pool, 'spare': pool}))
+        and direct(spaced(process_reader=reader), spaced(process_reader='none'))))
     references = [
         ({'schedules/s.yaml': {'when': 'daily', 'workflow': 'nosuch'}},
          'installation_invalid:schedules/s.yaml:workflow:unknown_reference'),

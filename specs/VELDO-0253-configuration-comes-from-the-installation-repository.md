@@ -366,3 +366,11 @@ pattern, time zone or process reader, a pool dropped or its floor or needs lower
 applies directly. Like the round 1 items, this is classified as widening pending the owner's ruling.
 Suite 157 gains one row per kind of widening change and a narrowing row; the falsifier
 install253-space-protect-direct lets a dropped protect entry through and must turn its row red.
+
+2026-11-22: fix round 3 after the second fix-check (FIX, R1 and R2). A changed time zone and changed
+pool needs now apply directly: nothing reads either at runtime (the pool record keeps the floor only,
+and a hold's needs come from its caller), so neither lets Veldo remove more. A changed session pattern
+or process reader and a pool dropped or its floor lowered still wait for the owner. Suite 157 gains
+ac2/space-safeguard-loosened (the waiting side) and ac2/space-unread-direct (the direct side). The
+falsifier install253-space-floor-direct lets a lowered floor through and must turn the first red;
+install253-space-needs-wait makes any pool change wait and must turn the second red.

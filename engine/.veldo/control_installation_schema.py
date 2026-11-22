@@ -264,9 +264,11 @@ def space_widening(old, new):
     """The space keys whose change lets Veldo remove more or protect less (VELDO-0253).
 
     Narrowing applies directly: removals turned off, a protect entry added, an engine, root, repository
-    or client account removed, a pool added or its floor or needs raised. Everything below widens:
-    removals turned on, a protect entry dropped, an engine, root, repository or client account added,
-    a changed session pattern, time zone or process reader, a pool dropped or its floor or needs lowered.
+    or client account removed, a pool added or its floor raised. A changed time zone and changed pool
+    needs also apply directly: nothing reads either at runtime (admission takes needs from the caller,
+    and the pool record keeps the floor only), so they cannot let Veldo remove more. Everything below
+    widens: removals turned on, a protect entry dropped, an engine, root, repository or client account
+    added, a changed session pattern or process reader, a pool dropped or its floor lowered.
     A section removed reads as space management off, which narrows."""
     if new is None or old == new:
         return []
@@ -283,14 +285,11 @@ def space_widening(old, new):
     added = lambda before, after: any(item not in (before or []) for item in (after or []))
     if b['enabled'] and not a.get('enabled'):
         found.append('enabled')
-    if a.get('time_zone') is not None and a['time_zone'] != b['time_zone']:
-        found.append('time_zone')
     if b['process_reader'] != a.get('process_reader', space.NO_READER) and b['process_reader'] != space.NO_READER:
         found.append('process_reader')
     for name, pool in sorted((a.get('pools') or {}).items()):
         now = b['pools'].get(name)
-        if (now is None or now['floor'] < pool['floor']
-                or any(now['needs'][station] < pool['needs'][station] for station in space.STATIONS)):
+        if now is None or now['floor'] < pool['floor']:
             found.append('pools.' + name)
     for key in ('engines', 'build_roots', 'client_accounts', 'plain_repositories'):
         if added(a.get(key), b[key]):

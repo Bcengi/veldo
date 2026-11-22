@@ -141,8 +141,11 @@ classification is requested in the spec History, like the round 1 items.
 | An engine added | ac2/space-engine-added | |
 | A build root, scratch root, plain repository or client account added | ac2/space-root-added | |
 | Removals off, an engine or root removed, a protect entry added, the section removed: direct | ac2/space-narrowing-direct | |
+| A changed session pattern or process reader, a pool dropped or its floor lowered (fix round 3) | ac2/space-safeguard-loosened | install253-space-floor-direct |
+| A changed time zone, a pool's needs lowered, a floor raised, a pool added, a reader removed: direct (fix round 3) | ac2/space-unread-direct | install253-space-needs-wait |
 
-docs/installation.md lists the space changes on both sides.
+docs/installation.md lists the space changes on both sides. In fix round 3 the time zone and pool
+needs moved to the direct side, since nothing reads them at runtime.
 
 Fix-round 2 pc2 results at f437cb0a66bf (diagnostics, not a gate pass): suite 157 has 41 rows passed
 and 0 failed, 67 with its prerequisite closure (`fix2-ticket-pc2.txt`). The registered worker

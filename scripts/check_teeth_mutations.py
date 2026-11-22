@@ -10556,6 +10556,16 @@ def cases():
         "            found.append('protect.' + name)\n",
         "            pass\n",
         ['ac2/space-protect-removed'])
+    # Fix round 3: a lowered pool floor goes live with no owner decision.
+    add(253, 'install253-space-floor-direct', install253, 'control_installation_schema.py',
+        "        if now is None or now['floor'] < pool['floor']:\n",
+        "        if now is None:\n",
+        ['ac2/space-safeguard-loosened'])
+    # Fix round 3: any pool change, a lowered need included, waits for the owner again.
+    add(253, 'install253-space-needs-wait', install253, 'control_installation_schema.py',
+        "        if now is None or now['floor'] < pool['floor']:\n",
+        "        if now is None or now != pool:\n",
+        ['ac2/space-unread-direct'])
 
     # VELDO-0241: each criterion's declared falsifier, against the suite 127 row it names.
     def unit_workflow(name, module, old, new, row):
