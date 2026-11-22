@@ -116,6 +116,7 @@ leg and is covered by its own runs below.
 | - | - | - |
 | Full unit leg at 9e3acdd1, one dispatcher over every suite | full-unit-run-9e3acdd1.txt (driver unit_with_ledger.py.txt) | 10804 passed, 18 failed, no hung row, no residue row red (the two residue reds of wave 0, suites 66_veldo_0042 and 86_veldo_0189, are gone). The 18 are below |
 | Fifty loaded runs each of suites 62, 83 and 151 at 9e3acdd1 | loaded-62-83-151.txt (driver loaded50.py.txt, the leg's own runner under scripts/gate_load.py: 62 and 83 unconfined as the gate lists them, 151 through the confined launcher) | 150 of 150 with no failed and no hung row. 24 spinners and the writers alive to the end, probe slowdown 4.55 (data) |
+| Fifty loaded runs of suite 151 at 1f0120c6, after the fix the unit leg found | loaded-151-1f0120c6.txt | 50 of 50 with no failed and no hung row, probe slowdown 4.2 (data) |
 | The load-proof leg at 9e3acdd1 | load-proof-leg-9e3acdd1.txt (driver leg.py.txt; the wave 0 checkout as the authority, so wave 1's suites are the changed ones) | pass. 44 of 239 suites proven, 41 run, 326 suite runs, none red. The fifteen changed suites ran twenty times each (62, 63, 66_veldo_0042, 66_veldo_0047, 71, 78, 83, 85_veldo_0171, 86_veldo_0189, 106, 120, 121, 122, 124, 151). The canary is red under this load (calibration, revision notes 3.4). 24 of 24 spinners and both writers alive to the end, probe slowdown 4.1, 6186 s for the leg (data). Longest: 15_warp_1404 at 3091 s loaded, once |
 | The proven set | the same log | every wave 1 suite is in it but 110_veldo_0143_new_project: a baseline entry remains in scripts/suites/support/identity_wire.py, which it opens and no brief owned (brief F's item 3) |
 | Suite 83 with the reset stated in the fatal second, before and after the fix | reset-timer-wake-repro.txt | red before, green after (section 3) |
@@ -131,3 +132,42 @@ The unit leg's 18 reds:
 | 101_veldo_0208 | unconfined-leg/fixture-sharers-are-listed | new, found here and fixed (1f0120c6): suite 151's census row wrote suite 66_veldo_0042's path whole, which this row reads as loading a listed suite |
 | 102_veldo_0210 | seven scratch/* rows | inherited: red when it runs after other suites in one dispatcher, green alone (wave 0, section 4) |
 | 151_veldo_0313 | seven rows | inherited, and of the host: in one unconfined dispatcher on a shared host, processes nobody here can read hold its runs (the suite's own docstring). Through the gate's confined launcher it is green: 50 of 50 loaded here, 20 of 20 in the leg |
+
+## 6. Protected paths changed by wave 1, for the owner's approval at landing
+
+Beyond the paths of wave 0 (integration.md, section 5), which are unchanged since 636aeead except as listed:
+
+| Path | Change | By |
+| - | - | - |
+| scripts/selftest.py | the keeper (waits.keep_the_tree before the watchdog is armed, waits.run_ended after the last suite); a module read from its cache file is claimed as its source | this integration |
+| scripts/check_wallclock.py, engine/scripts/check_wallclock.py | AbortSignal.timeout(n) is an R3 site in TypeScript | this integration |
+| scripts/suites/wallclock_baseline.json | lowered only: 2822 entries at fb7705e1, 2352 now (briefs E, F, G, H and the lead's seven sites). No entry added, no count raised; the census passes with the wave 0 baseline as its authority | the four briefs, this integration |
+| specs/VELDO-0358 (the specification) | footprint, protected_paths (scripts/check_first_use.py and scripts/suites/shared.py, which wave 0 changed and the list did not name) and History | this integration |
+
+Not protected by .veldo/policy.yaml, and named because they are product or runtime behavior the owner should
+see: engine/.veldo/claim.py (the claim's liveness window read from the timers table; production value
+unchanged), scripts/suites/support/waits.py (the keeper, the cgroup readers, declared rows), engine/bin/veldo
+and bin/veldo (brief G: the supervisor acknowledges each stop on its report), the engine modules of the
+design's section 4.8 (briefs E and F: timers from the table; the receiver awaited on its pidfd; the orphan
+release on cgroup.events; the service's timers_profile, its start record, its STATUS line per channel pass and
+pending_wakes), and engine/.veldo/init_scaffold.py (lays down timers.py). scripts/suites/wallclock.json (the
+exceptions) is not changed by wave 1.
+
+## 7. Open, for the lead and the owner
+
+1. Release acts on the combined line before the gate: qualify again (suite 126) and the owner-approved live
+   recapture (suite 86_veldo_0127), because their records are bound to the engine modules' digests.
+2. Suite 110 is not in the proven set: scripts/suites/support/identity_wire.py has baseline entries and is in
+   no brief's files and outside the footprint (brief F's item 3).
+3. AC15: the two cadences of section 4 need the owner's decision; suite 106's service runs outside the
+   profile (brief E's item 4).
+4. The keeper ends the process tree: what the suite process started, and what was started below it. A unit
+   the user manager itself starts for a suite (systemctl start of an installed unit) is no descendant and is
+   not ended by it. A descendant another account owns is named as not ended. A heavy child that is ended by
+   run_heavy after its second bound is killed alone unless it is a dispatcher (then its keeper ends its tree
+   on the first signal).
+5. A browser expectation that never holds takes the wait hang bound to fail (brief H's item 3): it makes
+   the mutation stage long, as the stage's time below shows. A design follow-up for wave 2.
+6. In production nobody was found to renew the claim of a unit that waits with no run (section 3).
+7. Brief E's item 11: control_api_authority's stop_worker has the stale_version order brief E fixed in
+   Runner.honor_stops; no row reaches it.
