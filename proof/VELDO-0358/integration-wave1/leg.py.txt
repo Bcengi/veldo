@@ -1,0 +1,23 @@
+"""The load-proof leg over the wave 1 tree. The authority is the wave 0 checkout (636aeead), so the suites
+wave 1 changed are the leg's changed suites; the baseline is the candidate's (lowered by wave 1), and the
+opened-files record is the one the full unit leg's dispatcher claimed.
+Usage: <authority worktree> <candidate worktree> <opened record> <out dir>"""
+import importlib.util, json, sys, time
+from pathlib import Path
+sys.dont_write_bytecode = True
+authority, root, opened, out = (Path(p).resolve() for p in sys.argv[1:5])
+spec = importlib.util.spec_from_file_location('legs', authority / 'scripts/gate_legs.py')
+legs = importlib.util.module_from_spec(spec); spec.loader.exec_module(legs)
+baseline = root / 'scripts/suites/wallclock_baseline.json'
+state = legs.proven_set(*legs.load_inputs(root, baseline, opened))
+wave1 = ('62_veldo_0039_dispatch 63_veldo_0040_containment 66_veldo_0042_clones 66_veldo_0047_authority '
+         '71_veldo_0138_channel_service 78_veldo_0060_claude_adapter 83_veldo_0154_factory_loop '
+         '86_veldo_0189_engine_upgrade 106_veldo_0185_dispatch_setup 110_veldo_0143_new_project '
+         '120_veldo_0131_factory_ui 121_veldo_0131_factory_screens_narrow 124_veldo_0131_factory_reads_commands '
+         '151_veldo_0313_space_run 122_veldo_0131_factory_screens_wide').split()
+for name in wave1:
+    print('wave 1 suite %s: %s' % (name, 'in the proven set' if state.get(name) is None else state.get(name)), flush=True)
+began = time.time()  # this driver's own reading, for the proof: the leg itself reads no clock
+code = legs.run_load_proof(root, out / 'leg-record.json', opened=opened, baseline=baseline, times=out / 'times')
+print('leg exit status %s; wall seconds of the leg %.0f' % (code, time.time() - began), flush=True)
+print('stamp value: %s' % json.dumps(legs.load_stamp(out / 'leg-record.json'), sort_keys=True), flush=True)

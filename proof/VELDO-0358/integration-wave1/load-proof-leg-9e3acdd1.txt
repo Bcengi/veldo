@@ -1,0 +1,84 @@
+# The load-proof leg at 9e3acdd1, through host_heavy.sh, after the full unit leg in the same slot. Driver: leg.py.txt.
+# Authority: the wave 0 checkout (636aeead), so the suites wave 1 changed are the leg's changed suites; baseline: the candidate's; record: the unit leg's claims (240 suites).
+queued 2026-11-22T02:38:05Z head 9e3acdd1
+started 2026-11-22T04:54:51Z load 22.47 20.65 36.91
+wave 1 suite 62_veldo_0039_dispatch: in the proven set
+wave 1 suite 63_veldo_0040_containment: in the proven set
+wave 1 suite 66_veldo_0042_clones: in the proven set
+wave 1 suite 66_veldo_0047_authority: in the proven set
+wave 1 suite 71_veldo_0138_channel_service: in the proven set
+wave 1 suite 78_veldo_0060_claude_adapter: in the proven set
+wave 1 suite 83_veldo_0154_factory_loop: in the proven set
+wave 1 suite 86_veldo_0189_engine_upgrade: in the proven set
+wave 1 suite 106_veldo_0185_dispatch_setup: in the proven set
+wave 1 suite 110_veldo_0143_new_project: baseline entry in scripts/suites/support/identity_wire.py
+wave 1 suite 120_veldo_0131_factory_ui: in the proven set
+wave 1 suite 121_veldo_0131_factory_screens_narrow: in the proven set
+wave 1 suite 124_veldo_0131_factory_reads_commands: in the proven set
+wave 1 suite 151_veldo_0313_space_run: in the proven set
+wave 1 suite 122_veldo_0131_factory_screens_wide: in the proven set
+   load-proof: 44 of 239 suites are proven (no baseline entry in the suite or in a file it opens), 3 of them waiting for a prerequisite suite; 41 run
+   load-proof: 106_veldo_0185_dispatch_setup is changed (scripts/suites/106_veldo_0185_dispatch_setup.py): 20 runs
+   load-proof: 120_veldo_0131_factory_ui is changed (scripts/suites/120_veldo_0131_factory_ui.py): 20 runs
+   load-proof: 121_veldo_0131_factory_screens_narrow is changed (scripts/suites/121_veldo_0131_factory_screens_narrow.py): 20 runs
+   load-proof: 122_veldo_0131_factory_screens_wide is changed (scripts/suites/122_veldo_0131_factory_screens_wide.py): 20 runs
+   load-proof: 124_veldo_0131_factory_reads_commands is changed (scripts/suites/124_veldo_0131_factory_reads_commands.py): 20 runs
+   load-proof: 151_veldo_0313_space_run is changed (scripts/suites/151_veldo_0313_space_run.py): 20 runs
+   load-proof: 62_veldo_0039_dispatch is changed (scripts/suites/62_veldo_0039_dispatch.py): 20 runs
+   load-proof: 63_veldo_0040_containment is changed (scripts/suites/63_veldo_0040_containment.py): 20 runs
+   load-proof: 66_veldo_0042_clones is changed (scripts/suites/66_veldo_0042_clones.py): 20 runs
+   load-proof: 66_veldo_0047_authority is changed (scripts/suites/66_veldo_0047_authority.py): 20 runs
+   load-proof: 71_veldo_0138_channel_service is changed (scripts/suites/71_veldo_0138_channel_service.py): 20 runs
+   load-proof: 78_veldo_0060_claude_adapter is changed (scripts/suites/78_veldo_0060_claude_adapter.py): 20 runs
+   load-proof: 83_veldo_0154_factory_loop is changed (scripts/suites/83_veldo_0154_factory_loop.py): 20 runs
+   load-proof: 85_veldo_0171_setup_api is changed (scripts/suites/85_veldo_0171_setup_api.py): 20 runs
+   load-proof: 86_veldo_0189_engine_upgrade is changed (scripts/suites/86_veldo_0189_engine_upgrade.py): 20 runs
+   load-proof: the canary under this load: red (a test synchronized by a sleep is red here; data, no verdict)
+   load-proof: 05_tracker_routing_resolver_veldo: pass, 1 run, 1.3s loaded
+   load-proof: 15_warp_1404_historical_analogy: pass, 1 run, 3091.0s loaded
+   load-proof: 15_warp_1405_reconciliation: pass, 1 run, 109.0s loaded
+   load-proof: 15_warp_1407_judgment_load: pass, 1 run, 42.3s loaded
+   load-proof: 15_warp_1408_budget_rollup: pass, 1 run, 2.6s loaded
+   load-proof: 17_veldo_0001_falsification_declared: pass, 1 run, 1.8s loaded
+   load-proof: 18_veldo_0011_release_contract: pass, 1 run, 3.6s loaded
+   load-proof: 25_veldo_0008_version: pass, 1 run, 1.5s loaded
+   load-proof: 30_veldo_0017_entity_lifecycle: pass, 1 run, 1.2s loaded
+   load-proof: 31_veldo_0018_release_floor: pass, 1 run, 1.1s loaded
+   load-proof: 32_veldo_0019_combined_graph: pass, 1 run, 0.2s loaded
+   load-proof: 33_veldo_0020_authority: pass, 1 run, 0.2s loaded
+   load-proof: 34_veldo_0022_admission: pass, 1 run, 0.2s loaded
+   load-proof: 35_veldo_0021_completion: pass, 1 run, 0.1s loaded
+   load-proof: 44_veldo_0105_startline: pass, 1 run, 8.0s loaded
+   load-proof: 45_veldo_0106_policyread: pass, 1 run, 4.5s loaded
+   load-proof: 46_veldo_0029_enrollment: pass, 1 run, 1.2s loaded
+   load-proof: 61_scope_covers: pass, 1 run, 0.0s loaded
+   load-proof: 62_veldo_0039_dispatch: pass, 20 runs, 29.0s loaded
+   load-proof: 63_veldo_0040_containment: pass, 20 runs, 30.4s loaded
+   load-proof: 66_veldo_0042_clones: pass, 20 runs, 11.5s loaded
+   load-proof: 66_veldo_0047_authority: pass, 20 runs, 76.2s loaded
+   load-proof: 68_veldo_0137_policy_revision: pass, 1 run, 4.2s loaded
+   load-proof: 71_veldo_0138_channel_service: pass, 20 runs, 83.6s loaded
+   load-proof: 78_veldo_0060_claude_adapter: pass, 20 runs, 103.8s loaded
+   load-proof: 83_veldo_0154_factory_loop: pass, 20 runs, 138.0s loaded
+   load-proof: 86_veldo_0186_setup_assets: pass, 1 run, 152.9s loaded
+   load-proof: 85_veldo_0171_setup_api: pass, 20 runs, 72.6s loaded
+   load-proof: 86_veldo_0189_engine_upgrade: pass, 20 runs, 410.9s loaded
+   load-proof: 104_veldo_0164_scoped_reads: pass, 1 run, 17.2s loaded
+   load-proof: 106_veldo_0185_dispatch_setup: pass, 20 runs, 77.5s loaded
+   load-proof: 108_veldo_0153_executor_profile: pass, 1 run, 0.9s loaded
+   load-proof: 120_veldo_0131_factory_ui: pass, 20 runs, 312.1s loaded
+   load-proof: 121_veldo_0131_factory_screens_narrow: pass, 20 runs, 379.4s loaded
+   load-proof: 122_veldo_0131_factory_screens_wide: pass, 20 runs, 382.2s loaded
+   load-proof: 124_veldo_0131_factory_reads_commands: pass, 20 runs, 270.1s loaded
+   load-proof: 130_veldo_0296_space_section: pass, 1 run, 0.6s loaded
+   load-proof: 131_veldo_0338_project_space_file: pass, 1 run, 0.6s loaded
+   load-proof: 132_veldo_0297_space_ledger: pass, 1 run, 58.0s loaded
+   load-proof: 135_veldo_0298_space_kinds: pass, 1 run, 0.1s loaded
+   load-proof: 151_veldo_0313_space_run: pass, 20 runs, 64.1s loaded
+   load-proof: load: 8 CPUs [12, 13, 14, 15, 16, 17, 18, 19], 3 spinners per CPU: 24 of 24 alive to the end, CPU consumed 38034.9s (least 1526.617s)
+   load-proof: load: 2 writers: 2 alive to the end, bytes written [1228629082112, 1227961139200]
+   load-proof: load: memory {"applied": "none: no delegated scope", "high": null}; probe {"ran_ns": 1000598972, "slowdown": 4.096, "waited_ns": 3097969056} (data, no verdict)
+   load-proof: pass
+leg exit status 0; wall seconds of the leg 6186
+stamp value: {"canary": "red", "changed": ["106_veldo_0185_dispatch_setup", "120_veldo_0131_factory_ui", "121_veldo_0131_factory_screens_narrow", "122_veldo_0131_factory_screens_wide", "124_veldo_0131_factory_reads_commands", "151_veldo_0313_space_run", "62_veldo_0039_dispatch", "63_veldo_0040_containment", "66_veldo_0042_clones", "66_veldo_0047_authority", "71_veldo_0138_channel_service", "78_veldo_0060_claude_adapter", "83_veldo_0154_factory_loop", "85_veldo_0171_setup_api", "86_veldo_0189_engine_upgrade"], "error": null, "load": {"applied": true, "cpus": 8, "memory": {"applied": "none: no delegated scope", "high": null}, "probe": {"ran_ns": 1000598972, "slowdown": 4.096, "waited_ns": 3097969056}, "spinner_cpu_seconds": 38034.9, "spinners": 24, "spinners_alive": 24, "writer_bytes": 2456590221312, "writers": 2, "writers_alive": 2}, "proven": 44, "red": [], "repetitions": 20, "runs": 326, "slots": 8, "state": "ran", "suite_seconds": {"05_tracker_routing_resolver_veldo": 1.32, "104_veldo_0164_scoped_reads": 17.23, "106_veldo_0185_dispatch_setup": 77.47, "108_veldo_0153_executor_profile": 0.94, "120_veldo_0131_factory_ui": 312.14, "121_veldo_0131_factory_screens_narrow": 379.44, "122_veldo_0131_factory_screens_wide": 382.21, "124_veldo_0131_factory_reads_commands": 270.09, "130_veldo_0296_space_section": 0.59, "131_veldo_0338_project_space_file": 0.58, "132_veldo_0297_space_ledger": 57.97, "135_veldo_0298_space_kinds": 0.14, "151_veldo_0313_space_run": 64.11, "15_warp_1404_hist
+end 2026-11-22T06:37:57Z load 45.73 58.35 63.73

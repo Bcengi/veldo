@@ -1,0 +1,25 @@
+# Full unit leg, one dispatcher process over every suite, through host_heavy.sh, at 9e3acdd1 (the four briefs and every wave 1 item but the suite 151 path fix, 1f0120c6, which this run found)
+queued 2026-11-22T02:38:05Z head 9e3acdd1
+started 2026-11-22T02:58:35Z load 42.32 46.33 36.12
+dispatcher exit status 1; record of 240 suites
+end 2026-11-22T04:54:51Z load 22.47 20.65 36.91
+# lines kept: every SELFTEST FAIL/HUNG/NOT RUN/TREE line (cut at 400 characters) and the totals
+  SELFTEST FAIL: VELDO-0127 live/claude
+  SELFTEST FAIL: VELDO-0127 live/codex
+  SELFTEST FAIL: VELDO-0208 unconfined-leg/fixture-sharers-are-listed: {'151_veldo_0313_space_run': ['66_veldo_0042_clones']}
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-removes-scratch-and-stops-tree: -9 {'home': '/tmp/v210-profile-1z03muli/tmp-parent/veldo-agent-q9ncee1l', 'pid': 3314399}
+  SELFTEST FAIL: VELDO-0210 scratch/SIGHUP-still-writes-back-refresh
+  SELFTEST FAIL: VELDO-0210 scratch/term-ignoring-tree-killed-after-grace: 143 2.0s
+  SELFTEST FAIL: VELDO-0210 scratch/inherited-ignored-signal-stays-ignored: True 143
+  SELFTEST FAIL: VELDO-0210 scratch/stop-during-fork-forwarded-to-child: 143 
+  SELFTEST FAIL: VELDO-0210 scratch/killed-scratch-stays: ['veldo-agent-hc2qe5zj', 'veldo-agent-q9ncee1l']
+  SELFTEST FAIL: VELDO-0210 scratch/killed-run-rotation-kept-and-reported: he run ended without an exit status); kept privately at /tmp/v210-profile-1z03muli/state-home/veldo/borrowed-logins/veldo-agent-hc2qe5zj; restore it with: python3 /tmp/w1/run-unit/scripts/agent_sandbox.py restore-login /tmp/v210-profile-1z03muli/state-home/veldo/borrowed-logins/veldo-agent-hc2qe5zj
+  SELFTEST FAIL: VELDO-0230 qualify/reproduces: every file it wrote is byte-identical to the checkout's [['proof/VELDO-0127/resources-gpt-6-astra-selected.json', 'proof/VELDO-0127/resources-gpt-6-astra-none.json', 'proof/VELDO-0127/resources-gpt-5.5-selected.json', 'proof/VELDO-0127/resources-gpt-5.5-none.json']]
+  SELFTEST FAIL: VELDO-0313 ac1/declared-started-ended: the hold is released and the wrapper sent run finished [released None]
+  SELFTEST FAIL: VELDO-0313 fix2/captured-end-follows: when the suite ends that sleep the run's end follows [None admitted]
+  SELFTEST FAIL: VELDO-0313 supervise/report-loss-end-is-made: the end of that run is made as the follower makes it: run finished is sent, the scratch root is removed and the hold is released [None ['deferred'] admitted]
+  SELFTEST FAIL: VELDO-0313 fix3/rewritten-environment-open-file-in-worktree: raised RuntimeError: the run's end is asleep on processes that are no part of the fixture and hold the run: [{'pid': 1065334, 'started': 298177736, 'how': 'unread'}]. On a host shared with other sessions and without the process reader, a process nobody here can read holds every run that began before it (fail closed). Ru 
+  SELFTEST FAIL: VELDO-0313 ac2/command-status: the wrapper returns the command's own status 0 for exit 0, and the run's hold is released and its scratch root removed [0 released ]
+  SELFTEST FAIL: VELDO-0313 ac2/act-waits-75: the numbers are on standard error: the pool, the need, the free bytes, what other runs hold and the floor [veldo space run: NOT STARTED, waiting for space: pool host: need 4194304000, free 25165823999, held by other runs 16777216000, floor 20971520000 (bytes)]
+  SELFTEST FAIL: VELDO-0313 ac2/report-starts: the hold was recorded advised, with the numbers, and released at the run's end [advised released]
+selftest: 10804 passed, 18 failed
