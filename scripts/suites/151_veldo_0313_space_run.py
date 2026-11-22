@@ -1188,6 +1188,35 @@ def _v313_space_run_suite():
         try:
             row = 'supervise/stop-after-the-command-ends-nothing'
             import signal
+            # Exercise the actual installed handler through its return, synchronously. Its report
+            # is written before the handler returns: reading it and then /proc can race a later
+            # SystemExit in that same handler. Capture registration before any command is started;
+            # the empty command identity is the same state the supervisor keeps after its exit.
+            handlers, original_handlers = {}, CLI._space_handlers
+            class Registered(Exception):
+                pass
+            def capture_handlers(given):
+                handlers.update(given)
+                raise Registered()
+            report_read, report_write = os.pipe()
+            try:
+                CLI._space_handlers = capture_handlers
+                try:
+                    CLI.space_supervise(['--report', str(report_write), '--control', '0', '--', 'true'])
+                except Registered:
+                    pass
+                for number in (signal.SIGTERM, signal.SIGHUP):
+                    returned = False
+                    try:
+                        handlers[number](number, None)
+                        returned = True
+                    except SystemExit:
+                        pass
+                    check(row, 'the stop handler returns after every instruction with no command to signal', returned)
+            finally:
+                CLI._space_handlers = original_handlers
+                os.close(report_write)
+                os.close(report_read)
             W17, _ = worktree(ORCHARD, 'w-stop-after')
             late, latch = temp / 'late-stop-after.json', temp / 'latch-stop-after'
             wiring = space()
@@ -1362,7 +1391,9 @@ def _v313_space_run_suite():
                            sources=[WAITS.Pidfd(made)])
                 WAITS.wait('the idle supervisor to sleep again after process %d ended' % made.pid,
                            lambda slept=slept: sleeps_and_reads(mark)[0] > slept,
-                           lambda: (counted.closed or idle.poll() is not None, {'exit': idle.poll()}), [counted])
+                           lambda made=made: (counted.closed or idle.poll() is not None or
+                                              made.pid not in {h['pid'] for h in status_line.get('holders', [])},
+                                              {'exit': idle.poll(), 'holders': status_line.get('holders')}), [counted])
             churned, spent = sleeps_and_reads(mark), cpu() - before
             through = present(idle_process)
             release(hold)

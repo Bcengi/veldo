@@ -3149,7 +3149,8 @@ class Line:
         pool = L.D.RES.POOL.Pool({name: {'engine': engine, 'host': host} for name, engine in self.engines.items()})
         # VELDO-0158: the Runner removes a run directory its receiver left once the run is gone.
         self.runner = L.Runner(self.gate, self.reservations, self.dispatches, self.invoke, account=pool,
-                               runs=L.runs_root(receiver), profile=receiver.get('profile'))
+                               runs=L.runs_root(receiver), profile=receiver.get('profile'),
+                               observe=lambda event: service._log(dict(event, kind='loop')))
         # VELDO-0148: the land station, when the work configuration names this repository's `land`: each land
         # of a unit its own land dispatch on the service's connection, written as the service's principal.
         self.station = LS.LandStation(
@@ -4380,6 +4381,7 @@ class FactoryLoop:
                 # VELDO-0358: the wakes collected for the next pass, so a reader can tell an idle loop (nothing
                 # running, no timer, nothing pending) from one whose next pass is still to come.
                 'pending_wakes': len(self.wakes),
+                'unwatched': getattr(self, 'unwatched', []),
                 'watched_trees': sorted(self.trees),
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
@@ -4588,8 +4590,11 @@ def serve(config_path):
                     # VELDO-0161: or until a faulted take-on may be judged again.
                     if service.adoption_due() is not None:
                         wait = max(0.0, min(wait, service.adoption_due() - time.monotonic()))
-                    ready = select.select([listener] + ([space_listener] if space_listener is not None else [])
-                                          + sorted(pipes), [], [], wait)[0]
+                    watched = [listener] + ([space_listener] if space_listener is not None else []) + sorted(pipes)
+                    if service.loop is not None:
+                        service.loop.unwatched = sorted(launch.dispatch_id for fd, (line, launch)
+                                                        in service.loop.pipes().items() if fd not in watched)
+                    ready = select.select(watched, [], [], wait)[0]
                     response = None
                     if listener in ready:
                         try:

@@ -493,11 +493,21 @@ sys.exit(chosen['code'])
                 logged. Nothing more happens in it until this suite acts, so a pass not yet logged never comes.
                 Asked once per logged pass (an answer is itself a logged request, so asking again on that wake
                 would wake the wait again)."""
+                events = [json.loads(line) for line in self.observations.read_text().splitlines()]
+                failed_stop = [e for e in events if e.get('operation') == 'orphan_wait'
+                               and e.get('stop_issued') is not True]
+                if failed_stop:
+                    raise AssertionError('orphan wait without an issued stop: %r' % failed_stop)
                 logged = self.last_pass()
                 if self.idle_at is not None and self.idle_at[0] == logged:
                     return self.idle_at[1]
                 status = self.send({'operation': 'inspect', 'entity_ids': []})
                 loop = ((status or {}).get('result') or status or {}).get('loop') or {}
+                if loop.get('unwatched'):
+                    raise AssertionError('held runs absent from the service poll set: %r' % loop['unwatched'])
+                if (loop.get('passes') == logged and loop.get('pending_wakes') == 0
+                        and loop.get('running') == [] and loop.get('orphans')):
+                    raise AssertionError('completed pass left orphan release pending: %r' % loop['orphans'])
                 quiet = (loop.get('available') is True and loop.get('passes') == logged and loop.get('running') == []
                          and loop.get('orphans') == [] and loop.get('timer') is None and loop.get('pending_wakes') == 0)
                 self.idle_at = (logged, quiet)

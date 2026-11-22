@@ -9121,10 +9121,15 @@ def cases():
     def loop154(name, module, old, new, rows, also=()):
         add(154, name, '83_veldo_0154_factory_loop.py', module, old, new, list(rows), also)
     loop154('loop154-pipe-not-polled', 'control_service.py',
-            "                    ready = select.select([listener] + ([space_listener] if space_listener is not None else [])\n"
-            "                                          + sorted(pipes), [], [], wait)[0]\n",
-            "                    ready = select.select([listener] + ([space_listener] if space_listener is not None else []), [], [], wait)[0]  # defect: the launch pipes are not polled\n",
+            "                    watched = [listener] + ([space_listener] if space_listener is not None else []) + sorted(pipes)\n",
+            "                    watched = [listener] + ([space_listener] if space_listener is not None else [])\n",
             ['loop/review-offered'])
+    loop154('loop358-poll-record-missing', 'control_service.py',
+            "                'unwatched': getattr(self, 'unwatched', []),\n",
+            "                'unwatched': ['missing-poll-record'],\n", ['loop/review-offered'])
+    loop154('loop358-orphan-stop-record-false', 'control_launch.py',
+            "                          'stop_issued': entry.get('stop_issued', False)})\n",
+            "                          'stop_issued': False})\n", ['loop/receiver-death'])
     loop154('loop154-eof-ignored', 'control_launch.py',
             "            if not chunk:\n                self.ended = self.lost = True\n                return True\n",
             "            if not chunk:\n                return False  # defect: the receiver's death is not an end\n",
@@ -9145,8 +9150,8 @@ def cases():
             "            active += int(not record.get('retired') and not record.get('account_released'))\n",
             "            active += int(not record.get('retired'))\n", ['loop/receiver-death'])
     loop154('loop154-orphan-not-stopped', 'control_launch.py',
-            "                _stop_orphan(entry['group'], entry['process'])\n",
-            "                pass  # defect: the stop the dead receiver owed is never made\n", ['loop/receiver-death'])
+            "                entry['stop_issued'] = _stop_orphan(entry['group'], entry['process'])\n",
+            "                entry['stop_issued'] = False  # defect: the stop is never made\n", ['loop/receiver-death'])
     loop154('loop154-rerun-from-head', 'control_service.py',
             "                          revision=contract['source']['commit'], holder=context.get('holder'), context=context,\n",
             "                          revision='HEAD', holder=context.get('holder'), context=context,\n",

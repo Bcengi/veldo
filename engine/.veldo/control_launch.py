@@ -1501,7 +1501,7 @@ class Runner:
     the kernel shows nothing of the run left (VELDO-0158)."""
 
     def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None, runs=None,
-                 profile=None, space=None):
+                 profile=None, space=None, observe=None):
         self.gate, self.reservations, self.dispatches = gate, reservations, dispatches
         # VELDO-0303: the installation's space ledger and what Signal is given (space_signal), or None where
         # the installation has none. With it, a leftover run directory goes through Signal and not by a delete here.
@@ -1509,6 +1509,7 @@ class Runner:
         self.receiver, self.account = receiver, account
         self.clock = clock or time.time
         self.observations = []
+        self.observe = observe or (lambda event: None)
         self.launches = {}
         # VELDO-0154: dispatches whose receiver died, whose account slot waits for their worker to be gone.
         self.orphans = {}
@@ -1961,8 +1962,13 @@ class Runner:
         for dispatch_id, entry in sorted(self.orphans.items()):
             if not entry['stopped']:
                 entry['stopped'] = True
-                _stop_orphan(entry['group'], entry['process'])
-            seen, awaited = _await_gone(entry['group'], entry['process'], timer('ORPHAN_SECONDS'))
+                entry['stop_issued'] = _stop_orphan(entry['group'], entry['process'])
+            self.observe({'operation': 'orphan_wait', 'dispatch_id': dispatch_id,
+                          'stop_issued': entry.get('stop_issued', False)})
+            if entry.get('stop_issued'):
+                seen, awaited = _await_gone(entry['group'], entry['process'], timer('ORPHAN_SECONDS'))
+            else:
+                seen, awaited = C.retirement(entry['group'], entry['process']), ['stop_not_issued']
 
             def lifecycle(_dispatch, seen=seen, dispatch_id=dispatch_id):
                 state = (self.dispatches.record(dispatch_id) or {}).get('state')
@@ -2060,19 +2066,28 @@ def _stop_orphan(group, process):
     group, the recorded process sent SIGKILL through a descriptor of its own, only while its identity (pid, start
     time and boot id) still names it, so a reused pid is never signaled."""
     if isinstance(group, dict) and group.get('cgroup'):
-        with contextlib.suppress(OSError):
+        try:
             (C.CGROUP / group['cgroup'].lstrip('/') / 'cgroup.kill').write_text('1')
-        return
+            return True
+        except OSError:
+            return False
     if not isinstance(process, dict) or not isinstance(process.get('pid'), int):
-        return
+        return False
     try:
         fd = os.pidfd_open(process['pid'])
+    except ProcessLookupError:
+        return True
     except OSError:
-        return
+        return False
     try:
         if C.alive(process):
-            with contextlib.suppress(OSError):
+            try:
                 signal.pidfd_send_signal(fd, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            except OSError:
+                return False
+        return True
     finally:
         os.close(fd)
 
