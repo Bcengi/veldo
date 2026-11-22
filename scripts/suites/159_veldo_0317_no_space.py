@@ -256,6 +256,13 @@ def _v317_suite():
                 r.contract, r.run, r.run_dispatch = contract, str(run), did
                 r.space_run = {'worktree': str(work), 'owner': owner}
                 r.run_sent, r.run_removal, r.run_census = False, None, None
+                # What Receiver.__init__ sets for a run that is no conversation turn and has no file memory, which
+                # _finish and the refusal path read since VELDO-0231, VELDO-0176, VELDO-0177 and VELDO-0184 (as
+                # the bring-up line gave suite 146's receiver).
+                r.login = r.flags = r.flag_means = None
+                r.conversation_record = r.held_session = r.placed = r.rendering = None
+                r.start = r.resume_refusal = r.file_memory = None
+                r.history_wanted, r.attached = False, []
                 # A worker cannot exit before the receiver reads its identity: it waits for stdin EOF.
                 program = "import sys; sys.stdin.read(); print(sys.argv[1], file=getattr(sys,sys.argv[3]), flush=True); sys.exit(int(sys.argv[2]))"
                 child = subprocess.Popen([sys.executable, '-c', program, text, str(code), stream],
