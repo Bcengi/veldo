@@ -118,27 +118,35 @@ def _v258_suite():
                     'owner_channel': lambda ref: IN.organ('control_channel_projection').TelegramEdge(
                         origin, IN.service_token({'bot_api': {'token_ref': ref}}), timeout=120),
                 }
+                def authenticate(caller, instance):
+                    if caller in ('tracker', 'tracker_init'):
+                        with instance.trace('VELDO-0258'):
+                            instance._request('GET', '/fixture')
+                    elif caller == 'doorbell':
+                        instance.ORIGIN = origin
+                        instance.send('Notice', None)
+                    elif caller == 'provisioner':
+                        instance.call('GET', '/fixture')
+                    else:
+                        instance.send(123, 'Notice')
+
                 with CP.service('a' * 40, observed.append):
                     for caller, construct in constructors.items():
                         instance = construct('keychain:' + caller)
+                        authenticate(caller, instance)
                         if caller in ('tracker', 'tracker_init'):
-                            with instance.trace('VELDO-0258'):
-                                instance._request('GET', '/fixture')
                             check('observability/unit/' + caller, observed[-1].get('unit_id') == 'VELDO-0258')
-                        elif caller == 'doorbell':
-                            instance.ORIGIN = origin
-                            instance.send('Notice', None)
-                        elif caller == 'provisioner':
-                            instance.call('GET', '/fixture')
-                        else:
-                            instance.send(123, 'Notice')
                         check('ac1/authenticates/' + caller, caller in authenticated)
                         for scheme, ref in [('env', 'env:CANARY258'), ('file', 'file:CANARY258'),
                                             ('literal', values[caller])]:
+                            before = len(authenticated)
                             with patch.dict(os.environ, CANARY258=values[caller]):
-                                code = refusal(lambda: construct(ref))
+                                # With the old resolver restored, this really authenticates
+                                # using the environment canary, as AC1's falsifier states.
+                                code = refusal(lambda: authenticate(caller, construct(ref)))
                             check('ac1/refuses/' + caller + '/' + scheme,
-                                  code == 'invalid_input:control_plane_credential:' + caller + ':' + scheme)
+                                  code == 'invalid_input:control_plane_credential:' + caller + ':' + scheme
+                                  and len(authenticated) == before)
                     check('ac1/no-canary-in-observations', all(value not in json.dumps(observed)
                           for value in values.values()))
                     check('observability/calls', all({'host', 'caller', 'operation', 'result', 'latency',
