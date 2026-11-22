@@ -1863,8 +1863,13 @@ class Ledger:
         elif operation == EVENT:
             answer['event'] = next((identity for identity in wrote if identity.startswith(EVENT_PREFIX)), None)
         elif operation in (ADMIT, RELEASE):
-            answer['state'] = next((value['state'] for identity, value in wrote.items()
-                                    if identity.startswith(HOLD_PREFIX)), None)
+            # The command's own hold: a release or admit that frees space also marks the other waiting
+            # holds (VELDO-0334), so the first hold written is not necessarily this one.
+            hold = parameters.get('hold') if _is_str(parameters.get('hold')) else None
+            own = hold if hold is not None and hold.startswith(HOLD_PREFIX) else hold_id(hold) if hold else None
+            answer['state'] = ((wrote.get(own) or {}).get('state') if own in wrote
+                               else next((value['state'] for identity, value in wrote.items()
+                                          if identity.startswith(HOLD_PREFIX)), None))
         elif operation != HOLD:
             item = parameters.get('item') if operation != DECLARE else (items[0] if items else None)
             answer.update(item=item, state=(wrote.get(item) or {}).get('state'))
