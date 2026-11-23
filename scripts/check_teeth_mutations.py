@@ -18609,14 +18609,19 @@ def cases():
         if case['suite'] == '48_veldo_0108_relay.py':
             case['confined_only'] = True
 
-    # VELDO-0253: init_scaffold.py takes its asset names from the installation reader, which it loads
-    # beside its own file at import, and that reader loads git_process.py (and yamlish.py) beside
-    # itself. A copy of init_scaffold.py alone stops with FileNotFoundError before any row, so each
-    # case on it runs beside unchanged copies of the three.
+    # VELDO-0253: these modules load the installation reader beside their own file, at import
+    # (init_scaffold) or when recording assignment provenance (control_assignment). The reader
+    # loads git_process.py and yamlish.py beside itself. Baselines see those siblings in .veldo;
+    # no-op and mutant copies need the same unchanged dependencies in every suite using them.
     for case in result:
-        if case['module'] == 'init_scaffold.py' and not case.get('siblings'):
+        if case['module'] in ('init_scaffold.py', 'control_assignment.py') and not case.get('siblings'):
             case['companions'] = sorted(set(case.get('companions', ())) | {
                 'installation.py', 'git_process.py', 'yamlish.py'})
+        # Both gate entry modules import this sibling before any suite can use them. Some suites
+        # copy the entry into a complete fixture tree; others also load the isolated mutation
+        # copy directly. Keep that copy's imports complete without changing its fixture grants.
+        if case['module'] in ('agent_sandbox.py', 'run_scope.py') and not case.get('siblings'):
+            case['companions'] = sorted(set(case.get('companions', ())) | {'gate_fixtures.py'})
 
     return result
 
