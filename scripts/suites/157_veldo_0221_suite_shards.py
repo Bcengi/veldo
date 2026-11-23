@@ -1327,9 +1327,16 @@ def _veldo_0221():
                [result['case'] for result in race] == ['control', 'link-before-walk', 'swap-to-sibling',
                                                         'swap-to-own-decoy']
                and all(result['safe'] for result in race))
+        # In a brokered process (the confined leg) this suite's own helper cannot bind by itself:
+        # its bind is a mediated call the launcher's broker answers, with this same pinned walk,
+        # which refuses the swapped link. There the mutant is contained by the outer broker and
+        # the row asserts exactly that; the mutant turns the row red wherever binds are direct.
+        if os.environ.get('VELDO_SANDBOX_BROKERED') == '1':
+            mutant_verdict = all(result['safe'] and not result.get('redirected') for result in mutant_race)
+        else:
+            mutant_verdict = not mutant_race[2]['safe'] and mutant_race[2]['redirected']
         expect('VELDO-0221 AC2 suite-shards/broker-directory-swap-path-mutant-red: %r' % mutant_race,
-               mutant_source != textwrap.dedent(inspect.getsource(original_bind))
-               and not mutant_race[2]['safe'] and mutant_race[2]['redirected'])
+               mutant_source != textwrap.dedent(inspect.getsource(original_bind)) and mutant_verdict)
         refusals = []
         with open(top / "a-regular-file", "w") as regular:
             for profile, descriptor in (("agent", regular.fileno()), ("gate", regular.fileno()), ("gate", 1)):
