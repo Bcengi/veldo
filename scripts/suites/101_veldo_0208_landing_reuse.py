@@ -475,13 +475,17 @@ print(json.dumps(results))
             repr(str(storepath / 'authentication.key')) + ').read_bytes()\n')
         job.write_text(json.dumps(dict(case=controlled_case, mode='baseline')))
         argv, channel = worker_argv(job)
+        # The fixed environment, with no fixture variable: a worker tree started so inside a shard
+        # takes its fixture child beneath the shard's own allocation (agent_sandbox
+        # worker_fixture_environment), so it reaches the candidate and is refused the key there.
         try:
-            denied_worker = confined_run(argv, cwd=worker_root, env=gate.fresh_env(scratch), pass_fds=(channel,),
+            denied_worker = confined_run(argv, cwd=worker_root, env=gate.fixed_env(scratch), pass_fds=(channel,),
                                           capture_output=True, text=True, timeout=gate.WAIT_HANG_SECONDS)
         finally:
             os.close(channel)
         expect('VELDO-0208 candidate/worker-key-access-errors-never-kills: ' + denied_worker.stderr[-300:],
-               denied_worker.returncode != 0 and 'PermissionError' in denied_worker.stderr)
+               denied_worker.returncode != 0 and 'PermissionError' in denied_worker.stderr
+               and 'gate_fixture_root' not in denied_worker.stderr)
         fake_trace = top / 'forged.trace'
         fake_trace.write_text('1 openat(AT_FDCWD, "/stolen-key", O_RDONLY) = 3</stolen-key>\n')
         try:
