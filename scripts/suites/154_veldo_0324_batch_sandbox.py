@@ -55,6 +55,7 @@ def _v324_suite():
         for source in (ROOT / '.veldo').glob('*.py'):
             shutil.copyfile(source, mods / source.name)
         (installed / 'scripts').mkdir()
+        shutil.copyfile(ROOT / 'scripts/gate_fixtures.py', installed / 'scripts/gate_fixtures.py')
         for name, source in PRODUCTION.items():
             shutil.copyfile(source, (installed / 'scripts' if name == 'agent_sandbox.py' else mods) / name)
         BA, CL, SP, S, CFG, YAML, K, P, RM, KP, SG, GP, CM = [load(name, mods / (name + '.py')) for name in (

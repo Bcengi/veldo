@@ -52,6 +52,7 @@ def _veldo_0221():
         (top / "scripts/suites").mkdir(parents=True)
         shutil.copyfile(ROOT / "scripts" / "selftest.py", top / "scripts/selftest.py")
         shutil.copyfile(ROOT / "scripts" / "run_scope.py", top / "scripts/run_scope.py")
+        shutil.copyfile(ROOT / "scripts" / "gate_fixtures.py", top / "scripts/gate_fixtures.py")
         if launcher:
             shutil.copyfile(ROOT / "scripts" / "agent_sandbox.py", top / "scripts/agent_sandbox.py")
         (top / "scripts/suites/shared.py").write_text(fixture_shared)
@@ -117,6 +118,7 @@ def _veldo_0221():
         (stubs / "scripts/suites").mkdir(parents=True)
         shutil.copyfile(ROOT / "scripts" / "selftest.py", stubs / "scripts/selftest.py")
         shutil.copyfile(ROOT / "scripts" / "run_scope.py", stubs / "scripts/run_scope.py")
+        shutil.copyfile(ROOT / "scripts" / "gate_fixtures.py", stubs / "scripts/gate_fixtures.py")
         shutil.copyfile(ROOT / "scripts" / "agent_sandbox.py", stubs / "scripts/agent_sandbox.py")
         (stubs / "scripts/suites/shared.py").write_text(fixture_shared)
         for suite in RS.fragments(manifest):
@@ -1066,6 +1068,91 @@ def _veldo_0221():
             os.close(read_end)
             os.close(write_end)
         AS = load(ROOT / "scripts" / "agent_sandbox.py", "v221_agent_sandbox")
+        # The gate launcher and the dispatcher share the same fixed placement rule.
+        # These are real directories inside this run's grant, never account-wide fixtures.
+        F = AS.FIXTURES
+        with AS.gate_fixture_directory('gate', top / 'store', []) as allocated:
+            print('VELDO-0221 gate-fixtures: parent=%s; /var/lib/veldo exists=%s'
+                  % (allocated.parent, Path('/var/lib/veldo').exists()))
+            expect('VELDO-0221 gate-fixtures/default-owned-private',
+                   allocated.is_dir() and allocated.stat().st_uid == os.getuid()
+                   and allocated.stat().st_mode & 0o777 == 0o700)
+            with patch.object(F, 'ENVIRONMENT', {'XDG_STATE_HOME': str(allocated / 'state')}):
+                with AS.gate_fixture_directory('gate', top / 'store', []) as default:
+                    expect('VELDO-0221 gate-fixtures/xdg-default',
+                           default.parent == allocated / 'state/veldo/gate-fixtures'
+                           and default.parent.stat().st_mode & 0o777 == 0o700)
+            from types import SimpleNamespace
+            with patch.object(F.pwd, 'getpwuid', return_value=SimpleNamespace(pw_dir=str(allocated))), \
+                    patch.object(F, 'ENVIRONMENT', {}):
+                with AS.gate_fixture_directory('gate', top / 'store', []) as default:
+                    expect('VELDO-0221 gate-fixtures/account-default',
+                           default.parent == allocated / '.local/state/veldo/gate-fixtures')
+            configured = allocated / 'configured'
+            source = {'VELDO_FIXTURE_PARENT': str(configured)}
+            with patch.object(F, 'ENVIRONMENT', source):
+                with AS.gate_fixture_directory('gate', top / 'store', []) as outer_root:
+                    marker = configured / 'keep'
+                    marker.write_text('outside cleanup')
+                    (outer_root / 'link').symlink_to(configured, target_is_directory=True)
+                    shut = outer_root / 'shut'
+                    shut.mkdir()
+                    (shut / 'file').write_text('inside cleanup')
+                    shut.chmod(0o500)
+                    with patch.object(F, 'ENVIRONMENT', dict(source, VELDO_FIXTURE_ROOT=str(outer_root))):
+                        with AS.gate_fixture_directory('gate', top / 'store', []) as nested:
+                            expect('VELDO-0221 gate-fixtures/nested', nested.parent == outer_root)
+                    expect('VELDO-0221 gate-fixtures/nested-cleanup', not nested.exists())
+                expect('VELDO-0221 gate-fixtures/cleanup-stays-inside-root',
+                       not outer_root.exists() and marker.read_text() == 'outside cleanup')
+            problems = []
+            bad_mode = allocated / 'public'
+            bad_mode.mkdir(mode=0o755)
+            bad_mode.chmod(0o755)
+            fake = allocated / 'foreign'
+            fake.mkdir(mode=0o700)
+            wrong_owner = fake.stat()
+            def owner_info(path):
+                if path == fake:
+                    return SimpleNamespace(st_mode=wrong_owner.st_mode, st_uid=os.getuid() + 1)
+                return original_lstat(path)
+            original_lstat = Path.lstat
+            for name, env, protected in (
+                    ('temporary', {'VELDO_FIXTURE_PARENT': str(top / 'bad')}, []),
+                    ('mode', {'VELDO_FIXTURE_PARENT': str(bad_mode)}, []),
+                    ('owner', {'VELDO_FIXTURE_PARENT': str(fake)}, []),
+                    ('outside', dict(source, VELDO_FIXTURE_ROOT=str(allocated)), []),
+                    ('not-allocation', dict(source, VELDO_FIXTURE_ROOT=str(configured / 'keys')), []),
+                    ('protected', source, [configured]),
+                    ('unavailable', {'VELDO_FIXTURE_PARENT': str(marker / 'child')}, [])):
+                with patch.object(F, 'ENVIRONMENT', env), patch.object(Path, 'lstat', owner_info):
+                    try:
+                        with AS.gate_fixture_directory('gate', top / 'store', protected):
+                            problems.append(name + ': accepted')
+                    except F.FixtureRefused as error:
+                        if not str(error).startswith('gate_fixture_root_'):
+                            problems.append(name + ': unnamed')
+            expect('VELDO-0221 gate-fixtures/refused-placement-mode-owner-overlap', not problems)
+            with patch.object(F, 'ENVIRONMENT', {}):
+                with AS.gate_fixture_directory('gate', top / 'store', [], configured=str(configured)) as explicit:
+                    expect('VELDO-0221 gate-fixtures/installation-setting', explicit.parent == configured)
+            with patch.dict(os.environ, VELDO_FIXTURE_ROOT=str(top / 'redirect'),
+                            VELDO_FIXTURE_PARENT=str(top / 'redirect')):
+                with AS.gate_fixture_directory('gate', top / 'store', []) as pinned:
+                    expect('VELDO-0221 gate-fixtures/environment-is-pinned', pinned.parent == allocated.parent)
+            with RS.fixture_stand() as pinned:
+                expect('VELDO-0221 gate-fixtures/dispatcher-pinned-parent', Path(pinned).parent == allocated.parent)
+        expect('VELDO-0221 gate-fixtures/default-cleanup', not allocated.exists())
+        allocation_tree = tree(top / 'allocation-tree', {'01_ok': 'expect("fixture/ok", True)\n'})
+        result, _lines = shards(allocation_tree, 'confined', ['01_ok'], extra={
+            'VELDO_FIXTURE_ROOT': str(top / 'redirect'), 'VELDO_FIXTURE_PARENT': str(top / 'redirect')})
+        expect('VELDO-0221 gate-fixtures/run-environment-cannot-redirect',
+               result['failed'] == 0 and not (top / 'redirect').exists())
+        refused = through_dispatcher(allocation_tree, dict(leg_env('confined', 'none_listed'),
+                                     VELDO_FIXTURE_PARENT=str(top / 'refused-parent')))
+        expect('VELDO-0221 gate-fixtures/dispatcher-named-refusal-no-traceback',
+               refused.returncode == 2 and 'gate_fixture_root_unsafe_placement' in refused.stdout
+               and 'Traceback' not in refused.stdout + refused.stderr)
         # The launcher's broker refuses a shard's bind outside the shard's own roots: it finds the
         # caller's shard by ancestry and reads the roots the dispatcher started that shard with.
         broker = AS.Broker.__new__(AS.Broker)
@@ -1080,7 +1167,8 @@ def _veldo_0221():
             grandchild = int(process.stdout.readline())
             narrowed = broker._shard_roots(grandchild)
             verdicts = []
-            for target in (shard_roots["TMPDIR"] + "/a/sock", str(top / "broker" / "sock"), shard_roots["HOME"] + "x/sock"):
+            for target in (shard_roots["TMPDIR"] + "/a/sock", str(top / "broker" / "sock"), shard_roots["HOME"] + "x/sock",
+                           *[value + "/../sibling/sock" for value in shard_roots.values()]):
                 try:
                     broker._within_shard(grandchild, b"\x01\x00" + target.encode() + b"\0")
                     verdicts.append("allowed")
@@ -1106,7 +1194,7 @@ def _veldo_0221():
             process.wait()
         expect("VELDO-0221 AC2 suite-shards/broker-binds-within-the-shard: %r %r %r" % (narrowed, verdicts, unsharded),
                sorted(narrowed or []) == sorted(value.encode() for value in shard_roots.values())
-               and verdicts == ["allowed", errno.EACCES, errno.EACCES] and unsharded == (True, True)
+               and verdicts == ["allowed", errno.EACCES, errno.EACCES] + [errno.EACCES] * len(shard_roots) and unsharded == (True, True)
                and sorted(name.decode() for name in AS.Broker.SHARD_ROOT_VARIABLES)
                == sorted(variable for variable, _leaf in RS.SHARD_ROOTS)
                and "--shard" in RS.SHARD_ARGUMENTS and "--shard-root" in RS.SHARD_ARGUMENTS)

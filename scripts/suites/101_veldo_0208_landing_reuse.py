@@ -206,6 +206,7 @@ print(json.dumps(results))
         (kernel_authority / 'scripts').mkdir(parents=True)
         (kernel_authority / '.veldo').mkdir()
         shutil.copyfile(ROOT / '.veldo/reuse_evidence.py', kernel_authority / '.veldo/reuse_evidence.py')
+        shutil.copyfile(ROOT / 'scripts/gate_fixtures.py', kernel_authority / 'scripts/gate_fixtures.py')
         kernel_launcher = kernel_authority / 'scripts/agent_sandbox.py'
         kernel_source = (ROOT / 'scripts/agent_sandbox.py').read_text()
         query = '        result = libc.syscall(number, *args)'
@@ -1426,7 +1427,7 @@ def _v208_unconfined_leg():
         top = Path(temporary)
         candidate, outside = top / 'candidate', top / 'outside'
         (candidate / 'scripts/suites').mkdir(parents=True); outside.mkdir()
-        for name in ('selftest.py', 'run_scope.py'):
+        for name in ('selftest.py', 'run_scope.py', 'gate_fixtures.py'):
             shutil.copyfile(ROOT / 'scripts' / name, candidate / 'scripts' / name)
         (candidate / 'scripts/suites/shared.py').write_text(fixture_shared)
         for name, body in bodies.items():

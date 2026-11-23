@@ -152,3 +152,20 @@ Service inspection exposes live service counters as `control_plane` and durable
 effect counters as `control_plane_effects`. Effect children append their safe
 observations to `control-plane-calls.jsonl` beside the private authority store.
 Literal credential values have no reported reference name.
+
+### Gate fixture placement
+
+Gate fixtures use `gate_fixture_parent` in the launcher's `agent_sandbox.json` when
+configured, otherwise `VELDO_FIXTURE_PARENT` from the launching environment.
+Without either setting, the parent is `$XDG_STATE_HOME/veldo/gate-fixtures`, or
+`~/.local/state/veldo/gate-fixtures` under the account home when XDG_STATE_HOME is
+unset. `/var/lib/veldo` is only used when explicitly configured. The owner needs
+no additional account or elevated permissions for this allocation.
+
+The parent must be an absolute, real directory, owned by the current user with
+mode 0700, outside temporary and runtime roots. A missing parent is created;
+an existing unsafe parent is refused with a `gate_fixture_root_*` reason. Settings
+are sampled before the run's environment is built. `VELDO_FIXTURE_ROOT` carries
+only an enclosing allocation beneath that pinned parent. Each launcher, leg and
+shard gets a private child; the shared parent and existing stores receive no grant.
+Cleanup runs after the process tree ends and removes only its allocated child.

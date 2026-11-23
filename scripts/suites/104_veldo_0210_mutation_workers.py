@@ -86,6 +86,7 @@ def _v210_mutation_workers():
         (worker_root / 'scripts/suites').mkdir(parents=True)
         (worker_root / '.veldo').mkdir()
         shutil.copyfile(ROOT / 'scripts/agent_sandbox.py', worker_root / 'scripts/agent_sandbox.py')
+        shutil.copyfile(ROOT / 'scripts/gate_fixtures.py', worker_root / 'scripts/gate_fixtures.py')
         (worker_root / '.veldo/subject.py').write_text('good')
         (worker_root / 'scripts/suites/shared.py').write_text(
             'from pathlib import Path\nROOT = Path(__file__).resolve().parents[2]\n'

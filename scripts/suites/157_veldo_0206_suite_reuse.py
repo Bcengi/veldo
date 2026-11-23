@@ -27,6 +27,7 @@ def _v206_suite_reuse():
 
     HANG = 900  # seconds; a hang detector only, never a wait
     SOURCES = {
+        'scripts/gate_fixtures.py': ROOT / "scripts/gate_fixtures.py",
         'scripts/gate_reuse.py': ROOT / "scripts" / "gate_reuse.py",
         'scripts/run_scope.py': ROOT / "scripts" / "run_scope.py",
         'scripts/selftest.py': ROOT / "scripts" / "selftest.py",
@@ -118,6 +119,9 @@ def _v206_suite_reuse():
                 'trees': {p: self.G.tree_identity(Path(p)) for p in paths},
                 'environment': self.G.digest(dict(environment))}
             self.environ = {k: v for k, v in os.environ.items() if not k.startswith(('VELDO_', 'GIT_'))}
+            # Nested legs retain their enclosing fixture grant and its pinned parent.
+            self.environ.update({k: os.environ[k] for k in ('VELDO_FIXTURE_ROOT', 'VELDO_FIXTURE_PARENT')
+                                 if k in os.environ})
             self.environ.update(LANG='C.UTF-8', TZ='UTC', HOME=str(self.base / 'home'))
             (self.base / 'home').mkdir(exist_ok=True)
             self.store = self.base / 'store'
@@ -379,6 +383,7 @@ def _v206_suite_reuse():
         unreviewed = base / 'unreviewed-authority'
         (unreviewed / 'scripts').mkdir(parents=True)
         shutil.copyfile(SOURCES['scripts/run_scope.py'], unreviewed / 'scripts/run_scope.py')
+        shutil.copyfile(SOURCES['scripts/gate_fixtures.py'], unreviewed / 'scripts/gate_fixtures.py')
         nobody = G.suite_entries(fx.root, fx.environ, False, fx.runtime, unreviewed)[1]
         row('closure', 'candidate-cannot-qualify-itself',
             judged['d'] == {'suite': 'd', 'key': None, 'reason': 'unqualified', 'isolated': False}
