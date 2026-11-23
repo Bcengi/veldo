@@ -328,7 +328,7 @@ sys.exit(payload.get('code', 0))
                                                          enrollment_signers=str(receiver_enrollment_signers))))
             receiver_host_trust.chmod(0o600)
             body = {'host_trust': str(receiver_host_trust), 'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
-                    'workspace': str(base), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
+                    'workspace': str(base), 'runs': str(base / 'runs'), 'domain': DOMAIN, 'repository': REPOSITORY, 'authority_generation': 1,
                     'adapters': adapters, 'timers_profile': TIMERS_PROFILE}
             if prof is not None:
                 body['profile'] = prof
