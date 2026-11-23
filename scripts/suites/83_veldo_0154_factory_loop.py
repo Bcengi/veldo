@@ -76,7 +76,7 @@ def _v154_suite():
     ROWS = ('install/assets', 'loop/runner-in-service', 'loop/journal-wake-offers', 'loop/review-offered',
             'loop/receiver-death', 'loop/rerun-another-account', 'loop/ask-before-rerun', 'loop/owner-yes-reruns',
             'loop/owner-no-stops', 'loop/owner-stop-asked-on-wake', 'loop/reset-timer-wake', 'loop/no-other-timer',
-            'format/fake-lines', 'timers/profile-applied')
+            'format/fake-lines', 'timers/profile-applied', 'loop/end-after-fault', 'loop/orphan-release-once')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -219,7 +219,7 @@ def _v154_suite():
 
         # A real journal wake may also arrive after the terminal commit but
         # before the launch pipe's end. Drive those two passes in that order.
-        pending = SimpleNamespace(dispatch_id='pending-build', lost=False,
+        pending = SimpleNamespace(dispatch_id='pending-build', lost=False, ended=False,
                                   contract={'unit': 'fixture', 'station': 'build'})
         held = {pending.dispatch_id: pending}
         attempted = []
@@ -232,7 +232,7 @@ def _v154_suite():
         line = SimpleNamespace(repository='fixture', activate=lambda: None,
             runner=SimpleNamespace(launches=held, orphans=[], honor_stops=lambda: None,
                                    release_orphans=lambda: [], wait=settle),
-            wants_cycles=lambda: False, loop=SimpleNamespace(provision=lambda *args: None),
+            wants_cycles=lambda: False, loop=SimpleNamespace(provision=lambda *args: None, ended=[]),
             latest=lambda: {('fixture', 'build'): terminal}, assigned=lambda: ['fixture'],
             next=lambda unit, latest, report: attempted.append(unit))
         report = {'released': [], 'ended': []}
@@ -242,6 +242,59 @@ def _v154_suite():
         check('loop/review-offered', 'terminal store state cannot advance a held launch before its pipe end',
               before_end == [] and attempted == ['fixture'] and not held
               and [(e['station'], e['state']) for e in report['ended']] == [('build', 'exited')])
+        # FactoryLoop takes its ended queue before Line.run. A fault before
+        # retirement must not leave that consumed end holding the unit forever.
+        held[pending.dispatch_id] = pending
+        pending.ended = True
+        line.loop.ended = [(line, pending)]
+        attempted.clear()
+        CS.Line.run(line, report, [])
+        queued_held = not attempted
+        taken, line.loop.ended = line.loop.ended, []
+
+        def fault_before_retirement(launch, timeout=None):
+            raise RuntimeError('forced retirement fault after taking the end')
+
+        line.runner.wait = fault_before_retirement
+        faulted = False
+        try:
+            CS.Line.run(line, report, [launch for _, launch in taken])
+        except RuntimeError:
+            faulted = True
+        line.runner.wait = settle
+        CS.Line.run(line, report, [])
+        check('loop/end-after-fault', 'a queued end holds the unit; a fault after taking it cannot hold the next pass',
+              queued_held and faulted and attempted == ['fixture'])
+
+        # Use the real reservation writer and store. A successful first release
+        # followed by the old duplicate orphaned call changed the same command's
+        # timestamp and left command_content_conflict pending forever.
+        with contextlib.closing(CS.S.open_store(str(base / 'orphan-race.sqlite3'))) as conn:
+            reservations = RES.Reservations(CS.S, conn, domain='orphan-race', repository='fixture',
+                principal='authority', authorize=lambda *_: True, signer='authority', sign=journal_sign)
+            for scope in RES.SCOPES:
+                reservations.configure('policy/' + scope, scope, 'fixture',
+                    dict(capacity=1, invocations=1, wall_seconds=100), now=1)
+            reservations.reserve_worker('worker', pending.dispatch_id, 'fixture', 'fixture', 'fixture', now=1)
+            terminal['state'] = 'unknown'
+            pending.lost = True
+            ticks = iter(range(2, 20))
+            runner = L.Runner(None, reservations, SimpleNamespace(record=lambda _: terminal), None,
+                              account='fixture', clock=lambda: next(ticks))
+            runner.honor_stops = lambda: None
+            runner.wait = lambda launch, timeout=None: terminal
+            line.runner = runner
+            from unittest.mock import patch
+            gone = dict(terminated=True, cleaned=True)
+            with patch.object(L, '_stop_orphan', return_value=True), \
+                    patch.object(L, '_await_gone', return_value=(gone, ['none'])):
+                orphan_report = {'released': [], 'ended': []}
+                CS.Line.run(line, orphan_report, [pending])
+            releases = [e for e in runner.observations if e.get('operation') == 'release_account']
+            check('loop/orphan-release-once', 'one successful release is never re-added or retried with new content',
+                  not runner.orphans and bool(reservations.worker(pending.dispatch_id).get('account_released'))
+                  and [e['outcome'] for e in releases] == ['released']
+                  and len(orphan_report['released']) == 1)
         serial = [0]
 
         def next_id(prefix):

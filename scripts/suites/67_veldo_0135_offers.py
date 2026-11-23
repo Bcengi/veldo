@@ -54,6 +54,9 @@ def _v135_suite():
         S = load('v135_store', mods / 'control_store.py')
         L = load('v135_launch', mods / 'control_launch.py')
         WAITS = load('v135_waits', ROOT / 'scripts/suites/support/waits.py')
+        # Floor offers test completion, not production acceptance timers.
+        # Apply the shared hang profile to this process, receiver and wrapper.
+        L.TIMERS.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
         D = L.D
         EL = load('v135_eligibility', mods / 'control_eligibility.py')
         RES = load('v135_reservations', mods / 'control_reservations.py')
@@ -328,6 +331,7 @@ sys.stdout.flush()
         receiver_host_trust.chmod(0o600)
         config.write_text(json.dumps({'host_trust': str(receiver_host_trust), 'store': str(db), 'runs': str(base / 'runs'), 'journal_key': str(private / 'journal'),
                                       'principal': 'launch-receiver', 'workspace': str(work), 'domain': DOMAIN,
+                                      'timers_profile': {'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS},
                                       'profile': {'kind': 'linux-systemd', 'slice': worker_slice,
                                                   'lock': str(base / 'containment.lock'), 'concurrency': 64,
                                                   'runtime_seconds': 600,
@@ -368,7 +372,7 @@ sys.stdout.flush()
         L.Launch.start = start_with_queued_ack
 
         def invoke(contract):
-            launch = L.invoke(config, contract, dispatches, accept_seconds=30)
+            launch = L.invoke(config, contract, dispatches)
             launches.append(launch)
             return launch
 
@@ -417,7 +421,7 @@ sys.stdout.flush()
             def build(self, spec, calls=None):
                 launch = runner.submit(spec['id'], 'build', holder=self.holder, source=str(work), revision='HEAD',
                                        payload={'unit': spec['id'], 'attempt': self.attempt}, adapter='builder-engine',
-                                       configuration=CONFIG, deadline=time.time() + 90,
+                                       configuration=CONFIG, deadline=time.time() + WAITS.WAIT_HANG_SECONDS,
                                        context={'generation': clients[self.holder].generations.get(spec['id'])})
                 record = runner.wait(launch) or {}
                 self.launched.append(launch.dispatch_id)
@@ -461,7 +465,7 @@ sys.stdout.flush()
                 launch = runner.submit(unit['spec'], 'review', holder=unit['holder'], source=str(work),
                                        revision=(assignment.get('source') or {}).get('commit') or 'HEAD',
                                        payload=dict(assignment), adapter=self.adapter, configuration=CONFIG,
-                                       deadline=time.time() + 90, context={'reviewer': self.identity})
+                                       deadline=time.time() + WAITS.WAIT_HANG_SECONDS, context={'reviewer': self.identity})
                 runner.wait(launch)
                 self.launched.append(launch.dispatch_id)
                 path = markers / ('review-%s.receipt' % launch.dispatch_id.replace('/', '_'))
@@ -564,6 +568,8 @@ sys.stdout.flush()
 
         def check(label, condition):
             emitted.add(label)
+            if not condition:
+                print('VELDO-0135 %s detail: %s' % (label, json.dumps(observed, default=str, sort_keys=True)))
             expect('VELDO-0135 ' + label, bool(condition))
 
         @contextlib.contextmanager
@@ -576,6 +582,78 @@ sys.stdout.flush()
                 for label in labels:
                     if label not in emitted:
                         check(label, False)
+
+        # Keep the expired-read rescue bounded even when every select would
+        # say readable. A virtual clock crosses the deadline before the first
+        # read; the emitter supplies two lines on every read, indefinitely.
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        for action in ('start', 'wait', 'zero-wait'):
+            reads, selected = [], []
+            record = {'state': 'exited', 'dispatch_id': 'bound-probe'}
+            child = SimpleNamespace(stdout=SimpleNamespace(fileno=lambda: 123))
+            probe = L.Launch(child, {'dispatch_id': 'bound-probe', 'deadline': 0},
+                             SimpleNamespace(record=lambda _: record), time.time)
+            probe.result, probe.record = 'accepted', record
+            probe._end_receiver = lambda: None
+            probe._settle = lambda lost: None
+            ticks = iter([0])
+
+            def continuous(fd, size):
+                reads.append(size)
+                if len(reads) > 1:
+                    raise AssertionError('continuous writer read again after deadline')
+                return b'{"event":"flag"}\n{"event":"flag"}\n'
+
+            def readable(*args):
+                selected.append(args[-1])
+                return ([child.stdout], [], [])
+
+            with patch.object(L, 'time', SimpleNamespace(monotonic=lambda: next(ticks, 2), time=time.time)), \
+                    patch.object(L.select, 'select', side_effect=readable), \
+                    patch.object(L.os, 'read', side_effect=continuous):
+                with region('launch/bounded-' + action):
+                    if action == 'start':
+                        probe.start(1)
+                    else:
+                        probe.wait(0 if action == 'zero-wait' else 1)
+                    check('launch/bounded-' + action,
+                          (reads == [] and selected == [] and probe.flags == []) if action == 'zero-wait'
+                          else reads == [65536] and selected == [0] and len(probe.flags) == 2)
+
+        # Model an acknowledgment at t=31 through invoke's real timer selection
+        # and Launch.start, with a real pipe. Production's 30-second deadline
+        # cannot accept it; this suite's hang profile must. No wall-time sleep.
+        with region('launch/slow-ack'):
+            read_fd, write_fd = os.pipe()
+            try:
+                with os.fdopen(read_fd, 'rb', buffering=0) as stream:
+                    import io
+                    child = SimpleNamespace(stdout=stream, stdin=io.BytesIO())
+                    elapsed, bounds = [0], []
+                    record = {'state': 'running', 'dispatch_id': 'slow-ack'}
+                    contract = {'dispatch_id': 'slow-ack', 'unit': 'slow-ack', 'station': 'review'}
+
+                    def delayed_ack(readers, writers, errors, timeout):
+                        bounds.append(timeout)
+                        if elapsed[0] + timeout < 31:
+                            elapsed[0] += timeout
+                            return ([], [], [])
+                        elapsed[0] = 31
+                        os.write(write_fd, b'{"event":"running"}\n')
+                        return (readers, [], [])
+
+                    with patch.object(L.subprocess, 'Popen', return_value=child), \
+                            patch.object(dispatches, 'record', return_value=record), \
+                            patch.object(L, 'time', SimpleNamespace(monotonic=lambda: elapsed[0], time=time.time)), \
+                            patch.object(L.select, 'select', side_effect=delayed_ack), \
+                            patch.object(L.Launch, '_end_receiver', return_value=None), \
+                            patch.object(L, '_receiver_errors', return_value=(None, None)):
+                        slow = invoke(contract)
+                    check('launch/slow-ack', slow.result == 'accepted' and elapsed == [31]
+                          and bounds == [WAITS.WAIT_HANG_SECONDS])
+            finally:
+                os.close(write_fd)
 
         try:
             with region('offers/floor-station', 'offers/no-reclaim'):
