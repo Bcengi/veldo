@@ -2690,7 +2690,18 @@ def worker_tree(command, env, cwd, scratch, inherit=()):
     sys.stdout.flush()
     sys.stderr.flush()
     scratch = Path(scratch)
-    return run_tree(Path(cwd), command, env, [], 'worker', [], scratch, roots=[scratch], inherit=inherit)
+    config = policy_module().configuration()[1]
+    try:
+        with gate_fixture_directory('gate', Path(config['store']), [cwd, Path(__file__).resolve().parents[1]],
+                                    config.get('gate_fixture_parent')) as fixture:
+            env = dict(env, VELDO_FIXTURE_ROOT=str(fixture),
+                       VELDO_FIXTURE_PARENT=str(config.get('gate_fixture_parent') or
+                                               FIXTURES.fixture_parent(FIXTURES.ENVIRONMENT)))
+            return run_tree(Path(cwd), command, env, [], 'worker', [], scratch,
+                            roots=[scratch, fixture], inherit=inherit)
+    except FIXTURES.FixtureRefused as error:
+        print('agent sandbox refused to start a worker tree: ' + str(error), file=sys.stderr, flush=True)
+        return 2
 
 
 def init_entry_problem():

@@ -751,7 +751,7 @@ def _v171_suite():
                     ('ready', 'unavailable_service:tailscale', [str(base / 'no-such-bin' / 'tailscale')])):
                 ts.set(state)
                 ts.clear()
-                root_t = fresh_root('state-t-' + state + ('-absent' if paths else ''))
+                root_t = fresh_root('t-' + state[:2])  # short, distinct socket paths for these refusal cases
                 before = snapshot(base)
                 code, shown = setup(root_t, clone_t, trust_t, base / 'install-t', base / 'units-t', manager_t, tailscale=paths)
                 changed, added, removed = changes(before, snapshot(base))

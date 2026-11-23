@@ -166,6 +166,6 @@ The parent must be an absolute, real directory, owned by the current user with
 mode 0700, outside temporary and runtime roots. A missing parent is created;
 an existing unsafe parent is refused with a `gate_fixture_root_*` reason. Settings
 are sampled before the run's environment is built. `VELDO_FIXTURE_ROOT` carries
-only an enclosing allocation beneath that pinned parent. Each launcher, leg and
-shard gets a private child; the shared parent and existing stores receive no grant.
+only an enclosing allocation beneath that pinned parent. Each launcher, leg,
+shard and fresh mutation worker gets a private child; the shared parent and existing stores receive no grant.
 Cleanup runs after the process tree ends and removes only its allocated child.

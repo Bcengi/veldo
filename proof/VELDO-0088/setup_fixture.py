@@ -68,7 +68,7 @@ def setup(root, base, mods, owner_key):
     git.run(['git', '-C', str(workspace), 'add', 'README'], check=True, capture_output=True)
     git.run(['git', '-C', str(workspace), 'commit', '-qm', 'Setup source'], check=True,
             capture_output=True, identity=('Fixture', 'fixture@example.invalid'))
-    state = base / 'factory-state'
+    state = base / 's'  # leave room for the service socket below a per-user fixture parent
     state.mkdir(mode=0o700)
     token = base / 'setup-token'
     token.write_text('fixture' + os.urandom(12).hex() + '\n')

@@ -107,6 +107,12 @@ def _v210_mutation_workers():
             '         "init": b"\\0namespace-init\\0" in open("/proc/1/cmdline", "rb").read(),\n'
             '         "status": S.capability_problem(open("/proc/self/status").read()),\n'
             '         "handed": child.stdout.strip(), "outside": outside}\n'
+            'fixtures = Path(os.environ["VELDO_FIXTURE_ROOT"])\n'
+            '(fixtures / "own").write_text("owned")\n'
+            'facts["fixture"] = str(fixtures)\n'
+            'facts["fixture_private"] = fixtures.stat().st_uid == os.getuid() and fixtures.stat().st_mode & 0o777 == 0o700\n'
+            'try:\n    (fixtures.parent / "intruder").write_text("escape"); facts["fixture_parent_denied"] = False\n'
+            'except PermissionError:\n    facts["fixture_parent_denied"] = True\n'
             'open(os.path.join(os.environ["TMPDIR"], "tree.json"), "w").write(json.dumps(facts))\n'
             'value = (ROOT / ".veldo" / "subject.py").read_text()\n'
             'expect("fixture target", value == "good")\n')
@@ -122,7 +128,8 @@ def _v210_mutation_workers():
             try:
                 run = subprocess.run([sys.executable, '-I', '-B', str(ROOT / 'scripts/reuse_worker.py'), 'worker',
                                       str(worker_root), str(channel), str(job)], cwd=worker_root,
-                                     pass_fds=(channel, *launcher_fds()), env=gate.fixed_env(scratch),
+                                     pass_fds=(channel, *launcher_fds()), env=dict(gate.fixed_env(scratch), **{key: os.environ[key] for key in
+                                                ('VELDO_FIXTURE_ROOT', 'VELDO_FIXTURE_PARENT') if key in os.environ}),
                                      capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
             finally:
                 os.close(channel)
@@ -142,6 +149,11 @@ def _v210_mutation_workers():
                isinstance(facts, dict) and facts['marker'] is True and facts['handed'] == 'True')
         expect('VELDO-0210 workers/worker-confined-in-its-tree: %r' % (facts,),
                isinstance(facts, dict) and facts['outside'] == 'PermissionError')
+
+        expect('VELDO-0210 workers/fixture-private-parent-denied-and-cleaned',
+               all(isinstance(observed[mode][1], dict) and observed[mode][1].get('fixture_private')
+                   and observed[mode][1].get('fixture_parent_denied')
+                   and not Path(observed[mode][1]['fixture']).exists() for mode in ('baseline', 'mutant')))
 
         # A launcher killed outright leaves no descendant of its agent: in a namespace of its own the
         # kernel ends them with the init; nested, the init is ORPHANED and ends them itself.

@@ -1135,6 +1135,11 @@ class Workers:
                         # Inside a tree the agent launcher made, a worker is handed its marker, so a
                         # fresh worker's own tree nests in it (VELDO-0210 AC6, AC7).
                         environment = fixed_env(home, str(bindir) + ':/usr/bin:/bin')
+                        if 'snapshot_root' not in job:
+                            # Carry only the enclosing fixture allocation, never another worker's.
+                            environment.update({key: os.environ[key] for key in
+                                                ('VELDO_FIXTURE_ROOT', 'VELDO_FIXTURE_PARENT')
+                                                if key in os.environ})
                         if meter_fd is not None:
                             environment['VELDO_MUTATION_CGROUP_FD'] = str(meter_fd)
                         if lifecycle_fd is not None:

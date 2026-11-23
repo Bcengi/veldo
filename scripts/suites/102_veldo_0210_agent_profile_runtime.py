@@ -1171,7 +1171,8 @@ print(json.dumps(r))
         # Borrow journals and credential recoveries (VELDO-0211) go to this suite's own directory.
         state_home = top / 'state-home'
         client_env = dict(os.environ, CLAUDE_CONFIG_DIR=str(account), CODEX_HOME=str(codex_home),
-                          XDG_STATE_HOME=str(state_home))
+                          XDG_STATE_HOME=str(state_home),
+                          VELDO_FIXTURE_PARENT=str(S.FIXTURES.fixture_parent(S.FIXTURES.ENVIRONMENT)))
         borrows = state_home / 'veldo' / 'borrowed-logins'
 
         def take_recovery():

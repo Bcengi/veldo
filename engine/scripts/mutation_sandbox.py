@@ -78,6 +78,10 @@ def worker_grants(boundary, authority, root, scratch, runtime_paths=None, reads=
         config = boundary.policy_module().configuration(authority / 'scripts/agent_sandbox.json')[1]
         grants += [(p, boundary.READ) for p in boundary.installed_tools(config)]
         boundary.toolchain_environment(config, scratch, grants, os.environ)
+        # The trusted worker-tree bootstrap allocated this private child before exec.
+        if boundary.FIXTURES.ENVIRONMENT.get('VELDO_FIXTURE_ROOT'):
+            fixture = boundary.FIXTURES.parent_for(boundary.FIXTURES.ENVIRONMENT)
+            grants.append((fixture, boundary.READ | boundary.WRITE))
     grants += [(Path('/dev/null'), (1 << 1) | (1 << 2)), (Path('/dev/urandom'), 1 << 2)]
     return grants
 

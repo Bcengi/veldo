@@ -418,7 +418,7 @@ def _v358d_load_leg():
     (authority / 'scripts').mkdir(parents=True)
     shutil.copyfile(str(schedule_source), str(authority / 'scripts/gate_schedule.py'))
     shutil.copyfile(str(legs_source), str(authority / 'scripts/gate_legs_real.py'))
-    for name in ('gate_candidate.py', 'agent_sandbox.py', 'agent_sandbox.json'):  # how a catalog stage runs
+    for name in ('gate_candidate.py', 'agent_sandbox.py', 'gate_fixtures.py', 'agent_sandbox.json'):  # how a catalog stage runs
         shutil.copyfile(str(ROOT / 'scripts' / name), str(authority / 'scripts' / name))
     shutil.copytree(str(ROOT / '.veldo'), str(authority / '.veldo'),
                     ignore=shutil.ignore_patterns('__pycache__', 'events.jsonl', 'last_verify'))
