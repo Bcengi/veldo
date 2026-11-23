@@ -853,5 +853,5 @@ sys.stdout.write(json.dumps({'body': body, 'signature': signature}, sort_keys=Tr
 
 
 _v56_started = __import__('time').monotonic()
-_v56_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v56_suite)
 _V56_SECONDS = __import__('time').monotonic() - _v56_started

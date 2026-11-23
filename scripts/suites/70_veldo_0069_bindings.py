@@ -1005,7 +1005,7 @@ print(json.dumps(out))
 '''
 
 _v69_started = __import__('time').monotonic()
-_v69_rows = _v69_suite()
+_v69_rows = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v69_suite)
 for _v69_name, _v69_observed in _v69_rows.items():
     _v69_ok = bool(_v69_observed) and all(ok for _, ok in _v69_observed)
     if not _v69_ok:

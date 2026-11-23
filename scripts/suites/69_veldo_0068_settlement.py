@@ -909,7 +909,7 @@ _v68_started = _v68_time.monotonic()
 # The store and keys live in memory-backed /dev/shm when it exists and is writable (Linux), as the
 # other store suites do; elsewhere the platform's temporary directory is used.
 _v68_fast = fast_temp()
-with _v68_temp.TemporaryDirectory(prefix='v68-', dir=_v68_fast) as _v68_dir:
+with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), _v68_temp.TemporaryDirectory(prefix='v68-', dir=_v68_fast) as _v68_dir:
     _v68_rows = _v68_checks(_v68_Path(_v68_dir))
 for _v68_name, _v68_observed in _v68_rows.items():
     _v68_ok = bool(_v68_observed) and all(ok for _, ok in _v68_observed)

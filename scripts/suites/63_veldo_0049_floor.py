@@ -1060,5 +1060,5 @@ sys.stdout.flush()
 
 
 _v49_started = __import__('time').monotonic()
-_v49_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v49_suite)
 _V49_SECONDS = __import__('time').monotonic() - _v49_started

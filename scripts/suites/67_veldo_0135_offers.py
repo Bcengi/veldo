@@ -812,5 +812,5 @@ sys.stdout.flush()
 
 
 _v135_started = __import__('time').monotonic()
-_v135_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v135_suite)
 _V135_SECONDS = __import__('time').monotonic() - _v135_started

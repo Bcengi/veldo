@@ -1019,5 +1019,5 @@ sys.exit(4)
 
 
 _v133_started = __import__('time').monotonic()
-_v133_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v133_suite)
 print('VELDO-0133 suite seconds: %.3f' % (__import__('time').monotonic() - _v133_started))
