@@ -1588,7 +1588,11 @@ def _v308_run_finished_suite():
                 made = receiver(dispatch_id, place, scratch, owner, supervision=None)
                 made.dispatches = Refusing(conn)
                 made.dispatches.place, made.dispatches.items = place, items
-                made.config = {'adapters': adapters, 'store': str(store_path), 'principal': 'receiver',
+                signers, trust = temp / 'query-signers', temp / 'query-trust.json'
+                signers.write_text('')
+                trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='fixture-host',
+                                                enrollment_signers=str(signers))))
+                made.config = {'host_trust': str(trust), 'workspace': str(temp), 'adapters': adapters, 'store': str(store_path), 'principal': 'receiver',
                                'repository': 'repo-308', 'domain': 'dom-308', 'runs': str(temp / 'query-runs')}
                 made.runner, made.confined_checked, made.metering, made.host = (
                     {'runner': 'default', 'why': None}, {}, None, 'fixture-host')
