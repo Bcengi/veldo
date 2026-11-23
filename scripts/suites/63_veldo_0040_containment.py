@@ -67,7 +67,7 @@ def _v40_suite():
         return dict(line.split('=', 1) for line in out.splitlines() if '=' in line)
 
     # The guard is on: the store must be outside home, temporary and runtime roots.
-    with tempfile.TemporaryDirectory(prefix='v40-', dir='/var/lib/veldo') as directory:
+    with tempfile.TemporaryDirectory(prefix='v40-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)

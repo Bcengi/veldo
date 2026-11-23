@@ -47,6 +47,7 @@ CREATORS = {
     ('engine/.veldo/qualify.py', 'claude_builtins'): 'Creates a private temporary tree for this call.',
     ('engine/.veldo/qualify.py', 'fixtures'): 'Creates a private temporary tree for this call.',
     ('engine/scripts/agent_sandbox.py', 'launch'): 'Creates a private temporary tree for this call.',
+    ('engine/scripts/agent_sandbox.py', 'gate_fixture_directory'): 'Creates one fresh per-gate fixture root beneath /var/lib/veldo or the enclosing gate grant; only that root is granted and removed at tree exit.',
     ('engine/scripts/agent_sandbox.py', 'namespace_selftest'): 'Creates a private temporary tree for this call.',
     ('engine/scripts/agent_sandbox.py', 'prepare'): 'The sandbox creator; run context declares the private repository and worktree.',
     ('engine/scripts/check_gate_mutations.py', 'run_stage'): 'Creates a private temporary tree for this call.',
@@ -61,6 +62,7 @@ CREATORS = {
     ('scripts/propose_case_inputs.py', 'trace_case'): 'Creates a private temporary tree for this call.',
     ('scripts/render_pdfs.py', 'main'): 'Creates a private temporary tree for this call.',
     ('scripts/run_scope.py', 'RuntimeStand.__enter__'): 'Creates one directory of the leg, named with its token, in the real runtime directory.',
+    ('scripts/run_scope.py', 'fixture_stand'): 'Creates one fresh private store-fixture tree beneath the per-leg grant, outside temporary and runtime roots.',
     ('scripts/run_scope.py', 'run_shards'): 'Creates a private temporary tree for this call.',
     ('scripts/suite_equiv.py', 'main'): 'Creates a private temporary tree for this call.',
 }
@@ -125,6 +127,7 @@ REVIEWED = {
     ('scripts/propose_case_inputs.py', 'trace_case'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
     ('scripts/render_pdfs.py', 'main'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
     ('scripts/run_scope.py', 'RuntimeStand.__exit__'): 'VELDO-0221 fix round 1, for the lead to approve: only the one mkdtemp result this object made, named with the leg token.',
+    ('scripts/run_scope.py', 'fixture_stand'): 'Removes only the exact mkdtemp result this context created, in its finally after all shards end; never discovers or removes existing stores.',
     ('scripts/run_scope.py', 'run_shards'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
     ('scripts/suite_equiv.py', 'main'): 'Lead decision class: only each mkdtemp result this call created with its own prefix.',
 }

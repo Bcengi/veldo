@@ -658,11 +658,11 @@ invoked. Existing selected suites exercise their own disposable gate fixtures.
 - **0215:** initialize authenticated raw-record digests in the fake reuse session,
   matching the coordinator's audit contract. The authority-only measurement,
   audited-reuse and no-sample assertions are unchanged.
-- **Review N1–N3:** correct the stop/pass comment; require at least 33 passes in
+- **Review N1-N3:** correct the stop/pass comment; require at least 33 passes in
   the nested guarded journey; initialize production authenticated digests in the
   session constructor, with a fresh-session regression and the bypassed-constructor
   fixture brought into agreement; change the old execution-record failure text
-  from “enforced” to “applied”. The installed mutation-reuse copy is synchronized.
+  from "enforced" to "applied". The installed mutation-reuse copy is synchronized.
 
 ### Selected-suite evidence
 

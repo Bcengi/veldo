@@ -612,6 +612,9 @@ L = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(L)
 sys.argv = [sys.argv[0], sys.argv[1]]
 L.RQ.SECONDS = 120  # a hang detector here; the fixture never waits for a deadline
+# The fallback algorithm is production's; its writable places belong to this fixture.
+if os.environ.get('V359_SHORT'):
+    L.RQ.SHORT = ((os.environ['V359_SHORT'] + '%.0s', False),)
 # This portable B1 fixture substitutes launch prerequisites, including B2's layout check.
 # Suite 158 exercises the real preflight and contained wrapper on the host route.
 L.guard_preflight = lambda config, sample, risky, locations: dict(
@@ -829,8 +832,12 @@ L.main()
                 patch.object(L, 'guard_preflight', return_value=dict(state='on', directory=str(Path(config['store']).resolve().parent), preflight={})):
             check('query/place', 'the launch refusal carries that name',
                   nowhere._prepare_query({'dispatch_id': 'nowhere'}, {'argv': [sys.executable]}) == Q.NO_PLACE and nowhere.query_server is None)
-        # The real launch, with the production rule and this account's real short directories.
-        with patch.dict(os.environ, long_env):
+        # Exercise the real placement and lifecycle with a private short directory this
+        # shard owns. The account's real runtime directory is outside the confined grant.
+        check('query/place', 'production fallback roots remain fixed',
+              Q.SHORT == (('/run/user/%d', False), ('/tmp/veldo-%d', True)))
+        with patch.dict(os.environ, dict(long_env, V359_SHORT=str(first))), \
+                patch.object(Q, 'SHORT', ((str(first) + '%.0s', False),)):
             path = placed_real()
             launch, pending = run_fixture(long_label, wait_payload=True)
             seen = read_event(launch.child, pending, {'payload', 'refused'})
@@ -839,9 +846,9 @@ L.main()
                   seen['event'] == 'payload' and seen['query'] == str(path) and Path(path).exists()
                   and len(os.fsencode(str(path))) <= Q.SUN_PATH and seen['build_reached'] and not seen['store_open'])
             check('query/place', 'its endpoint is in a short directory only this account can enter [%s]' % root,
-                  root is not None and str(root) in ('/run/user/%d' % uid, '/tmp/veldo-%d' % uid)
+                  root == first
                   and not root.is_symlink() and root.is_dir() and root.lstat().st_uid == uid and stat_mode(root) == 0o700
-                  and stat_mode(Path(path).parent) == 0o700)
+                  and Path(path).parent.is_dir() and stat_mode(Path(path).parent) == 0o700)
             if seen['event'] == 'payload':
                 launch.child.stdin.write(b'x'); launch.child.stdin.flush()
                 read_event(launch.child, pending, {'end_probe'})

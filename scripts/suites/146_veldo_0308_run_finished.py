@@ -250,7 +250,7 @@ def _v308_run_finished_suite():
         except OSError:
             return None
 
-    temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0308-', dir='/var/lib/veldo')))
+    temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0308-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo'))))
     connections = []
     row = ROWS[0]
     try:
@@ -1634,17 +1634,18 @@ def _v308_run_finished_suite():
             LA._organ = lambda name: (types.SimpleNamespace(handoff=lambda reader, host: None, Refused=RuntimeError)
                                       if name == 'control_memory' else real_organ(name))
             try:
-                runtime = temp / 'query-runtime'
-                runtime.mkdir(mode=0o700)
                 from unittest.mock import patch
-                with patch.dict(os.environ, XDG_RUNTIME_DIR=str(runtime)):
+                # Socket paths must stay short even beneath a leg and shard's store root.
+                with tempfile.TemporaryDirectory(prefix='q') as runtime, \
+                        patch.dict(os.environ, XDG_RUNTIME_DIR=runtime):
                     R.launch(contract)
             finally:
                 R._close_query()
                 LA._organ = real_organ
             guard_events = [entry for entry in LOG if entry[:2] in
                             (('emit', 'store_guard'), ('emit', 'run_query_created'), ('emit', 'run_query_end'))]
-            check(row, 'guard preflight stayed on and created a run query before the attempted spawn',
+            check(row, 'guard preflight stayed on and created a run query before the attempted spawn [%s; %s]'
+                  % (R.store_guard, guard_events),
                   R.store_guard['state'] == 'on' and R.store_guard.get('outcome') == 'pending'
                   and any(entry[:2] == ('emit', 'run_query_created') for entry in guard_events))
             LOG[:] = [entry for entry in LOG if entry not in guard_events]

@@ -9,3 +9,7 @@ proof/VELDO-0131/round2-layout145-e2e.log raw Playwright list-reporter output ke
 proof/VELDO-0131/round3-layout145-e2e.log raw Playwright list-reporter output kept as evidence (U+203A)
 proof/VELDO-0145/round3/n3-green.log raw Playwright list-reporter output kept as evidence (U+203A)
 proof/VELDO-0145/round3/n3-red.log raw Playwright list-reporter output kept as evidence (U+203A and the U+2718 failure mark)
+proof/VELDO-0359/b0/codex-2-stream.txt raw tool output kept verbatim as evidence (U+2019 in the captured model response)
+proof/VELDO-0359/b0/codex-3-unguarded-control-stream.txt raw tool output kept verbatim as evidence (U+2019 in the captured model response)
+proof/VELDO-0359/b0/claude-2-stderr.txt raw tool output kept verbatim as evidence (U+26A0 warning and U+00B7 separator)
+proof/VELDO-0359/b0/codex-1-stream.txt raw tool output kept verbatim as evidence (U+2019 in the captured model response)

@@ -60,6 +60,12 @@ if 'expect' in globals():
            _v113_result['expected'] == sorted(_v113_result['completed'])
            and len(_v113_result['completed']) == len(set(_v113_result['completed'])))
     expect('VELDO-0113 protocol unavailable/faults-preserve-all-three-rows', _v113_result['faults_ok'])
+    _v113_unexercised = [dict(identity=c['identity'], fault=c['fault'],
+                             failures=c['receipt']['failures'],
+                             capture_status=c['receipt']['capture_status'])
+                        for c in _v113_result['faults'] if not c['fault_exercised']]
+    if _v113_unexercised:
+        print('VELDO-0113 unexercised faults: ' + _v113_json.dumps(_v113_unexercised, sort_keys=True))
     expect('VELDO-0113 protocol unavailable/full-fault-matrix-is-exercised', _v113_result['faults_driven'])
 elif __name__ == '__main__':
     print(_v113_json.dumps(_v113_run(_v113_Path(__file__).resolve().parents[2])))

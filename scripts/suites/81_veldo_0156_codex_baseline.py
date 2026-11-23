@@ -106,7 +106,7 @@ def _v156_suite():
 
     started = time.monotonic()
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
-    base = Path(tempfile.mkdtemp(prefix='v156-', dir='/var/lib/veldo'))
+    base = Path(tempfile.mkdtemp(prefix='v156-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')))
     slice_name = 'v156%s.slice' % os.urandom(4).hex()
     tools = dict(os.environ)
     contained = []

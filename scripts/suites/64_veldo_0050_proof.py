@@ -47,7 +47,7 @@ def _v50_suite():
 
     # Not /dev/shm: the work tree is a candidate the gate runs through the VELDO-0208 launcher, and
     # its confinement grants nothing beneath /dev, so a candidate there could read none of its files.
-    with tempfile.TemporaryDirectory(prefix='v50-', dir='/var/lib/veldo') as directory:
+    with tempfile.TemporaryDirectory(prefix='v50-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
