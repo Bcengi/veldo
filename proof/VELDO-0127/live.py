@@ -323,8 +323,12 @@ def main():
     with tempfile.TemporaryDirectory(prefix='veldo0127-live-', dir='/run/user/' + str(os.getuid())) as temp:
         base = Path(temp)
         selected = (only[0],) if only else engines
-        with borrowed_profiles(base, args, selected) as borrowed:
-            f = fixture.factory(ROOT, base, {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
+        # Logins stay on the private runtime tmpfs; the factory (its store among it) lives where suite 86
+        # puts it, because the launch's store guard (VELDO-0359) refuses a store beneath the runtime
+        # directory an engine may write.
+        with borrowed_profiles(base, args, selected) as borrowed, \
+                tempfile.TemporaryDirectory(prefix='veldo0127-live-', dir='/var/lib/veldo') as built:
+            f = fixture.factory(ROOT, Path(built), {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
             borrowed.guard(['systemctl', P + 'user', 'stop', f.slice_name], f.inherited)
             try:
                 for engine in engines:
