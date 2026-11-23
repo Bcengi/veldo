@@ -1,0 +1,112 @@
+[
+  {
+    "log": "0050.log",
+    "raw_sha256": "77f1796826994e32a9a05c6f3fe150e51b2e54c3ed8f23746f53e9a24f6ce4e8",
+    "sanitized_sha256": "00b881d24be4e9ab63f232aefd5ec807e08ea3c03564078ba0d869c0afe9bdc8"
+  },
+  {
+    "log": "0050-host.log",
+    "raw_sha256": "92ebddcfa6510770952036d196d6a6df79b6d68a0277cecc4cfa1ec5be767219",
+    "sanitized_sha256": "92ebddcfa6510770952036d196d6a6df79b6d68a0277cecc4cfa1ec5be767219"
+  },
+  {
+    "log": "0050-final.log",
+    "raw_sha256": "4fc3ff952f3d2c745e9620e844c55ea49b1b62a887e60c92f2e9e14e18059b11",
+    "sanitized_sha256": "4fc3ff952f3d2c745e9620e844c55ea49b1b62a887e60c92f2e9e14e18059b11"
+  },
+  {
+    "log": "0177.log",
+    "raw_sha256": "29704a553cbc3ed0e7a61f85b5700062769fe93fffad620f7244cc4b0a170db4",
+    "sanitized_sha256": "29704a553cbc3ed0e7a61f85b5700062769fe93fffad620f7244cc4b0a170db4"
+  },
+  {
+    "log": "0177-final.log",
+    "raw_sha256": "44ed0ba3e62023454f22b1b562e34387a11d5c0dff0467a0187318e1dcf3f8d2",
+    "sanitized_sha256": "44ed0ba3e62023454f22b1b562e34387a11d5c0dff0467a0187318e1dcf3f8d2"
+  },
+  {
+    "log": "0215.log",
+    "raw_sha256": "d5593c2ca23397f667a87d2cc2e509e60c76977b38635388c9abcbac7ed8f739",
+    "sanitized_sha256": "52ae536b00afef4fe05d246e53edfe71f48b58f18fb827f015cf363198caa64a"
+  },
+  {
+    "log": "0313.log",
+    "raw_sha256": "24864dcc0b89f7d7f137483ce953b4c506b5d59c35a6a3baa1d79d73539d3734",
+    "sanitized_sha256": "989247a8aabdecc3508b17284f4a710378a9dd4567a5136cf09a54b59d4af5bc"
+  },
+  {
+    "log": "112_veldo_0215_case_deadlines.log",
+    "raw_sha256": "0d5494027be9a4c513b7884fd2698059fd01690ee72e08286edde70c65a7bd3e",
+    "sanitized_sha256": "0d5494027be9a4c513b7884fd2698059fd01690ee72e08286edde70c65a7bd3e"
+  },
+  {
+    "log": "130_veldo_0176_conversation_history.log",
+    "raw_sha256": "937c9759ca4adcaefac11e302dfa6a1349ed48c9087bbaa7bfc5321fa1b6d60c",
+    "sanitized_sha256": "937c9759ca4adcaefac11e302dfa6a1349ed48c9087bbaa7bfc5321fa1b6d60c"
+  },
+  {
+    "log": "138_veldo_0187_claude_mem_feed.log",
+    "raw_sha256": "ac0bad4263dc90b6955360540f4274e9d5df3002ed17b2759e8c8d4af82d7d95",
+    "sanitized_sha256": "ac0bad4263dc90b6955360540f4274e9d5df3002ed17b2759e8c8d4af82d7d95"
+  },
+  {
+    "log": "158_veldo_0258_outside_calls.log",
+    "raw_sha256": "82271d643550396bf5b0e42dc68abb9897e4b7bdb339c175458dfcce3fd41f11",
+    "sanitized_sha256": "da413bb85775bd61420c18a5874dc09295a0b1e2b58d22cfd04a6f22429067c7"
+  },
+  {
+    "log": "158_veldo_0358_census.log",
+    "raw_sha256": "3eb8279d0ac5723e56f1a14d0c34671199154e8ad4400f999fbe8e64022925b3",
+    "sanitized_sha256": "4c9e2677f03ad07033581d85cd8ba09751758c46019c7ece64ec6f2532b341f4"
+  },
+  {
+    "log": "158_veldo_0359_store_guard.log",
+    "raw_sha256": "fef4213b3a4d90c2ffb24f3a96ae1e10022e05fa4d523d8f8dbd0c2a099bffa4",
+    "sanitized_sha256": "fef4213b3a4d90c2ffb24f3a96ae1e10022e05fa4d523d8f8dbd0c2a099bffa4"
+  },
+  {
+    "log": "159_veldo_0218_reuse_audit.log",
+    "raw_sha256": "f039b8f8e79790aa4e0cc685d757168a574a31667d42e25a8a311510ad79096b",
+    "sanitized_sha256": "c4df888cb8fe600f38de7cfb82d808bc969180c128738c1609c08d340d4ac62d"
+  },
+  {
+    "log": "load.log",
+    "raw_sha256": "091ff342c82cfad40c7dd8afd82f97614707c1239e4c1c875d6546ee27e06fe6",
+    "sanitized_sha256": "091ff342c82cfad40c7dd8afd82f97614707c1239e4c1c875d6546ee27e06fe6"
+  },
+  {
+    "log": "runtime.log",
+    "raw_sha256": "904d754a8ccf599856bd35f14bba162ed1c91d07bea97a7a74716c1fadf6059a",
+    "sanitized_sha256": "da2562a8491a4efdedf1564554281ff42bc66e1d2c5dc82569833fa9ac10d153"
+  },
+  {
+    "log": "template.log",
+    "raw_sha256": "c4e1ebf9855812153b65d30f0342d5bcb34790f0da1eda79148fc1588cdf335a",
+    "sanitized_sha256": "c4e1ebf9855812153b65d30f0342d5bcb34790f0da1eda79148fc1588cdf335a"
+  },
+  {
+    "log": "wallclock-final.log",
+    "raw_sha256": "53321a5ef5681007f095f5d915eae665604db58d1c68e0af440b48bffec63a22",
+    "sanitized_sha256": "53321a5ef5681007f095f5d915eae665604db58d1c68e0af440b48bffec63a22"
+  },
+  {
+    "log": "boundary.log",
+    "raw_sha256": "c765f4cb582622d9410266a9eea2b02d14ac01fcb2b8085aeb7d789909a2d119",
+    "sanitized_sha256": "c765f4cb582622d9410266a9eea2b02d14ac01fcb2b8085aeb7d789909a2d119"
+  },
+  {
+    "log": "83_veldo_0154_factory_loop.log",
+    "raw_sha256": "aa030bceab0f09703b61b7f9b9e4d7b4c78dc5955caa5a2329ec3d99700e8ad7",
+    "sanitized_sha256": "a2d07fc61e16d6e466330a498659561bfdd08c68a8f525c8825530e29ee82247"
+  },
+  {
+    "log": "82_veldo_0141_execution_record.log",
+    "raw_sha256": "36f2c23e7dcd7c494bb88fbad3e26e3c525ca8250197d035bdec2c1413757599",
+    "sanitized_sha256": "36f2c23e7dcd7c494bb88fbad3e26e3c525ca8250197d035bdec2c1413757599"
+  },
+  {
+    "log": "personal.log",
+    "raw_sha256": "2b0637308fb453f11ffa6d8ab921321767710115dc6157647a5f4165cd55bc17",
+    "sanitized_sha256": "a985afaccb50ee3e75dea5d5fdd4f131ae5cd7005c1279e3a5d1b97b3a836014"
+  }
+]

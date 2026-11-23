@@ -1,0 +1,4 @@
+wallclock: scope: no opened-files record: every file under scripts/ and proof/; 794 file(s) read, 459 with a site
+wallclock: sites: 2860 (R1 256, R2 1313, R3 1252, R4 39); by class: A 39, D1 1017, D2 87, P 209, S1 24, S2 85, S3 8, ST 139, T 1252; excepted by the authority: 36
+wallclock: baseline: 2704 entry(ies), 2824 site(s) in 456 file(s); by rule: R1 221, R2 1313, R3 1252, R4 38
+wallclock: pass (no site over its allowed count, every baseline entry at its required count)

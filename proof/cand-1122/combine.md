@@ -613,3 +613,125 @@ grow only by an owner-approved change; `wallclock-baseline-proposal.json` is the
 is found (2709 entries, 2829 sites): approving it as `scripts/suites/wallclock_baseline.json` makes
 the census green on this line. Applied at 3a7cd8bd after the owner's approval (2026-11-22): pass.
 
+
+
+## 8. Candidate fix round after the clean unit leg (2026-11-23 UTC)
+
+Input: `e2e1e4bb5`, following the completed `fc75aac8b` unit leg (11532 passed,
+57 failed). Work stayed on `cand-1122`. Implementation commits: `a6ab6309c`,
+`1020bfbd8`, `1b2a4b0bf`, `dc32c3524`. No full unit leg or repository gate was
+invoked. Existing selected suites exercise their own disposable gate fixtures.
+
+### Repairs and preserved assertions
+
+- **0050:** the guarded fixture reviewer reads the assignment's context and proof
+  digest. A fresh trusted subprocess resolves the complete bundle from store and
+  Git after the builder exits. The row compares its manifest, implementation,
+  spec, criteria and artifacts with the reviewer context, retains the complete
+  authority-side catalog/check-observation assertions, and checks independent
+  process identities. The direct executor review fixture also supplies that
+  resolved context. No worker store access or query operation was added.
+- **0177 and 0187:** both fixture authorities still lived below temporary roots.
+  Guarded launch correctly refused `invalid_input:layout:placement`; the missing
+  notes file and empty feed list were downstream symptoms. Their private fixture
+  directories now use the existing `/var/lib/veldo` convention. The newly reached
+  Codex assertion checks its exact external-sandbox argv, an **on/applied** store
+  guard and the actual worker cgroup, as well as the existing tools and network
+  configuration. The guard stays enabled.
+- **0176:** the restarted-service fixture could retain its earlier receiver.
+  Cleanup now awaits each stopped launch and reaps it before closing the authority.
+  The named 600-second wait is a hang detector, not a success observation.
+- **0258:** register the local conversation clone fetch and the memory feed's
+  loopback-only send with function-specific reasons. Classify the macOS sandbox
+  wrapper's engine launch as a project call. The scanner still detects planted
+  calls and rejects an exemption without a reason.
+- **0358 runtime:** per-suite counts include the mandatory residue row. Require
+  exactly four passes for each three-assertion fixture; retain every watchdog,
+  stack, progress and fake-clock assertion.
+- **0358 census:** rebind the one stale baseline source line to the conversation
+  contract's required source field. No baseline allowance was increased.
+- **0358 authority record:** the shard launcher dropped the authority's opened-file
+  append descriptor. Pass that validated append-only descriptor to each shard;
+  the shard dispatcher consumes it before fixture children run. The existing
+  authority test now sees the forger's real opens and rejects its never-opened
+  claim. Resource-ledger channels remain private to the dispatcher.
+- **0215:** initialize authenticated raw-record digests in the fake reuse session,
+  matching the coordinator's audit contract. The authority-only measurement,
+  audited-reuse and no-sample assertions are unchanged.
+- **Review N1–N3:** correct the stop/pass comment; require at least 33 passes in
+  the nested guarded journey; initialize production authenticated digests in the
+  session constructor, with a fresh-session regression and the bypassed-constructor
+  fixture brought into agreement; change the old execution-record failure text
+  from “enforced” to “applied”. The installed mutation-reuse copy is synchronized.
+
+### Selected-suite evidence
+
+Each final repaired suite was run once after its last relevant change. Counts
+include the dispatcher's shared preamble. A successful selected run exits **2**.
+Remote runs used `remote_run.sh --share --out <evidence-dir> pc2 <candidate>
+<commit> -- python3 -B scripts/selftest.py --suite <suite>`. Guarded and
+helper-dependent runs used `host_heavy.sh python3 -B scripts/selftest.py --suite
+<suite>` in this worktree. Remote immutable tips were `1020bfbd8` (runtime) and
+`1b2a4b0bf` (outside calls, census and reuse audit). Host source remained unchanged
+for each suite during its run; the commits above bind the tested repairs.
+
+| Selected suite | Host | Passed / failed | Evidence |
+|---|---|---:|---|
+| `64_veldo_0050_proof` | host wrapper | 41 / 0 | [log](fix-after-clean-leg/0050-final.log) |
+| `128_veldo_0177_conversation_workspace` | host wrapper | 43 / 0 | [log](fix-after-clean-leg/0177-final.log) |
+| `138_veldo_0187_claude_mem_feed` | host wrapper | 45 / 0 | [log](fix-after-clean-leg/138_veldo_0187_claude_mem_feed.log) |
+| `130_veldo_0176_conversation_history` | host wrapper | 44 / 0 | [log](fix-after-clean-leg/130_veldo_0176_conversation_history.log) |
+| `158_veldo_0258_outside_calls` | pc2 | 118 / 0 | [log](fix-after-clean-leg/158_veldo_0258_outside_calls.log) |
+| `157_veldo_0358_suite_runtime` | pc2 | 38 / 0 | [log](fix-after-clean-leg/runtime.log) |
+| `158_veldo_0358_census` | pc2 | 32 / 0 | [log](fix-after-clean-leg/158_veldo_0358_census.log) |
+| `160_veldo_0358_load_leg` | host wrapper | 33 / 0 | [log](fix-after-clean-leg/load.log) |
+| `112_veldo_0215_case_deadlines` | host wrapper | 50 / 0 | [log](fix-after-clean-leg/112_veldo_0215_case_deadlines.log) |
+| `158_veldo_0359_store_guard` | host wrapper | 47 / 0 | [log](fix-after-clean-leg/158_veldo_0359_store_guard.log) |
+| `159_veldo_0218_reuse_audit` | pc2 | 39 / 0 | [log](fix-after-clean-leg/159_veldo_0218_reuse_audit.log) |
+| `83_veldo_0154_factory_loop` | host wrapper | 42 / 0 | [log](fix-after-clean-leg/83_veldo_0154_factory_loop.log) |
+| `82_veldo_0141_execution_record` | host wrapper | 67 / 0 | [log](fix-after-clean-leg/82_veldo_0141_execution_record.log) |
+
+The first 0050 pc2 attempt could not create its required private fixture parent
+(`/var/lib/veldo` is absent). The first 0215 pc2 attempt reached an existing
+high-descriptor probe and failed `F_DUPFD_CLOEXEC(2048)` under that node's descriptor
+limit. Both completed green on the host. Initial repaired host attempts found
+0050's direct executor fixture also needed context (40/1) and 0177's stale Codex
+argv assertion (42/1); those were repaired before the final runs above. Their
+logs are retained alongside the final evidence. The 0359 suite retains its
+previously owner-deferred device and real mount cases; no new exemption was made.
+
+### 0313 isolated result and lead-owned work
+
+The unchanged `151_veldo_0313_space_run` was selected alone under the host wrapper
+at `a6ab6309c`: **60 passed, 6 failed** ([complete log](fix-after-clean-leg/0313.log)).
+Thus its failures are not restricted to an aggregate invocation. Of the four
+requested rows, `fix2/captured-end-follows` and `fix3/handed-outside-the-tree`
+passed; `ac2/act-waits-75` and `ac2/report-starts` failed with retained earlier holds.
+The former reported 20971520000 bytes held by other runs instead of the fixture's
+expected zero. Earlier rows explicitly named unreadable processes 3630473
+(started 306755086) and 3630536 (started 306755110). Those processes were already
+gone when inspected afterward, so their owners were not recovered. The fixture's
+kernel-holder diagnostics and its documented shared-process-table limitation are
+the evidence; this round does not claim an independent attribution of those PIDs.
+Other failed rows were `fix2/end-follows-their-exit`, `fix3/rule-3-reads-the-kernel`,
+`fix3/the-house-group` and `ac2/command-status`. No safe source repair was established;
+no unread-process check or held-space assertion was weakened. A process-isolated
+or supported process-reader run remains for the lead.
+
+VELDO-0127 live/claude and live/codex, VELDO-0230 qualify/reproduces and the seven
+VELDO-0210 scratch rows were left untouched and not rerun. This evidence makes
+no claim about the next aggregate leg or live recapture.
+
+### Integrity
+
+`gate_unconfined.json` is byte-unchanged against `e2e1e4bb5`. Template sync passes
+361 pairs; the space-boundary check passes; all 13 changed Python files parse.
+The final wall-clock check passes with 2860 sites, 2704 baseline entries and
+2824 allowed sites. No new success condition depends on elapsed time. No command
+was refused by a Git hook or shell/Git tooling, and no such refusal was bypassed.
+
+Complete logs below this section's evidence directory have only local home
+prefixes and runtime user IDs replaced with placeholders. Raw logs remain in the lead repository's
+`research/claude-runs/cand-fix-1122`; [digests](fix-after-clean-leg/digests.json)
+bind both raw and normalized bytes. [Personal setup](fix-after-clean-leg/personal.log): **0 findings** after adding
+the evidence; `git diff --check` passes.
