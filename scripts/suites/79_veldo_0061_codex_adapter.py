@@ -724,7 +724,8 @@ sys.exit(payload.get('code', 0))
                   and env.get('VELDO_CLONE') == str(work))
             check('lifecycle/normal-run', 'it was the pinned vendor binary with the qualified flags, the update check '
                   'off, as configured [%s]' % engine.get('argv'),
-                  engine.get('argv') == [str(GOOD)] + FLAGS + BASELINE_ARGV + [str(markers)]
+                  engine.get('argv') == [str(GOOD)] + FLAGS + BASELINE_ARGV
+                  + ['-c', 'sandbox_mode="danger-full-access"', str(markers)]
                   and engine.get('argv', [None])[1:5] == ['exec', '--json', '-c', 'check_for_update_on_startup=false'])
             check('lifecycle/normal-run', 'the engine inherits neither name of the exec-time re-hash',
                   not {'VELDO_ENGINE_PATH', 'VELDO_ENGINE_SHA256'} & set(env))
