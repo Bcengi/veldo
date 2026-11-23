@@ -5,7 +5,7 @@ runner loads AND the receiver process executes, so a registered mutation of eith
 module reaches both. Real SQLite store, OpenSSH journal signatures, a real Git source repository,
 VELDO-0052's eligibility Gate, VELDO-0036 reservations, the VELDO-0031 claim transition, and real
 receiver and worker processes whose OS identity is read back from /proc. The worker is a fixture
-engine (it reads the store to report what it saw at its start, prints claims and exits); it
+engine (it reports its birth acceptance digest, proves the store read is denied, prints claims and exits); it
 qualifies no live engine.
 """
 
@@ -53,7 +53,7 @@ def _v39_suite():
         return module
 
     fast = fast_temp()
-    with tempfile.TemporaryDirectory(prefix='v39-', dir=fast) as directory:
+    with tempfile.TemporaryDirectory(prefix='v39-', dir='/var/lib/veldo') as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
@@ -169,7 +169,7 @@ def _v39_suite():
                           capture_output=True, text=True).stdout.strip() for k in ('commit', 'tree')}
 
         # The fixture engine. It records its birth environment (its dispatch and the acceptance it
-        # was launched under) and what the store holds for its dispatch at its start, then reads its
+        # was launched under) and proves its store read is denied; the parent joins the birth digest to the journal. It then reads its
         # packet, waits for a release file when told to, prints its payload's claims plus a token of
         # its own and exits with the payload's code. It records what it printed, byte for byte.
         markers = base / 'markers'
@@ -198,13 +198,25 @@ if sys.argv[3:] == ['forge']:
         'platform': 'linux', 'host': 'forged', 'boot_id': 'forged', 'pid': 1, 'start': '1'}}) + '\\n').encode()
     sys.stdout.buffer.write(printed)
     sys.stdout.flush()
-try:
-    db = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=10)
-    row = db.execute('SELECT data FROM entities WHERE id=?', ('dispatch:' + dispatch,)).fetchone()
-    seen = json.loads(row[0]) if row else None
-    db.close()
-except Exception as error:
-    seen = {'error': repr(error)}
+if os.environ.get('VELDO_RUN_QUERY'):
+    # The real default guard must deny the worker's store read. The parent joins the
+    # birth acceptance digest to the immutable journal entry, outside the worker.
+    try:
+        fd = os.open(store, os.O_RDONLY)
+    except PermissionError:
+        seen = {'store_denied': True}
+    else:
+        os.close(fd)
+        seen = {'store_denied': False}
+else:
+    # The explicitly reported remote adapter is outside this host's guard.
+    try:
+        db = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=10)
+        row = db.execute('SELECT data FROM entities WHERE id=?', ('dispatch:' + dispatch,)).fetchone()
+        seen = json.loads(row[0]) if row else None
+        db.close()
+    except Exception as error:
+        seen = {'error': repr(error)}
 stat = Path('/proc/self/stat').read_text()
 own = {'pid': os.getpid(), 'start': stat[stat.rindex(')') + 2:].split()[19],
        'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip(), 'dispatch': dispatch, 'seen': seen,
@@ -261,7 +273,7 @@ sys.exit(child.wait())
         # slice of this run's own, with caps far above what these fixture engines use.
         worker_slice = 'v39s%s.slice' % os.urandom(4).hex()
         config.write_text(json.dumps({
-            'store': str(db), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
+            'store': str(db), 'runs': str(base / 'runs'), 'journal_key': str(private / 'journal'), 'principal': 'launch-receiver',
             'workspace': str(base), 'host_trust': str(host_trust),
             'profile': {'kind': 'linux-systemd', 'slice': worker_slice, 'lock': str(base / 'containment.lock'),
                         'concurrency': 64, 'runtime_seconds': 600, 'memory_bytes': 1 << 30, 'cpu_percent': 400,
@@ -500,7 +512,13 @@ sys.exit(child.wait())
                 contract = record.get('contract') or {}
                 slot = entity(RES.entity('worker', [DOMAIN, first.dispatch_id])) or {}
                 claim = entity(CLM.claim_id(REPOSITORY, u1)) or {}
-                seen_record = seen.get('seen') or {}
+                # The worker's birth digest can exist only after acceptance committed.
+                # Read that exact immutable transition as the authority-side observer;
+                # the worker proves separately that it cannot open the protected store.
+                birth = writer.execute('SELECT transition FROM journal WHERE record_digest=?',
+                                       (seen.get('acceptance'),)).fetchone()
+                seen_record = (json.loads(birth[0]) if birth else {}).get(
+                    D.record_id(first.dispatch_id), {}).get('data', {})
                 packet_path = markers / ('%s.packet' % seen.get('pid'))
                 # The packet is the file of the worker the marker names; with no marker there is no worker whose
                 # packet could come, and nothing to wait for.
@@ -510,6 +528,7 @@ sys.exit(child.wait())
                 given = contract.get('input') or {}
                 decision = given.get('decision') or {}
                 bindings = {
+                    'store_guard': (seen.get('seen') or {}).get('store_denied') is True,
                     'source': contract.get('source') == dict(head, repository_uuid=REPOSITORY),
                     'input': (given.get('payload') == {'task': 'build the unit', 'code': 0, 'say': {'status': 'working'},
                                                        'release': str(base / 'release-u1-a')}

@@ -104,7 +104,7 @@ def _v47_suite():
                 if label not in emitted:
                     check(label, False)
 
-    with tempfile.TemporaryDirectory(prefix='v47-', dir=fast) as directory:
+    with tempfile.TemporaryDirectory(prefix='v47-', dir='/var/lib/veldo') as directory:
         base = Path(directory)
         mods = base / 'src' / '.veldo'
         (mods / 'services').mkdir(parents=True)

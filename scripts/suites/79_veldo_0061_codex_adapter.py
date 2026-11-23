@@ -108,7 +108,7 @@ def _v61_suite():
         return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True, timeout=20,
                               env=tools, stdin=subprocess.DEVNULL)
 
-    base = Path(tempfile.mkdtemp(prefix='v61-', dir=runtime if os.path.isdir(runtime) else None))
+    base = Path(tempfile.mkdtemp(prefix='v61-', dir='/var/lib/veldo') else None))
     connections, launches, observed, stopped = [], [], {}, {}
     globals()['_V61_OBSERVED'] = observed
     compiled = contextlib.ExitStack()
@@ -390,7 +390,7 @@ sys.exit(payload.get('code', 0))
         receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='fixture-host',
                                                      enrollment_signers=str(receiver_enrollment_signers))))
         receiver_host_trust.chmod(0o600)
-        config.write_text(json.dumps({'host_trust': str(receiver_host_trust), 'store': str(db), 'journal_key': str(private / 'journal'),
+        config.write_text(json.dumps({'host_trust': str(receiver_host_trust), 'store': str(db), 'runs': str(base / 'runs'), 'journal_key': str(private / 'journal'),
                                       'principal': 'launch-receiver', 'workspace': str(base), 'domain': DOMAIN,
                                       'repository': REPOSITORY, 'authority_generation': 1, 'host': HOST,
                                       'receipts': str(base / 'receipts'), 'artifacts': str(base / 'artifacts'),

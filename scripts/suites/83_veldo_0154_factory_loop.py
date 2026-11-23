@@ -113,7 +113,7 @@ def _v154_suite():
     # report, which is one launch and one pass.
     LEAD = 30.0
     fast = fast_temp()
-    base = Path(tempfile.mkdtemp(prefix='v154-', dir=fast))
+    base = Path(tempfile.mkdtemp(prefix='v154-', dir='/var/lib/veldo'))
     run_id = os.urandom(4).hex()
     instances = []
     connections = []

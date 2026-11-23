@@ -72,7 +72,7 @@ def _v41_suite():
         out = systemctl('show', *[a for n in names for a in ('-p', n)], unit).stdout
         return dict(line.split('=', 1) for line in out.splitlines() if '=' in line)
 
-    with tempfile.TemporaryDirectory(prefix='v41-', dir=runtime if os.path.isdir(runtime) else None) as directory:
+    with tempfile.TemporaryDirectory(prefix='v41-', dir='/var/lib/veldo') else None) as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
@@ -264,7 +264,7 @@ sys.exit(payload.get('code', 0))
             receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='fixture-host',
                                                          enrollment_signers=str(receiver_enrollment_signers))))
             receiver_host_trust.chmod(0o600)
-            path.write_text(json.dumps({'host_trust': str(receiver_host_trust), 'store': str(db), 'journal_key': str(private / 'journal'),
+            path.write_text(json.dumps({'host_trust': str(receiver_host_trust), 'store': str(db), 'runs': str(base / 'runs'), 'journal_key': str(private / 'journal'),
                                         'principal': 'launch-receiver', 'workspace': str(base), 'domain': DOMAIN,
                                         'repository': REPOSITORY, 'authority_generation': 1,
                                         'adapters': adapter_table or adapters, 'profile': prof}))

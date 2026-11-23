@@ -106,7 +106,7 @@ def _v171_suite():
             fast = '/dev/shm'
         except OSError:
             pass
-    base = Path(tempfile.mkdtemp(prefix='b171-', dir=fast))
+    base = Path(tempfile.mkdtemp(prefix='b171-', dir='/var/lib/veldo'))
     support_path = Path(globals().get('__setup_support__', ROOT / 'scripts/suites/support/setup_runtime.py'))
     runtime = load('v171_runtime', support_path)
     # VELDO-0358: this suite blocks only through the wait primitive, the process's one instance; a child or a
