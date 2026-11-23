@@ -62,7 +62,7 @@ def _v187_suite():
     F = load('v187_fakes', ROOT / 'scripts/suites/support/v231_fake_engines.py')
     FX = load('v187_fixtures', ROOT / 'proof/VELDO-0187/fixtures.py')
     F183 = load('v187_f183', ROOT / 'proof/VELDO-0183/fixtures.py')
-    base = Path(tempfile.mkdtemp(prefix='v187-', dir=fast_temp()))
+    base = Path(tempfile.mkdtemp(prefix='v187-', dir='/var/lib/veldo'))
     saved_path = os.environ.get('PATH')
     fixtures, factories, workers, servers = [], [], [], []
 

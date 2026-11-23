@@ -1077,9 +1077,9 @@ sys.exit(chosen['code'])
             requested = owner_dispatches.request_stop(sid, owner_dispatches.version(sid), 'owner', now=wall_now(),
                                                       request='stop-' + sid, channel='api')
             woke = note()
-            # VELDO-0358: the stop's end is awaited on the store; it is impossible once the journal pass is logged
-            # with the dispatch still stoppable (the pass is logged once it is done, after the receiver it asked
-            # has recorded the end), so a stop that is never asked reds this row alone, by that evidence.
+            # Launch.stop writes the request to the receiver's stdin. Its end may arrive after the
+            # journal pass, so await the terminal store state and separately assert the request was asked.
+            # This does not claim which pass delivered the request.
             seen = {'settled': running}
 
             def stopped():

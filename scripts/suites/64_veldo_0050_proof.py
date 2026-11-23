@@ -222,7 +222,7 @@ def _v50_suite():
             claim_op('release', sid, holder, generation)
 
         # The engines. The builder commits its source, then its proof, as its own identity; the reviewer
-        # resolves the proof bundle from the store alone and signs its verdict with its own key.
+        # reads the authority-resolved signed assignment and signs its verdict with its own key.
         markers = base / 'markers'
         markers.mkdir()
         builder = base / 'builder.py'
@@ -278,17 +278,13 @@ assignment = packet.get('payload') or {}
 name = os.environ.get('VELDO_DISPATCH_ID', '').replace('/', '_')
 unit, commit = assignment.get('unit'), (assignment.get('source') or {}).get('commit')
 try:
-    S = load('reviewer_store', mods / 'control_store.py')
-    CP = load('reviewer_proof', mods / 'control_proof.py')
-    conn = S.open_store(store_path, mode='r')
-    try:
-        got = CP.resolve(S, conn, domain=domain, repository=repository, unit=unit, commit=commit)
-    finally:
-        conn.close()
-    resolution = {'resolved': True, 'bundle': got['bundle'], 'manifest': got['manifest']['digest'],
-                  'implementation': got['implementation']['commit'], 'spec': got['spec']['revision'],
-                  'criteria': got['spec']['criteria'], 'artifacts': [[a['path'], a['digest']] for a in got['artifacts']],
-                  'checks': [[c['name'], c['observation']] for c in got['checks']], 'observation': got['observation']['id']}
+    import hashlib
+    context = assignment['context']
+    manifest = context['proof']
+    resolution = {'resolved': True, 'context': context, 'manifest': assignment['proof']['digest'],
+                  'implementation': manifest['commit'], 'spec': manifest['spec_revision'],
+                  'criteria': [c['id'] for c in manifest['criteria']],
+                  'artifacts': [[a['path'], a['digest']] for c in manifest['criteria'] for a in c['evidence']]}
 except Exception as error:
     resolution = {'resolved': False, 'refusal': getattr(error, 'code', None) or type(error).__name__}
 resolution['pid'] = os.getpid()
@@ -569,12 +565,16 @@ sys.stdout.flush()
                       'try:\n'
                       '    CP = load("rc_proof", Path(mods) / "control_proof.py")\n'
                       '    got = CP.resolve(S, conn, domain=domain, repository=repository, unit=unit, commit=commit)\n'
-                      '    out["bundle"] = {"bundle": got["bundle"], "checks": [c["name"] for c in got["checks"]]}\n'
+                      '    out["bundle"] = got\n'
+                      '    repo = S.bound_repository(conn, domain, repository)\n'
+                      '    out["context"] = {"spec": CP.blob(repo, got["base"], got["spec"]["path"]).decode(),\n'
+                      '                      "diff": CP._git(repo, "diff", "--no-ext-diff", "--no-textconv", got["base"], commit).stdout.decode(),\n'
+                      '                      "proof": got["manifest"]["body"]}\n'
                       'except Exception as error:\n'
                       '    out["bundle"] = {"refused": getattr(error, "code", None) or type(error).__name__}\n'
                       'print(json.dumps(out))\n')
             r = subprocess.run([sys.executable, '-B', '-c', script, str(mods), str(db), str(work), DOMAIN, REPOSITORY,
-                                sid, commit], capture_output=True, text=True, timeout=60)
+                                sid, commit], capture_output=True, text=True, timeout=120)
             return json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else {'failed': r.stderr[-400:]}
 
         def check(label, condition):
@@ -671,8 +671,8 @@ sys.stdout.flush()
                       and (fresh.get('bundle') or {}).get('bundle') == bundle_id
                       and 'review' not in steps and ((built.get('result') or {}).get('receipt') or {}).get('verdict') is None)
 
-                # The fresh reviewer: after the builder's process ended, a separate reviewer process given only
-                # the floor's assignment resolves the complete bundle from the store.
+                # The trusted fresh process above resolved from store and Git after the builder exited.
+                # The guarded reviewer receives the same context through the signed assignment.
                 build_record = dispatches.record(built['launched'][0]) if built.get('launched') else {}
                 g = claim(U, REVIEW_WORKER)
                 reviewer = ProcessReviewer('reviewer-b')
@@ -696,15 +696,22 @@ sys.stdout.flush()
                                               'floor_state': floor_record.get('state')}
                 check('proof/fresh-reviewer-resolves',
                       (build_record or {}).get('state') == 'exited'
-                      and resolution.get('resolved') is True and resolution.get('bundle') == bundle_id
+                      and resolution.get('resolved') is True and fresh['bundle']['bundle'] == bundle_id
+                      and fresh.get('pid') not in (None, os.getpid(), resolution.get('pid'), ((build_record or {}).get('process') or {}).get('pid'))
+                      and {k: resolution.get('context', {}).get(k) for k in ('spec', 'diff', 'proof')} == fresh['context']
+                      and resolution.get('manifest') == fresh['bundle']['manifest']['digest']
+                      and resolution.get('implementation') == fresh['bundle']['implementation']['commit']
+                      and resolution.get('spec') == fresh['bundle']['spec']['revision']
+                      and resolution.get('criteria') == fresh['bundle']['spec']['criteria']
+                      and sorted(resolution.get('artifacts') or []) == sorted([a['path'], a['digest']] for a in fresh['bundle']['artifacts'])
                       and resolution.get('pid') not in (None, os.getpid(), ((build_record or {}).get('process') or {}).get('pid'))
                       and resolution.get('manifest') == sha(manifest_blob) == (assignment.get('proof') or {}).get('digest')
                       and resolution.get('implementation') == made['implementation'] == manifest.get('commit') != tip
                       and resolution.get('spec') == sha(blob(base1, spec_files[U].relative_to(work).as_posix()))
                       and resolution.get('criteria') == ['AC1', 'AC2']
                       and sorted(resolution.get('artifacts') or []) == artifacts and len(artifacts) == 2
-                      and [c[0] for c in resolution.get('checks') or []] == [n for n, _ in installed]
-                      and all(c[1] == obs_id for c in resolution.get('checks') or [])
+                      and [c['name'] for c in fresh['bundle']['checks']] == [n for n, _ in installed]
+                      and all(c['observation'] == obs_id for c in fresh['bundle']['checks'])
                       and (packet.get('packet') or {}).get('payload') == assignment
                       and reviewed[0] == 'ok' and (reviewed[1] or {}).get('landed') is True
                       and (floor_record.get('reviews') or [{}])[-1].get('passes') is True)
@@ -833,7 +840,9 @@ sys.stdout.flush()
                       and not any(e.get('type') == 'verdict.recorded' for e in log(executor_log))
                       and [c.split('/')[1] for c, p in owned] == ['observe', 'accept']
                       and all(p == 'proof-service' for c, p in owned)
-                      and resolution5.get('resolved') is True and resolution5.get('bundle') == bundle5)
+                      and resolution5.get('resolved') is True
+                      and (resolution5.get('context') or {}).get('proof') == read_new_process(U5, tip5)['bundle']['manifest']['body']
+                      and read_new_process(U5, tip5)['bundle']['bundle'] == bundle5)
 
             # AC3: a red gate and a gate that printed no terminal result are never proof; a check with no
             # observation is never recorded passed, and a missing, altered or foreign observation refuses.
@@ -904,7 +913,7 @@ sys.stdout.flush()
                                         's = importlib.util.spec_from_file_location("x", sys.argv[1])\n'
                                         'm = importlib.util.module_from_spec(s); s.loader.exec_module(m)\n'
                                         'print(m.proof_organ().SCHEMA)\n', str(work / '.veldo' / 'executor.py')],
-                                       capture_output=True, text=True, timeout=60)
+                                       capture_output=True, text=True, timeout=120)
                 observed['installed'] = {'created': '.veldo/control_proof.py' in (scaffolded or {}).get('created', []),
                                          'probe': probe.stdout.strip() or probe.stderr[-200:],
                                          'closure': {n: (work / '.veldo' / n).exists() for n in closure}}

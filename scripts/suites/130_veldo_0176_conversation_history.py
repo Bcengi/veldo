@@ -687,6 +687,7 @@ else:
             try:
                 for launch in list(factory_value.conversation.runner.launches.values()):
                     launch.stop('requested')
+                    launch.wait(timeout=F.HANG_SECONDS)
             except Exception:  # noqa: BLE001
                 pass
             release_lock(lock_value)

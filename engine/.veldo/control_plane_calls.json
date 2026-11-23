@@ -38,7 +38,8 @@
     },
     "control_clone.py": {
       "_pin": "fetches the accepted commit from the local workflow repository into the local cache",
-      "enter": "builds the clone's Git environment; no call is made"
+      "enter": "builds the clone's Git environment; no call is made",
+      "conversation_clone": "fetches the accepted commit from the local project repository into the conversation workspace"
     },
     "control_space_install.py": {
       "_owner_git": "reads the owner's Git configuration; no transport"
@@ -51,6 +52,9 @@
     },
     "scripts/agent_sandbox.py": {
       "integrate": "fetches from the agent's private repository on this host"
+    },
+    "control_memory_feed.py": {
+      "send": "requires a literal loopback host and rejects redirects and paid API fields before contacting the local memory worker"
     }
   },
   "project_calls": {
@@ -69,6 +73,9 @@
     ],
     "control_agent_config_handoff.py": [
       "exchange"
+    ],
+    "project_runner_macos_wrapper.py": [
+      "main"
     ]
   }
 }

@@ -75,7 +75,7 @@ _v358_PASSED = _v358_load("v358_run_scope", ROOT / "scripts" / "run_scope.py").P
 
 
 def _v358_suite_counts(text):
-    """{suite: rows passed} from a partial run's per-suite lines (its own rows, not its residue row)."""
+    """{suite: rows passed} from a partial run's per-suite lines (its own rows and its residue row)."""
     out = {}
     for line in text.splitlines():
         parts = line.split()
@@ -555,7 +555,7 @@ expect("watchdog/progress-not-total: %r" % (_v358_f5,),
        and _v358_f5["leg"]["rc"] == _v358_PASSED and _v358_f5["leg"]["hung"] == []
        and _v358_f5["leg"]["fails"] == []
        and _v358_f5["leg"]["clock"] == ["FX LEG CLOCK 9.0"]
-       and _v358_f5["leg"]["rows"] == {"fx_leg_one": 3, "fx_leg_two": 3, "fx_leg_three": 3})
+       and _v358_f5["leg"]["rows"] == {"fx_leg_one": 4, "fx_leg_two": 4, "fx_leg_three": 4})
 
 
 # ------------------------------------------------------------------------ the opened-files claims

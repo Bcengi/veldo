@@ -143,6 +143,7 @@ class Session:
         parsed_force = truthy(controls.get('VELDO_GATE_FORCE_FRESH', '0'))
         self.forced = force_fresh or parsed_force
         self.keys, self.reasons, self.hits = {}, {}, {}
+        self.authenticated_digests = {}
         self.runtime_checks = {}
         self.runtime_digests = {}
         self.store = None
@@ -196,8 +197,6 @@ class Session:
         if record is not None:
             # Validation enriches the in-memory verdict. Preserve the authenticated
             # bytes' digest for audit/landing bindings, including older cache records.
-            if not hasattr(self, 'authenticated_digests'):
-                self.authenticated_digests = {}
             self.authenticated_digests[identity] = R.E.digest(record)
             try:
                 validate(record, case)

@@ -150,6 +150,8 @@ def _v215_case_deadlines():
                     self.keys = {case['identity']: None}
                     self.reasons = {case['identity']: 'fixture'}
                     self.hits = {case['identity']: valid_record} if reuse_hit else {}
+                    self.authenticated_digests = {identity: real_load(ROOT / 'scripts/mutation_reuse.py').R.E.digest(record)
+                                                  for identity, record in self.hits.items()}
                     self.forced, self.store, self.base_digest = False, None, 'fixture'
                 def lookup(self, item, validate):
                     return valid_record if reuse_hit else None

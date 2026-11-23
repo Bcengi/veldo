@@ -918,7 +918,7 @@ print(json.dumps({'results': results}))
             with section('query/journey'):
                 environment = dict(os.environ, VELDO_0359_GUARDED_JOURNEY='1')
                 tested = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/selftest.py'), '--suite', '157_veldo_0359_run_query'], cwd=ROOT, env=environment, capture_output=True, text=True, timeout=HANG)
-                check('query/journey', 'B1 differential client journey under actual ruleset: ' + tested.stderr[-1000:], tested.returncode == 2 and 'selftest (PARTIAL, 1 of ' in tested.stdout and '0 failed in ' in tested.stdout)
+                check('query/journey', 'B1 differential client journey under actual ruleset: ' + tested.stderr[-1000:], tested.returncode == 2 and 'selftest (PARTIAL, 1 of ' in tested.stdout and '0 failed in ' in tested.stdout and any(int(line.split(': ', 1)[1].split()[0]) >= 33 for line in tested.stdout.splitlines() if line.startswith('selftest (PARTIAL, 1 of ')))
         for name in PRODUCTION:
             check('paths/canon', name, (ROOT / '.veldo' / name).read_bytes() == (ROOT / 'engine/.veldo' / name).read_bytes())
     for row, checks in rows.items():
