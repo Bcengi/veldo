@@ -82,7 +82,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
         except OSError:
             pass
     connections, servers = [], []
-    with tempfile.TemporaryDirectory(prefix='v89-', dir='/var/lib/veldo') as directory, contextlib.ExitStack() as resources:
+    with tempfile.TemporaryDirectory(prefix='v89-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as directory, contextlib.ExitStack() as resources:
         resources.enter_context(__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT))
         base = Path(directory)
         # Every graph exchange in this process while the fixture lasts stages in this run's directory, never in the

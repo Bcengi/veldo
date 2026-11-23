@@ -284,8 +284,8 @@ def _veldo_0221():
         writer = (
             'import json\n'
             'roots = {v: os.environ[v] for v in ("HOME", "TMPDIR", "XDG_CONFIG_HOME", "XDG_DATA_HOME", '
-            '"XDG_CACHE_HOME", "XDG_STATE_HOME", "XDG_RUNTIME_DIR") if v in os.environ}\n'
-            'for variable in ("HOME", "TMPDIR", "XDG_RUNTIME_DIR"):\n'
+            '"XDG_CACHE_HOME", "XDG_STATE_HOME", "XDG_RUNTIME_DIR", "VELDO_FIXTURE_ROOT") if v in os.environ}\n'
+            'for variable in ("HOME", "TMPDIR", "XDG_RUNTIME_DIR", "VELDO_FIXTURE_ROOT"):\n'
             '    target = Path(roots[variable]) / "same-relative-path"\n'
             '    expect("the path is new in my own root: " + variable, not target.exists())\n'
             '    target.write_text(suite_file().stem)\n'
@@ -296,8 +296,10 @@ def _veldo_0221():
             '    if p.name != "same-relative-path"))), flush=True)\n' + engine_names)
         intruder = (
             'mine = Path(os.environ["TMPDIR"])\n'
+            'fixtures = Path(os.environ["VELDO_FIXTURE_ROOT"])\n'
             'refused = []\n'
-            'for target in (mine.parent / "p" / "intruder", mine.parent / "00h" / "intruder"):\n'
+            'for target in (mine.parent / "p" / "intruder", mine.parent / "00h" / "intruder", '
+            'fixtures.parent / "intruder", fixtures.parent / "00" / "intruder"):\n'
             '    try:\n        target.write_text("x")\n        refused.append("wrote")\n'
             '    except PermissionError:\n        refused.append("refused")\n'
             '    except FileNotFoundError:\n        refused.append("gone")\n'
@@ -327,15 +329,22 @@ def _veldo_0221():
                 continue
             first, second = roots["01_first"], roots["02_second"]
             every_root = list(first.values()) + list(second.values())
-            if len(set(every_root)) != 14 or len(first) != 7:
+            if len(set(every_root)) != 16 or len(first) != 8:
                 problems.append("%s: the two shards share a root: %r %r" % (leg, first, second))
             # Each shard's roots are its own siblings of one leg directory, named by its own tag.
             tags = {name: Path(r["TMPDIR"]).name for name, r in roots.items()}
-            legs_base = {str(Path(value).parent) for r in roots.values() for value in r.values()}
+            legs_base = {str(Path(value).parent) for r in roots.values() for key, value in r.items()
+                         if key != "VELDO_FIXTURE_ROOT"}
             if tags["01_first"] == tags["02_second"] or len(legs_base) != 1 or not all(
                     Path(value).name.startswith(tags[name]) and len(Path(value).name) <= len(tags[name]) + 1
                     for name, r in roots.items() for value in r.values()):
                 problems.append("%s: a root is not its own shard's: %r" % (leg, roots))
+            fixture_roots = [Path(r["VELDO_FIXTURE_ROOT"]) for r in roots.values()]
+            if (len({p.parent for p in fixture_roots}) != 1
+                    or any(p.exists() for p in fixture_roots)
+                    or any(Path(r[v]) in Path(r["VELDO_FIXTURE_ROOT"]).parents
+                           for r in roots.values() for v in ("HOME", "TMPDIR", "XDG_RUNTIME_DIR"))):
+                problems.append("%s: fixture roots overlap launch places or survive leg cleanup" % leg)
             # The runtime directory holds only links to the user manager's own sockets and the
             # shard's instance name, which every tool the suite starts reads there.
             if not all({"veldo-instance.json"} <= set(found) <= {"bus", "systemd", "systemd/private", "systemd/user",
@@ -360,7 +369,9 @@ def _veldo_0221():
                                       for key in ("authority", "api", "slice", "scope")):
                 problems.append("%s: the two shards would name a unit alike: %r" % (leg, named))
             crossing = said.get("V221-INTRUDER", [""])[0].split(",")
-            if leg == "confined" and not (crossing[0] == "refused" and crossing[1] in ("refused", "gone")):
+            if leg == "confined" and not (len(crossing) == 4 and crossing[0] == "refused"
+                                          and crossing[1] in ("refused", "gone")
+                                          and crossing[2] == "refused" and crossing[3] in ("refused", "gone")):
                 problems.append("confined: a write into another shard's root or beside the roots was %r" % crossing)
             if leg == "confined" and codes(result, "03_intruder"):
                 problems.append("confined: the refused intruder was charged %r" % codes(result, "03_intruder"))
@@ -390,11 +401,11 @@ def _veldo_0221():
                                drop=("XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_STATE_HOME"))
         named_roots = [json.loads(line.split(" ", 2)[2]) for line in lines if line.startswith("V221-ROOTS ")]
         if not (result["failed"] == 0 and len(named_roots) == 2
-                and all(sorted(r) == ["HOME", "TMPDIR", "XDG_DATA_HOME", "XDG_RUNTIME_DIR"] for r in named_roots)
+                and all(sorted(r) == ["HOME", "TMPDIR", "VELDO_FIXTURE_ROOT", "XDG_DATA_HOME", "XDG_RUNTIME_DIR"] for r in named_roots)
                 and named_roots[0]["XDG_DATA_HOME"] != named_roots[1]["XDG_DATA_HOME"]
                 and str(top / "leg-xdg-d") not in (named_roots[0]["XDG_DATA_HOME"], named_roots[1]["XDG_DATA_HOME"])
                 and RS.SHARD_ALWAYS == ("TMPDIR", "HOME", "XDG_RUNTIME_DIR")
-                and sorted(v for v, _leaf in RS.SHARD_ROOTS) == sorted(RS.SHARD_ALWAYS + xdg)):
+                and sorted(v for v, _leaf in RS.SHARD_ROOTS) == sorted(RS.SHARD_ALWAYS + xdg + ("VELDO_FIXTURE_ROOT",))):
             problems.append("a shard names an XDG directory its leg does not, or inherits the leg's: %r" % named_roots)
         expect("VELDO-0221 AC2 suite-shards/isolated-by-construction: " + "; ".join(problems), not problems)
 
@@ -478,6 +489,32 @@ def _veldo_0221():
                # No directory to stand them in: beside the other roots, as before.
                and RS.leg_runtime("") is None and RS.leg_runtime(str(top / "no-such-directory")) is None
                and RS.leg_runtime(str(real_runtime)) == real_runtime)
+
+        # Another live leg must remain attributable even when it has no running
+        # shard. A directory name alone is not evidence: the owner holds it open.
+        owner_code = (
+            'import importlib.util,sys\nfrom pathlib import Path\n'
+            's=importlib.util.spec_from_file_location("scope",sys.argv[1])\n'
+            'm=importlib.util.module_from_spec(s);s.loader.exec_module(m)\n'
+            'with m.RuntimeStand(Path(sys.argv[2]), "other") as p:\n'
+            ' print(p,flush=True)\n sys.stdin.read(1)\n')
+        owner = subprocess.Popen([sys.executable, '-I', '-c', owner_code,
+                                  str(ROOT / 'scripts/run_scope.py'), str(real_runtime)],
+                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
+                                 env=plain)
+        try:
+            ready, _, _ = __import__('select').select([owner.stdout], [], [], WAITS.WAIT_HANG_SECONDS)
+            assert ready, 'runtime owner did not publish its directory'
+            path = Path(owner.stdout.readline().strip())
+            attribution = RS.attribute('runtime directory', path.name, path, top / 'observer', [])
+            owner.communicate('x', timeout=WAITS.WAIT_HANG_SECONDS)
+            expect('VELDO-0221 AC3 suite-shards/concurrent-runtime-owner-is-attributed',
+                   attribution[1] == 'foreign' and str(owner.pid) in attribution[2]
+                   and owner.returncode == 0 and not path.exists())
+        finally:
+            if owner.poll() is None:
+                owner.kill()
+                owner.wait(timeout=WAITS.WAIT_HANG_SECONDS)
 
         # With no instance configured, which is every production installation, every name is today's.
         probe = (

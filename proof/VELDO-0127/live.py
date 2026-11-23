@@ -327,7 +327,7 @@ def main():
         # puts it, because the launch's store guard (VELDO-0359) refuses a store beneath the runtime
         # directory an engine may write.
         with borrowed_profiles(base, args, selected) as borrowed, \
-                tempfile.TemporaryDirectory(prefix='veldo0127-live-', dir='/var/lib/veldo') as built:
+                tempfile.TemporaryDirectory(prefix='veldo0127-live-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as built:
             f = fixture.factory(ROOT, Path(built), {n:ROOT / '.veldo' / n for n in evidence.MODULES}, live=args)
             borrowed.guard(['systemctl', P + 'user', 'stop', f.slice_name], f.inherited)
             try:

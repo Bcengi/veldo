@@ -74,7 +74,7 @@ def _v76_suite():
 
     fast = fast_temp()
     connections, launches = [], []
-    with tempfile.TemporaryDirectory(prefix='v76-', dir='/var/lib/veldo') as directory:
+    with tempfile.TemporaryDirectory(prefix='v76-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)

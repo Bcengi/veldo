@@ -53,7 +53,7 @@ def _v39_suite():
         return module
 
     fast = fast_temp()
-    with tempfile.TemporaryDirectory(prefix='v39-', dir='/var/lib/veldo') as directory:
+    with tempfile.TemporaryDirectory(prefix='v39-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)

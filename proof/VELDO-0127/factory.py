@@ -239,7 +239,9 @@ for raw in sys.stdin:
     config = base / 'receiver.json'
     wrapper = []
     slice_name = 'veldo0127-' + str(os.getpid()) + '.slice'
-    runtime = '/run/user/' + str(os.getuid())
+    # Keep the shard's runtime directory and instance identity in receiver children.
+    # Its manager sockets already link to the real user manager.
+    runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/' + str(os.getuid())
     profile = {'kind':'linux-systemd', 'slice':slice_name, 'lock':str(base / 'slice.lock'), 'concurrency':2,
                'runtime_seconds':100, 'memory_bytes':1 << 30, 'cpu_percent':200, 'file_bytes':64 << 20,
                'tasks_max':128, 'stop_grace_seconds':0.4, 'kill_grace_seconds':0.4,

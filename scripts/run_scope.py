@@ -70,6 +70,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -778,8 +779,11 @@ SHARD_FAILURES = ("closure_unavailable", "no_verdict", "asserted_nothing", "dead
 # the gate's confined leg, whose temporary directory is `tmp` in the launcher's scratch, a shard's
 # temporary directory is a three-character sibling of it (short_temporary), exactly as long. The
 # launcher removes its scratch, and those directories with it, when the leg's command ends.
+# Store fixtures instead use the shard's tag below a separate per-leg VELDO_FIXTURE_ROOT,
+# outside these home, temporary and runtime directories (the store guard's placement rule).
 SHARD_ROOTS = (("TMPDIR", ""), ("HOME", "h"), ("XDG_CONFIG_HOME", "c"), ("XDG_DATA_HOME", "d"),
-               ("XDG_CACHE_HOME", "k"), ("XDG_STATE_HOME", "s"), ("XDG_RUNTIME_DIR", "r"))
+               ("XDG_CACHE_HOME", "k"), ("XDG_STATE_HOME", "s"), ("XDG_RUNTIME_DIR", "r"),
+               ("VELDO_FIXTURE_ROOT", "f"))
 SHARD_PROBES = "p"
 # WHICH ROOTS A SHARD IS GIVEN BY NAME. Its HOME, its TMPDIR and its runtime directory always. Each
 # of the four XDG base directories ONLY WHEN THE LEG'S OWN ENVIRONMENT SETS IT: one the leg leaves
@@ -1001,6 +1005,8 @@ def shard_roots(base, index, environ=None):
     if environ is not None:
         roots = {variable: path for variable, path in roots.items()
                  if variable in SHARD_ALWAYS or environ.get(variable)}
+        if environ.get("VELDO_FIXTURE_ROOT"):
+            roots["VELDO_FIXTURE_ROOT"] = Path(environ["VELDO_FIXTURE_ROOT"]) / shard_tag(index)
     return root, roots
 
 
@@ -1056,19 +1062,41 @@ class RuntimeStand:
 
     def __init__(self, real, token):
         self.real, self.token, self.path = real, token, None
+        self.descriptor = None
 
     def __enter__(self):
         if self.real is not None:
             try:
                 self.path = Path(tempfile.mkdtemp(prefix="veldo-leg-%s-" % self.token, dir=str(self.real)))
+                # Keep a kernel-visible ownership reference for the whole leg. Another
+                # concurrently running leg's isolation census can then attribute this
+                # directory through _holders, even between shard launches. The descriptor
+                # is not inherited by workers and disappears if this owner dies.
+                self.descriptor = os.open(self.path, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
             except OSError:
+                self.__exit__()
                 self.path = None
         return self.path
 
     def __exit__(self, *_exc):
         if self.path is not None:
-            shutil.rmtree(self.path, ignore_errors=True)
+            try:
+                shutil.rmtree(self.path, ignore_errors=True)
+            finally:
+                if self.descriptor is not None:
+                    os.close(self.descriptor)
+                    self.descriptor = None
         return False
+
+
+@contextmanager
+def fixture_stand(parent):
+    """Own exactly one freshly allocated fixture tree until the leg has ended."""
+    directory = tempfile.mkdtemp(prefix="s", dir=parent)
+    try:
+        yield directory
+    finally:
+        shutil.rmtree(directory)
 
 
 def link_manager(runtime, real):
@@ -1372,9 +1400,19 @@ def _holders(path):
         held = False
         try:
             links = [os.readlink("/proc/%s/cwd" % name)]
-            links += [os.readlink("/proc/%s/fd/%s" % (name, fd)) for fd in os.listdir("/proc/%s/fd" % name)]
         except OSError:
             links = []
+        try:
+            descriptors = os.listdir("/proc/%s/fd" % name)
+        except OSError:
+            descriptors = []
+        for descriptor in descriptors:
+            try:
+                links.append(os.readlink("/proc/%s/fd/%s" % (name, descriptor)))
+            except OSError:
+                # A transient descriptor closing must not discard the stable runtime
+                # directory reference (or cwd) already observed for this process.
+                continue
         for link in links:
             if link == target or link.startswith(target + "/"):
                 held = True
@@ -1631,8 +1669,14 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
     exactly once. Green is failed == 0, which needs every shard to pass and the isolation check to
     hold. The keyword arguments after `environ` exist for a fixture leg: the real gate passes none.
     """
-    # Every shard's roots stand in one temporary directory of this leg's own, which ends with it.
-    with tempfile.TemporaryDirectory(prefix="s", ignore_cleanup_errors=True) as directory:
+    # Ordinary shard roots stand in a temporary directory of this leg's own, which ends with it.
+    environ = dict(os.environ if environ is None else environ)
+    # Each leg owns a fresh store-fixture root outside temporary/runtime/home roots.
+    # The gate launcher grants only its own root; each shard's layer narrows that
+    # grant to its child here. Unconfined legs use the same layout and cleanup.
+    with tempfile.TemporaryDirectory(prefix="s", ignore_cleanup_errors=True) as directory, \
+            fixture_stand(environ.get("VELDO_FIXTURE_ROOT", "/var/lib/veldo")) as fixtures:
+        environ["VELDO_FIXTURE_ROOT"] = fixtures
         token = os.urandom(4).hex()
         # An unconfined leg's shards get their runtime directories inside the real one (leg_runtime),
         # in a directory of this leg's own that ends with it like the roots' directory above. A

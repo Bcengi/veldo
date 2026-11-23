@@ -67,7 +67,7 @@ def _v359_guard_suite():
 
     # A fresh directory outside home and all temporary roots is essential to placement.
     # Never discover, open, or remove an existing store; TemporaryDirectory creates exclusively.
-    with tempfile.TemporaryDirectory(prefix='v359-b2-', dir='/var/lib/veldo') as directory:
+    with tempfile.TemporaryDirectory(prefix='v359-b2-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as directory:
         base = Path(directory)
         mods = base / 'installed/.veldo'
         mods.mkdir(parents=True)
@@ -917,6 +917,10 @@ print(json.dumps({'results': results}))
         if needed('query/journey'):
             with section('query/journey'):
                 environment = dict(os.environ, VELDO_0359_GUARDED_JOURNEY='1')
+                # This explicitly selected child is evidence of this row. The outer
+                # leg's suite filter would skip B1 when B2 runs unconfined.
+                for name in ('VELDO_GATE_LEG', 'VELDO_GATE_UNCONFINED', 'VELDO_GATE_DECLARATION'):
+                    environment.pop(name, None)
                 tested = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/selftest.py'), '--suite', '157_veldo_0359_run_query'], cwd=ROOT, env=environment, capture_output=True, text=True, timeout=HANG)
                 check('query/journey', 'B1 differential client journey under actual ruleset: ' + tested.stderr[-1000:], tested.returncode == 2 and 'selftest (PARTIAL, 1 of ' in tested.stdout and '0 failed in ' in tested.stdout and any(int(line.split(': ', 1)[1].split()[0]) >= 33 for line in tested.stdout.splitlines() if line.startswith('selftest (PARTIAL, 1 of ')))
         for name in PRODUCTION:

@@ -110,7 +110,7 @@ def _v148_suite():
     # Not /dev/shm: this fixture's work tree is a candidate the gate runs through the VELDO-0208
     # launcher, and its confinement grants nothing beneath /dev, so a candidate there could read
     # none of its own files.
-    base = Path(tempfile.mkdtemp(prefix='v148-', dir='/var/lib/veldo'))
+    base = Path(tempfile.mkdtemp(prefix='v148-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')))
     run_id = os.urandom(4).hex()
     connections, service = [], None
     loop = None

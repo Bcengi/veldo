@@ -69,7 +69,7 @@ def _v177_suite():
     H = load('v177_authority', ROOT / 'scripts/suites/support/v73_authority.py')
     J = load('v177_journey', ROOT / 'scripts/suites/support/v174_journey.py')
     F = load('v177_fakes', ROOT / 'scripts/suites/support/v231_fake_engines.py')
-    base = Path(tempfile.mkdtemp(prefix='v177-', dir='/var/lib/veldo'))
+    base = Path(tempfile.mkdtemp(prefix='v177-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')))
     slice_name = 'v177%s.slice' % os.urandom(4).hex()
     saved_path, saved_key = os.environ.get('PATH'), os.environ.get('ANTHROPIC_API_KEY')
     lock = factory = server = None

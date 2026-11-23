@@ -611,7 +611,7 @@ class Broker:
     # VELDO-0221: the variables a gate leg's dispatcher gives each shard its private roots in
     # (scripts/run_scope.py SHARD_ROOTS), and the two arguments its shard interpreter is started with.
     SHARD_ROOT_VARIABLES = (b'TMPDIR', b'HOME', b'XDG_CONFIG_HOME', b'XDG_DATA_HOME', b'XDG_CACHE_HOME',
-                            b'XDG_STATE_HOME', b'XDG_RUNTIME_DIR')
+                            b'XDG_STATE_HOME', b'XDG_RUNTIME_DIR', b'VELDO_FIXTURE_ROOT')
     SHARD_ARGUMENTS = (b'--shard', b'--shard-root')
 
     def _shard_roots(self, tid):
@@ -2353,6 +2353,31 @@ def launcher_write_problem(grants):
     return None
 
 
+@contextmanager
+def gate_fixture_directory(profile, store, protected):
+    """One private fixture root, never the shared parent or an existing authority store.
+
+    Store-guard fixtures cannot live below temporary/home/runtime roots. Nested gates
+    allocate inside their caller's grant under the fixed fixture parent. The
+    environment can never grant an existing directory or choose another parent.
+    Only this fresh directory crosses the boundary.
+    """
+    if profile != 'gate':
+        yield None
+        return
+    parent = Path(os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')).resolve(strict=True)
+    if not beneath(parent, Path('/var/lib/veldo').resolve(strict=True)):
+        raise ValueError('fixture parent must be beneath /var/lib/veldo')
+    directory = Path(tempfile.mkdtemp(prefix='g', dir=parent))
+    try:
+        if any(beneath(directory, path) or beneath(path, directory)
+               for path in [store, *protected]):
+            raise ValueError('fixture directory overlaps protected authority')
+        yield directory
+    finally:
+        remove_tree(directory)
+
+
 def prepared_launch(config_path, worktree, command, profile, scratch, client=None, stop=None, inherit=()):
     if inherit and profile != 'gate':
         raise ValueError('only the gate profile inherits a descriptor')
@@ -2401,12 +2426,15 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
         seed(scratch, Path(source).expanduser(), relative, store)
     for source, relative in files.get('seed_files', []):
         seed(scratch, source, relative, store)
-    with borrowed_credentials(scratch, files.get('credentials', []), store, protected) as borrow:
+    with borrowed_credentials(scratch, files.get('credentials', []), store, protected) as borrow, \
+            gate_fixture_directory(profile, store, protected) as fixture:
         # The client's persistent state for this worktree: read and write where it is, linked where the
         # CLI looks for it, checked by clean_state before the grant and again once the tree is gone.
         state = state_grants(files, [store, worktree, authority, *protected, *credential_sources(config, worktree),
                                      *(Path(p).expanduser().resolve() for p in config.get('deny_read', []))])
         grants += [(real, READ | WRITE) for real, _ in state]
+        if fixture is not None:
+            grants.append((fixture, READ | WRITE))
         problem = launcher_write_problem(grants)
         if problem:
             raise ValueError(problem)
@@ -2428,6 +2456,8 @@ def prepared_launch(config_path, worktree, command, profile, scratch, client=Non
                    XDG_CACHE_HOME=str(scratch / '.cache'), XDG_CONFIG_HOME=str(scratch / '.config'),
                    XDG_STATE_HOME=str(scratch / '.local/state'), XDG_DATA_HOME=str(scratch / '.local/share'),
                    PWD=str(worktree))
+        if fixture is not None:
+            env['VELDO_FIXTURE_ROOT'] = str(fixture)
         # VELDO_EXPECTED_GIT_COMMON names the trusted repository to this launcher only. Handed on, it
         # would make a gate the confined command runs for another repository (a freshly scaffolded
         # one, a fixture) check that repository against this one's common directory.

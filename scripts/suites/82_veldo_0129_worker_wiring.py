@@ -59,7 +59,7 @@ def _v129_suite():
     conform_formats = importlib.util.module_from_spec(conform_spec)
     conform_spec.loader.exec_module(conform_formats)
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
-    base = Path(tempfile.mkdtemp(prefix='v129-', dir='/var/lib/veldo'))
+    base = Path(tempfile.mkdtemp(prefix='v129-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')))
     slice_name = 'v129%s.slice' % os.urandom(4).hex()
     sessions = []
     writer = None

@@ -184,7 +184,7 @@ def _v155_suite():
 
     started = time.monotonic()
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
-    base = Path(tempfile.mkdtemp(prefix='v155-', dir='/var/lib/veldo'))
+    base = Path(tempfile.mkdtemp(prefix='v155-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')))
     slice_name = 'v155%s.slice' % os.urandom(4).hex()
     tools = dict(os.environ)
     contained = []
