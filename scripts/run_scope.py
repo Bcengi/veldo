@@ -73,6 +73,11 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
+import importlib.util as _fixture_import
+_fixture_spec = _fixture_import.spec_from_file_location('gate_fixtures', Path(__file__).with_name('gate_fixtures.py'))
+FIXTURES = _fixture_import.module_from_spec(_fixture_spec)
+_fixture_spec.loader.exec_module(FIXTURES)
+
 ROOT = Path(__file__).resolve().parent.parent
 SUITES = ROOT / "scripts" / "suites"
 MANIFEST_PATH = SUITES / "manifest.json"
@@ -1090,13 +1095,13 @@ class RuntimeStand:
 
 
 @contextmanager
-def fixture_stand(parent):
-    """Own exactly one freshly allocated fixture tree until the leg has ended."""
-    directory = tempfile.mkdtemp(prefix="s", dir=parent)
+def fixture_stand():
+    """Own one fixture tree; the run's supplied environment cannot choose its parent."""
     try:
-        yield directory
-    finally:
-        shutil.rmtree(directory)
+        with FIXTURES.directory(prefix='s') as directory:
+            yield str(directory)
+    except FIXTURES.FixtureRefused as error:
+        raise LegRefused(str(error)) from None
 
 
 def link_manager(runtime, real):
@@ -1671,12 +1676,13 @@ def run_shards(root, leg, targets, *, environ=None, emit=None, requires=None, ma
     """
     # Ordinary shard roots stand in a temporary directory of this leg's own, which ends with it.
     environ = dict(os.environ if environ is None else environ)
-    # Each leg owns a fresh store-fixture root outside temporary/runtime/home roots.
+    # Each leg owns a fresh store-fixture root outside temporary and runtime roots.
     # The gate launcher grants only its own root; each shard's layer narrows that
     # grant to its child here. Unconfined legs use the same layout and cleanup.
     with tempfile.TemporaryDirectory(prefix="s", ignore_cleanup_errors=True) as directory, \
-            fixture_stand(environ.get("VELDO_FIXTURE_ROOT", "/var/lib/veldo")) as fixtures:
+            fixture_stand() as fixtures:
         environ["VELDO_FIXTURE_ROOT"] = fixtures
+        environ["VELDO_FIXTURE_PARENT"] = str(FIXTURES.fixture_parent(FIXTURES.ENVIRONMENT))
         token = os.urandom(4).hex()
         # An unconfined leg's shards get their runtime directories inside the real one (leg_runtime),
         # in a directory of this leg's own that ends with it like the roots' directory above. A

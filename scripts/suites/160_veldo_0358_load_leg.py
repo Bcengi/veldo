@@ -291,7 +291,7 @@ def _v358d_load_leg():
             (root / relative).parent.mkdir(parents=True, exist_ok=True)
             (root / relative).write_text(text)
         for source in (gate_source, legs_source, load_source, dispatcher_source,
-                       ROOT / 'scripts/run_scope.py'):
+                       ROOT / 'scripts/run_scope.py', ROOT / 'scripts/gate_fixtures.py'):
             shutil.copyfile(str(source), str(root / 'scripts' / source.name))
         folder = root / 'scripts/suites'
         (folder / 'support').mkdir(parents=True)
@@ -568,6 +568,7 @@ def _v358d_load_leg():
         (tauthority / relative).write_text(stubs[relative])
     shutil.copyfile(str(candidate_source), str(tauthority / 'scripts/gate_candidate.py'))
     shutil.copyfile(str(sandbox_source), str(tauthority / 'scripts/agent_sandbox.py'))
+    shutil.copyfile(str(ROOT / 'scripts/gate_fixtures.py'), str(tauthority / 'scripts/gate_fixtures.py'))
     shutil.copyfile(str(ROOT / 'scripts/agent_sandbox.json'), str(tauthority / 'scripts/agent_sandbox.json'))
     (tauthority / 'scripts/gate_unconfined.json').write_text(json.dumps({
         'schema': 'veldo.gate-unconfined/v1', 'authority': 'fixture list of the opened-files row',

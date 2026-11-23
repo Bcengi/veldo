@@ -22,6 +22,7 @@ protected_paths:
   - {path: ".veldo/candidate_git.py", floor: high}
   - {path: "engine/.veldo/candidate_git.py", floor: high}
   - {path: "engine/scripts/agent_sandbox.py", floor: high}
+  - {path: "engine/scripts/gate_fixtures.py", floor: high}
   - {path: "engine/scripts/agent_sandbox.json", floor: high}
   - {path: "engine/scripts/mutation_sandbox.py", floor: high}
   - {path: "engine/scripts/gate_candidate.py", floor: high}
@@ -35,6 +36,7 @@ protected_paths:
   - {path: "engine/scripts/gate_reuse.py", floor: high}
   - {path: "engine/scripts/reuse_stamp.py", floor: high}
   - {path: "scripts/agent_sandbox.py", floor: high}
+  - {path: "scripts/gate_fixtures.py", floor: high}
   - {path: "scripts/agent_sandbox.json", floor: high}
   - {path: "engine/.veldo/reuse_evidence.py", floor: high}
   - {path: ".veldo/reuse_evidence.py", floor: high}

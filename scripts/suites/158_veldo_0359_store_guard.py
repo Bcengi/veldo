@@ -65,9 +65,10 @@ def _v359_guard_suite():
             for label in labels:
                 check(label, 'raised ' + repr(error), False)
 
-    # A fresh directory outside home and all temporary roots is essential to placement.
+    # A fresh directory outside run homes and temporary/runtime roots is essential to placement.
+    # Keep fixture names short enough for real pathname Unix sockets under a per-user state root.
     # Never discover, open, or remove an existing store; TemporaryDirectory creates exclusively.
-    with tempfile.TemporaryDirectory(prefix='v359-b2-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as directory:
+    with tempfile.TemporaryDirectory(prefix='b', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as directory:
         base = Path(directory)
         mods = base / 'installed/.veldo'
         mods.mkdir(parents=True)
@@ -77,7 +78,7 @@ def _v359_guard_suite():
             shutil.copyfile(source, mods / name)
         L = load('v359_guard', mods / 'control_launch.py')
         CL = load('v359_clone', mods / 'control_clone.py')
-        store = base / 'state/authority'
+        store = base / 'store'
         store.mkdir(parents=True)
         db = store / 'custom.sqlite3'
         writer = L.S.open_store(str(db))
@@ -471,7 +472,7 @@ L.wrap(argv)
                 with section('layout/entries', 'layout/placement', 'launch/abi', 'switch/off'):
                     check('layout/entries', 'normal bound socket', preflight()['outcome'] == 'pending')
                     for kind in ('symlink', 'fifo', 'socket', 'nested-socket', 'hardlink'):
-                        path = store / ('unexpected-' + kind)
+                        path = store / kind
                         sock = None
                         if kind == 'symlink': path.symlink_to(work)
                         elif kind == 'fifo': os.mkfifo(path)

@@ -440,6 +440,7 @@ print(json.dumps(out))
         text = text.replace("NAMESPACE_HELPER = Path('/usr/local/lib/veldo/veldo-userns')",
                             "NAMESPACE_HELPER = Path(%r)" % str(missing / 'absent' / 'veldo-userns'), 1)
         (missing / 'agent_sandbox.py').write_text(text)
+        shutil.copyfile(SANDBOX.with_name('gate_fixtures.py'), missing / 'gate_fixtures.py')
         bare = {'confined_runner': {'program': str(missing / 'agent_sandbox.py'),
                                     'config': str(missing / 'agent_sandbox.json')}}
         problem = L.confined_runner_problem(bare)

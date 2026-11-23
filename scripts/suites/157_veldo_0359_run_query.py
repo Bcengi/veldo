@@ -832,12 +832,14 @@ L.main()
                 patch.object(L, 'guard_preflight', return_value=dict(state='on', directory=str(Path(config['store']).resolve().parent), preflight={})):
             check('query/place', 'the launch refusal carries that name',
                   nowhere._prepare_query({'dispatch_id': 'nowhere'}, {'argv': [sys.executable]}) == Q.NO_PLACE and nowhere.query_server is None)
-        # Exercise the real placement and lifecycle with a private short directory this
-        # shard owns. The account's real runtime directory is outside the confined grant.
+        # Exercise production fallback directories on the host. In confinement the account
+        # runtime directory is outside the grant, so use a private short directory instead.
         check('query/place', 'production fallback roots remain fixed',
               Q.SHORT == (('/run/user/%d', False), ('/tmp/veldo-%d', True)))
-        with patch.dict(os.environ, dict(long_env, V359_SHORT=str(first))), \
-                patch.object(Q, 'SHORT', ((str(first) + '%.0s', False),)):
+        real_fallback = os.environ.get('VELDO_GATE_LEG') != 'confined'
+        fallback = Q.SHORT if real_fallback else ((str(first) + '%.0s', False),)
+        with patch.dict(os.environ, dict(long_env, V359_SHORT='' if real_fallback else str(first))), \
+                patch.object(Q, 'SHORT', fallback):
             path = placed_real()
             launch, pending = run_fixture(long_label, wait_payload=True)
             seen = read_event(launch.child, pending, {'payload', 'refused'})
@@ -846,7 +848,7 @@ L.main()
                   seen['event'] == 'payload' and seen['query'] == str(path) and Path(path).exists()
                   and len(os.fsencode(str(path))) <= Q.SUN_PATH and seen['build_reached'] and not seen['store_open'])
             check('query/place', 'its endpoint is in a short directory only this account can enter [%s]' % root,
-                  root == first
+                  (str(root) in ('/run/user/%d' % uid, '/tmp/veldo-%d' % uid) if real_fallback else root == first)
                   and not root.is_symlink() and root.is_dir() and root.lstat().st_uid == uid and stat_mode(root) == 0o700
                   and Path(path).parent.is_dir() and stat_mode(Path(path).parent) == 0o700)
             if seen['event'] == 'payload':

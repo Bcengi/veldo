@@ -46,6 +46,7 @@ def _v358_tree(base, suites):
     support.mkdir(parents=True)
     _v358_shutil.copyfile(str(_v358_SELFTEST), str(base / "scripts" / "selftest.py"))
     _v358_shutil.copyfile(str(ROOT / "scripts" / "run_scope.py"), str(base / "scripts" / "run_scope.py"))
+    _v358_shutil.copyfile(str(ROOT / "scripts/gate_fixtures.py"), str(base / "scripts/gate_fixtures.py"))
     _v358_shutil.copyfile(str(ROOT / "scripts" / "suites" / "shared.py"), str(base / "scripts" / "suites" / "shared.py"))
     for path in (_v358_WAITS, _v358_HOLDERS, _v358_PORTS):
         _v358_shutil.copyfile(str(path), str(support / _v358_os.path.basename(str(path))))
