@@ -36,9 +36,14 @@ CASES = {
 
 
 def cases():
-    return [dict(name=key, finding=key, suite=suite, module=module,
+    result = [dict(name=key, finding=key, suite=suite, module=module,
                  rows=[label], old=old, new=new)
             for key, (suite, module, label, old, new) in CASES.items()]
+    # These targets are ordinary relay rows; the separate census row needs ptrace.
+    for case in result:
+        if case['suite'] == '48_veldo_0108_relay.py':
+            case['confined_only'] = True
+    return result
 
 
 def worker(case, mutant):
