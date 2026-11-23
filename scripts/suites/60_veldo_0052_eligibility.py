@@ -1211,7 +1211,7 @@ def _v52_suite():
             commands = {
                 'executor': [sys.executable, '-B', str(mods / 'executor.py'), 'VELDO-9106'],
                 'plan': [sys.executable, '-B', str(mods / 'plan.py'), 'run-check', plan_path, 'VELDO-9101'],
-                'work': [sys.executable, '-B', str(base / 'bin' / 'veldo'), 'work'],
+                'work': [sys.executable, '-B', str(base / 'bin' / 'veldo'), 'work', '--principal', 'dmitry', '--key', str(key)],
                 'status': [sys.executable, '-B', str(mods / 'runstatus.py'), 'status', '--json'],
                 'untrusted': [sys.executable, '-B', str(mods / 'executor.py'), 'VELDO-9106'],
             }
@@ -1254,8 +1254,8 @@ def _v52_suite():
             check('eligibility/production-entries-build-the-gate',
                    ran['executor'][0] == 2 and said('executor', 'stopped: reservation_required')
                    and ran['plan'][0] == 1 and said('plan', 'eligibility refused: missing_authority:admission')
-                   # VELDO-0113: the CLI now needs a signer for its authority IPC request.
-                   and ran['work'][0] == 1 and said('work', 'stopped: work_signer_required')
+                   # VELDO-0113: the signed CLI request reaches its absent authority, without a local writer.
+                   and ran['work'][0] == 1 and said('work', 'stopped: authority_unavailable')
                    and ran['status'][0] == 0 and 'burndown_stopped' not in status_model
                    and [p_['shipped'] for p_ in status_model.get('burndown', [])] == [0]
                    and ran['untrusted'][0] == 2 and said('untrusted', 'stopped: host_trust_required')
