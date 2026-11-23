@@ -528,13 +528,18 @@ for raw in sys.stdin:
         F.drive(factory, lambda: ended('codexed'))
         codex_run = next((v for k, v in observed(markers).items() if k not in before_runs), {})
         cfg = codex_run.get('config') or {}
+        codex_launch = next((launch for launch in launched if launch.dispatch_id == codex_run.get('dispatch')), None)
         print('  VELDO-0177 AC2 codex outcome:', [t.get('outcome') for t in conversations.turns('codexed')])
         check('AC2/codex-launch', 'the Codex turn ran in its own workspace and completed',
               codex_run.get('cwd') == CV.workspace_of(conversations.read('codexed'))
               and [t.get('outcome') for t in conversations.turns('codexed')] == ['completed'])
-        check('AC2/codex-launch', 'its launch: the workspace-write sandbox with network access, live web search '
+        check('AC2/codex-launch', 'its launch: the externally guarded Codex process with network access, live web search '
               '[%s %s %s]' % (cfg.get('sandbox_mode'), cfg.get('sandbox_workspace_write'), cfg.get('web_search')),
-              cfg.get('sandbox_mode') == 'workspace-write'
+              cfg.get('sandbox_mode') == 'danger-full-access'
+              and codex_launch is not None and (codex_launch.store_guard or {}).get('state') == 'on'
+              and (codex_launch.store_guard or {}).get('outcome') == 'applied'
+              and codex_launch.group and codex_launch.group.get('cgroup')
+              and slice_name in (codex_run.get('cgroup') or '')
               and cfg.get('sandbox_workspace_write') == {'network_access': True} and cfg.get('web_search') == 'live')
         check('AC2/codex-launch', 'its shell, edit and plan tools on, exactly the revision\'s',
               sorted(codex_run.get('tools') or []) == sorted(HO.codex_expected_tools(wanted, {})))
