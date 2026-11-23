@@ -83,6 +83,7 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
             pass
     connections, servers = [], []
     with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory, contextlib.ExitStack() as resources:
+        resources.enter_context(__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT))
         base = Path(directory)
         # Every graph exchange in this process while the fixture lasts stages in this run's directory, never in the
         # account's ~/.local/state/veldo/graph-stage, on lines a suite builds and lines the product builds itself;

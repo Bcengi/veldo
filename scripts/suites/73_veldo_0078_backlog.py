@@ -1310,5 +1310,5 @@ print(json.dumps(out))
 '''
 
 _v78_started = __import__('time').monotonic()
-_v78_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v78_suite)
 print('VELDO-0078 suite seconds: %.3f' % (__import__('time').monotonic() - _v78_started))

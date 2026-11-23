@@ -203,4 +203,4 @@ def _v80_suite():
         Path(os.environ['VELDO_0080_EVIDENCE']).write_text(json.dumps(observed, indent=2, sort_keys=True) + '\n')
 
 
-_v80_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v80_suite)
