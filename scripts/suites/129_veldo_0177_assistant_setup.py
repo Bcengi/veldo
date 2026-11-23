@@ -30,7 +30,7 @@ def _v177_setup_suite():
         'control_agent_config_handoff.py': ROOT / ".veldo" / "control_agent_config_handoff.py",
     }
     ROWS = ('AC2/setup-saves', 'AC2/owner-signed', 'AC2/rerun-saves-nothing', 'AC2/workers-enrolled',
-            'format/fake-lines')
+            'format/fake-lines', 'gate-fixtures/long-home', 'gate-fixtures/long-root-refused')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -99,7 +99,21 @@ sys.exit(2)
         CG = load('v177_config', h['mods'] / 'control_agent_config.py')
         E = load('v177_claude', h['mods'] / 'control_engine_claude.py')
         owner = h['owner']
-        root, workspace = h['fresh_root']('state-v177'), h['clone']('clone-v177')
+        # Exercise real setup below a long account home and the complete gate /
+        # leg / shard / fixture / state layout, without using this account's HOME.
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        fixtures = h['fixtures']
+        home = base / ('h' * max(1, 40 - len(os.fsencode(base)) - 1))
+        home.mkdir(mode=0o700)
+        with patch.object(fixtures.pwd, 'getpwuid', return_value=SimpleNamespace(pw_dir=str(home))):
+            parent = fixtures.parent_for({})
+        gate = fixtures.allocate(parent)
+        leg = fixtures.allocate(gate, 's')
+        shard = leg / '00'
+        shard.mkdir(mode=0o700)
+        fixture = fixtures.allocate(shard, 'f')
+        root, workspace = fixtures.allocate(fixture, 'r'), h['clone']('clone-v177')
         registry = os.path.join(CEN.git_common_dir(str(workspace)), 'veldo')
         for name, provider in ACCOUNTS:
             profile = base / 'profiles' / name
@@ -112,6 +126,22 @@ sys.exit(2)
         h['managers'].append(manager)
         args = (root, workspace, base / 'trust-v177' / 'host.json', base / 'install-v177', units, manager)
         code, report = h['setup'](*args)
+        sockets = {'authority': root / 'authority/authority.sock',
+                   **{part: root / 'memory/stores' / (part + '.sock')
+                      for part in ('ava_memory', 'memory_kb')}}
+        check('gate-fixtures/long-home', 'real setup below a %d-byte home; socket sizes %s'
+              % (len(os.fsencode(home)), {key: len(os.fsencode(path)) for key, path in sockets.items()}),
+              code == 0 and len(os.fsencode(home)) >= 40
+              and all(len(os.fsencode(path)) < 108 for path in sockets.values()))
+        too_long = root / ('x' * 108)
+        try:
+            h['setup'](*args, **{'--state-root': str(too_long)})
+        except fixtures.FixtureRefused as error:
+            refused = str(error).startswith('gate_fixture_root_socket_too_long: authority:')
+        else:
+            refused = False
+        check('gate-fixtures/long-root-refused', 'named preflight refusal before any setup writes',
+              refused and not too_long.exists())
         store = root / 'authority' / 'control.sqlite3'
         print('  VELDO-0177 setup:', code, report.get('outcome'), report.get('reason'))
 

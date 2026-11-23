@@ -106,7 +106,8 @@ def _v171_suite():
             fast = '/dev/shm'
         except OSError:
             pass
-    base = Path(tempfile.mkdtemp(prefix='b171-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')))
+    fixtures = load('v171_fixtures', ROOT / 'scripts/gate_fixtures.py')
+    base = fixtures.allocate(os.environ.get('VELDO_FIXTURE_ROOT') or fixtures.parent_for(fixtures.ENVIRONMENT), 'f')
     support_path = Path(globals().get('__setup_support__', ROOT / 'scripts/suites/support/setup_runtime.py'))
     runtime = load('v171_runtime', support_path)
     # VELDO-0358: this suite blocks only through the wait primitive, the process's one instance; a child or a
@@ -292,6 +293,7 @@ def _v171_suite():
                 if os.environ.get('XDG_RUNTIME_DIR'):
                     env['XDG_RUNTIME_DIR'] = os.environ['XDG_RUNTIME_DIR']
                 notify = base / ('n%d.sock' % len(self.logs))
+                fixtures.socket_paths({'manager-notify': notify})
                 listener = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
                 listener.bind(str(notify))
                 env['NOTIFY_SOCKET' if kind == 'notify' else 'VELDO_LISTEN_EVENT'] = str(notify)
@@ -361,10 +363,8 @@ def _v171_suite():
         return path
 
     def fresh_root(name):
-        path = base / name
-        path.mkdir(mode=0o700)
-        os.chmod(str(path), 0o700)
-        return path
+        # Labels describe the test, not the filesystem: reserve bytes for service sockets.
+        return fixtures.allocate(base, 'r')
 
     def snapshot(*roots):
         """Every file, link and directory under `roots`: its mode and, for a file, its content digest."""
@@ -447,6 +447,10 @@ def _v171_suite():
         argv = {'--state-root': str(state_root), '--owner': owner, '--owner-key': str(owner_key),
                 '--workspace': str(workspace), '--chat': str(chat), '--token-file': str(token_file)}
         argv.update(replace)
+        actual_root = Path(argv['--state-root'])
+        memory = F.organ('control_memory_servers')
+        fixtures.socket_paths(dict(authority=actual_root / F.STORE_DIR / F.organ('control_client').SOCKET_NAME,
+                                   **{part: memory.socket_path(actual_root, part) for part in memory.STORES}))
         overrides = dict(host_trust=str(host_trust), install_root=str(install), unit_dir=str(units), profile=profile,
                          writable=[], runner=manager, origin=url)
         if module is None:
