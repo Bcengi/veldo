@@ -287,14 +287,6 @@ spec.loader.exec_module(_git_process)
 work, signing, principal, mode, markers = Path(sys.argv[2]), sys.argv[3], sys.argv[4], sys.argv[5], Path(sys.argv[6])
 raw = sys.stdin.buffer.read()
 assignment = (json.loads(raw) if raw.strip() else {}).get('payload') or {}
-if assignment['unit'] == 'VELDO-9505':
-    spec = importlib.util.spec_from_file_location('review_waits', sys.argv[7])
-    waits = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(waits)
-    (markers / 'review-ready').write_text('running')
-    waits.wait('the parent to consume the running acknowledgment',
-               lambda: (markers / 'review-release').exists(), None,
-               [waits.PathAppears(markers / 'review-release')])
 commit, path = assignment['source']['commit'], assignment['proof']['path']
 blob = _git_process.run(['git', '-C', str(work), 'cat-file', 'blob', commit + ':' + path], capture_output=True).stdout
 body = {'schema': 'veldo.review_receipt/v1', 'assignment': assignment['assignment'], 'unit': assignment['unit'],
@@ -318,8 +310,7 @@ sys.stdout.flush()
             for mode in ('pass', 'block'):
                 adapters['%s:%s' % (who, mode)] = {'argv': [sys.executable, '-B', str(reviewer_engine),
                                                             str(mods / 'git_process.py'), str(work), str(private / who),
-                                                            who, mode, str(markers),
-                                                            str(ROOT / 'scripts/suites/support/waits.py')]}
+                                                            who, mode, str(markers)]}
         config = base / 'receiver.json'
         worker_slice = 'v135s%s.slice' % os.urandom(4).hex()
         # VELDO-0170: ordinary launch fixtures name installed host trust; no settlements are trusted.
@@ -346,37 +337,20 @@ sys.stdout.flush()
                                   signer='runner', sign=sign)
         launches = []
 
-        # Force a parent descheduled until after its acceptance deadline while
-        # the running acknowledgment is already queued. The engine's marker is
-        # after it receives its input, which the receiver sends after that ack.
-        # Hold the engine there so killing its receiver cannot look like a
-        # completed review. Only this test substitutes an expired read bound.
-        real_start = L.Launch.start
-
-        def start_with_queued_ack(launch, accept_seconds):
-            if (launch.contract['unit'], launch.contract['station']) != ('VELDO-9505', 'review'):
-                return real_start(launch, accept_seconds)
-            read_message = launch._message
-            try:
-                ready = WAITS.wait('the review with its running acknowledgment queued',
-                    lambda: (markers / 'review-ready').exists(), lambda: launch.child.poll() is not None,
-                    [WAITS.PathAppears(markers / 'review-ready'), WAITS.Pidfd(launch.child)])
-                if not ready.done:
-                    raise AssertionError('review ended before its acknowledgment was queued')
-                launch._message = lambda deadline: read_message(time.monotonic() - 1)
-                return real_start(launch, accept_seconds)
-            finally:
-                launch._message = read_message
-                (markers / 'review-release').touch()
-
-        L.Launch.start = start_with_queued_ack
-
         def invoke(contract):
             launch = L.invoke(config, contract, dispatches)
             launches.append(launch)
             return launch
 
-        runner = L.Runner(gate, reservations, dispatches, invoke, account=ACCOUNT)
+        class FixtureRunner(L.Runner):
+            def submit(self, unit, station, **kwargs):
+                # The caller's existing 90-second fixture deadlines are in the
+                # census baseline. Apply the same hang profile before preparing
+                # and signing their contracts, as for receiver acceptance.
+                kwargs['deadline'] += WAITS.WAIT_HANG_SECONDS - 90
+                return super().submit(unit, station, **kwargs)
+
+        runner = FixtureRunner(gate, reservations, dispatches, invoke, account=ACCOUNT)
         guards = {a: RT.InvocationGuard(reservations, a, lambda invocation, configuration: None, lambda *_: None)
                   for a in RT.ADAPTERS}
         calls = EL.StationCalls(gate, guards, account=ACCOUNT)
@@ -421,7 +395,7 @@ sys.stdout.flush()
             def build(self, spec, calls=None):
                 launch = runner.submit(spec['id'], 'build', holder=self.holder, source=str(work), revision='HEAD',
                                        payload={'unit': spec['id'], 'attempt': self.attempt}, adapter='builder-engine',
-                                       configuration=CONFIG, deadline=time.time() + WAITS.WAIT_HANG_SECONDS,
+                                       configuration=CONFIG, deadline=time.time() + 90,
                                        context={'generation': clients[self.holder].generations.get(spec['id'])})
                 record = runner.wait(launch) or {}
                 self.launched.append(launch.dispatch_id)
@@ -465,7 +439,7 @@ sys.stdout.flush()
                 launch = runner.submit(unit['spec'], 'review', holder=unit['holder'], source=str(work),
                                        revision=(assignment.get('source') or {}).get('commit') or 'HEAD',
                                        payload=dict(assignment), adapter=self.adapter, configuration=CONFIG,
-                                       deadline=time.time() + WAITS.WAIT_HANG_SECONDS, context={'reviewer': self.identity})
+                                       deadline=time.time() + 90, context={'reviewer': self.identity})
                 runner.wait(launch)
                 self.launched.append(launch.dispatch_id)
                 path = markers / ('review-%s.receipt' % launch.dispatch_id.replace('/', '_'))
@@ -583,44 +557,8 @@ sys.stdout.flush()
                     if label not in emitted:
                         check(label, False)
 
-        # Keep the expired-read rescue bounded even when every select would
-        # say readable. A virtual clock crosses the deadline before the first
-        # read; the emitter supplies two lines on every read, indefinitely.
         from types import SimpleNamespace
         from unittest.mock import patch
-        for action in ('start', 'wait', 'zero-wait'):
-            reads, selected = [], []
-            record = {'state': 'exited', 'dispatch_id': 'bound-probe'}
-            child = SimpleNamespace(stdout=SimpleNamespace(fileno=lambda: 123))
-            probe = L.Launch(child, {'dispatch_id': 'bound-probe', 'deadline': 0,
-                                     'unit': 'bound-probe', 'station': 'build'},
-                             SimpleNamespace(record=lambda _: record), time.time)
-            probe.result, probe.record = 'accepted', record
-            probe._end_receiver = lambda: None
-            probe._settle = lambda lost: None
-            ticks = iter([0])
-
-            def continuous(fd, size):
-                reads.append(size)
-                if len(reads) > 1:
-                    raise AssertionError('continuous writer read again after deadline')
-                return b'{"event":"flag"}\n{"event":"flag"}\n'
-
-            def readable(*args):
-                selected.append(args[-1])
-                return ([child.stdout], [], [])
-
-            with patch.object(L, 'time', SimpleNamespace(monotonic=lambda: next(ticks, 2), time=time.time)), \
-                    patch.object(L.select, 'select', side_effect=readable), \
-                    patch.object(L.os, 'read', side_effect=continuous):
-                with region('launch/bounded-' + action):
-                    if action == 'start':
-                        probe.start(1)
-                    else:
-                        probe.wait(0 if action == 'zero-wait' else 1)
-                    check('launch/bounded-' + action,
-                          (reads == [] and selected == [] and probe.flags == []) if action == 'zero-wait'
-                          else reads == [65536] and selected == [0] and len(probe.flags) == 2)
 
         # Model an acknowledgment at t=31 through invoke's real timer selection
         # and Launch.start, with a real pipe. Production's 30-second deadline

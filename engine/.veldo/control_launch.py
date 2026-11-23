@@ -2590,7 +2590,6 @@ class Launch:
         self.dispatch_id = contract['dispatch_id']
         self.records = records
         self.pending = b''
-        self.read_expired = False
         self.messages = []
         self.result = None
         self.refusal = None
@@ -2642,17 +2641,8 @@ class Launch:
         if self.child is None:
             return None
         while b'\n' not in self.pending:
-            # Rescue an acknowledgment queued while the caller was descheduled,
-            # but only with one read after expiry across this start/wait call.
-            # Further messages must already be in pending: a continuous writer
-            # cannot extend the deadline by keeping the pipe readable.
-            if self.read_expired:
-                return None
             remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                self.read_expired = True
-                remaining = 0
-            if not select.select([self.child.stdout], [], [], remaining)[0]:
+            if remaining <= 0 or not select.select([self.child.stdout], [], [], remaining)[0]:
                 return None
             chunk = os.read(self.child.stdout.fileno(), 65536)
             if not chunk:
@@ -2810,7 +2800,6 @@ class Launch:
         self.refusal = (record or {}).get('refusal') if state == 'refused' else None
 
     def start(self, accept_seconds):
-        self.read_expired = False
         deadline = time.monotonic() + accept_seconds
         while True:
             message = self._message(deadline)
@@ -2833,9 +2822,6 @@ class Launch:
 
     def wait(self, timeout=None):
         """The dispatch's record once the receiver has recorded its end, or unknown if it cannot."""
-        # Service passes use zero to settle an end already pumped (or to stop
-        # a receiver). Preserve their no-pipe-read meaning.
-        self.read_expired = timeout is not None and timeout <= 0
         if not self.owned:
             return self.dispatches.record(self.dispatch_id)
         # By default the receiver has until the contract deadline, or the later end it announced for a
