@@ -243,7 +243,7 @@ def _v224_stale():
             and good['receipt']['stale_count'] == 5 and all_fresh and good['released']
             and all(r['source'] == 'fresh' and r['validated'] and r['reason'] == 'declaration_stale'
                     for r in receipts if r['identity'] in stale_names)
-            and bad['receipt']['status'] == 'failed' and bad['receipt']['error'] == 'invalid_baseline', detail)
+            and bad['receipt']['status'] == 'failed' and bad['receipt']['error'] == 'control_failed', detail)
         row('never-published', good['seeded'] and good['old_unchanged'] and good['no_hits'] and good['clean_hit']
             and good['receipt']['reused'] == 0
             and all(r and r['case']['identity'] not in stale_names for r in good['new_records'])
