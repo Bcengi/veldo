@@ -53,6 +53,7 @@ def _v135_suite():
             shutil.copyfile(source, mods / name)
         S = load('v135_store', mods / 'control_store.py')
         L = load('v135_launch', mods / 'control_launch.py')
+        WAITS = load('v135_waits', ROOT / 'scripts/suites/support/waits.py')
         D = L.D
         EL = load('v135_eligibility', mods / 'control_eligibility.py')
         RES = load('v135_reservations', mods / 'control_reservations.py')
@@ -283,6 +284,14 @@ spec.loader.exec_module(_git_process)
 work, signing, principal, mode, markers = Path(sys.argv[2]), sys.argv[3], sys.argv[4], sys.argv[5], Path(sys.argv[6])
 raw = sys.stdin.buffer.read()
 assignment = (json.loads(raw) if raw.strip() else {}).get('payload') or {}
+if assignment['unit'] == 'VELDO-9505':
+    spec = importlib.util.spec_from_file_location('review_waits', sys.argv[7])
+    waits = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(waits)
+    (markers / 'review-ready').write_text('running')
+    waits.wait('the parent to consume the running acknowledgment',
+               lambda: (markers / 'review-release').exists(), None,
+               [waits.PathAppears(markers / 'review-release')])
 commit, path = assignment['source']['commit'], assignment['proof']['path']
 blob = _git_process.run(['git', '-C', str(work), 'cat-file', 'blob', commit + ':' + path], capture_output=True).stdout
 body = {'schema': 'veldo.review_receipt/v1', 'assignment': assignment['assignment'], 'unit': assignment['unit'],
@@ -306,7 +315,8 @@ sys.stdout.flush()
             for mode in ('pass', 'block'):
                 adapters['%s:%s' % (who, mode)] = {'argv': [sys.executable, '-B', str(reviewer_engine),
                                                             str(mods / 'git_process.py'), str(work), str(private / who),
-                                                            who, mode, str(markers)]}
+                                                            who, mode, str(markers),
+                                                            str(ROOT / 'scripts/suites/support/waits.py')]}
         config = base / 'receiver.json'
         worker_slice = 'v135s%s.slice' % os.urandom(4).hex()
         # VELDO-0170: ordinary launch fixtures name installed host trust; no settlements are trusted.
@@ -331,6 +341,31 @@ sys.stdout.flush()
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
                                   signer='runner', sign=sign)
         launches = []
+
+        # Force a parent descheduled until after its acceptance deadline while
+        # the running acknowledgment is already queued. The engine's marker is
+        # after it receives its input, which the receiver sends after that ack.
+        # Hold the engine there so killing its receiver cannot look like a
+        # completed review. Only this test substitutes an expired read bound.
+        real_start = L.Launch.start
+
+        def start_with_queued_ack(launch, accept_seconds):
+            if (launch.contract['unit'], launch.contract['station']) != ('VELDO-9505', 'review'):
+                return real_start(launch, accept_seconds)
+            read_message = launch._message
+            try:
+                ready = WAITS.wait('the review with its running acknowledgment queued',
+                    lambda: (markers / 'review-ready').exists(), lambda: launch.child.poll() is not None,
+                    [WAITS.PathAppears(markers / 'review-ready'), WAITS.Pidfd(launch.child)])
+                if not ready.done:
+                    raise AssertionError('review ended before its acknowledgment was queued')
+                launch._message = lambda deadline: read_message(time.monotonic() - 1)
+                return real_start(launch, accept_seconds)
+            finally:
+                launch._message = read_message
+                (markers / 'review-release').touch()
+
+        L.Launch.start = start_with_queued_ack
 
         def invoke(contract):
             launch = L.invoke(config, contract, dispatches, accept_seconds=30)

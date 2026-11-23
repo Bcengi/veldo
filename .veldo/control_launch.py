@@ -2641,8 +2641,11 @@ class Launch:
         if self.child is None:
             return None
         while b'\n' not in self.pending:
-            remaining = deadline - time.monotonic()
-            if remaining <= 0 or not select.select([self.child.stdout], [], [], remaining)[0]:
+            # A descheduled reader may resume after its hang deadline with the
+            # receiver's acknowledgment already queued. Observe readiness first;
+            # an expired bound only ends a wait on a pipe with nothing to read.
+            remaining = max(0, deadline - time.monotonic())
+            if not select.select([self.child.stdout], [], [], remaining)[0]:
                 return None
             chunk = os.read(self.child.stdout.fileno(), 65536)
             if not chunk:

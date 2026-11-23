@@ -57,6 +57,7 @@ def _v154_suite():
     import sys
     import tempfile
     import threading
+    from types import SimpleNamespace
 
     FORMATS_PATH = Path(globals().get('__suite_file__', str(ROOT / 'scripts' / 'suites' / 'x.py'))).resolve().parents[2] \
         / 'proof' / 'VELDO-0062' / 'cli-formats.json'
@@ -188,6 +189,59 @@ def _v154_suite():
         trust_file = trust_dir / 'host_trust.json'
         trust_file.write_text(json.dumps({'schema': EL.HOST_TRUST_SCHEMA, 'host_identity': HOST_ID,
                                           'enrollment_signers': str(signers_file)}))
+        # Force a receiver's commit into the middle of a read-only inspect.
+        # Two real connections make the watermark advance; the service must
+        # leave its loop asleep until the receiver's completion event arrives.
+        with contextlib.closing(sqlite3.connect(base / 'inspect-race.sqlite3')) as inspecting, \
+                contextlib.closing(sqlite3.connect(base / 'inspect-race.sqlite3')) as receiving:
+            inspecting.execute('CREATE TABLE journal (seq INTEGER, record_digest TEXT)')
+            inspecting.commit()
+            probe = CS.Service(dict(domain_uuid='inspect-race', store_uuid='inspect-race',
+                                    repositories={'fixture': []}, principal='authority', authority_generation=1,
+                                    enrollment_signers=str(signers_file), observations=str(base / 'inspect-race.log')),
+                               inspecting)
+            wakes = []
+            class ProbeLoop:
+                def wake(self, source):
+                    wakes.append(source)
+            probe.loop = ProbeLoop()
+
+            def inspect_during_commit(packet):
+                receiving.execute("INSERT INTO journal VALUES (1, 'receiver-commit')")
+                receiving.commit()
+                return {'ok': True, 'reason': 'inspect'}
+
+            probe.inspect = inspect_during_commit
+            before = probe.watermark()
+            answer = probe.apply({'operation': 'inspect', 'entity_ids': []}, {'repository_uuid': 'fixture'})
+            check('loop/no-other-timer', 'a forced concurrent receiver commit cannot turn inspect into a journal wake',
+                  answer.get('ok') is True and probe.watermark() > before and wakes == [])
+
+        # A real journal wake may also arrive after the terminal commit but
+        # before the launch pipe's end. Drive those two passes in that order.
+        pending = SimpleNamespace(dispatch_id='pending-build', lost=False,
+                                  contract={'unit': 'fixture', 'station': 'build'})
+        held = {pending.dispatch_id: pending}
+        attempted = []
+        terminal = {'dispatch_id': pending.dispatch_id, 'state': 'exited'}
+
+        def settle(launch, timeout=None):
+            held.pop(launch.dispatch_id)
+            return terminal
+
+        line = SimpleNamespace(repository='fixture', activate=lambda: None,
+            runner=SimpleNamespace(launches=held, orphans=[], honor_stops=lambda: None,
+                                   release_orphans=lambda: [], wait=settle),
+            wants_cycles=lambda: False, loop=SimpleNamespace(provision=lambda *args: None),
+            latest=lambda: {('fixture', 'build'): terminal}, assigned=lambda: ['fixture'],
+            next=lambda unit, latest, report: attempted.append(unit))
+        report = {'released': [], 'ended': []}
+        CS.Line.run(line, report, [])
+        before_end = list(attempted)
+        CS.Line.run(line, report, [pending])
+        check('loop/review-offered', 'terminal store state cannot advance a held launch before its pipe end',
+              before_end == [] and attempted == ['fixture'] and not held
+              and [(e['station'], e['state']) for e in report['ended']] == [('build', 'exited')])
         serial = [0]
 
         def next_id(prefix):
