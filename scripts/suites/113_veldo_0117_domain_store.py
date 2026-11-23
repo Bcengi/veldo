@@ -613,22 +613,20 @@ def _v117_production(world, checks, records):
                        % (label, "listening" if up else "not listening: " + process.said()), up))
         return process
 
+    pending_observations = []
+
     def refused_whole(label, side, sent_uuid, proposed, reader, reader_side):
         """A command of `side`, whose binding names `proposed`, sent and judged: it must be refused
         domain_store_conflict naming the committed and the proposed store, and written nowhere."""
         before = {name: _v117_FX.snapshot(each["path"]) for name, each in sides.items()}
         outcome, answer = send(side, sent_uuid, label)
         unchanged = all(_v117_FX.snapshot(each["path"]) == before[name] for name, each in sides.items())
-        seen = [r for r in reader.observations("domain_store_conflict") if r.get("proposed") == proposed]
+        pending_observations.append((label, proposed, reader, reader_side))
         checks.append(("production: %s is refused domain_store_conflict by the running service, naming the "
                        "committed and the proposed store, and neither store changes [%s; committed %s; stores "
                        "unchanged %s]" % (label, outcome, answer.get("committed"), unchanged),
                        outcome == "refused:domain_store_conflict" and answer.get("committed") == held
                        and answer.get("proposed") == proposed and unchanged))
-        checks.append(("production: the refusal of %s is in the observations of %s's instance with the domain, "
-                       "the committed and the proposed store [%d found]" % (label, reader_side, len(seen)),
-                       bool(seen) and all(r.get("domain_uuid") == domain and r.get("committed") == held
-                                          and r.get("outcome") == "refused" for r in seen)))
         records.append({"case": "production: " + label, "committed": held, "proposed": proposed,
                         "command": outcome, "stores_unchanged": unchanged,
                         "passed": outcome == "refused:domain_store_conflict" and unchanged})
@@ -670,6 +668,15 @@ def _v117_production(world, checks, records):
         codes = [running[name].stop() for name in order]
         checks.append(("production: both instances stop on SIGTERM with exit 0%s [%s]" % (again, codes),
                        codes == [0, 0]))
+    # The reply is sent before observe_response appends its line. Reaping both
+    # serving processes above joins that work, including the final refusal.
+    # A missing observation still fails immediately; it is never waited into existence.
+    for label, proposed, reader, reader_side in pending_observations:
+        seen = [r for r in reader.observations("domain_store_conflict") if r.get("proposed") == proposed]
+        checks.append(("production: the refusal of %s is in the observations of %s's instance with the domain, "
+                       "the committed and the proposed store [%d found]" % (label, reader_side, len(seen)),
+                       bool(seen) and all(r.get("domain_uuid") == domain and r.get("committed") == held
+                                          and r.get("outcome") == "refused" for r in seen)))
     checks.append(("production: the registry holds the committed store alone at the end [%s]"
                    % _v117_registry_rows(registry), _v117_registry_rows(registry) == [held]))
 

@@ -37,6 +37,29 @@ def _v113_run(ROOT):
 
 
 if 'expect' in globals():
+    # Force the supervisor's large receipt through short writes. A one-shot
+    # print on an unbuffered raw stream loses the unwritten tail of the frame.
+    def _v113_short_receipt():
+        from unittest.mock import patch
+        spec = _v113_import.spec_from_file_location(
+            'v113_receipt', ROOT / 'scripts/fixtures/lifecycle_census.py')
+        census = _v113_import.module_from_spec(spec)
+        spec.loader.exec_module(census)
+        value = {'inventory': 'x' * (3 * 65536), 'fault': 'corrupt'}
+        chunks = []
+
+        def short_write(fd, data):
+            chunk = bytes(data[:65536])
+            chunks.append(chunk)
+            return len(chunk)
+
+        with patch.object(census.os, 'write', side_effect=short_write):
+            census.write_receipt(value)
+        wire = b''.join(chunks)
+        return len(chunks) > 1 and wire.endswith(b'\n') and _v113_json.loads(wire) == value
+
+    expect('VELDO-0113 protocol unavailable/supervisor-receipt-survives-short-writes',
+           _v113_short_receipt())
     _v113_result = _v113_run(_v113_Path(ROOT))
     for _v113_name, _v113_row in _v113_result['rows'].items():
         _v113_detail = {k: v for k, v in _v113_row.items() if k != 'observation_receipts'}

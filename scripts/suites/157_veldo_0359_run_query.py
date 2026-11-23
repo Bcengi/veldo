@@ -366,7 +366,7 @@ def _v359_query_suite():
 
         def held_log(*args):
             logging.set()
-            if not release_log.wait(HANG):
+            if not release_log.wait(WAITS.WAIT_HANG_SECONDS):
                 raise AssertionError('query log release hung')
             real_log(*args)
 
@@ -381,15 +381,15 @@ def _v359_query_suite():
         reader = threading.Thread(target=read_snapshot)
         try:
             remote.replication_status()
-            assert logging.wait(HANG), 'query log entry hung'
+            assert logging.wait(WAITS.WAIT_HANG_SECONDS), 'query log entry hung'
             check('query/scope', 'forced response precedes log completion',
                   sum(server.counts.values()) == len(journey_log.read_text().splitlines()) + 1)
             reader.start()
-            assert snapshot_started.wait(HANG), 'query snapshot hung'
+            assert snapshot_started.wait(WAITS.WAIT_HANG_SECONDS), 'query snapshot hung'
         finally:
             release_log.set()
             if reader.ident is not None:
-                reader.join(HANG)
+                reader.join(WAITS.WAIT_HANG_SECONDS)
             server._log = real_log
         assert not reader.is_alive() and snapshot, 'query snapshot completion hung'
         log_text, counts = snapshot[0]

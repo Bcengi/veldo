@@ -1416,7 +1416,22 @@ def census(argv, *, identity, cwd=None, deadline=HANG_SECONDS, fault=None):
         return finish(r)
 
 
+def write_receipt(value):
+    """Deliver the whole JSON frame even when a pipe write makes partial progress.
+
+    A supervisor receipt includes the kernel inventory and can exceed the pipe's
+    capacity. Unbuffered TextIOWrapper.write does not retry a short raw write.
+    Keep ownership of the remaining bytes until the reader has received them.
+    """
+    pending = memoryview((json.dumps(value) + "\n").encode("utf-8"))
+    while pending:
+        written = os.write(sys.stdout.fileno(), pending)
+        if written <= 0:
+            raise OSError("supervisor receipt write made no progress")
+        pending = pending[written:]
+
+
 if __name__ == "__main__":
     if sys.argv[1:] != ["supervise"]:
         raise SystemExit("internal supervisor entry only")
-    print(json.dumps(supervise(json.load(sys.stdin))))
+    write_receipt(supervise(json.load(sys.stdin)))
