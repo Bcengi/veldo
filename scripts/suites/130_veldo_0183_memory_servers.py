@@ -1098,4 +1098,4 @@ print(json.dumps(dict(by_id=len(by_id), by_search=len(by_search), total=len(want
         expect('VELDO-0183 ' + row, bool(rows[row]) and not failed)
 
 
-_v183_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v183_suite)

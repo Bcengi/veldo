@@ -63,6 +63,7 @@ async function start() {
     domain: ready.domain,
     control,
     state: () => control('/state'),
+    now: async () => (await control<{ now: number }>('/clock')).now,
     replies: async (replies) => void (await control('/conversation/replies', { replies })),
     hold: async (conversation, on) => void (await control('/conversation/hold', { conversation, on })),
     pause: async (on) => void (await control('/conversation/pause', { on })),
