@@ -178,7 +178,7 @@ def _v218_audit():
                 noop=observation([['fixture target', True], ['fixture other', True], ['extra row', True]]),
                 mutant=observation([['fixture target', False], ['fixture other', True], ['extra row', True]])))
             row('compare', all(name in fields for name, _, fields in compared)
-                and all(code in ('invalid_baseline', 'missing_target', 'driver_error', 'reuse_audit_mismatch')
+                and all(code in ('control_failed', 'missing_target', 'driver_error', 'reuse_audit_mismatch')
                         for _, code, _ in compared)
                 and valid_diff['status'] == 'failed' and valid_diff['error'] == 'reuse_audit_mismatch'
                 and same['status'] == other['status'] == 'passed'
