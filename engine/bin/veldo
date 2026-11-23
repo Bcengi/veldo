@@ -548,9 +548,10 @@ class _SpaceAs:
     def place_hold(self, identity, needs, source, principal=None, command_id=None, scope=None):
         return self._apply(self._sp.HOLD, hold=identity, needs=needs, source=source)
 
-    def admit(self, identity, answer, reason=None, used=None, retry_asked=None, principal=None, command_id=None):
+    def admit(self, identity, answer, reason=None, used=None, retry_asked=None, principal=None, command_id=None,
+              expected_version=None):
         return self._apply(self._sp.ADMIT, hold=identity, answer=answer, reason=reason, used=used,
-                           retry_asked=retry_asked)
+                           retry_asked=retry_asked, expected_version=expected_version)
 
     def release(self, identity, used=None, principal=None, command_id=None):
         return self._apply(self._sp.RELEASE, hold=identity, used=used)
