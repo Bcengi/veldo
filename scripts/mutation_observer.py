@@ -259,6 +259,17 @@ def materialize(case, mode, directory, root=ROOT):
                 new_digest=hashlib.sha256(after).hexdigest())
 
 
+@contextlib.contextmanager
+def suite_imports():
+    """The isolated observer gives suite imports their repository, after interpreter paths."""
+    previous = sys.path[:]
+    sys.path.append(str(ROOT / 'scripts'))
+    try:
+        yield
+    finally:
+        sys.path[:] = previous
+
+
 def worker(case, mutant=None):
     """Capture every assertion, including the shared preamble, with exact row identities."""
     shared = ROOT / 'scripts/suites/shared.py'
@@ -304,7 +315,7 @@ def worker(case, mutant=None):
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     faulthandler.enable()
     faulthandler.dump_traceback_later(PROCESS_HANG_SECONDS, exit=True)
-    with contextlib.redirect_stdout(io.StringIO()):
+    with suite_imports(), contextlib.redirect_stdout(io.StringIO()):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
         waits = ns.get('WAITS')
         if waits is not None:
@@ -342,4 +353,3 @@ def worker(case, mutant=None):
             'failed_details': details,
             'targets': {label: [ok for name, ok in rows if name.split()[-1] == label]
                         for label in case['rows']}}
-
