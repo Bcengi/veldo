@@ -678,18 +678,20 @@ class Broker:
     def _pin_bind(self, tid, address, opened):
         """The bind's parent directory and the root it lies in, as O_PATH descriptors, or OSError.
 
-        The root is the caller's shard's own root that holds the path (the domain root for a
-        caller in no shard), opened beneath the domain with no link or mount crossing. The parent
+        The root is the deeper of the domain root and the caller's shard's own root that hold
+        the path (the domain root alone for a caller in no shard), opened beneath the domain with no link or mount crossing. The parent
         is reached from it one component at a time with O_DIRECTORY | O_NOFOLLOW, each step
         checked by fstat: same device as the root, and its '..' is the directory it was opened
         from. The path is never resolved again by name for the check; the helper's Landlock
         layers on these two descriptors decide where the bind may land."""
         path = address[2:].split(b'\0', 1)[0]
-        root = self._within_shard(tid, address)
-        if root is None:
-            root = next((r for r, _ in self.roots if path.startswith(r.rstrip(b'/') + b'/')), None)
-        if root is None:
+        domain = [r for r, _ in self.roots if path.startswith(r.rstrip(b'/') + b'/')]
+        if not domain:
             raise OSError(errno.EACCES, 'Unix address outside the domain')
+        # Both the domain root and the shard root are prefixes of the path, so one holds the
+        # other: the deeper one is the narrower grant (a nested launcher's domain can lie inside
+        # the shard that runs it, or a shard's root inside the domain).
+        root = max([*domain, self._within_shard(tid, address) or b''], key=len)
         rootfd = self._resolve(root, opened, directory=True)
         rootinfo = os.fstat(rootfd)
         current, info = rootfd, rootinfo
