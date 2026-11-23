@@ -601,6 +601,8 @@ out.close()
             toml = lambda value: json.dumps(value) if isinstance(value, str) else str(value).lower()
             for key in sorted(generated):
                 expected += ['-c', '%s=%s' % (key, toml(generated[key]['value']))]
+            # VELDO-0359: the outer store guard owns confinement in this local run.
+            expected += ['-c', 'sandbox_mode="danger-full-access"']
             check('baseline/qualified', 'the run started the pinned vendor binary with the qualified flags and then '
                   'exactly the baseline: the two exec options, the apps feature off, no project document, the ChatGPT '
                   'login forced, the file credentials store, the bundled skills off and no skills section, every name '
