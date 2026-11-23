@@ -8,7 +8,8 @@ way they ran before that domain existed: outside it, in a separate, named leg of
 integration stages, and their mutation cases in the mutation stage's unconfined leg (the stage is
 declared with the command MUTATION_COMMAND; scripts/check_gate_mutations.py runs that leg with
 mutation_leg and record below; since a mutation case runs its whole suite in one worker, a case of
-a suite listed only for some rows is refused, never run there). Every other stage and suite stays
+a suite listed only for some rows is refused unless its registry explicitly keeps the whole worker
+confined with confined_only=True, never run there). Every other stage and suite stays
 confined.
 
 THE LIST IS THE AUTHORITY'S, NEVER THE CANDIDATE'S. It is read from beside this file

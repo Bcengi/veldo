@@ -476,8 +476,8 @@ print(json.dumps(results))
         job.write_text(json.dumps(dict(case=controlled_case, mode='baseline')))
         argv, channel = worker_argv(job)
         try:
-            denied_worker = confined_run(argv, cwd=worker_root, env=gate.fixed_env(scratch), pass_fds=(channel,),
-                                          capture_output=True, text=True, timeout=20)
+            denied_worker = confined_run(argv, cwd=worker_root, env=gate.fresh_env(scratch), pass_fds=(channel,),
+                                          capture_output=True, text=True, timeout=gate.WAIT_HANG_SECONDS)
         finally:
             os.close(channel)
         expect('VELDO-0208 candidate/worker-key-access-errors-never-kills: ' + denied_worker.stderr[-300:],
@@ -1237,8 +1237,8 @@ print(json.dumps(r))
                 # Handed the tree's marker inside a gate, as the coordinator hands it (VELDO-0210 AC7).
                 run = subprocess.run([sys.executable, '-I', '-S', str(ROOT / 'scripts/reuse_worker.py'), 'worker',
                                       str(worker_root), str(channel), str(job)], cwd=worker_root,
-                                     pass_fds=(channel, *launcher_fds()), env=gate.fixed_env(scratch),
-                                     capture_output=True, text=True, timeout=60, stdin=subprocess.DEVNULL)
+                                     pass_fds=(channel, *launcher_fds()), env=gate.fresh_env(scratch),
+                                     capture_output=True, text=True, timeout=gate.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
             finally:
                 os.close(channel)
             try:
@@ -2147,9 +2147,9 @@ def network_rule_probe(port, inherited, abstract, scratch):
             job.write_text(json.dumps(dict(case=controlled_case, mode='baseline')))
             argv, channel = worker_argv(job)
             try:
-                ran = subprocess.run(argv, cwd=worker_root, env=gate.fixed_env(scratch),
+                ran = subprocess.run(argv, cwd=worker_root, env=gate.fresh_env(scratch),
                                      pass_fds=(channel, inherited, *launcher_fds()), stdin=subprocess.DEVNULL,
-                                     capture_output=True, text=True, timeout=60)
+                                     capture_output=True, text=True, timeout=gate.WAIT_HANG_SECONDS)
             finally:
                 os.close(channel)
             try:
@@ -2465,6 +2465,36 @@ def _v208_mutation_leg():
                    in rows_receipt.get('detail', '')
                and rows_markers == [] and not rows_receipt.get('worker_outcomes')
                and 'mutations: failed' in rows.stdout)
+
+        # Explicit confinement is a narrowing, even for a rows-scoped suite. Run
+        # the real workers and keep the unannotated refusal above as the control.
+        authority_list.write_text(json.dumps(dict(declared, suites=[
+            {'suite': 'listed', 'rows': 'strace', 'reason': 'fixture: rows that trace a worker'}])))
+        confined_registry = ('\ndef cases():\n    return %r\n' % [
+            dict(name=name + '-case', finding=208, suite=name + '.py', module='fixture.py',
+                 old='answer = True', new='answer = False', rows=['fixture/teeth'], confined_only=True)
+            for name in ('listed', 'unlisted')])
+        for driver in ('check_teeth_mutations.py', 'check_review_mutations.py'):
+            path = candidate / 'scripts' / driver
+            path.write_text(path.read_text() + confined_registry)
+        narrowed, narrowed_markers, narrowed_receipt = stage(top / 'confined-record')
+        authority_list.write_text(json.dumps(declared))
+        expect('VELDO-0208 unconfined-leg/explicit-confined-cases-keep-worker-boundary: '
+               + repr((narrowed.returncode, narrowed_markers, narrowed_receipt.get('detail'))),
+               narrowed.returncode == 0 and narrowed_receipt.get('status') == 'passed'
+               and narrowed_receipt.get('executed') == 4 and narrowed_receipt.get('rejected') == 4
+               and narrowed_markers == [] and bool(narrowed_receipt.get('worker_outcomes'))
+               and all(o.get('leg') == 'confined' for o in narrowed_receipt['worker_outcomes'])
+               and narrowed_receipt.get('unconfined', {}).get('cases') == [])
+        coordinator = __import__('importlib.util').util.spec_from_file_location(
+            'v208_control_groups', ROOT / 'scripts/check_gate_mutations.py')
+        groups = __import__('importlib.util').util.module_from_spec(coordinator)
+        coordinator.loader.exec_module(groups)
+        example = dict(suite='listed.py', module='fixture.py')
+        expect('VELDO-0208 unconfined-leg/explicit-confined-controls-are-separate',
+               groups.control_group(example) != groups.control_group(dict(example, confined_only=True))
+               and groups.in_leg({'suites': ['listed'], 'entries': ['listed']},
+                                 dict(example, confined_only=True)) is False)
 
         # verify.sh asks the authority's list whether the mutation stage expects its leg BEFORE the
         # stage runs and hands the coordinator the same record, so a record missing after an expected

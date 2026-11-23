@@ -64,17 +64,24 @@ def _v159_suite():
             env['PATH'] = found[-1] + os.pathsep + env.get('PATH', '')
         return env
 
-    def run(argv, cwd, env, timeout):
+    def run(argv, cwd, env, kind=None):
         try:
-            done = subprocess.run(argv, cwd=str(cwd), env=env, capture_output=True, text=True, timeout=timeout)
-            return done.returncode, (done.stdout or '') + (done.stderr or '')
+            if kind is not None:
+                done = WAITS.run_heavy(argv, kind, cwd=str(cwd), env=env)
+            else:
+                done = subprocess.run(argv, cwd=str(cwd), env=env, capture_output=True, text=True,
+                                      timeout=WAITS.WAIT_HANG_SECONDS)
+            out = (done.stdout or '') + (done.stderr or '')
+            if getattr(done, 'hung', False):
+                return -1, out + '\nHUNG: %s made no progress for the process hang bound' % kind
+            return done.returncode, out
         except (OSError, subprocess.SubprocessError) as error:
             return -1, '%s: %s' % (type(error).__name__, error)
 
     def tail(text, n=6):
         kept = [re.sub(r'[^\x20-\x7e]+', ' ', line).strip() for line in text.splitlines()
-                if re.search(r'(error|Error|failed|Expected|Received|passed)', line)]
-        return ' | '.join(kept[-n:])[:600]
+                if re.search(r'(error|Error|failed|Expected|Received|passed|HUNG|TimeoutExpired)', line)]
+        return ' | '.join((kept or [re.sub(r'[^\x20-\x7e]+', ' ', text)])[-n:])[:600]
 
     def specs(node):
         for spec in node.get('specs') or []:
@@ -93,7 +100,7 @@ def _v159_suite():
         if (UI / 'node_modules' / '.bin' / 'vite').exists():
             os.symlink(str(UI / 'node_modules'), str(ui / 'node_modules'))
         else:
-            code, out = run(['npm', 'ci', '--prefer-offline', '--no-audit', '--no-fund'], ui, env, 600)
+            code, out = run(['npm', 'ci', '--prefer-offline', '--no-audit', '--no-fund'], ui, env, 'package install')
             if code != 0:
                 for row in ROWS:
                     check(row, 'the locked UI dependencies are installed (npm ci) [%s]' % tail(out), False)
@@ -107,20 +114,20 @@ def _v159_suite():
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(str(source), str(target))
         dist = base / 'dist'
-        code, out = run(['npm', 'run', 'build', '--', '--outDir', str(dist), '--emptyOutDir'], ui, env, 300)
+        code, out = run(['npm', 'run', 'build', '--', '--outDir', str(dist), '--emptyOutDir'], ui, env)
         built = code == 0 and (dist / 'index.html').is_file()
         if not built:
             for row in ROWS:
                 check(row, 'the UI with these production copies builds [%s]' % tail(out), False)
             return
-        code, out = run([str(ui / 'node_modules' / '.bin' / 'vitest'), 'run', 'src/features/servers'], ui, env, 120)
+        code, out = run([str(ui / 'node_modules' / '.bin' / 'vitest'), 'run', 'src/features/servers'], ui, env)
         check('mcp/definition-unit', 'the form\'s definition module turns what the form holds into the catalog route\'s '
               'definition, by transport, and a stored revision back [%s]' % tail(out, 3), code == 0)
         report = base / 'e2e.json'
         browser_env = dict(env, VELDO_UI_DIST=str(dist), VELDO_E2E_REPORT=str(report), VELDO_ORGANS=str(ROOT / '.veldo'))
         browser_env.pop('VELDO_UI_INSTALLED', None)
         code, out = run([str(ui / 'node_modules' / '.bin' / 'playwright'), 'test', 'e2e/servers.spec.ts'], ui,
-                        browser_env, 420)
+                        browser_env, 'browser run')
         try:
             data = json.loads(report.read_text())
         except (OSError, ValueError):

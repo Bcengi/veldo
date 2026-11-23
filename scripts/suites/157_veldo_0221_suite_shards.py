@@ -1285,7 +1285,7 @@ def _veldo_0221():
 
                         def attack():
                             try:
-                                if not checked.wait(600):
+                                if not checked.wait(WAITS.WAIT_HANG_SECONDS):
                                     raise RuntimeError('bind race never reached the pinned parent')
                                 parent.rename(held)
                                 parent.symlink_to(destination, target_is_directory=True)
@@ -1296,7 +1296,7 @@ def _veldo_0221():
 
                         def paused_bind(*arguments):
                             checked.set()
-                            if not swapped.wait(600):
+                            if not swapped.wait(WAITS.WAIT_HANG_SECONDS):
                                 raise RuntimeError('bind race attacker hung')
                             return bind_method(live, *arguments)
                         attacker = threading.Thread(target=attack, daemon=True)
@@ -1306,7 +1306,7 @@ def _veldo_0221():
                             sock.close()
                         finally:
                             checked.set()
-                            attacker.join(600)
+                            attacker.join(WAITS.WAIT_HANG_SECONDS)
                         landed, escaped = (held / 's').is_socket(), (destination / 's').exists()
                         results.append({'case': 'swap-to-' + ('sibling' if index == 0 else 'own-decoy'),
                                         'error': error, 'pinned': landed, 'redirected': escaped,
