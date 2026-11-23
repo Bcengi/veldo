@@ -1149,9 +1149,9 @@ def _veldo_0221():
         expect('VELDO-0221 gate-fixtures/run-environment-cannot-redirect',
                result['failed'] == 0 and not (top / 'redirect').exists())
         refused = through_dispatcher(allocation_tree, dict(leg_env('confined', 'none_listed'),
-                                     VELDO_FIXTURE_PARENT=str(top / 'refused-parent')))
+                                     VELDO_FIXTURE_PARENT='relative-fixture-parent'))
         expect('VELDO-0221 gate-fixtures/dispatcher-named-refusal-no-traceback',
-               refused.returncode == 2 and 'gate_fixture_root_unsafe_placement' in refused.stdout
+               refused.returncode == 2 and 'gate_fixture_root_invalid_path' in refused.stdout
                and 'Traceback' not in refused.stdout + refused.stderr)
         # The launcher's broker refuses a shard's bind outside the shard's own roots: it finds the
         # caller's shard by ancestry and reads the roots the dispatcher started that shard with.
