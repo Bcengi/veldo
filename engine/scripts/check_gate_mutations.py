@@ -1493,7 +1493,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                         differences = audit_module.R.E.audit_differences(audits[identity], record, case)
                         mismatch = any(d['verdict'] for d in differences.values())
                         entry = dict(identity=identity, key=audit_keys[identity],
-                                     result_digest=audit_module.R.E.digest(audits[identity]),
+                                     result_digest=reuse.authenticated_digests[identity],
                                      fresh_record=record, fresh_digest=audit_module.R.E.digest(record),
                                      differences=differences, matched=not mismatch)
                         receipt['audit']['entries'].append(entry)
@@ -1504,7 +1504,12 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                             reuse.store.invalidate(audit_keys[identity])
                             reuse.mark_stale(case, 'reuse_audit_mismatch: ' + ','.join(differences))
                         # An invalid fresh run retains its own failure classification.
-                        validate_result(record, case)
+                        try:
+                            validate_result(record, case)
+                        finally:
+                            # Validation attaches verdict-bearing kill metadata. Bind the final
+                            # fresh record, including on a refused control, before signing it.
+                            entry['fresh_digest'] = audit_module.R.E.digest(record)
                         if mismatch:
                             raise Refused('reuse_audit_mismatch', identity + ': ' + ','.join(differences))
                     else:

@@ -194,6 +194,11 @@ class Session:
         key = self.keys[identity]
         record = self.store.get(key) if key and self.store else None
         if record is not None:
+            # Validation enriches the in-memory verdict. Preserve the authenticated
+            # bytes' digest for audit/landing bindings, including older cache records.
+            if not hasattr(self, 'authenticated_digests'):
+                self.authenticated_digests = {}
+            self.authenticated_digests[identity] = R.E.digest(record)
             try:
                 validate(record, case)
                 if record['input_digest'] != self.base_digest:
