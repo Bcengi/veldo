@@ -1119,12 +1119,12 @@ def open_domain_registry(path, mode="rw", mounts_text=None):
     if mode == "r":
         if not os.path.exists(target):
             raise StoreRefused("incomplete_transaction", "no domain registry at %s to read" % path)
-        return sqlite3.connect("file:%s?mode=ro" % target, uri=True, isolation_level=None, timeout=30)
+        return sqlite3.connect("file:%s?mode=ro" % target, uri=True, isolation_level=None, timeout=_timer('BUSY_SECONDS'))
     problems = filesystem_problems(os.path.dirname(target) or ".", mounts_text)
     if problems:
         raise StoreRefused("unsupported_filesystem", "; ".join(problems))
     os.makedirs(os.path.dirname(target), exist_ok=True)
-    conn = sqlite3.connect(target, isolation_level=None, timeout=30)
+    conn = sqlite3.connect(target, isolation_level=None, timeout=_timer('BUSY_SECONDS'))
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=FULL")
     conn.execute(_DOMAIN_STORES_DDL)

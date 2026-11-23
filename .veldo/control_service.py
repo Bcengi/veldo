@@ -5068,16 +5068,22 @@ def serve_refusing(config, conn, registry):
     service = Service(config, conn)
     authority = authority_for(config, service, registry)
     stopping = []
-    signal.signal(signal.SIGTERM, lambda signum, frame: stopping.append(signum))
-    signal.signal(signal.SIGINT, lambda signum, frame: stopping.append(signum))
     listener = CC.bind(config['socket'])
     socket_stat = os.lstat(config['socket'])
     socket_identity = (socket_stat.st_dev, socket_stat.st_ino)
-    listener.settimeout(ACCEPT_SECONDS)
+    # A refusing instance has no periodic work. Wake for a request or a stop signal.
+    wake_read, wake_write = os.pipe2(os.O_NONBLOCK | os.O_CLOEXEC)
+    previous_wakeup = signal.set_wakeup_fd(wake_write)
+    previous_handlers = {sig: signal.signal(sig, lambda signum, frame: stopping.append(signum))
+                         for sig in (signal.SIGTERM, signal.SIGINT)}
+    listener.setblocking(False)
     notify('READY=1\nSTATUS=refusing %s: domain_store_conflict' % config['unit'])
     try:
         while not stopping:
-            if listener not in select.select([listener], [], [], ACCEPT_SECONDS)[0]:
+            ready = select.select([listener, wake_read], [], [])[0]
+            if stopping:
+                break
+            if listener not in ready:
                 continue
             try:
                 response = CC.serve_one(listener, authority)
@@ -5090,6 +5096,11 @@ def serve_refusing(config, conn, registry):
             if response is not None:
                 service.observe_response(response)
     finally:
+        signal.set_wakeup_fd(previous_wakeup)
+        for sig, handler in previous_handlers.items():
+            signal.signal(sig, handler)
+        os.close(wake_read)
+        os.close(wake_write)
         notify('STOPPING=1')
         listener.close()
         close_socket(config['socket'], socket_identity)
