@@ -113,7 +113,7 @@ def _v254c_suite():
 
     started = time.monotonic()
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
-    base = Path(tempfile.mkdtemp(prefix='v254c-', dir=runtime if os.path.isdir(runtime) else None))
+    base = Path(tempfile.mkdtemp(prefix='v254c-', dir='/var/lib/veldo'))
     slice_name = 'v254c%s.slice' % os.urandom(4).hex()
     tools = dict(os.environ)
     contained, connections, provisioners = [], [], []
