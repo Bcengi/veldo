@@ -465,8 +465,10 @@ print(json.dumps(out))
               'runner_argv' in calls(launch_functions['Receiver._spawn']))
         marked = sorted(name for name, node in launch_functions.items()
                         if any(isinstance(s, ast.Constant) and s.value == 'risky' for s in ast.walk(node)))
-        check('ac3/one-decision', 'only the decision reads the risky mark [%s]' % marked,
-              marked == ['runner_decision'])
+        check('ac3/one-decision', 'only the decision reads the dispatch risk; the wrapper reads its sampled guard [%s]' % marked,
+              marked == ['runner_decision', 'wrap']
+              and "sample = held.get('store_guard') if held is not None else None" in ast.unparse(launch_functions['wrap'])
+              and "not sample.get('risky')" in ast.unparse(launch_functions['wrap']))
 
         @contextlib.contextmanager
         def section(name):
