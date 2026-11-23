@@ -19,4 +19,5 @@ def run(root, production, exercise, teardown):
     body = body.replace('        close_runtime()',
                         '        __teardown__(dict(locals()))\n        close_runtime()')
     ns = dict(ROOT=Path(root), __production__=production, __exercise__=exercise, __teardown__=teardown)
-    exec(compile(prefix + body + '\n_v171_suite()\n', __file__, 'exec'), ns)
+    with __import__('runpy').run_path(str(Path(root) / 'scripts/suites/support/outside_fixture.py'))['service'](root):
+        exec(compile(prefix + body + '\n_v171_suite()\n', __file__, 'exec'), ns)
