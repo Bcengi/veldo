@@ -53,6 +53,7 @@ def _v176_suite():
     H = load('v176_authority', ROOT / 'scripts/suites/support/v73_authority.py')
     J = load('v176_journey', ROOT / 'scripts/suites/support/v174_journey.py')
     F = load('v176_fakes', ROOT / 'scripts/suites/support/v231_fake_engines.py')
+    WAIT_HANG_SECONDS = 600
     base = Path(tempfile.mkdtemp(prefix='v176-', dir=fast_temp()))
     fixtures, factories, stops = [], [], []
     BOUND = 2000
@@ -687,7 +688,7 @@ else:
             try:
                 for launch in list(factory_value.conversation.runner.launches.values()):
                     launch.stop('requested')
-                    launch.wait(timeout=F.HANG_SECONDS)
+                    launch.wait(timeout=WAIT_HANG_SECONDS)
             except Exception:  # noqa: BLE001
                 pass
             release_lock(lock_value)

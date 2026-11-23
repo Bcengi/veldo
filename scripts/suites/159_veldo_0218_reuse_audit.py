@@ -54,6 +54,7 @@ def _v218_audit():
 
     with tempfile.TemporaryDirectory(prefix='v218-') as temporary:
         top = Path(temporary)
+        row('fresh-session-digests', M.Session(top, {}, [], 'fixture', {}, force_fresh=True).authenticated_digests == {})
         sequence = [0]
         class Workers(G.Workers):
             def run(self, jobs, directory, frozen, on_result=None):
@@ -102,6 +103,7 @@ def _v218_audit():
                 value.keys = {name: None if force_fresh else key for name, key in value.case_digests.items()}
                 value.reasons = dict.fromkeys(value.keys, 'force_fresh' if force_fresh else 'miss')
                 value.hits, value.stale, value.snapshots = {}, {}, {}
+                value.authenticated_digests = {}
                 value.runtime_checks, value.runtime_absent = {}, {}
                 value.reviewed = dict.fromkeys(value.keys, {'rationale': 'controlled admission'})
                 value.gate_run = 'fixture-run-' + str(sequence[0])
