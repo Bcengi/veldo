@@ -306,6 +306,7 @@ REQUEST_SECONDS = _deadline('REQUEST_SECONDS', 10)  # the runner's request, on t
 CENSUS_SECONDS = _deadline('CENSUS_SECONDS', 600)  # one git read of the run-end census
 SOURCE_SECONDS = _deadline('SOURCE_SECONDS', 20)  # one git read resolving a contract's source
 IDENTITY_SECONDS = _deadline('IDENTITY_SECONDS', 5)  # one ps or sysctl read of a process identity (darwin)
+GUARD_CENSUS_SECONDS = _deadline('GUARD_CENSUS_SECONDS', 120)  # the risky runner's effective grants
 NAMESPACE_SECONDS = _deadline('NAMESPACE_SECONDS', 120)  # the confined runner's namespace self-test
 FEEDER_SETTLE_SECONDS = _deadline('FEEDER_SETTLE_SECONDS', 1)  # the prompt feeder, before its write is judged
 FEEDER_SECONDS = _deadline('FEEDER_SECONDS', 5)  # the prompt feeder thread, to end once the engine has
@@ -3493,7 +3494,7 @@ class Receiver:
                 checked = subprocess.run([sys.executable, '-B', RECEIVER, 'guard-census', runner['program'],
                                           runner['config'], str(worktree), RUNNER_CLIENTS.get(engine) or '',
                                           self.store_guard['directory']], env=environment, capture_output=True,
-                                         text=True, timeout=120, stdin=subprocess.DEVNULL)
+                                         text=True, timeout=timer('GUARD_CENSUS_SECONDS'), stdin=subprocess.DEVNULL)
                 census = json.loads(checked.stdout) if checked.returncode == 0 else {}
             except (OSError, ValueError, subprocess.SubprocessError):
                 census = {}
