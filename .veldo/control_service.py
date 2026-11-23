@@ -5083,6 +5083,8 @@ def serve_refusing(config, conn, registry):
             ready = select.select([listener, wake_read], [], [])[0]
             if stopping:
                 break
+            if wake_read in ready:
+                os.read(wake_read, 65536)
             if listener not in ready:
                 continue
             try:
