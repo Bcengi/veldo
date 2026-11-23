@@ -404,10 +404,14 @@ for these suites only: their code runs with the owner's own authority, as it did
   scripts/check_gate_mutations.py reads the list beside itself (gate_legs.mutation_leg), never the
   candidate's copy; with no list, or a list that does not declare the mutation stage with exactly
   `authority mutation stage`, every worker is confined as before, and an invalid list runs nothing.
-  A mutation case runs its whole suite in one worker, so mutation cases are not row-scoped: every
-  case of a listed suite, including a suite listed for some rows (100_0207, 101_0208), runs in the
-  unconfined leg. scripts/reuse_worker.py, started by the coordinator in mode `unconfined` for those
-  cases only, installs no boundary; every other case keeps the worker confinement unchanged. An
+  A mutation case runs its whole suite in one worker. Only cases of a whole-suite entry may run
+  unconfined; a rows-scoped entry is refused by name unless the case registry explicitly declares
+  `confined_only: true`. That declaration keeps the entire worker confined, requires passing
+  confined controls and actual target-row rejection, and never grants access to the rows-scoped
+  unconfined leg. Confined-only controls are separate from ordinary controls. This lets suite
+  48's ordinary relay falsifiers retain confinement while its census claim remains in the declared
+  unconfined suite tests. scripts/reuse_worker.py, started in mode `unconfined` only for eligible
+  whole-suite cases, installs no boundary; every other case keeps the worker confinement. An
   unconfined case is neither traced nor confined, so nothing bounds what it read: it is never
   reuse-qualified (reason `unconfined_leg`), runs fresh, and is never published. Workers carry the
   coordinator's fixed environment, so a caller's leg variables reach none of them and decide nothing.

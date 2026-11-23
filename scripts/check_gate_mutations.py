@@ -507,6 +507,18 @@ def fixed_env(home, binpath='/usr/bin:/bin'):
             'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_TERMINAL_PROMPT': '0'}
 
 
+def fresh_env(home, binpath='/usr/bin:/bin'):
+    """The fixed worker environment plus its enclosing private fixture allocation.
+
+    Fresh workers start a nested tree and allocate a child beneath this root. Declared
+    workers use fixed_env alone: their keyed runtime boundary grants no fixture tree.
+    """
+    environment = fixed_env(home, binpath)
+    environment.update({key: os.environ[key] for key in
+                        ('VELDO_FIXTURE_ROOT', 'VELDO_FIXTURE_PARENT') if key in os.environ})
+    return environment
+
+
 def command(args, env, with_stderr=False):
     """Even setup subprocesses belong to an owned, bounded process group."""
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -1134,12 +1146,8 @@ class Workers:
                         # stdin, which may be a socket the worker's boundary would refuse.
                         # Inside a tree the agent launcher made, a worker is handed its marker, so a
                         # fresh worker's own tree nests in it (VELDO-0210 AC6, AC7).
-                        environment = fixed_env(home, str(bindir) + ':/usr/bin:/bin')
-                        if 'snapshot_root' not in job:
-                            # Carry only the enclosing fixture allocation, never another worker's.
-                            environment.update({key: os.environ[key] for key in
-                                                ('VELDO_FIXTURE_ROOT', 'VELDO_FIXTURE_PARENT')
-                                                if key in os.environ})
+                        worker_env = fixed_env if 'snapshot_root' in job else fresh_env
+                        environment = worker_env(home, str(bindir) + ':/usr/bin:/bin')
                         if meter_fd is not None:
                             environment['VELDO_MUTATION_CGROUP_FD'] = str(meter_fd)
                         if lifecycle_fd is not None:
@@ -1229,15 +1237,18 @@ def worker(job, keep=()):
                 **{key: prepared[key] for key in ('replacement_count', 'old_digest', 'new_digest')})
 
 
-# A case of a suite the authority lists only for some rows: refused, the stage RED.
+# Without explicit confinement, a case of a rows-scoped suite is refused: the stage RED.
 ROWS_SCOPED_CASE = 'rows_scoped_unconfined_case'
 
 
 def in_leg(leg, case):
     """Whether this case runs in the unconfined leg: its suite is one the authority's list names
-    whole. A case runs its whole suite in one worker, so a case of a suite listed only for some rows
-    cannot be held to those rows; it is refused rather than run unconfined with every row of its
-    suite, and those suites are the ones that test the confinement itself."""
+    whole, unless its registry explicitly narrows it with confined_only=True. That flag can
+    only retain the worker boundary, never remove it. A case still runs its whole suite: a
+    rows-scoped suite without that explicit narrowing is refused rather than run unconfined.
+    Its target rows must actually pass the confined controls and reject the mutant."""
+    if case.get('confined_only') is True:
+        return False
     suite = case['suite']
     if leg is None or not suite.endswith('.py') or suite[:-3] not in leg['suites']:
         return False
@@ -1249,7 +1260,9 @@ def in_leg(leg, case):
 
 
 def control_group(case):
-    return (case['suite'] + ':' + case['module'] + ':' + str(case.get('fixture') is True))
+    # A deliberately confined case cannot borrow a whole-suite unconfined control.
+    return (case['suite'] + ':' + case['module'] + ':' + str(case.get('fixture') is True)
+            + (':confined' if case.get('confined_only') is True else ''))
 
 
 def snapshot(root, expected_common, destination, files, head):
@@ -1669,7 +1682,7 @@ def print_leg(leg, receipt, path):
     outside = set(ran.get('cases', []))
     rejected = sum(r['case']['identity'] in outside for r in receipt.get('results', []))
     print('   mutation: confined leg - every case except those of the %d suite%s the list names (a case '
-          'runs its whole suite, so a case of a suite listed only for some rows is refused)'
+          'runs its whole suite; confined_only cases retain confinement, other rows-scoped cases are refused)'
           % (len(leg['suites']), '' if len(leg['suites']) == 1 else 's'), flush=True)
     print('   mutation: UNCONFINED LEG - runs outside the confinement by owner decision (VELDO-0208, %s %s), '
           '%d entr%s: %s' % (os.path.basename(str(path)), leg['declaration'], len(leg['entries']),

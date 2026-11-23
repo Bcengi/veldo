@@ -18601,6 +18601,14 @@ def cases():
     add(359, 'store359-conversation-any-record', query359, 'control_run_query.py',
         "    if gate.repository_uuid is None:\n", "    if False:\n", ['query/scope'])
 
+    # Suite 48's registered falsifiers target its ordinary confined rows, not the
+    # ptrace census composite. Explicitly retain the worker boundary for the whole
+    # suite; its census claim still stands down there, and suite 113 proves it in
+    # the declared unconfined leg. A missing target or failed control stays red.
+    for case in result:
+        if case['suite'] == '48_veldo_0108_relay.py':
+            case['confined_only'] = True
+
     # VELDO-0253: init_scaffold.py takes its asset names from the installation reader, which it loads
     # beside its own file at import, and that reader loads git_process.py (and yamlish.py) beside
     # itself. A copy of init_scaffold.py alone stops with FileNotFoundError before any row, so each

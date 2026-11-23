@@ -25,6 +25,10 @@ import shutil as _w17_shutil
 _W17_REFUSAL = "PARTIAL_RUN_CANNOT_VERIFY"
 _w17_scripts = ROOT / "scripts"
 _w17_suites = _w17_scripts / "suites"
+# These children test selectors and a tiny fixture manifest, independently of the
+# outer gate's suite selection. The process confinement and fixture handoff remain.
+_w17_env = {k: v for k, v in os.environ.items()
+            if k not in ('VELDO_GATE_LEG', 'VELDO_GATE_UNCONFINED', 'VELDO_GATE_DECLARATION')}
 
 _w17_rs_spec = importlib.util.spec_from_file_location(
     "w17_run_scope", git_fixture_dependency(_w17_scripts / "run_scope.py"))
@@ -288,7 +292,7 @@ def _w17_fixture(d, suites, requires=None):
     """A runnable copy of the dispatcher over a synthetic manifest. Returns the root."""
     root = Path(d)
     (root / "scripts" / "suites").mkdir(parents=True)
-    for rel in ("scripts/selftest.py", "scripts/run_scope.py", "scripts/suites/shared.py"):
+    for rel in ("scripts/selftest.py", "scripts/run_scope.py", "scripts/gate_fixtures.py", "scripts/suites/shared.py"):
         _w17_shutil.copy(ROOT / rel, root / rel)
     os.symlink(ROOT / ".veldo", root / ".veldo")
     entries = [{"name": "shared", "file": "shared.py", "regions": "preamble"}]
@@ -310,7 +314,7 @@ def _w17_fixture(d, suites, requires=None):
 
 def _w17_run(root, *args):
     r = subprocess.run([sys.executable, str(root / "scripts" / "selftest.py")] + list(args),
-                       capture_output=True, text=True, cwd=str(root), pass_fds=launcher_fds())
+                       capture_output=True, text=True, env=_w17_env, cwd=str(root), pass_fds=launcher_fds())
     return r.returncode, r.stdout + r.stderr
 
 
@@ -394,7 +398,7 @@ _W17_HOSTILE = [
 _w17_hostile_runs = []
 for _label, _bad in _W17_HOSTILE:
     _r = subprocess.run([sys.executable, str(_w17_scripts / "selftest.py"), "--suite", _bad],
-                        capture_output=True, text=True, cwd=str(ROOT))
+                        capture_output=True, text=True, env=_w17_env, cwd=str(ROOT))
     _w17_hostile_runs.append((_label, _bad, _r.returncode, _r.stdout + _r.stderr))
 
 expect("WARP-0717 AC1: AN UNRESOLVABLE SELECTOR IS A REFUSAL THAT NAMES THE AVAILABLE "
@@ -437,22 +441,25 @@ _W17_BAD_FLAGS = [
 ]
 
 
-def _w17_drive_bounded(arg, timeout=30):
-    """One dispatcher run under a WALL-CLOCK BOUND, returning (exit code or None, output).
+def _w17_drive_bounded(arg):
+    """The shipped dispatcher over a tiny manifest, with a hang detector only.
 
-    THE BOUND IS NOT TIDINESS, IT IS THE ONLY THING THAT KEEPS A REMOVED REFUSAL A RED. If
-    the flag refusal is ever taken out, these arguments go back to starting a FULL run of the
-    suite, and a full run CONTAINS THIS FRAGMENT, which would drive them again. Unbounded,
-    that is a recursion rather than a failing assertion, and a hang prints no verdict line at
-    all. Bounded, the child is killed long before a full run could reach this fragment (about
-    95s in), so the depth stops at one and the outcome is a RED. A timeout yields None, which
-    is not 2, so the assertion below fails rather than skipping.
+    If the flag refusal is removed, the child runs this whole two-fragment fixture
+    and exits zero, which fails the assertion. It cannot recurse into this suite
+    or accidentally start the repository's full unit leg. The recognized suite
+    name used by the hostile equals-form argument is present in the fixture too.
     """
-    try:
-        r = subprocess.run([sys.executable, str(_w17_scripts / "selftest.py"), arg],
-                           capture_output=True, text=True, cwd=str(ROOT), timeout=timeout)
-    except subprocess.TimeoutExpired as e:
-        return None, "TIMEOUT after %ss: %s" % (timeout, e.output or "")
+    name = "05_tracker_routing_resolver_veldo"
+    with tempfile.TemporaryDirectory() as directory:
+        root = _w17_fixture(directory, [(name, _W17_FRAG_A, [name]),
+                                       ("f2", _W17_FRAG_B, [name, "f2"])],
+                            requires={name: [name], "f2": [name, "f2"]})
+        try:
+            r = subprocess.run([sys.executable, str(root / "scripts/selftest.py"), arg],
+                               capture_output=True, text=True, env=_w17_env, cwd=str(root),
+                               pass_fds=launcher_fds(), timeout=WAITS.WAIT_HANG_SECONDS)
+        except subprocess.TimeoutExpired as e:
+            return None, "TIMEOUT after %ss: %s" % (WAITS.WAIT_HANG_SECONDS, e.output or "")
     return r.returncode, r.stdout + r.stderr
 
 
@@ -479,7 +486,7 @@ expect("WARP-0717 AC1: AN UNRECOGNISED ARGUMENT BEGINNING WITH `--` IS A NAMED R
 # assertion and the hermetic fixture's full run), so what is driven here is `--list`, whose
 # output shape is otherwise unasserted: one line per enumerated fragment, exit 0.
 _w17_list = subprocess.run([sys.executable, str(_w17_scripts / "selftest.py"), "--list"],
-                           capture_output=True, text=True, cwd=str(ROOT))
+                           capture_output=True, text=True, env=_w17_env, cwd=str(ROOT))
 _w17_list_lines = [ln for ln in _w17_list.stdout.splitlines() if ln.strip()]
 expect("WARP-0717 AC3 NO REGRESSION FROM THE FLAG REFUSAL: `--list` still prints exactly one "
        "line per fragment the manifest enumerates, each naming that fragment and its closure "
@@ -499,7 +506,7 @@ expect("WARP-0717 AC3 NO REGRESSION FROM THE FLAG REFUSAL: `--list` still prints
 # ---------------------------------------------------------------------------------------
 _w17_cheap = "05_tracker_routing_resolver_veldo"
 _w17_r = subprocess.run([sys.executable, str(_w17_scripts / "selftest.py"),
-                         "--suite", _w17_cheap], capture_output=True, text=True, cwd=str(ROOT),
+                         "--suite", _w17_cheap], capture_output=True, text=True, env=_w17_env, cwd=str(ROOT),
                         pass_fds=launcher_fds())
 _w17_real_out = _w17_r.stdout + _w17_r.stderr
 
@@ -536,7 +543,7 @@ expect("WARP-0717 AC1: a partial run REPORTS ITS OWN ELAPSED TIME AND THE SELECT
                      r"in \d+\.\d\ds$", _w17_real_out, _w17_re.M) is not None)
 
 _w17_upto = subprocess.run([sys.executable, str(_w17_scripts / "selftest.py"),
-                            "--upto", _w17_names[0]], capture_output=True, text=True,
+                            "--upto", _w17_names[0]], capture_output=True, text=True, env=_w17_env,
                            cwd=str(ROOT), pass_fds=launcher_fds())
 _w17_upto_out = _w17_upto.stdout + _w17_upto.stderr
 expect("WARP-0717 AC3 NO REGRESSION: `--upto` STILL WORKS, still exits 2 on success, and "
