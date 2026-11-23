@@ -2180,7 +2180,11 @@ class Service:
         ok = bool(result.get('ok'))
         observation.update(outcome='accepted' if ok else 'refused', refusal=None if ok else result.get('reason'),
                            taxonomy=None if ok else taxonomy(result.get('reason')), watermark=self.watermark())
-        self.hint_after(before)
+        # An inspect commits nothing. A receiver can commit between the two
+        # watermark reads; its completion is delivered by its launch pipe, not
+        # by attributing that concurrent write to this read-only packet.
+        if not (isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet):
+            self.hint_after(before)
         self._count(observation)
         self.space_pass()
         return result
@@ -3397,8 +3401,16 @@ class Line:
         self.loop.provision(report, 'line:' + self.repository)
         self.activate()
         latest = self.latest()
+        # The receiver commits its terminal record before sending its end on
+        # the launch pipe. A journal wake in that interval must not advance the
+        # unit: settle the held launch above before offering its next station.
+        terminal = {record['dispatch_id'] for record in latest.values()
+                    if record.get('state') in ('exited', 'unknown')}
+        held = {launch.contract['unit'] for launch in self.runner.launches.values()
+                if launch.dispatch_id in terminal}
         for unit in self.assigned():
-            self.next(unit, latest, report)
+            if unit not in held:
+                self.next(unit, latest, report)
         if getattr(self, 'batches', None) is not None:
             report.setdefault('batches', []).extend(self.batches.pass_once())
 

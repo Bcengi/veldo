@@ -161,6 +161,17 @@ def _v359_query_suite():
 
         journey_log = base / 'records' / 'journey.query.log'
         server = Q.Server(config, 'journey', log=str(journey_log)).start()
+        # A response precedes the server's accounting and log write. Hold this
+        # test-side lock through the whole request, and join that completion
+        # before comparing the two observations.
+        request_done = threading.Lock()
+        serve_request = server._request
+
+        def synchronized_request(*args):
+            with request_done:
+                return serve_request(*args)
+
+        server._request = synchronized_request
         stack.callback(server.close)
         remote_events, direct_events = [], []
         remote = Q.RemoteGate(repo, server.path, remote_events.append)
@@ -345,11 +356,48 @@ def _v359_query_suite():
         check('query/scope', 'frozen completion floor replication', set(remote.completion('VELDO-9359')) == set(Q.FACTS)
               and set(remote.floor_entry('VELDO-9359', 'ready')) == set(Q.FLOOR)
               and set(remote.replication_status()) == set(Q.REPLICATION))
-        logged = [line.split(' ') for line in journey_log.read_text().splitlines()]
+        # Force the old bad interleaving: the client has its answer and counts
+        # have advanced, but the corresponding log write is still held back.
+        logging = threading.Event()
+        release_log = threading.Event()
+        snapshot_started = threading.Event()
+        snapshot = []
+        real_log = server._log
+
+        def held_log(*args):
+            logging.set()
+            if not release_log.wait(HANG):
+                raise AssertionError('query log release hung')
+            real_log(*args)
+
+        def read_snapshot():
+            snapshot_started.set()
+            with request_done:
+                snapshot.append((journey_log.read_text(), dict(server.counts)))
+
+        # Finish the preceding request before installing the forcing hook.
+        with request_done:
+            server._log = held_log
+        reader = threading.Thread(target=read_snapshot)
+        try:
+            remote.replication_status()
+            assert logging.wait(HANG), 'query log entry hung'
+            check('query/scope', 'forced response precedes log completion',
+                  sum(server.counts.values()) == len(journey_log.read_text().splitlines()) + 1)
+            reader.start()
+            assert snapshot_started.wait(HANG), 'query snapshot hung'
+        finally:
+            release_log.set()
+            if reader.ident is not None:
+                reader.join(HANG)
+            server._log = real_log
+        assert not reader.is_alive() and snapshot, 'query snapshot completion hung'
+        log_text, counts = snapshot[0]
+        logged = [line.split(' ') for line in log_text.splitlines()]
         check('query/scope', 'log holds only request name and outcome', bool(logged) and all(
             len(line) == 2 and line[0] in (*Q.REQUESTS, 'malformed')
             and line[1] in ('ok', 'coordinate_not_served', 'unavailable_service:run_query') for line in logged)
-            and sum(server.counts.values()) == len(logged) and 'VELDO-9359' not in journey_log.read_text())
+            and sum(counts.values()) == len(logged) and 'VELDO-9359' not in log_text)
         # Freeze every nested metadata projection; injected record bodies never cross.
         real_decide = Q.EL.Gate.decide
         def planted_decide(gate, *args, **kwargs):
