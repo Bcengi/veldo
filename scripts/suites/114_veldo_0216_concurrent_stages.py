@@ -56,7 +56,7 @@ def _v216_checks():
         authority = top / 'authority'
         scripts = authority / 'scripts'
         scripts.mkdir(parents=True)
-        for name in ('gate_candidate.py', 'agent_sandbox.py', 'agent_sandbox.json'):
+        for name in ('gate_candidate.py', 'agent_sandbox.py', 'gate_fixtures.py', 'agent_sandbox.json'):
             shutil.copyfile(ROOT / 'scripts' / name, scripts / name)
         shutil.copyfile(source, scripts / 'gate_schedule.py')
         shutil.copyfile(leg_source, scripts / 'gate_legs.py')
