@@ -113,7 +113,8 @@ def _v154_suite():
     # report, which is one launch and one pass.
     LEAD = 30.0
     fast = fast_temp()
-    base = Path(tempfile.mkdtemp(prefix='v154-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')))
+    fixtures = load('v154_fixtures', ROOT / 'scripts/gate_fixtures.py')
+    base = fixtures.allocate(os.environ.get('VELDO_FIXTURE_ROOT') or fixtures.parent_for(fixtures.ENVIRONMENT), 'f')
     run_id = os.urandom(4).hex()
     instances = []
     connections = []
@@ -374,6 +375,7 @@ sys.exit(chosen['code'])
 
             # The installation: its fixed executable, its receiver configuration and the work configuration.
             def install(self):
+                fixtures.socket_paths({'authority': CC.socket_path_for(self.binding)})
                 self.install_root, self.unit_dir = base / ('install-' + self.tag), base / ('units-' + self.tag)
                 installed_bin = self.installed_bin = self.install_root / CS.CC.service_id(self.binding) / 'bin'
                 wrapper = [sys.executable, '-B', str(installed_bin / 'control_launch.py'), 'exec']

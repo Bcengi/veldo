@@ -22,16 +22,62 @@ ENVIRONMENT = dict(os.environ)
 
 def fixture_parent(environment):
     """The configured parent as given (a link in it is refused by placement), or the default:
-    $XDG_STATE_HOME (ignored unless absolute, as the XDG spec says) or the account home's
-    .local/state, resolved once here so a home reached through a link (/home -> /var/home) is
+    $XDG_STATE_HOME/vg (ignored unless absolute, as the XDG spec says) or the account home's
+    .vg, resolved once here so a home reached through a link (/home -> /var/home) is
     judged by its real path. The ownership and placement checks still apply to the result."""
     configured = environment.get('VELDO_FIXTURE_PARENT')
     if configured:
         return Path(configured)
     state = environment.get('XDG_STATE_HOME', '')
     if not os.path.isabs(state):
-        state = os.path.join(pwd.getpwuid(os.getuid()).pw_dir, '.local/state')
-    return Path(os.path.realpath(state)) / 'veldo/gate-fixtures'
+        return Path(os.path.realpath(pwd.getpwuid(os.getuid()).pw_dir)) / '.vg'
+    return Path(os.path.realpath(state)) / 'vg'
+
+
+def socket_paths(paths):
+    """Check filesystem AF_UNIX names in bytes, including room for the terminating NUL.
+
+    Linux sun_path holds 108 bytes. Report the fixture and actual path before setup
+    or bind, rather than turning every setup-dependent row into a product failure.
+    """
+    for name, path in paths.items():
+        size = len(os.fsencode(path))
+        if size >= 108:
+            raise FixtureRefused('gate_fixture_root_socket_too_long: %s: %d bytes (maximum 107): %s'
+                                 % (name, size, path))
+
+
+def allocate(parent, prefix='g'):
+    """An exclusive private mkdir; a collision retries without opening an existing child."""
+    for _ in range(65536):
+        child = Path(parent) / (prefix + os.urandom(2).hex())
+        try:
+            child.mkdir(mode=0o700)
+        except FileExistsError:
+            continue
+        return child
+    raise FixtureRefused('gate_fixture_root_unavailable: allocation names exhausted')
+
+
+def watch_sockets(base):
+    """Check every fixture bind, including dynamically named notification sockets.
+
+    Python validates sun_path before emitting its socket.bind audit event, so
+    wrap bind itself to give oversized names the fixture's diagnostic. This also
+    covers imported services; child interpreters install the same wrapper.
+    """
+    import socket
+    original = socket.socket.bind
+
+    def bind(sock, address):
+        if sock.family == socket.AF_UNIX:
+            path = os.fsdecode(address)
+            if path.startswith(str(base) + '/'):
+                socket_paths({'bind': path})
+        return original(sock, address)
+
+    socket.socket.bind = bind
+    return lambda: setattr(socket.socket, 'bind', original)
 
 
 def private(path):
@@ -70,7 +116,7 @@ def parent_for(environment, configured=None):
     # extend the pinned parent. Existing stores or keys are never candidate parents.
     relative = child.relative_to(parent)
     for index, part in enumerate(relative.parts):
-        if not (re.fullmatch('[gs][a-z0-9_]{8}', part) or
+        if not (re.fullmatch('[gs](?:[0-9a-f]{4}|[a-z0-9_]{8})', part) or
                 (index > 0 and re.fullmatch('[0-9a-z]{2}|[0-9]{3,}', part))):
             raise FixtureRefused('gate_fixture_root_not_allocation: %s' % child)
         private(parent.joinpath(*relative.parts[:index + 1]))
@@ -106,7 +152,7 @@ def directory(prefix='g', configured=None, protected=(), environment=None):
         parent = parent_for(source, configured)
         if any(parent == p or p in parent.parents for p in map(lambda p: Path(p).resolve(), protected)):
             raise FixtureRefused('gate_fixture_root_protected_overlap: %s' % parent)
-        allocated = Path(tempfile.mkdtemp(prefix=prefix, dir=parent))
+        allocated = allocate(parent, prefix)
         private(allocated)
         if any(allocated == p or p in allocated.parents or allocated in p.parents
                for p in map(lambda p: Path(p).resolve(), protected)):

@@ -1071,6 +1071,27 @@ def _veldo_0221():
         # The gate launcher and the dispatcher share the same fixed placement rule.
         # These are real directories inside this run's grant, never account-wide fixtures.
         F = AS.FIXTURES
+        F.socket_paths({'boundary': '/' + 'x' * 106})
+        socket_refusals = []
+        for name, path in (('boundary', '/' + 'x' * 107), ('encoded', '/' + '\u00e9' * 54)):
+            try:
+                F.socket_paths({name: path})
+            except F.FixtureRefused as error:
+                socket_refusals.append(str(error).startswith('gate_fixture_root_socket_too_long: ' + name + ':'))
+        expect('VELDO-0221 gate-fixtures/socket-byte-boundary', socket_refusals == [True, True])
+        original_bind = socket.socket.bind
+        stop_watching = F.watch_sockets(top)
+        try:
+            with socket.socket(socket.AF_UNIX) as listener:
+                try:
+                    listener.bind(str(top / ('x' * 108)))
+                    bind_refused = False
+                except F.FixtureRefused as error:
+                    bind_refused = str(error).startswith('gate_fixture_root_socket_too_long: bind:')
+        finally:
+            stop_watching()
+        expect('VELDO-0221 gate-fixtures/dynamic-socket-preflight',
+               bind_refused and socket.socket.bind is original_bind)
         with AS.gate_fixture_directory('gate', top / 'store', []) as allocated:
             print('VELDO-0221 gate-fixtures: parent=%s; /var/lib/veldo exists=%s'
                   % (allocated.parent, Path('/var/lib/veldo').exists()))
@@ -1080,25 +1101,25 @@ def _veldo_0221():
             with patch.object(F, 'ENVIRONMENT', {'XDG_STATE_HOME': str(allocated / 'state')}):
                 with AS.gate_fixture_directory('gate', top / 'store', []) as default:
                     expect('VELDO-0221 gate-fixtures/xdg-default',
-                           default.parent == allocated / 'state/veldo/gate-fixtures'
+                           default.parent == allocated / 'state/vg'
                            and default.parent.stat().st_mode & 0o777 == 0o700)
             from types import SimpleNamespace
             with patch.object(F.pwd, 'getpwuid', return_value=SimpleNamespace(pw_dir=str(allocated))), \
                     patch.object(F, 'ENVIRONMENT', {}):
                 with AS.gate_fixture_directory('gate', top / 'store', []) as default:
                     expect('VELDO-0221 gate-fixtures/account-default',
-                           default.parent == allocated / '.local/state/veldo/gate-fixtures')
+                           default.parent == allocated / '.vg')
             linked_home = allocated / 'home-link'
             linked_home.symlink_to(allocated, target_is_directory=True)
             with patch.object(F.pwd, 'getpwuid', return_value=SimpleNamespace(pw_dir=str(linked_home))), \
                     patch.object(F, 'ENVIRONMENT', {}):
                 with AS.gate_fixture_directory('gate', top / 'store', []) as default:
                     expect('VELDO-0221 gate-fixtures/symlink-account-home',
-                           default.parent == allocated / '.local/state/veldo/gate-fixtures')
+                           default.parent == allocated / '.vg')
             with patch.object(F, 'ENVIRONMENT', {'XDG_STATE_HOME': str(linked_home / 'state')}):
                 with AS.gate_fixture_directory('gate', top / 'store', []) as default:
                     expect('VELDO-0221 gate-fixtures/symlink-xdg-default',
-                           default.parent == allocated / 'state/veldo/gate-fixtures')
+                           default.parent == allocated / 'state/vg')
             with patch.object(F, 'ENVIRONMENT', {'VELDO_FIXTURE_PARENT': str(linked_home / 'configured')}):
                 try:
                     with AS.gate_fixture_directory('gate', top / 'store', []):

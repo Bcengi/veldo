@@ -19,6 +19,9 @@ import sys
 
 def install(base, cache):
     base, cache = Path(base), Path(cache)
+    import runpy
+    fixtures = runpy.run_path(str(Path(__file__).resolve().parents[2] / 'gate_fixtures.py'))
+    close_sockets = fixtures['watch_sockets'](base)
     loader = importlib.machinery.SourceFileLoader
     original_compile, original_exec = loader.source_to_code, loader.exec_module
     original_get_code = loader.get_code
@@ -109,6 +112,7 @@ def install(base, cache):
     loader.get_code = get_code
 
     def close():
+        close_sockets()
         loader.source_to_code, loader.exec_module = original_compile, original_exec
         loader.get_code = original_get_code
         codes.clear()
