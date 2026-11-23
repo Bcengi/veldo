@@ -884,5 +884,5 @@ def _v58_suite():
 
 
 _v58_started = __import__('time').monotonic()
-_v58_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v58_suite)
 _V58_SECONDS = __import__('time').monotonic() - _v58_started
