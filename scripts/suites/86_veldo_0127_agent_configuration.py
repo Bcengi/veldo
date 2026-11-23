@@ -55,7 +55,7 @@ def _v127_suite():
     ff = load('v127_formats', TREE / 'proof/VELDO-0172/fake_formats.py')
     conform_formats = load('v127_conform', TREE / 'proof/VELDO-0172/compare_formats.py')
     live_step = ff.live_step
-    base = Path(tempfile.mkdtemp(prefix='v127-', dir='/var/lib/veldo'))))
+    base = Path(tempfile.mkdtemp(prefix='v127-', dir='/var/lib/veldo'))
     markers = base / 'markers'
     markers.mkdir()
     f = None

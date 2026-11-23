@@ -108,7 +108,7 @@ def _v61_suite():
         return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True, timeout=20,
                               env=tools, stdin=subprocess.DEVNULL)
 
-    base = Path(tempfile.mkdtemp(prefix='v61-', dir='/var/lib/veldo') else None))
+    base = Path(tempfile.mkdtemp(prefix='v61-', dir='/var/lib/veldo'))
     connections, launches, observed, stopped = [], [], {}, {}
     globals()['_V61_OBSERVED'] = observed
     compiled = contextlib.ExitStack()
