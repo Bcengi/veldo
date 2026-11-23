@@ -66,7 +66,8 @@ def _v40_suite():
         out = systemctl('show', *[a for n in names for a in ('-p', n)], unit).stdout
         return dict(line.split('=', 1) for line in out.splitlines() if '=' in line)
 
-    with tempfile.TemporaryDirectory(prefix='v40-', dir=fast) as directory:
+    # The guard is on: the store must be outside home, temporary and runtime roots.
+    with tempfile.TemporaryDirectory(prefix='v40-', dir='/var/lib/veldo') as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
