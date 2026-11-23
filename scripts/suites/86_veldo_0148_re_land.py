@@ -807,7 +807,7 @@ sys.exit(chosen['code'])
         try:
             installed = CS.install([str(caller)], host_trust=str(trust_file), key_directory=str(keys),
                                    install_root=str(install_root), unit_dir=str(unit_dir), profile=PROFILE,
-                                   adapters=ADAPTERS, writable=[str(base / 'work')], runner=systemd, work=str(work_file))
+                                   state_root=str(base / 'runtime-state'), adapters=ADAPTERS, writable=[str(base / 'work')], runner=systemd, work=str(work_file))
         except Exception as error:  # noqa: BLE001 - a refused installation reds every row by assertion
             install_error = '%s %s' % (getattr(error, 'code', type(error).__name__), getattr(error, 'detail', error))
         config = json.loads(Path(installed['config']).read_text()) if installed else {}
