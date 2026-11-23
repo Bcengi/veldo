@@ -2180,7 +2180,11 @@ class Service:
         ok = bool(result.get('ok'))
         observation.update(outcome='accepted' if ok else 'refused', refusal=None if ok else result.get('reason'),
                            taxonomy=None if ok else taxonomy(result.get('reason')), watermark=self.watermark())
-        self.hint_after(before)
+        # An inspect commits nothing. A receiver can commit between the two
+        # watermark reads; its completion is delivered by its launch pipe, not
+        # by attributing that concurrent write to this read-only packet.
+        if not (isinstance(packet, dict) and packet.get('operation') == 'inspect' and 'command' not in packet):
+            self.hint_after(before)
         self._count(observation)
         self.space_pass()
         return result
@@ -3366,23 +3370,18 @@ class Line:
         # VELDO-0131: an owner's stop command advances the journal and wakes this pass, so the runner asks for each
         # committed stop now, even on a line with no run starting or ending.
         self.runner.honor_stops()
-        lost = []
         self.activate()
         report['released'].extend({'dispatch_id': identity} for identity in self.runner.release_orphans())
         for launch in ended:
             record = self.runner.wait(launch, timeout=0) or {}
             if record.get('state') == 'unknown':
+                # Register and release once. Re-adding a released orphan would
+                # retry its committed command with a new timestamp.
                 report['released'].extend({'dispatch_id': identity} for identity in self.runner.orphaned(launch))
             report['ended'].append({'repository': self.repository, 'dispatch_id': launch.dispatch_id,
                                     'unit': launch.contract['unit'], 'station': launch.contract['station'],
                                     'state': record.get('state'), 'reason': record.get('reason') or record.get('refusal'),
                                     'receiver_lost': launch.lost})
-            if launch.lost and record.get('state') == 'unknown':
-                lost.append(launch)
-        released = [one for launch in lost for one in self.runner.orphaned(launch)]
-        if not lost and self.runner.orphans:
-            released += self.runner.release_orphans()
-        report['released'] += [{'repository': self.repository, 'dispatch_id': one} for one in released]
         # VELDO-0188 AC3: a closed project's line settles its runs and offers nothing, no station and no re-run.
         if getattr(self, 'closing', False):
             return
@@ -3397,8 +3396,19 @@ class Line:
         self.loop.provision(report, 'line:' + self.repository)
         self.activate()
         latest = self.latest()
+        # The receiver commits its terminal record before sending its end on
+        # the launch pipe. A journal wake in that interval must not advance the
+        # unit: settle the held launch above before offering its next station.
+        # Once a pass has taken the end, a fault in settlement must not leave
+        # the unit held forever by a launch no longer in the poll set or queue.
+        terminal = {record['dispatch_id'] for record in latest.values()
+                    if record.get('state') in ('exited', 'unknown')}
+        held = {launch.contract['unit'] for launch in self.runner.launches.values()
+                if launch.dispatch_id in terminal
+                and (not launch.ended or any(queued is launch for _, queued in self.loop.ended))}
         for unit in self.assigned():
-            self.next(unit, latest, report)
+            if unit not in held:
+                self.next(unit, latest, report)
         if getattr(self, 'batches', None) is not None:
             report.setdefault('batches', []).extend(self.batches.pass_once())
 
