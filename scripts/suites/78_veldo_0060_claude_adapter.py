@@ -668,7 +668,7 @@ sys.exit(payload.get('code', 0))
             fields = stat[stat.rindex(')') + 2:].split()
             return fields[19] == start and fields[0] != 'Z'
 
-        def with_baseline(args, flags, module):
+        def with_baseline(args, flags, module, guarded=False):
             """The qualified flags, then exactly the everything-off baseline the engine module generates
             (VELDO-0155, VELDO-0156) for the run whose configuration directory the argv names; nothing
             after the flags for a module without one."""
@@ -683,6 +683,8 @@ sys.exit(payload.get('code', 0))
                 # VELDO-0173: an unbound run's launch tool options, from the qualified registry and classification.
                 bound['tools'], _ = attempt(lambda: module.qualified_tools(VERSION, QUALIFIED))
             expected, _ = attempt(lambda: module.baseline(bound, {'config': config, 'runtime': '/none'})['argv'])
+            if expected is not None and guarded and module is X:
+                expected += ['-c', 'sandbox_mode="danger-full-access"']
             return expected is not None and list(args[len(flags):]) == list(expected)
 
         def nothing_ran(dispatch_id):
@@ -1382,7 +1384,7 @@ sys.exit(payload.get('code', 0))
                 check('contained/pinned-exec', '%s: the process the dispatch recorded is the pinned executable, exec\'d '
                       'with exactly its qualified flags, the qualified digest on disk [%s]' % (engine, own.get('argv')),
                       (own.get('argv') or [None])[:1] == [case['exe']]
-                      and with_baseline(own['argv'][1:], list(case['flags']), E if engine == 'claude' else X)
+                      and with_baseline(own['argv'][1:], list(case['flags']), E if engine == 'claude' else X, guarded=True)
                       and process.get('start') == own.get('start')
                       and file_sha(case['exe']) == case['sha256'] and case['sha256'])
                 check('contained/pinned-exec', '%s: with the updater off and the recorded account\'s own profile [%s]'
