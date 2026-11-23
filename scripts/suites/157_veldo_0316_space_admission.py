@@ -205,6 +205,7 @@ def _v316_suite():
                 loop = object.__new__(SV.FactoryLoop)
                 loop.passes, loop.timer, loop.counts, loop.trees, loop.lines, loop.last = 0, None, {}, set(), {}, None
                 loop.refused_lines, loop.line_counts, loop.conversation = {}, {}, None
+                loop.wakes, loop.unwatched = [], []
                 loop.service = types.SimpleNamespace(space=f.space)
                 check('metrics/exposed', SV.FactoryLoop.status(loop).get('space_admission') == ADM.status(
                     f.ledger, f.space['free']) and SV.FactoryLoop.status(loop)['space_admission']['holds']['admitted'] == 1)

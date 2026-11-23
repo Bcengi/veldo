@@ -1243,7 +1243,8 @@ def _v305_space_census_suite():
             EMITTED[:] = []
             R._uncontained(dispatch_id, 'digest', LA.C.Refused('unavailable_service:space_ledger', 'declare refused: x'))
             check(row, 'a ledger that refuses keeps its own code, and its event is as it was [%s]' % (EMITTED,),
-                  EMITTED == [{'event': 'refused', 'refusal': 'unavailable_service:space_ledger', 'group': None}])
+                  EMITTED == [{'event': 'refused', 'refusal': 'unavailable_service:space_ledger',
+                               'group': None, 'store_guard': None}])
 
             row = 'review/scratch-apart-from-run-directory'
             import copy
