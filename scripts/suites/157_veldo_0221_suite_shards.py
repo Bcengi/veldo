@@ -1350,6 +1350,92 @@ def _veldo_0221():
             mutant_verdict = not mutant_race[2]['safe'] and mutant_race[2]['redirected']
         expect('VELDO-0221 AC2 suite-shards/broker-directory-swap-path-mutant-red: %r' % mutant_race,
                mutant_source != textwrap.dedent(inspect.getsource(original_bind)) and mutant_verdict)
+        # The bind helper's own Landlock layer (VELDO-0221 gate fix round 4), in every leg. In a
+        # brokered process (the confined leg) the helper's bind is a mediated call the outer broker
+        # answers, so the layer the helper applies beneath the pinned directories never decides
+        # there and the rows above test the walk. These rows drive the real helper process (the
+        # request it is sent, its per-request child and every layer that child applies) and swap
+        # only that child's last call, the bind, for mknodat of the socket file: a call no outer
+        # filter mediates, which Landlock judges by the same MAKE_SOCK right. The walk pins first,
+        # then the row moves a directory, then the helper creates: beside the pinned directory in
+        # the same shard (no link at all), and through a link swapped in for the last and for an
+        # intermediate component. The layer refuses every one, and the control lands. The mutant
+        # drops the layer (the helper never calls _confine_binder), and every one of them lands.
+        import ctypes
+        import stat as stat_module
+
+        class DirectHelper(AS.Broker):
+            def _make_socket(self, libc, sock, address):
+                path = address[2:].split(b'\0', 1)[0]
+                made = libc.mknodat(-100, path, stat_module.S_IFSOCK | 0o600, 0)  # AT_FDCWD
+                return 0 if made == 0 else ctypes.get_errno()
+
+        layer_source = textwrap.dedent(inspect.getsource(AS.Broker._binder))
+        unlayered_source = layer_source.replace('self._confine_binder(libc, pinned)', 'pass')
+        unlayered_namespace = dict(AS.__dict__)
+        exec(compile(unlayered_source, '<helper-without-layer-mutant>', 'exec'), unlayered_namespace)
+
+        class UnlayeredHelper(DirectHelper):
+            _binder = unlayered_namespace['_binder']
+
+        def helper_layer(helper_class, tag):
+            domain = top / ('helper-' + tag)
+            own, sibling = domain / 'a', domain / 'b'
+            for directory in (own / 'p', own / 'other', own / 'm' / 'p', sibling / 'p'):
+                directory.mkdir(parents=True)
+            live = helper_class([domain])
+            results = []
+
+            def request(pin, target, move=None):
+                opened, error = [], None
+                try:
+                    parentfd, rootfd = live._pin_bind(os.getpid(), b'\x01\x00' + os.fsencode(pin) + b'\0', opened)
+                    if move is not None:
+                        move()
+                    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+                        live._bind_path(sock.fileno(), b'\x01\x00' + os.fsencode(target) + b'\0', rootfd, parentfd)
+                except OSError as failure:
+                    error = failure.errno
+                finally:
+                    for fd in opened:
+                        os.close(fd)
+                return error
+
+            def swap(name, held):
+                def move():
+                    (own / name).rename(own / held)
+                    (own / name).symlink_to(sibling if name == 'm' else sibling / 'p', target_is_directory=True)
+                return move
+            try:
+                with patch.object(live, '_shard_roots', return_value=[os.fsencode(own)]):
+                    error = request(own / 'p' / 'c', own / 'p' / 'c')
+                    results.append({'case': 'control', 'error': error,
+                                    'safe': error is None and (own / 'p' / 'c').is_socket()})
+                    error = request(own / 'p' / 'x', own / 'other' / 'x')
+                    results.append({'case': 'beside-pinned', 'error': error,
+                                    'escaped': os.path.lexists(own / 'other' / 'x'),
+                                    'safe': error == errno.EACCES and not os.path.lexists(own / 'other' / 'x')})
+                    error = request(own / 'p' / 'y', own / 'p' / 'y', swap('p', 'held-p'))
+                    results.append({'case': 'last-component-swap', 'error': error,
+                                    'escaped': os.path.lexists(sibling / 'p' / 'y'),
+                                    'safe': error == errno.EACCES and not os.path.lexists(sibling / 'p' / 'y')})
+                    error = request(own / 'm' / 'p' / 'z', own / 'm' / 'p' / 'z', swap('m', 'held-m'))
+                    results.append({'case': 'intermediate-component-swap', 'error': error,
+                                    'escaped': os.path.lexists(sibling / 'p' / 'z'),
+                                    'safe': error == errno.EACCES and not os.path.lexists(sibling / 'p' / 'z')})
+            finally:
+                live.close()
+            return results
+
+        layered = helper_layer(DirectHelper, 'layered')
+        unlayered = helper_layer(UnlayeredHelper, 'unlayered')
+        print('VELDO-0221 helper layer baseline=%r no-layer-mutant=%r' % (layered, unlayered), flush=True)
+        cases = ['control', 'beside-pinned', 'last-component-swap', 'intermediate-component-swap']
+        expect('VELDO-0221 AC2 suite-shards/bind-helper-layer-holds-unbrokered: %r' % layered,
+               [result['case'] for result in layered] == cases and all(result['safe'] for result in layered))
+        expect('VELDO-0221 AC2 suite-shards/bind-helper-layer-mutant-red: %r' % unlayered,
+               unlayered_source != layer_source and [result['case'] for result in unlayered] == cases
+               and unlayered[0]['safe'] and all(result['escaped'] for result in unlayered[1:]))
         refusals = []
         with open(top / "a-regular-file", "w") as regular:
             for profile, descriptor in (("agent", regular.fileno()), ("gate", regular.fileno()), ("gate", 1)):

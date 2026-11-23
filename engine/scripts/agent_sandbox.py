@@ -288,6 +288,26 @@ def ipc_filter(libc):
     install_filter(libc, ipc_program())
 
 
+def shard_environment(pid, arguments=(b'--shard', b'--shard-root')):
+    """The environment (bytes to bytes) the nearest gate-leg shard interpreter among `pid` and its
+    ancestors was started with, found by its arguments (VELDO-0221, scripts/run_scope.py
+    SHARD_ARGUMENTS), or None when none is: the one rule both the broker (its shard roots) and
+    worker_tree (the shard's fixture allocation) read a shard by."""
+    for _level in range(64):
+        if pid <= 1:
+            return None
+        try:
+            words = Path('/proc/%d/cmdline' % pid).read_bytes().split(b'\0')
+            if all(word in words for word in arguments):
+                return dict(item.split(b'=', 1) for item in
+                            Path('/proc/%d/environ' % pid).read_bytes().split(b'\0') if b'=' in item)
+            fields = Path('/proc/%d/stat' % pid).read_bytes().rsplit(b')', 1)[1].split()
+            pid = int(fields[1])
+        except (OSError, ValueError, IndexError):
+            return None
+    return None
+
+
 class Handoff:
     """The confined child's half of fork_brokered: install the notifying filter and hand its
     listener to the trusted parent before any candidate code runs, then close it here, so
@@ -493,7 +513,7 @@ class Broker:
                         try:
                             for pinned in fds[1:]:
                                 self._confine_binder(libc, pinned)
-                            code = 0 if libc.bind(fds[0], data, len(data)) == 0 else ctypes.get_errno()
+                            code = self._make_socket(libc, fds[0], data)
                         finally:
                             os._exit(code)
                     _, status = os.waitpid(child, 0)
@@ -526,6 +546,13 @@ class Broker:
                 raise OSError(errno.EACCES, 'bind helper: Landlock layer not applied')
         finally:
             os.close(ruleset)
+
+    def _make_socket(self, libc, sock, address):
+        """The request's one socket creation, in the confined per-request child: bind `sock` to
+        the caller's sockaddr `address`. 0 or the errno. Its own method so a gate row can create
+        the socket file by a call no outer broker mediates (157_veldo_0221 helper-layer rows),
+        which Landlock judges by the same MAKE_SOCK right, while every layer is applied above."""
+        return 0 if libc.bind(sock, address, len(address)) == 0 else ctypes.get_errno()
 
     def _bind_path(self, sock, address, *pinned):
         """Bind `address` in the helper, confined beneath every pinned directory descriptor."""
@@ -644,23 +671,12 @@ class Broker:
         arguments, and its roots are the ones the dispatcher started it with. A process that left
         its shard's ancestry (reparented to the tree's init) is judged by the domain's roots alone,
         as before. This only ever narrows: the domain's roots are still required."""
-        pid = tid
-        for _level in range(64):
-            if pid <= 1:
-                return None
-            try:
-                arguments = Path('/proc/%d/cmdline' % pid).read_bytes().split(b'\0')
-                if all(word in arguments for word in self.SHARD_ARGUMENTS):
-                    environment = dict(item.split(b'=', 1) for item in
-                                       Path('/proc/%d/environ' % pid).read_bytes().split(b'\0') if b'=' in item)
-                    roots = [environment[name] for name in self.SHARD_ROOT_VARIABLES
-                             if environment.get(name, b'').startswith(b'/')]
-                    return roots or None
-                fields = Path('/proc/%d/stat' % pid).read_bytes().rsplit(b')', 1)[1].split()
-                pid = int(fields[1])
-            except (OSError, ValueError, IndexError):
-                return None
-        return None
+        environment = shard_environment(tid, self.SHARD_ARGUMENTS)
+        if environment is None:
+            return None
+        roots = [environment[name] for name in self.SHARD_ROOT_VARIABLES
+                 if environment.get(name, b'').startswith(b'/')]
+        return roots or None
 
     def _within_shard(self, tid, address):
         """Refuse a bind whose path lies outside the caller's shard's roots; nothing for a caller in
@@ -2430,12 +2446,13 @@ def launcher_write_problem(grants):
 
 
 @contextmanager
-def gate_fixture_directory(profile, store, protected, configured=None):
+def gate_fixture_directory(profile, store, protected, configured=None, environment=None):
     """Grant only a fresh private child of the pinned installation/user fixture parent."""
     if profile != 'gate':
         yield None
         return
-    with FIXTURES.directory(configured=configured, protected=[store, *protected]) as directory:
+    with FIXTURES.directory(configured=configured, protected=[store, *protected],
+                            environment=environment) as directory:
         yield directory
 
 
@@ -2746,6 +2763,25 @@ def kept_descriptor_problem(fd):
     return None
 
 
+def worker_fixture_environment(pid=None):
+    """Where a worker tree's private fixture child is allocated from: this process's own snapshot
+    (gate_fixtures.ENVIRONMENT) when it names an allocation, else the allocation of the gate-leg
+    shard it runs in, read by the broker's rule (shard_environment). A worker started with the
+    fixed environment (check_gate_mutations.fixed_env) carries neither variable, and inside a
+    confined shard the default parent beneath the account home is not writable; its fixture child
+    is taken beneath its shard's own allocation, exactly as one handed that allocation is. Only
+    the two fixture variables are taken over, and gate_fixtures.parent_for checks them as it
+    checks any inherited allocation; the tree's grant stays that one fresh child."""
+    if FIXTURES.ENVIRONMENT.get('VELDO_FIXTURE_ROOT'):
+        return FIXTURES.ENVIRONMENT
+    shard = shard_environment(os.getpid() if pid is None else pid) or {}
+    names = ('VELDO_FIXTURE_ROOT', 'VELDO_FIXTURE_PARENT')
+    if not shard.get(b'VELDO_FIXTURE_ROOT', b'').startswith(b'/'):
+        return FIXTURES.ENVIRONMENT
+    return dict(FIXTURES.ENVIRONMENT, **{name: os.fsdecode(shard[name.encode()])
+                                         for name in names if shard.get(name.encode(), b'').startswith(b'/')})
+
+
 def worker_tree(command, env, cwd, scratch, inherit=()):
     """Start a fresh confined mutation worker (VELDO-0210 AC7): run `command`, the authority's own
     worker bootstrap, as the agent of a tree made exactly as the agent and gate profiles' trees are
@@ -2763,12 +2799,13 @@ def worker_tree(command, env, cwd, scratch, inherit=()):
     sys.stderr.flush()
     scratch = Path(scratch)
     config = policy_module().configuration()[1]
+    source = worker_fixture_environment()
     try:
         with gate_fixture_directory('gate', Path(config['store']), [cwd, Path(__file__).resolve().parents[1]],
-                                    config.get('gate_fixture_parent')) as fixture:
+                                    config.get('gate_fixture_parent'), source) as fixture:
             env = dict(env, VELDO_FIXTURE_ROOT=str(fixture),
                        VELDO_FIXTURE_PARENT=str(config.get('gate_fixture_parent') or
-                                               FIXTURES.fixture_parent(FIXTURES.ENVIRONMENT)))
+                                               FIXTURES.fixture_parent(source)))
             return run_tree(Path(cwd), command, env, [], 'worker', [], scratch,
                             roots=[scratch, fixture], inherit=inherit)
     except FIXTURES.FixtureRefused as error:
