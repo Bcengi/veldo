@@ -21,9 +21,17 @@ ENVIRONMENT = dict(os.environ)
 
 
 def fixture_parent(environment):
+    """The configured parent as given (a link in it is refused by placement), or the default:
+    $XDG_STATE_HOME (ignored unless absolute, as the XDG spec says) or the account home's
+    .local/state, resolved once here so a home reached through a link (/home -> /var/home) is
+    judged by its real path. The ownership and placement checks still apply to the result."""
     configured = environment.get('VELDO_FIXTURE_PARENT')
-    state = environment.get('XDG_STATE_HOME') or str(Path(pwd.getpwuid(os.getuid()).pw_dir) / '.local/state')
-    return Path(configured) if configured else Path(state) / 'veldo/gate-fixtures'
+    if configured:
+        return Path(configured)
+    state = environment.get('XDG_STATE_HOME', '')
+    if not os.path.isabs(state):
+        state = os.path.join(pwd.getpwuid(os.getuid()).pw_dir, '.local/state')
+    return Path(os.path.realpath(state)) / 'veldo/gate-fixtures'
 
 
 def private(path):
