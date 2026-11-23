@@ -525,6 +525,8 @@ def _v168_suite():
                 ('control_installation_config.py', 'Loader.reconcile', 'self.repo', 'send'),
                 ('control_installation_service.py', 'start.tell', 'presenter', '_send'),
                 ('control_tracker_service.py', 'cli', "organ('control_client')", 'send'),
+                # VELDO-0359: a socket wake to its query server, carrying no owner text.
+                ('control_run_query.py', 'Server.close', 'self.wake[1]', 'send'),
                 ('status_server.py', '_Handler.do_GET', 'self', '_send'),
             }
             wanted_calls = Counter(wanted_calls)
