@@ -74,7 +74,7 @@ def _v76_suite():
 
     fast = fast_temp()
     connections, launches = [], []
-    with tempfile.TemporaryDirectory(prefix='v76-', dir=fast) as directory:
+    with tempfile.TemporaryDirectory(prefix='v76-', dir='/var/lib/veldo') as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
@@ -244,7 +244,7 @@ sys.stdout.flush()
             receiver_host_trust.chmod(0o600)
             fixture_slice = 'v76s%s.slice' % os.urandom(4).hex()
             config.write_text(json.dumps({'host_trust': str(receiver_host_trust),
-                'store': str(db), 'journal_key': str(keys / 'journal'), 'principal': 'launch-receiver',
+                'store': str(db), 'runs': str(base / 'runs'), 'journal_key': str(keys / 'journal'), 'principal': 'launch-receiver',
                 'workspace': str(base / 'work'),
                 'profile': {'kind': 'linux-systemd', 'slice': fixture_slice,
                             'lock': str(base / 'containment.lock'), 'concurrency': 16, 'runtime_seconds': 600,

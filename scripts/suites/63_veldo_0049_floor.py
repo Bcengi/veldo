@@ -40,7 +40,7 @@ def _v49_suite():
         return module
 
     fast = fast_temp()
-    with tempfile.TemporaryDirectory(prefix='v49-', dir=fast) as directory:
+    with tempfile.TemporaryDirectory(prefix='v49-', dir='/var/lib/veldo') as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
@@ -311,7 +311,7 @@ sys.stdout.flush()
         receiver_host_trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='fixture-host',
                                                      enrollment_signers=str(receiver_enrollment_signers))))
         receiver_host_trust.chmod(0o600)
-        config.write_text(json.dumps({'host_trust': str(receiver_host_trust), 'store': str(db), 'journal_key': str(private / 'journal'),
+        config.write_text(json.dumps({'host_trust': str(receiver_host_trust), 'store': str(db), 'runs': str(base / 'runs'), 'journal_key': str(private / 'journal'),
                                       'principal': 'launch-receiver', 'workspace': str(work), 'domain': DOMAIN,
                                       # VELDO-0040: each local worker in its own systemd scope in this run's own slice.
                                       'profile': {'kind': 'linux-systemd', 'slice': worker_slice,
