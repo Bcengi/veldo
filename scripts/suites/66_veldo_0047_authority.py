@@ -104,7 +104,8 @@ def _v47_suite():
                 if label not in emitted:
                     check(label, False)
 
-    with tempfile.TemporaryDirectory(prefix='v47-', dir='/var/lib/veldo') as directory:
+    with tempfile.TemporaryDirectory(prefix='v47-', dir='/var/lib/veldo') as directory, \
+            tempfile.TemporaryDirectory(prefix='v47-placement-') as temporary:
         base = Path(directory)
         mods = base / 'src' / '.veldo'
         (mods / 'services').mkdir(parents=True)
@@ -429,7 +430,7 @@ def _v47_suite():
                 home = base / 'home'
                 home.mkdir(mode=0o700)
                 writable_for = getattr(CS, 'worker_writable', lambda environment=None: [])
-                in_temp = base / 'tempkeys'
+                in_temp = Path(temporary) / 'tempkeys'
                 in_temp.mkdir(mode=0o700)
                 loose = base / 'loose'
                 loose.mkdir(mode=0o700)
@@ -567,7 +568,7 @@ def _v47_suite():
                 try:
                     report = CS.install([str(A)], host_trust=str(trust_file), key_directory=str(keys),
                                         install_root=str(install_root), unit_dir=str(unit_dir), profile=PROFILE,
-                                        adapters=ADAPTERS, writable=workers) or {}
+                                        adapters=ADAPTERS, writable=workers, state_root=str(base / 'state')) or {}
                 except REFUSED as error:
                     report = {'refused': getattr(error, 'code', None)}
                 unit = report.get('unit')
