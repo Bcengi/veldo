@@ -592,7 +592,8 @@ sys.stdout.flush()
             reads, selected = [], []
             record = {'state': 'exited', 'dispatch_id': 'bound-probe'}
             child = SimpleNamespace(stdout=SimpleNamespace(fileno=lambda: 123))
-            probe = L.Launch(child, {'dispatch_id': 'bound-probe', 'deadline': 0},
+            probe = L.Launch(child, {'dispatch_id': 'bound-probe', 'deadline': 0,
+                                     'unit': 'bound-probe', 'station': 'build'},
                              SimpleNamespace(record=lambda _: record), time.time)
             probe.result, probe.record = 'accepted', record
             probe._end_receiver = lambda: None
