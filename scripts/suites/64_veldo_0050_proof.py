@@ -463,7 +463,8 @@ sys.stdout.flush()
 
             def review(self, spec, proof, calls=None):
                 commit = self.commits[-1]
-                payload = {'unit': spec['id'], 'source': {'commit': commit},
+                resolved = read_new_process(spec['id'], commit)
+                payload = {'context': resolved['context'], 'unit': spec['id'], 'source': {'commit': commit},
                            'proof': {'digest': sha(blob(commit, 'proof/%s/manifest.json' % spec['id']) or b'')}}
                 launch = runner.submit(spec['id'], 'review', holder=self.holder, source=str(work), revision=commit,
                                        payload=payload, adapter='reviewer-c', configuration=CONFIG,
@@ -827,6 +828,7 @@ sys.stdout.flush()
                 if hooks5.reviews:
                     path5 = markers / ('resolution-%s.json' % hooks5.reviews[0].replace('/', '_'))
                     resolution5 = json.loads(path5.read_text()) if path5.exists() else {}
+                fresh5 = read_new_process(U5, tip5)
                 ownership = all(OWNERS.get(e.get('type')) == e.get('producer') for e in appended + log(work_log))
                 observed['owning_services'] = {'run': full[0] if full[0] != 'ok' else ran.get('state'),
                                                'halted': [ran.get('halted_at'), ran.get('reason')],
@@ -841,8 +843,8 @@ sys.stdout.flush()
                       and [c.split('/')[1] for c, p in owned] == ['observe', 'accept']
                       and all(p == 'proof-service' for c, p in owned)
                       and resolution5.get('resolved') is True
-                      and (resolution5.get('context') or {}).get('proof') == read_new_process(U5, tip5)['bundle']['manifest']['body']
-                      and read_new_process(U5, tip5)['bundle']['bundle'] == bundle5)
+                      and (resolution5.get('context') or {}).get('proof') == fresh5['bundle']['manifest']['body']
+                      and fresh5['bundle']['bundle'] == bundle5)
 
             # AC3: a red gate and a gate that printed no terminal result are never proof; a check with no
             # observation is never recorded passed, and a missing, altered or foreign observation refuses.

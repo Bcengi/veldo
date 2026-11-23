@@ -1692,6 +1692,18 @@ def _run_shards(base, root, leg, targets, environ, emit, requires, manifest, pla
             metrics = None
     python = python or sys.executable
     passes = launcher_fds(root)
+    # The authority's append-only opened-files channel belongs to every shard of this leg.
+    # The shard dispatcher consumes it before fixture subprocesses can inherit it.
+    import fcntl
+    import stat
+    try:
+        opened_fd = int(environ.get("VELDO_OPENED_LEDGER_FD", ""))
+        flags = fcntl.fcntl(opened_fd, fcntl.F_GETFL)
+        if (opened_fd >= 3 and stat.S_ISREG(os.fstat(opened_fd).st_mode)
+                and flags & os.O_ACCMODE == os.O_WRONLY and flags & os.O_APPEND):
+            passes = (*passes, opened_fd)
+    except (ValueError, OSError):
+        pass
     scratch = leg_scratch(environ, root) if leg == "confined" else None
     own = set()  # what this dispatcher itself made outside its own directory
     if stand is not None:
