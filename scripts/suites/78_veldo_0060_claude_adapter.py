@@ -143,7 +143,7 @@ def _v60_suite():
     live_step = fake_formats.live_step
 
     runtime = os.environ.get('XDG_RUNTIME_DIR') or '/run/user/%d' % os.getuid()
-    base = Path(tempfile.mkdtemp(prefix='v60-', dir='/var/lib/veldo') else None))
+    base = Path(tempfile.mkdtemp(prefix='v60-', dir='/var/lib/veldo'))
     # The contained rows' transient scopes live in a slice of this run's own, stopped at its end.
     slice_name = 'v60%s.slice' % os.urandom(4).hex()
     tools = dict(os.environ)

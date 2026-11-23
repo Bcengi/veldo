@@ -72,7 +72,7 @@ def _v41_suite():
         out = systemctl('show', *[a for n in names for a in ('-p', n)], unit).stdout
         return dict(line.split('=', 1) for line in out.splitlines() if '=' in line)
 
-    with tempfile.TemporaryDirectory(prefix='v41-', dir='/var/lib/veldo') else None) as directory:
+    with tempfile.TemporaryDirectory(prefix='v41-', dir='/var/lib/veldo') as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
