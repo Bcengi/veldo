@@ -81,7 +81,8 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False, factory_p
         except OSError:
             pass
     connections, servers = [], []
-    with tempfile.TemporaryDirectory(prefix='v89-', dir=fast) as directory:
+    with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), \
+            tempfile.TemporaryDirectory(prefix='v89-', dir='/var/lib/veldo') as directory:
         base = Path(directory)
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
