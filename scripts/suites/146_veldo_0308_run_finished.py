@@ -250,7 +250,7 @@ def _v308_run_finished_suite():
         except OSError:
             return None
 
-    temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0308-')))
+    temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0308-', dir='/var/lib/veldo')))
     connections = []
     row = ROWS[0]
     try:
@@ -585,6 +585,7 @@ def _v308_run_finished_suite():
             made.login = made.metering = made.flags = made.flag_means = None
             made.conversation_record = made.held_session = made.placed = made.rendering = None
             made.start = made.resume_refusal = made.file_memory = made.store_guard = None
+            made.binding = made.recorder = made.query_server = None
             made.history_wanted, made.attached = False, []
             return made
 
@@ -1588,7 +1589,7 @@ def _v308_run_finished_suite():
                 made.dispatches = Refusing(conn)
                 made.dispatches.place, made.dispatches.items = place, items
                 made.config = {'adapters': adapters, 'store': str(store_path), 'principal': 'receiver',
-                               'repository': 'repo-308'}
+                               'repository': 'repo-308', 'domain': 'dom-308', 'runs': str(temp / 'query-runs')}
                 made.runner, made.confined_checked, made.metering, made.host = (
                     {'runner': 'default', 'why': None}, {}, None, 'fixture-host')
                 made.emit = lambda event: LOG.append((
@@ -1631,7 +1632,14 @@ def _v308_run_finished_suite():
             try:
                 R.launch(contract)
             finally:
+                R._close_query()
                 LA._organ = real_organ
+            guard_events = [entry for entry in LOG if entry[:2] in
+                            (('emit', 'store_guard'), ('emit', 'run_query_created'), ('emit', 'run_query_end'))]
+            check(row, 'guard preflight stayed on and created a run query before the attempted spawn',
+                  R.store_guard['state'] == 'on' and R.store_guard.get('outcome') == 'pending'
+                  and any(entry[:2] == ('emit', 'run_query_created') for entry in guard_events))
+            LOG[:] = [entry for entry in LOG if entry not in guard_events]
             check(row, 'the launch is accepted, the spawn fails, and the refusal is recorded with nothing of the run '
                        'judged: the folders on disk, their items present, the hold held, no event sent [%s]' % (LOG[:4],),
                   LOG[:4] == [('accept',), ('emit', 'accepted', None, True, True, 'admitted', 0),
