@@ -301,6 +301,10 @@ class Factory:
             server.server_close()
             self.bot_server = None
         self.pool.shutdown()
+        custody = getattr(self, 'service_custody', None)
+        if custody is not None:
+            custody.__exit__(None, None, None)
+            self.service_custody = None
 
     def on_thread(self, fn, *args, **kwargs):
         if threading.get_ident() == self.ident[0]:
@@ -330,6 +334,11 @@ class Factory:
             # .veldo/ui) travels with them, and the API finds it there with no `ui` in its configuration.
             shutil.copytree(Path(self.organs_from) / 'ui', organs / 'ui')
         self.organs = organs
+        # The harness is the trusted authority service. Custody is process-local;
+        # its browser and worker children never inherit this binding (VELDO-0258).
+        calls = load('e2e_service_calls', organs / 'control_plane_calls.py')
+        self.service_custody = calls.service(None)
+        self.service_custody.__enter__()
         # VELDO-0358 AC15: the timers profile, selected before any organ is loaded (a profile also covers what
         # registers after it). No browser test lets a product timer fire, so none is excepted.
         self.timers = timers_table(organs)
