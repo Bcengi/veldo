@@ -884,7 +884,12 @@ err.close()
                 elif not all(same(g, w, resolved) for g, w in zip(got, wanted)):
                     problems.append('%s: a kept line is not the printed one' % stream)
             wrapper = [x for x in lines if x.get('stream') == 'wrapper']
-            identity = json.loads(wrapper[0]['payload']) if len(wrapper) == 1 else {}
+            identity = json.loads(wrapper[0]['payload']) if wrapper else {}
+            guard = json.loads(wrapper[1]['payload']) if len(wrapper) == 2 else {}
+            if (len(wrapper) != 2 or guard.get('event') != 'store_guard'
+                    or guard.get('store_guard', {}).get('state') != 'on'
+                    or guard.get('store_guard', {}).get('outcome') != 'enforced'):
+                problems.append('the wrapper must record the enforced store guard after its identity')
             if not lines or lines[0].get('stream') != 'wrapper' or (identity.get('process') or {}).get('pid') != own.get('pid'):
                 problems.append('the wrapper identity line is not the first, naming the engine')
             if set(x.get('stream') for x in lines) - {'engine', 'stderr', 'wrapper'}:
@@ -1205,7 +1210,7 @@ err.close()
             check('redaction/planted-value', 'the planted resolver\'s value, printed alone, inside a command\'s output, in '
                   'the error stream and joined to a high-entropy span, is replaced wherever it was printed by the marker '
                   'naming its kind, and no line holds any part of it [%s, %s]' % (leaks(everything), counted),
-                  planted_record.get('state') == 'exited' and len(pairs) == len(planted_lines) - 1 and counted
+                  planted_record.get('state') == 'exited' and len(pairs) == len(planted_lines) - 2 and counted
                   and not [w for w in words if w in everything] and everything.count(marker) >= 8
                   and all(places.values()))
             joined = [x for x in planted_lines if 'joined' in x.get('payload', '')]
@@ -1275,10 +1280,10 @@ err.close()
             init_kept = [x for x in main_lines if x.get('stream') == 'engine' and '"subtype": "init"' in x.get('payload', '')]
             cwd = json.loads(init_printed[0]).get('cwd', '') if init_printed else ''
             check('redaction/paths-kept', 'the live run\'s init line is kept as printed, its working directory (the clone '
-                  'under the runtime directory, which the scanner judging it whole would replace) whole [%s]'
+                  'under the private state directory, which the scanner judging it whole would replace) whole [%s]'
                   % [x.get('payload', '')[:120] for x in init_kept],
                   len(init_printed) == 1 and len(init_kept) == 1 and init_kept[0].get('payload') == init_printed[0]
-                  and init_kept[0].get('redacted') == [] and cwd.startswith(runtime) and whole_high(cwd))
+                  and init_kept[0].get('redacted') == [] and cwd.startswith(str(base / 'state' / 'clones') + '/') and whole_high(cwd))
             edit_printed = [x for x in printed_of(main_own, 'assistant') if '"name": "Edit"' in x]
             edit_kept = [x for x in main_lines if x.get('stream') == 'engine' and '"name": "Edit"' in x.get('payload', '')]
             file_path = (((json.loads(edit_printed[0]).get('message') or {}).get('content') or [{}])[0].get('input')

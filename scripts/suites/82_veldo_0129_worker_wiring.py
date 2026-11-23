@@ -292,9 +292,8 @@ if packet['station'] == 'build':
     # A used clone's configuration must never run outside confinement while collecting its result.
     if mode.startswith('gitdir-'):
         if mode == 'gitdir-symlink':
-            conn = sqlite3.connect('file:' + @@DB@@ + '?immutable=1', uri=True)
-            source = conn.execute('SELECT path FROM repository_bindings').fetchone()[0]
-            conn.close()
+            # Fixture input, not authority data: the guarded worker cannot read the store.
+            source = @@SOURCE@@
             Path('.git').rename('.git-real')
             Path('.git').symlink_to(Path(source) / '.git', target_is_directory=True)
         elif mode in ('gitdir-gitfile', 'gitdir-missing'):
@@ -358,7 +357,7 @@ else:
 sys.exit(7 if mode == 'nonzero' else 0)
 '''
         fake = fake.replace('@@PYTHON@@', sys.executable).replace('@@MARKERS@@', repr(str(markers))).replace(
-            '@@DB@@', repr(str(db))).replace('@@PRIVATE@@', repr(str(private / 'builder'))).replace('@@STATUS@@', repr(status_line)).replace(
+            '@@DB@@', repr(str(db))).replace('@@SOURCE@@', repr(str(src))).replace('@@PRIVATE@@', repr(str(private / 'builder'))).replace('@@STATUS@@', repr(status_line)).replace(
             '@@SUBSCRIPTION@@', repr('Claude Team')).replace(
             '@@PROVIDER@@', repr(baseline['input_protocol']['providers']['subscription']))
         fake = fake_formats.embed(fake)

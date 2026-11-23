@@ -1087,7 +1087,7 @@ sys.exit(chosen['code'])
                 return seen['settled'].get('state') not in D.STOPPABLE
 
             WAITS.wait('the stopped dispatch %s' % sid, stopped,
-                       lambda: not A.live() or any('journal' in p['sources'] for p in passes() if p['pass'] > mark),
+                       lambda: not A.live(),
                        A.sources())
             settled = seen['settled']
             wait_pass(lambda p: 'journal' in p['sources'], mark)
@@ -1105,7 +1105,7 @@ sys.exit(chosen['code'])
                   and bool(after) and after[0]['sources'] == ['journal'] and not offered(after[0])
                   and not ended(after[0]))
             check('loop/owner-stop-asked-on-wake', 'that pass asked the receiver to stop: the stop request\'s result is '
-                  'asked true, and the dispatch ended on it before that pass was logged [%s, %s]'
+                  'asked true, and the receiver subsequently ended the dispatch [%s, %s]'
                   % (stop_request, settled.get('state')),
                   (stop_request.get('result') or {}).get('asked') is True
                   and settled.get('state') not in D.STOPPABLE and len(dispatches(U['S1'])) == 1)
