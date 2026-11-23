@@ -584,7 +584,7 @@ def _v308_run_finished_suite():
             # _finish and the refusal path read since VELDO-0231, VELDO-0176, VELDO-0177 and VELDO-0184.
             made.login = made.metering = made.flags = made.flag_means = None
             made.conversation_record = made.held_session = made.placed = made.rendering = None
-            made.start = made.resume_refusal = made.file_memory = None
+            made.start = made.resume_refusal = made.file_memory = made.store_guard = None
             made.history_wanted, made.attached = False, []
             return made
 
