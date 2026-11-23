@@ -668,15 +668,17 @@ def _v117_production(world, checks, records):
         codes = [running[name].stop() for name in order]
         checks.append(("production: both instances stop on SIGTERM with exit 0%s [%s]" % (again, codes),
                        codes == [0, 0]))
-    # The reply is sent before observe_response appends its line. Reaping both
-    # serving processes above joins that work, including the final refusal.
-    # A missing observation still fails immediately; it is never waited into existence.
-    for label, proposed, reader, reader_side in pending_observations:
-        seen = [r for r in reader.observations("domain_store_conflict") if r.get("proposed") == proposed]
-        checks.append(("production: the refusal of %s is in the observations of %s's instance with the domain, "
-                       "the committed and the proposed store [%d found]" % (label, reader_side, len(seen)),
-                       bool(seen) and all(r.get("domain_uuid") == domain and r.get("committed") == held
-                                          and r.get("outcome") == "refused" for r in seen)))
+        # The reply is sent before observe_response appends its line. Reaping both
+        # serving processes above joins that work, including the final refusal.
+        # Check before restarting so a later instance cannot supply a missing line.
+        # A missing observation still fails immediately; it is never waited into existence.
+        for label, proposed, reader, reader_side in pending_observations:
+            seen = [r for r in reader.observations("domain_store_conflict") if r.get("proposed") == proposed]
+            checks.append(("production: the refusal of %s is in the observations of %s's instance with the domain, "
+                           "the committed and the proposed store [%d found]" % (label, reader_side, len(seen)),
+                           bool(seen) and all(r.get("domain_uuid") == domain and r.get("committed") == held
+                                              and r.get("outcome") == "refused" for r in seen)))
+        pending_observations.clear()
     checks.append(("production: the registry holds the committed store alone at the end [%s]"
                    % _v117_registry_rows(registry), _v117_registry_rows(registry) == [held]))
 
