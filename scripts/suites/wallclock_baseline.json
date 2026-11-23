@@ -3,12 +3,7 @@
  "note": "Every unconverted wall-clock site (VELDO-0358). Written by scripts/check_wallclock.py --write-baseline. An entry is lowered or removed by the change that converts its site; it is never raised or added without the owner.",
  "entries": [
   {"class": "T", "count": 1, "file": "engine/.veldo/control_client_api.py", "function": "Hints.__init__", "rule": "R3", "text": "self.server.settimeout(0.25)"},
-  {"class": "T", "count": 1, "file": "engine/.veldo/control_launch.py", "function": "Receiver._prepare_query", "rule": "R3", "text": "checked = subprocess.run([sys.executable, '-B', RECEIVER, 'guard-census', runner['program'],"},
-  {"class": "T", "count": 1, "file": "engine/.veldo/control_service.py", "function": "serve_refusing", "rule": "R3", "text": "if listener not in select.select([listener], [], [], ACCEPT_SECONDS)[0]:"},
   {"class": "T", "count": 1, "file": "engine/.veldo/control_service.py", "function": "serve", "rule": "R3", "text": "listener.settimeout(ACCEPT_SECONDS)"},
-  {"class": "T", "count": 1, "file": "engine/.veldo/control_service.py", "function": "serve_refusing", "rule": "R3", "text": "listener.settimeout(ACCEPT_SECONDS)"},
-  {"class": "T", "count": 1, "file": "engine/.veldo/control_store.py", "function": "open_domain_registry", "rule": "R3", "text": "conn = sqlite3.connect(target, isolation_level=None, timeout=30)"},
-  {"class": "T", "count": 1, "file": "engine/.veldo/control_store.py", "function": "open_domain_registry", "rule": "R3", "text": "return sqlite3.connect(\"file:%s?mode=ro\" % target, uri=True, isolation_level=None, timeout=30)"},
   {"class": "S1", "count": 1, "file": "engine/ui/e2e/conversation-fixtures.ts", "function": "<module>", "rule": "R1", "text": "const timer = setTimeout(() => reject(new Error(`conversation harness did not start: ${errors}`)), 120_000)"},
   {"class": "S1", "count": 1, "file": "engine/ui/e2e/conversation-layout.spec.ts", "function": "<module>", "rule": "R1", "text": "await page.waitForTimeout(150)"},
   {"class": "T", "count": 1, "file": "engine/ui/e2e/conversation-layout.spec.ts", "function": "<module>", "rule": "R3", "text": "await expect(page.getByTestId('terminal')).toHaveAttribute('data-state', 'ended', { timeout: 30_000 })"},
