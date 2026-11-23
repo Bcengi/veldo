@@ -68,11 +68,12 @@ def fields(receipt, force, commit=None):
             raise ValueError('reuse audit population differs')
         key = result['reuse_key']
         stored = E.record(directory, key, secret)
+        stored_digest = E.digest(stored)
         gate.validate_result(stored, result['case'])
         original = {k: v for k, v in result.items() if k not in ('reuse_key', 'source', 'reuse_reason')}
         if original != stored or stored['input_digest'] != key:
             raise ValueError('reused observation differs from declared case key')
-        records.append(dict(key=key, identity=identity, result_digest=E.digest(stored)))
+        records.append(dict(key=key, identity=identity, result_digest=stored_digest))
     if not set(chosen) <= seen or len(records) != receipt['reused']:
         raise ValueError('reuse count differs from authenticated records')
     payload = dict(schema='veldo.landing-reuse/v1', provenance=E.PROVENANCE, authority=E.authority_identity(),
