@@ -134,6 +134,10 @@ def fixture(ROOT, PRODUCTION, cycle_budget=12, production_setup=False):
             if production_setup:
                 helper = load('v88_setup_fixture', Path(__file__).with_name('setup_fixture.py'))
                 setup_report = helper.setup(ROOT, base, mods, keyfile['steward'])
+                # The service must read from the same SecretService fixture that setup populated.
+                from unittest.mock import patch
+                resources.enter_context(patch.dict(os.environ,
+                    PATH=str(base / 'path') + os.pathsep + os.environ.get('PATH', '')))
                 ids = setup_report['authority_ids']
                 DOMAIN, REPO = ids['domain_uuid'], ids['repository_uuid']
                 keyfile['authority'] = Path(setup_report['state_root']) / 'keys' / 'journal'

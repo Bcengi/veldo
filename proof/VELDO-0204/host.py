@@ -341,6 +341,8 @@ class Host:
         channel, service.channel_refusal = self.SV.CH.open_channel(self.config.get('channel_ingress'))
         service.api, service.api_refusal = self.SV.SA.open_api(self.config.get('api_service'), channel,
                                                                self.lock, str(self.base))
+        if service.api is None:
+            raise RuntimeError('API fixture unavailable: channel=%s api=%s path=%s' % (service.channel_refusal, service.api_refusal, self.config.get('api_service')))
         self.ingress = channel
         # The PM cycle's services take the channel's inbox, presenter and settlement on the service's own
         # connection (control_grooming refuses a second one), as suites 92 and 93 give them.

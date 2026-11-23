@@ -542,4 +542,4 @@ def _v204_suite():
         expect('VELDO-0204 ' + name, len(observations) > 1 and all(passed for _, passed in observations))
 
 
-__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v204_suite)
+_v204_suite()
