@@ -1327,6 +1327,19 @@ def _veldo_0221():
                [result['case'] for result in race] == ['control', 'link-before-walk', 'swap-to-sibling',
                                                         'swap-to-own-decoy']
                and all(result['safe'] for result in race))
+        # A launcher started inside a shard (a worker tree a suite starts) serves a domain that
+        # lies inside the shard's root: its binds are pinned from the deeper root, the domain's.
+        nested_domain = top / 'nested-shard' / 'domain'
+        nested_domain.mkdir(parents=True)
+        inner = AS.Broker([nested_domain])
+        try:
+            with patch.object(inner, '_shard_roots', return_value=[os.fsencode(top / 'nested-shard')]):
+                sock, nested_error = brokered_bind(inner, nested_domain / 's', lambda *a: original_bind(inner, *a))
+                sock.close()
+        finally:
+            inner.close()
+        expect('VELDO-0221 AC2 suite-shards/broker-domain-inside-shard-binds: %r' % nested_error,
+               nested_error is None and (nested_domain / 's').is_socket())
         # In a brokered process (the confined leg) this suite's own helper cannot bind by itself:
         # its bind is a mediated call the launcher's broker answers, with this same pinned walk,
         # which refuses the swapped link. There the mutant is contained by the outer broker and
