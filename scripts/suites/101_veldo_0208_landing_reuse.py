@@ -1310,12 +1310,15 @@ def _v208_unconfined_leg():
     browser = ['118_0159', '119_0163', '120_0131', '121_0131', '122_0131', '124_0131']
     manifest = [s['name'] for s in json.loads((ROOT / 'scripts/suites/manifest.json').read_text())['suites']]
     whole = sorted(n for n, rows in listed.items() if rows is None)
-    expected_whole = sorted([n for n in manifest for short in control_plane + browser + ['65_0067']
+    # Landing draft: cgroup runtime, traced clients/census, and the B2 receiver boundary.
+    proposed = ['157_0358', '114_0113', '158_0359', '113_0114', '113_0111']
+    expected_whole = sorted([n for n in manifest for short in control_plane + browser + ['65_0067'] + proposed
                              if n.startswith(short.replace('_', '_veldo_', 1) + '_')])
     expect('VELDO-0208 unconfined-leg/declared-list: ' + repr(sorted(set(whole) ^ set(expected_whole))),
-           document['stages'] == declared_commands and len(expected_whole) == 54 and whole == expected_whole
+           document['stages'] == declared_commands and len(expected_whole) == 59 and whole == expected_whole
            and {n: r for n, r in listed.items() if r} == {'100_veldo_0207_case_reuse': 'strace',
-                                                         '101_veldo_0208_landing_reuse': 'strace'}
+                                                         '101_veldo_0208_landing_reuse': 'strace',
+                                                         '48_veldo_0108_relay': 'census'}
            and all(n in manifest for n in listed)
            and all(len(e['reason']) > 30 for e in document['suites']))
     # A suite that builds on a suite listed whole, loading its file directly or through a proof
