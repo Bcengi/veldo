@@ -888,7 +888,7 @@ err.close()
             guard = json.loads(wrapper[1]['payload']) if len(wrapper) == 2 else {}
             if (len(wrapper) != 2 or guard.get('event') != 'store_guard'
                     or guard.get('store_guard', {}).get('state') != 'on'
-                    or guard.get('store_guard', {}).get('outcome') != 'enforced'):
+                    or guard.get('store_guard', {}).get('outcome') != 'applied'):
                 problems.append('the wrapper must record the enforced store guard after its identity')
             if not lines or lines[0].get('stream') != 'wrapper' or (identity.get('process') or {}).get('pid') != own.get('pid'):
                 problems.append('the wrapper identity line is not the first, naming the engine')

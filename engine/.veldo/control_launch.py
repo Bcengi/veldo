@@ -4379,6 +4379,12 @@ class Receiver:
                                     settled=settled, group=group.report())
                 raise C.Refused('spawn_failed:containment:' + reason, settled=settled, group=group.report())
             if guarded:
+                # Keep the engine identity first in the execution record. The guard
+                # acknowledgment arrives during spawn, before _reap starts draining output.
+                recorder = getattr(self, 'recorder', None)
+                if recorder is not None and getattr(worker, 'identity_line', None) is not None:
+                    recorder.line('wrapper', worker.identity_line)
+                    worker.identity_recorded = True
                 guard_observe(self, 'runner_started' if self.runner['runner'] == 'confined' else 'applied')
         except BaseException:
             os.close(channel)
@@ -4606,7 +4612,7 @@ class Receiver:
                     held.put((prompt, getattr(login, 'released', True)))
         if recorder is not None:
             # The wrapper's identity line first, then what the engine printed after it.
-            if getattr(worker, 'identity_line', None) is not None:
+            if getattr(worker, 'identity_line', None) is not None and not getattr(worker, 'identity_recorded', False):
                 recorder.line('wrapper', worker.identity_line)
             # VELDO-0127: a role-bound run's recorded launch set and revision, right after the identity line.
             if (self.binding or {}).get('expected') is not None:
