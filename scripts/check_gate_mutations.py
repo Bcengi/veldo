@@ -1493,7 +1493,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                         differences = audit_module.R.E.audit_differences(audits[identity], record, case)
                         mismatch = any(d['verdict'] for d in differences.values())
                         entry = dict(identity=identity, key=audit_keys[identity],
-                                     result_digest=audit_module.R.E.digest(audits[identity]),
+                                     result_digest=reuse.authenticated_digests[identity],
                                      fresh_record=record, fresh_digest=audit_module.R.E.digest(record),
                                      differences=differences, matched=not mismatch)
                         receipt['audit']['entries'].append(entry)
