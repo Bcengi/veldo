@@ -1630,7 +1630,11 @@ def _v308_run_finished_suite():
             LA._organ = lambda name: (types.SimpleNamespace(handoff=lambda reader, host: None, Refused=RuntimeError)
                                       if name == 'control_memory' else real_organ(name))
             try:
-                R.launch(contract)
+                runtime = temp / 'query-runtime'
+                runtime.mkdir(mode=0o700)
+                from unittest.mock import patch
+                with patch.dict(os.environ, XDG_RUNTIME_DIR=str(runtime)):
+                    R.launch(contract)
             finally:
                 R._close_query()
                 LA._organ = real_organ

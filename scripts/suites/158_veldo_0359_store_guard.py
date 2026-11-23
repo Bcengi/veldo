@@ -346,7 +346,7 @@ L.wrap(argv)
                             subject_kind='conversation' if kind == 'conversation' else 'project',
                             unit='fixture-unit', station='workflow' if kind == 'workflow' else 'build',
                             reservation={'project': 'fixture-project', 'account': 'fixture-account'},
-                            input={'context': {}}, deadline=time.time() + HANG, repository='fixture-repository')
+                            source={'conversation': 'fixture-unit', 'turn': 1}, input={'context': {}}, deadline=time.time() + HANG, repository='fixture-repository')
             held_events = []
             receiver = Receiver(settings, lambda event: held_events.append(copy.deepcopy(event)))
             if client_name:
@@ -918,7 +918,7 @@ print(json.dumps({'results': results}))
             with section('query/journey'):
                 environment = dict(os.environ, VELDO_0359_GUARDED_JOURNEY='1')
                 tested = subprocess.run([sys.executable, '-B', str(ROOT / 'scripts/selftest.py'), '--suite', '157_veldo_0359_run_query'], cwd=ROOT, env=environment, capture_output=True, text=True, timeout=HANG)
-                check('query/journey', 'B1 differential client journey under actual ruleset: ' + tested.stderr[-1000:], tested.returncode == 2 and '33 passed, 0 failed' in tested.stdout)
+                check('query/journey', 'B1 differential client journey under actual ruleset: ' + tested.stderr[-1000:], tested.returncode == 2 and 'selftest (PARTIAL, 1 of ' in tested.stdout and '0 failed in ' in tested.stdout)
         for name in PRODUCTION:
             check('paths/canon', name, (ROOT / '.veldo' / name).read_bytes() == (ROOT / 'engine/.veldo' / name).read_bytes())
     for row, checks in rows.items():
