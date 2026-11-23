@@ -24,7 +24,7 @@ receipt per invocation, from before the relay executable runs through its exit a
 The row passes only when every receipt is complete and records no service event and no task the
 relay created. A missing or INCOMPLETE receipt makes the row STAND DOWN by name with
 census_incomplete, printed and never passed, whatever a fixture-local socket snapshot would show.
-The census-only rows of the same claim are scripts/suites/113_veldo_0114_relay_census.py.
+The census-only rows of the same claim are in suite 113_veldo_0114_relay_census.
 
 WHICH GATE LEG OWNS WHICH ROW (VELDO-0208 leg_runs, VELDO-0114 fix round 2). The composite asks
 leg_runs("census") and every other row asks leg_runs(), so a rows-scoped list entry
