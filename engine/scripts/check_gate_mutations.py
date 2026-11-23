@@ -1148,6 +1148,12 @@ class Workers:
                         # fresh worker's own tree nests in it (VELDO-0210 AC6, AC7).
                         worker_env = fixed_env if 'snapshot_root' in job else fresh_env
                         environment = worker_env(home, str(bindir) + ':/usr/bin:/bin')
+                        if job['case'].get('confined_only') is True and self.leg:
+                            # The whole worker stays confined; only the authority's existing
+                            # row split omits census rows assigned to its other leg.
+                            environment.update(VELDO_GATE_LEG='confined',
+                                               VELDO_GATE_UNCONFINED=','.join(self.leg['entries']),
+                                               VELDO_GATE_DECLARATION=self.leg['declaration'])
                         if meter_fd is not None:
                             environment['VELDO_MUTATION_CGROUP_FD'] = str(meter_fd)
                         if lifecycle_fd is not None:
