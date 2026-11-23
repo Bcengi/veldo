@@ -188,4 +188,4 @@ def _v179_conversation_screens():
     print('VELDO-0179 suite seconds: %.3f' % (time.monotonic() - started))
 
 
-_v179_conversation_screens()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v179_conversation_screens)

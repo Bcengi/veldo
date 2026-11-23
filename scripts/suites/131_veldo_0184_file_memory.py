@@ -695,4 +695,4 @@ if ENGINE != 'codex':
         expect('VELDO-0184 ' + row, bool(rows[row]) and not failed)
 
 
-_v184_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v184_suite)

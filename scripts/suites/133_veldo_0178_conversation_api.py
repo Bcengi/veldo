@@ -773,4 +773,4 @@ emit({'type':'result','subtype':'success','is_error':False,'num_turns':1,'result
         expect('VELDO-0178 ' + name, bool(rows[name]) and not failed)
 
 
-_v178_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v178_suite)

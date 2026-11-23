@@ -580,4 +580,4 @@ emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': resul
         expect('VELDO-0175 ' + name, bool(rows[name]) and not failed)
 
 
-_v175_routes_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v175_routes_suite)

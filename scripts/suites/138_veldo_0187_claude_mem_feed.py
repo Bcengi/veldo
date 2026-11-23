@@ -890,4 +890,4 @@ for raw in sys.stdin:
         expect('VELDO-0187 ' + row, bool(rows[row]) and not failed)
 
 
-_v187_suite()
+__import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['run'](ROOT, _v187_suite)
