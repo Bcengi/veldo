@@ -4,7 +4,7 @@ Implementation: `5ab6d340ad81d042e3004fc56c1a01f87bf01919` (branch triage2-cand-
 Input: d65033a8d unit leg, 297 printed failures, then reuse-audit abort.
 
 Full group ledger, exact-tip comparisons, commands and evidence:
-`/home/dmitry/projects/myday/research/claude-runs/triage2-cand-1122-leg.md`.
+`myday research/claude-runs/triage2-cand-1122-leg.md`.
 Raw selected-suite logs: sibling `triage2-evidence/` directory.
 
 - Reuse audit: 38/0; stale declarations: 37/0. Authenticated cache digests
