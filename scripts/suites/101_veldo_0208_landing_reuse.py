@@ -1134,9 +1134,10 @@ print(json.dumps(r))
         if outside.exists():
             outside.unlink()
 
-        # The bind helper itself creates socket files only beneath the domain's roots, so a path
-        # whose components are swapped for links after the broker resolved it still cannot land
-        # elsewhere: asked directly for an outside path, it refuses.
+        # The bind helper itself creates socket files only beneath the directories it is handed
+        # pinned, so a path whose components are swapped for links after the broker resolved it
+        # still cannot land elsewhere: pinned to the root and asked for an outside path, it
+        # refuses; with nothing pinned it binds nothing.
         spec = importlib.util.spec_from_file_location('v208_boundary', ROOT / 'scripts/agent_sandbox.py')
         boundary = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(boundary)
@@ -1149,16 +1150,25 @@ print(json.dumps(r))
             for target in (roots / 'inside', outside):
                 sock = _v208_socket.socket(_v208_socket.AF_UNIX)
                 try:
-                    broker._bind_path(sock.fileno(), b'\x01\x00' + os.fsencode(target) + b'\0')
+                    broker._bind_path(sock.fileno(), b'\x01\x00' + os.fsencode(target) + b'\0', broker.roots[0][1])
                     outcomes.append('bound')
                 except PermissionError:
                     outcomes.append('refused')
                 finally:
                     sock.close()
+            sock = _v208_socket.socket(_v208_socket.AF_UNIX)
+            try:
+                broker._bind_path(sock.fileno(), b'\x01\x00' + os.fsencode(roots / 'unpinned') + b'\0')
+                outcomes.append('bound')
+            except PermissionError:
+                outcomes.append('refused')
+            finally:
+                sock.close()
         finally:
             broker.close()
         expect('VELDO-0208 confined-stage/bind-helper-confined-to-roots: ' + repr(outcomes),
-               outcomes == ['bound', 'refused'] and (roots / 'inside').is_socket() and not outside.exists())
+               outcomes == ['bound', 'refused', 'refused'] and (roots / 'inside').is_socket()
+               and not outside.exists() and not (roots / 'unpinned').exists())
         if outside.exists():
             outside.unlink()
 

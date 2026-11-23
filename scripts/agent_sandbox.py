@@ -399,8 +399,11 @@ class Broker:
     where only the domain can create sockets), resolved with no symlink, magic link or mount
     crossing; an abstract address is refused, since this process is outside the Landlock scope
     that keeps abstract sockets inside the domain. connect and addressed sends go through an
-    O_PATH descriptor of the resolved socket. bind runs in a helper confined (Landlock) to create
-    socket files only beneath `roots`, so the bound name is the caller's own path. Other address
+    O_PATH descriptor of the resolved socket. A bind's parent directory is walked once, component
+    by component without following links, from the requesting shard's own root (the domain root
+    for a caller in no shard), and the helper that binds is confined (Landlock) to create socket
+    files only beneath that pinned root AND beneath that pinned directory: a component swapped for
+    a link after the walk can redirect the bind nowhere else. Other address
     families (TCP/TLS) pass through: the gate profile's network rule, the only one there is.
     TIOCGPTPEER is answered with the peer of a terminal master the caller itself holds.
     """
@@ -466,32 +469,46 @@ class Broker:
             os.closerange(keep + 1, 0x7fffffff)
             libc = ctypes.CDLL(None, use_errno=True)
             libc.bind.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_uint32]
-            confined = False
             while True:
-                data, ancillary, _, _ = theirs.recvmsg(256, socket.CMSG_SPACE(4))
+                data, ancillary, flags, _ = theirs.recvmsg(256, socket.CMSG_SPACE(12))
                 if not data:
                     os._exit(0)
-                if not confined:
-                    # Confined on its first request, never earlier: the first request comes after
-                    # the served tree confined itself, so a trace's confinement boundary (the first
-                    # landlock_restrict_self it records) is still that tree's own.
-                    self._confine_binder(libc)
-                    confined = True
-                fds = [int.from_bytes(d[:4], 'little') for level, kind, d in ancillary
-                       if level == socket.SOL_SOCKET and kind == socket.SCM_RIGHTS]
+                fds = [int.from_bytes(d[i:i + 4], 'little') for level, kind, d in ancillary
+                       if level == socket.SOL_SOCKET and kind == socket.SCM_RIGHTS
+                       for i in range(0, len(d) - len(d) % 4, 4)]
                 code = errno.EBADF
-                if len(fds) == 1:
-                    code = 0 if libc.bind(fds[0], data, len(data)) == 0 else ctypes.get_errno()
+                if 2 <= len(fds) <= 3 and not flags & socket.MSG_CTRUNC:
+                    # The descriptors after the socket are the directories this request was pinned
+                    # to, each its own Landlock layer, so a socket file can be created only where
+                    # every one of them is an ancestor. A layer is never lifted and every request
+                    # has its own, so each bind runs in a fresh child of this single-threaded
+                    # helper. Confined only once a request arrives, never earlier: the first
+                    # request comes after the served tree confined itself, so a trace's
+                    # confinement boundary (the first landlock_restrict_self it records) is still
+                    # that tree's own. The path is bound as given, so the socket's name is the
+                    # caller's own path (getsockname, a peer's getpeername).
+                    child = os.fork()
+                    if not child:
+                        code = errno.EACCES
+                        try:
+                            for pinned in fds[1:]:
+                                self._confine_binder(libc, pinned)
+                            code = 0 if libc.bind(fds[0], data, len(data)) == 0 else ctypes.get_errno()
+                        finally:
+                            os._exit(code)
+                    _, status = os.waitpid(child, 0)
+                    code = os.WEXITSTATUS(status) if os.WIFEXITED(status) else errno.EACCES
                 for fd in fds:
                     os.close(fd)
                 os.write(theirs.fileno(), code.to_bytes(4, 'little'))
         except BaseException:
             os._exit(3)
 
-    def _confine_binder(self, libc):
-        """Landlock handling only socket creation, granted beneath the roots: a bind of a path whose
-        components were swapped for links after the broker checked it still cannot create a
-        socket anywhere else."""
+    def _confine_binder(self, libc, pinned):
+        """One Landlock layer handling only socket creation, granted beneath the pinned directory
+        `pinned` (an O_PATH descriptor): the check follows the directory itself, not a path to
+        it, so a link swapped into the caller's path after the walk cannot move the bind outside
+        it. Raises when the layer cannot be applied, so nothing is bound unconfined."""
         class Ruleset(ctypes.Structure):
             _fields_ = [('access', ctypes.c_uint64)]
 
@@ -502,21 +519,22 @@ class Broker:
         rules = Ruleset(make_sock)
         ruleset = libc.syscall(444, ctypes.byref(rules), ctypes.sizeof(rules), 0)
         if ruleset < 0:
-            os._exit(3)
-        for root, _ in self.roots:
-            parent = os.open(root, os.O_PATH | os.O_CLOEXEC)
-            if libc.syscall(445, ruleset, 1, ctypes.byref(Beneath(make_sock, parent)), 0):
-                os._exit(3)
-            os.close(parent)
-        if libc.prctl(38, 1, 0, 0, 0) or libc.syscall(446, ruleset, 0):
-            os._exit(3)
-        os.close(ruleset)
+            raise OSError(errno.EACCES, 'bind helper: no Landlock ruleset')
+        try:
+            if (libc.syscall(445, ruleset, 1, ctypes.byref(Beneath(make_sock, pinned)), 0)
+                    or libc.prctl(38, 1, 0, 0, 0) or libc.syscall(446, ruleset, 0)):
+                raise OSError(errno.EACCES, 'bind helper: Landlock layer not applied')
+        finally:
+            os.close(ruleset)
 
-    def _bind_path(self, sock, address):
+    def _bind_path(self, sock, address, *pinned):
+        """Bind `address` in the helper, confined beneath every pinned directory descriptor."""
         import socket
+        if not 1 <= len(pinned) <= 2:
+            raise OSError(errno.EACCES, 'bind without a pinned directory')
         with self.lock:
             self.binder.sendmsg([address], [(socket.SOL_SOCKET, socket.SCM_RIGHTS,
-                                             sock.to_bytes(4, 'little'))])
+                                             b''.join(fd.to_bytes(4, 'little') for fd in (sock, *pinned)))])
             reply = self.binder.recv(4)
         if len(reply) != 4:
             raise OSError(errno.EACCES, 'bind helper unavailable')
@@ -651,8 +669,59 @@ class Broker:
         if roots is None:
             return
         path = os.path.normpath(address[2:].split(b'\0', 1)[0])
-        if not any(path.startswith(os.path.normpath(root).rstrip(b'/') + b'/') for root in roots):
-            raise OSError(errno.EACCES, 'Unix address outside the shard\'s roots')
+        for root in sorted(roots, key=len, reverse=True):
+            root = os.path.normpath(root).rstrip(b'/') or b'/'
+            if path.startswith(root.rstrip(b'/') + b'/'):
+                return root
+        raise OSError(errno.EACCES, 'Unix address outside the shard\'s roots')
+
+    def _pin_bind(self, tid, address, opened):
+        """The bind's parent directory and the root it lies in, as O_PATH descriptors, or OSError.
+
+        The root is the caller's shard's own root that holds the path (the domain root for a
+        caller in no shard), opened beneath the domain with no link or mount crossing. The parent
+        is reached from it one component at a time with O_DIRECTORY | O_NOFOLLOW, each step
+        checked by fstat: same device as the root, and its '..' is the directory it was opened
+        from. The path is never resolved again by name for the check; the helper's Landlock
+        layers on these two descriptors decide where the bind may land."""
+        path = address[2:].split(b'\0', 1)[0]
+        root = self._within_shard(tid, address)
+        if root is None:
+            root = next((r for r, _ in self.roots if path.startswith(r.rstrip(b'/') + b'/')), None)
+        if root is None:
+            raise OSError(errno.EACCES, 'Unix address outside the domain')
+        rootfd = self._resolve(root, opened, directory=True)
+        rootinfo = os.fstat(rootfd)
+        current, info = rootfd, rootinfo
+        # Keep the original components: normalization must not hide a symlink or '..'.
+        if not path.startswith(root.rstrip(b'/') + b'/'):
+            raise OSError(errno.EACCES, 'Unix address outside the pinned root')
+        components = path[len(root.rstrip(b'/')) + 1:].split(b'/')[:-1]
+        for component in components:
+            if component in (b'', b'.'):
+                continue
+            if component == b'..':
+                raise OSError(errno.EACCES, 'parent traversal in Unix address')
+            try:
+                child = os.open(component, os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                                dir_fd=current)
+                opened.append(child)
+                childinfo = os.fstat(child)
+                back = os.open(b'..', os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                               dir_fd=child)
+                try:
+                    backinfo = os.fstat(back)
+                finally:
+                    os.close(back)
+                if (childinfo.st_dev != rootinfo.st_dev or
+                        (backinfo.st_dev, backinfo.st_ino) != (info.st_dev, info.st_ino)):
+                    raise OSError(errno.EACCES, 'directory moved or crossed device')
+                current, info = child, childinfo
+            except OSError as error:
+                if error.errno in (errno.ELOOP, errno.ENOTDIR):
+                    raise OSError(errno.EACCES, 'symlink in Unix address') from None
+                raise
+        return current, rootfd
 
     def _address(self, raw, opened, bind=False):
         """The address this process uses for the caller's raw sockaddr, or None for a bind it
@@ -674,7 +743,8 @@ class Broker:
             parent, _, name = path.rpartition(b'/')
             if name in (b'', b'.', b'..'):
                 raise OSError(errno.EINVAL, 'invalid socket name')
-            self._resolve(parent or b'/', opened, directory=True)
+            if not path.startswith(b'/'):
+                raise OSError(errno.EACCES, 'only absolute Unix addresses are brokered')
             return None, raw[:2] + path + b'\0'
         target = self._resolve(path, opened)
         if not stat.S_ISSOCK(os.fstat(target).st_mode):
@@ -713,8 +783,8 @@ class Broker:
             if not self._valid(notification):
                 return None
             if path is not None:
-                self._within_shard(tid, path)
-                self._bind_path(sock, path)
+                parentfd, rootfd = self._pin_bind(tid, path, opened)
+                self._bind_path(sock, path, rootfd, parentfd)
                 return 0
             call = libc.connect if number == 42 else libc.bind
             if call(sock, address, len(address)):

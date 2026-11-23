@@ -1088,6 +1088,24 @@ def _veldo_0221():
                 with AS.gate_fixture_directory('gate', top / 'store', []) as default:
                     expect('VELDO-0221 gate-fixtures/account-default',
                            default.parent == allocated / '.local/state/veldo/gate-fixtures')
+            linked_home = allocated / 'home-link'
+            linked_home.symlink_to(allocated, target_is_directory=True)
+            with patch.object(F.pwd, 'getpwuid', return_value=SimpleNamespace(pw_dir=str(linked_home))), \
+                    patch.object(F, 'ENVIRONMENT', {}):
+                with AS.gate_fixture_directory('gate', top / 'store', []) as default:
+                    expect('VELDO-0221 gate-fixtures/symlink-account-home',
+                           default.parent == allocated / '.local/state/veldo/gate-fixtures')
+            with patch.object(F, 'ENVIRONMENT', {'XDG_STATE_HOME': str(linked_home / 'state')}):
+                with AS.gate_fixture_directory('gate', top / 'store', []) as default:
+                    expect('VELDO-0221 gate-fixtures/symlink-xdg-default',
+                           default.parent == allocated / 'state/veldo/gate-fixtures')
+            with patch.object(F, 'ENVIRONMENT', {'VELDO_FIXTURE_PARENT': str(linked_home / 'configured')}):
+                try:
+                    with AS.gate_fixture_directory('gate', top / 'store', []):
+                        configured_link_refused = False
+                except F.FixtureRefused as error:
+                    configured_link_refused = str(error).startswith('gate_fixture_root_invalid_path:')
+            expect('VELDO-0221 gate-fixtures/configured-symlink-still-refused', configured_link_refused)
             configured = allocated / 'configured'
             source = {'VELDO_FIXTURE_PARENT': str(configured)}
             with patch.object(F, 'ENVIRONMENT', source):
@@ -1198,6 +1216,120 @@ def _veldo_0221():
                and sorted(name.decode() for name in AS.Broker.SHARD_ROOT_VARIABLES)
                == sorted(variable for variable, _leaf in RS.SHARD_ROOTS)
                and "--shard" in RS.SHARD_ARGUMENTS and "--shard-root" in RS.SHARD_ARGUMENTS)
+        # The bind race (VELDO-0221 gate fix round 3). The production broker walks and pins the
+        # bind's parent; a real helper binds. Between the two, an attacker thread swaps the
+        # checked directory for a link: to a sibling shard's directory, and to another directory
+        # of the same shard. The pause and the swap are ordered by events, not sleeps (the waits
+        # are hang detectors only). The bind must land in the pinned directory or be refused;
+        # it must never reach the link's target. A control without a swap binds, and keeps the
+        # caller's own path as the socket's name. A link already present before the walk is
+        # refused by the walk itself. The mutant is the path-based bind the fix replaced: the
+        # helper binds the path limited only by the domain root, and the sibling swap escapes.
+        import inspect
+        import textwrap
+        original_bind = AS.Broker._bind_path
+        mutant_source = textwrap.dedent(inspect.getsource(original_bind))
+        mutant_source = mutant_source.replace("for fd in (sock, *pinned)", "for fd in (sock, self.roots[0][1])")
+        mutant_namespace = dict(AS.__dict__)
+        exec(compile(mutant_source, '<path-based-bind-mutant>', 'exec'), mutant_namespace)
+
+        def brokered_bind(live, path, bind_method):
+            opened, error = [], None
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            raw = b'\x01\x00' + os.fsencode(path) + b'\0'
+            notification = AS._Notification()
+            notification.pid = os.getpid()
+            notification.data.nr = 49
+            notification.data.args[2] = len(raw)
+            try:
+                with patch.object(live, '_read', return_value=raw), \
+                        patch.object(live, '_descriptor', return_value=sock.fileno()), \
+                        patch.object(live, '_valid', return_value=True), \
+                        patch.object(live, '_bind_path', bind_method):
+                    live._perform(notification, opened)
+            except OSError as failure:
+                error = failure.errno
+            finally:
+                for fd in opened:
+                    os.close(fd)
+            return sock, error
+
+        def bind_race(bind_method, tag):
+            domain = top / tag
+            own, sibling = domain / 'a', domain / 'b'
+            own.mkdir(parents=True)
+            sibling.mkdir()
+            live = AS.Broker([domain])
+            results = []
+            try:
+                with patch.object(live, '_shard_roots', return_value=[os.fsencode(own)]):
+                    control = own / 'control'
+                    control.mkdir()
+                    sock, error = brokered_bind(live, control / 's', lambda *a: bind_method(live, *a))
+                    with sock:
+                        named = sock.getsockname() if error is None else None
+                    results.append({'case': 'control', 'error': error, 'name-is-path': named == str(control / 's'),
+                                    'safe': error is None and (control / 's').is_socket() and named == str(control / 's')})
+                    linked = own / 'linked'
+                    linked.symlink_to(sibling, target_is_directory=True)
+                    sock, error = brokered_bind(live, linked / 'pre', lambda *a: bind_method(live, *a))
+                    sock.close()
+                    results.append({'case': 'link-before-walk', 'error': error,
+                                    'safe': error == errno.EACCES and not (sibling / 'pre').exists()})
+                    for index, destination in enumerate((sibling, own / 'decoy')):
+                        destination.mkdir(exist_ok=True)
+                        parent, held = own / ('d%d' % index), own / ('held%d' % index)
+                        parent.mkdir()
+                        checked, swapped = threading.Event(), threading.Event()
+                        attack_errors = []
+
+                        def attack():
+                            try:
+                                if not checked.wait(600):
+                                    raise RuntimeError('bind race never reached the pinned parent')
+                                parent.rename(held)
+                                parent.symlink_to(destination, target_is_directory=True)
+                            except BaseException as error:
+                                attack_errors.append(repr(error))
+                            finally:
+                                swapped.set()
+
+                        def paused_bind(*arguments):
+                            checked.set()
+                            if not swapped.wait(600):
+                                raise RuntimeError('bind race attacker hung')
+                            return bind_method(live, *arguments)
+                        attacker = threading.Thread(target=attack, daemon=True)
+                        attacker.start()
+                        try:
+                            sock, error = brokered_bind(live, parent / 's', paused_bind)
+                            sock.close()
+                        finally:
+                            checked.set()
+                            attacker.join(600)
+                        landed, escaped = (held / 's').is_socket(), (destination / 's').exists()
+                        results.append({'case': 'swap-to-' + ('sibling' if index == 0 else 'own-decoy'),
+                                        'error': error, 'pinned': landed, 'redirected': escaped,
+                                        'attack_errors': attack_errors,
+                                        'safe': (not attacker.is_alive() and not attack_errors and not escaped
+                                                 and ((error is None and landed)
+                                                      or (error == errno.EACCES and not landed)))})
+                        if escaped:
+                            (destination / 's').unlink()
+            finally:
+                live.close()
+            return results
+
+        race = bind_race(original_bind, 'race')
+        mutant_race = bind_race(mutant_namespace['_bind_path'], 'mutant')
+        print('VELDO-0221 broker race baseline=%r path-bind-mutant=%r' % (race, mutant_race), flush=True)
+        expect('VELDO-0221 AC2 suite-shards/broker-directory-swap-pinned: %r' % race,
+               [result['case'] for result in race] == ['control', 'link-before-walk', 'swap-to-sibling',
+                                                        'swap-to-own-decoy']
+               and all(result['safe'] for result in race))
+        expect('VELDO-0221 AC2 suite-shards/broker-directory-swap-path-mutant-red: %r' % mutant_race,
+               mutant_source != textwrap.dedent(inspect.getsource(original_bind))
+               and not mutant_race[2]['safe'] and mutant_race[2]['redirected'])
         refusals = []
         with open(top / "a-regular-file", "w") as regular:
             for profile, descriptor in (("agent", regular.fileno()), ("gate", regular.fileno()), ("gate", 1)):
