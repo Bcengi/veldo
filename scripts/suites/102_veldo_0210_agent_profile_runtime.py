@@ -249,8 +249,9 @@ def _v210_agent_profile():
     launcher = ROOT / 'scripts/agent_sandbox.py'
     # The real launcher's main() with module constants replaced (fixture resolver paths, a short
     # grace): the code under test is the launcher's own, only its host paths move into the fixture.
-    # FORK_THEN_SIGNAL sends the launcher TERM the instant its fork returns, before it can register
-    # the child, and gives the signal a second to land.
+    # FORK_THEN_SIGNAL sends TERM before parent registration, with the child held just after
+    # setsid. The ready byte proves killpg can reach it; the hold prevents command startup.
+    # The existing parent delay is scheduling pressure, never evidence that the child is ready.
     wrapper = '''import importlib.util, json, sys
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('agent_sandbox', sys.argv[1])
@@ -259,11 +260,32 @@ values = json.loads(sys.argv[2])
 if values.pop('FORK_THEN_SIGNAL', None):
     import os, signal, time
     fork = os.fork
+    ready, report = os.pipe()
+    held, release = os.pipe()
     def forked():
+        os.fork = fork
         pid = fork()
         if pid:
+            os.close(report)
+            os.close(held)
+            assert os.read(ready, 1) == b'1'
+            os.close(ready)
             os.kill(os.getpid(), signal.SIGTERM)
             time.sleep(1)
+        else:
+            os.close(ready)
+            os.close(release)
+            setsid = os.setsid
+            def session():
+                os.setsid = setsid
+                setsid()
+                os.write(report, b'1')
+                os.close(report)
+                # Only launcher death closes the writer. A correct start-time stop kills
+                # this session while it is held here, before any command can run.
+                os.read(held, 1)
+                os._exit(97)
+            os.setsid = session
         return pid
     os.fork = forked
 for name, value in values.items():
