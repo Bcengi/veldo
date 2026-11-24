@@ -377,6 +377,7 @@ sys.exit(chosen['code'])
 
             def __init__(self, tag, accounts, units, paused=None):
                 self.tag, self.accounts, self.proc, self.pid = tag, tuple(accounts), None, None
+                self.notification = None
                 self.idle_at = None  # the last pass at which the service answered idle
                 self.DOMAIN, self.STORE, self.REPO = ('dom154' + tag + run_id, 'store154' + tag + run_id,
                                                       'repo154' + tag + run_id)
@@ -536,13 +537,15 @@ sys.exit(chosen['code'])
             def boot(self):
                 """The installed service: the unit's ExecStart, run on its installed configuration."""
                 if self.installed is not None:
-                    environment = {k: v for k, v in os.environ.items() if k != 'NOTIFY_SOCKET'}
+                    readiness = load('v154_ready', ROOT / 'scripts/suites/support/service_ready.py')
+                    self.notification = notification = readiness.ServiceReady(WAITS)
                     with open(str(base / ('service-%s.err' % self.tag)), 'wb') as err:
+                        environment = dict(os.environ, NOTIFY_SOCKET=notification.address)
                         self.proc = subprocess.Popen([self.config['python'], self.config['executable'], 'serve',
                                                       self.installed['config']], stdin=subprocess.DEVNULL,
                                                      stdout=subprocess.DEVNULL, stderr=err, env=environment)
-                    self.pid = self.proc.pid
-                    self.wait_until(lambda: os.path.exists(self.config['socket']), [WAITS.PathAppears(self.config['socket'])])
+                        self.pid = self.proc.pid
+                        notification.wait(self.proc)
 
             # What the suite reads back, each through a connection or file of its own.
             def independent(self, sql, *params):
@@ -1334,6 +1337,8 @@ sys.exit(chosen['code'])
             if proc is not None and proc.poll() is None:
                 WAITS.wait('service %s to exit on SIGTERM' % one.tag, lambda: proc.poll() is not None, None,
                            [WAITS.Pidfd(proc)])
+            if one.notification is not None:
+                one.notification.close()
         if watcher[0] is not None:
             watcher[0].join()  # its waits end impossible once its service has exited
             with contextlib.suppress(Exception):

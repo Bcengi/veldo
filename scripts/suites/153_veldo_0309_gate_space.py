@@ -128,6 +128,7 @@ def _v309_suite():
     temp = Path(tempfile.mkdtemp(prefix='veldo-0309-')).resolve()
     rows = {}
     started = []
+    waits = _v309_load('v309_waits', ROOT / 'scripts/suites/support/waits.py')
 
     def check(row, good, detail=''):
         rows.setdefault(row, []).append((bool(good), detail))
@@ -197,6 +198,9 @@ def _v309_suite():
                         f'while not Path({str(base / "left.pid")!r}).exists() or not Path({str(base / "left.pid")!r}).read_text().strip():\n'
                         '    time.sleep(0.02)\n',
         }
+        # Keep the baselined template, but emit an event-held child: its natural end
+        # must not race the loaded gate. Only gate cleanup (or our cleanup) ends it.
+        acts['leftover'] = acts['leftover'].replace('sleep ' + str(6), f'read -r go < {base}/left.go')
         (scripts / 'check.py').write_text(
             'from pathlib import Path\nimport os, signal, sys\n'
             'Path("checked").write_text("yes")\n' + acts.get(scenario, ''))
@@ -406,12 +410,23 @@ def _v309_suite():
             # last line: it returns while that process is still running.
             for session in (False, True):
                 base, root = fixture(f'leftover-{n}-{int(session)}')
+                os.mkfifo(base / 'left.go')
                 argv, env = prepare(base, root, gate, 'leftover')
                 with open(base / 'out', 'w') as out:
                     done = subprocess.run(argv, cwd=root, env=env, stdout=out, stderr=subprocess.STDOUT,
                                           timeout=60, start_new_session=session)
                 finished = (base / 'left.done').exists()
                 pid = int((base / 'left.pid').read_text()) if (base / 'left.pid').exists() else 0
+                if session and pid > 0 and g.process_start(pid) is not None:
+                    # Signal delivery is asynchronous: observe the child's exit, not the
+                    # scheduler's choice of which process resumes after the gate returns.
+                    try:
+                        ended = waits.Pidfd(pid)
+                    except ProcessLookupError:
+                        pass
+                    else:
+                        waits.wait('gate leftover ended', lambda: g.process_start(pid) is None,
+                                   sources=[ended])
                 running = pid > 0 and g.process_start(pid) is not None
                 stamp = (root / '.veldo/last_verify').exists()
                 if not session:

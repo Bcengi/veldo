@@ -287,6 +287,8 @@ def service_config(f, CS, receiver=None):
 
 def restart(f, CS, root, receiver=None, identity='restart', serve=True, turns=False):
     """Run the production service twice and observe its record from both processes."""
+    waits = load('v174_restart_waits', Path(__file__).with_name('waits.py'))
+    readiness = load('v174_restart_ready', Path(__file__).with_name('service_ready.py'))
     config=service_config(f, CS, receiver)
     authority=f['authority']
     if turns:
@@ -318,12 +320,14 @@ if sys.argv[6]=='serve': CS.serve(sys.argv[2])
     if not module.exists(): module=root/'.veldo/control_service.py'
     for phase in ('open','read'):
         snapshot=home/(phase+'.json')
-        with (home/(phase+'.log')).open('w') as output:
+        with (home/(phase+'.log')).open('w') as output, readiness.ServiceReady(waits) as notification:
             proc=subprocess.Popen([sys.executable,str(driver),str(module),str(path),
-                                   str(snapshot),phase,identity,'serve' if serve else 'store'],stdout=output,stderr=output)
+                                   str(snapshot),phase,identity,'serve' if serve else 'store'],
+                                  stdout=output,stderr=output,
+                                  env=dict(os.environ, NOTIFY_SOCKET=notification.address))
             try:
                 if serve:
-                    ready=eventually(lambda:Path(config['socket']).exists() or proc.poll() is not None)
+                    ready = notification.wait(proc)
                     if proc.poll() is not None: raise RuntimeError((home/(phase+'.log')).read_text()[-1800:])
                     if not ready: raise RuntimeError('service socket did not become ready')
                     if turns:
@@ -348,7 +352,9 @@ if sys.argv[6]=='serve': CS.serve(sys.argv[2])
                         def complete():
                             saved=f['conversations'].turns(identity)
                             return len(saved)==count and all(t['outcome']=='completed' for t in saved)
-                        if not eventually(complete, 15):
+                        if not waits.wait('restarted service completed its turn', complete,
+                                          terminal=lambda: proc.poll() is not None,
+                                          sources=[waits.Store(authority.db), waits.Pidfd(proc)]).done:
                             raise RuntimeError('service did not complete turn '+str(count))
                 elif proc.wait(timeout=10) != 0:
                     raise RuntimeError((home/(phase+'.log')).read_text()[-1800:])

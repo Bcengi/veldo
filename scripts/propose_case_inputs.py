@@ -20,7 +20,7 @@ AC4). A declaration is stale when a file it was proposed from changed or it reco
 re-proposal is reported with the files its trace reads that the old declaration omitted.
 
 All workers have an owned process group, removed with their temporary tree. A traced run is bounded
-only against a hang, by the gate's WORKER_CEILING (VELDO-0285); a run past it is an error.
+only against a hang, by the gate's WORKER_CEILING (VELDO-0285) without trace or output progress.
 """
 import argparse
 import ast
@@ -164,9 +164,19 @@ def run_traced(argv, env, cwd, directory, ceiling):
         proc = subprocess.Popen(T.command(trace, argv), env=env, cwd=cwd, stdin=subprocess.DEVNULL,
                                 stdout=stdout, stderr=stderr, start_new_session=True)
         try:
-            code = proc.wait(timeout=ceiling)
-        except subprocess.TimeoutExpired:
-            code = 124
+            progress = (0, 0, 0)
+            while True:
+                try:
+                    code = proc.wait(timeout=ceiling)
+                    break
+                except subprocess.TimeoutExpired:
+                    observed = (trace.stat().st_size if trace.exists() else 0,
+                                os.fstat(stdout.fileno()).st_size, os.fstat(stderr.fileno()).st_size)
+                    if observed == progress:
+                        code = 124
+                        break
+                    progress = observed
+                    print('case trace: still progressing (%d trace bytes); continuing' % observed[0], flush=True)
         finally:
             try:
                 os.killpg(proc.pid, signal.SIGKILL)
@@ -179,7 +189,7 @@ def run_traced(argv, env, cwd, directory, ceiling):
     if code == 124:
         # The tracer died with its tracees, so the trace ends mid-call: no evidence, and no read
         # set may be proposed from it. Say why, rather than what the parser then finds.
-        raise TimeoutError('traced run exceeded its %gs deadline; its trace is incomplete' % ceiling)
+        raise TimeoutError('traced run made no progress for %gs; its trace is incomplete' % ceiling)
     return code, round(time.monotonic() - start, 3), out, err, trace
 
 

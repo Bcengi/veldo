@@ -957,28 +957,34 @@ print(json.dumps(result))
             answer.get('refusal') == 'binding_mismatch:identity_transport_config' and answer.get('result', {}).get('status') == 'refused'
             and all(remote_main(b) == old for b in repositories) for answer, repositories in rerouted.values()))
         # The supervisor must extend its acceptance deadline for the announced operation.
-        # AC3 permits one destination; its three-second receive exceeds the two-second
-        # acceptance window while staying within the five-second Git step bound.
+        # AC3 permits one destination. Its real hook holds until the supervisor observes
+        # it and advances a supplied clock past acceptance. Host load cannot spend the
+        # fixture's deadline; missing announcements still fail through call's select.
+        window_spec = _v28_import.spec_from_file_location('v28_window', ROOT / 'scripts/suites/support/effect_window.py')
+        window = _v28_import.module_from_spec(window_spec)
+        window_spec.loader.exec_module(window)
         clone, lbare = fresh('slow-fan-out')
         slow_url = wired_url('slow-fan-out', str(lbare))
         slow = [lbare]
+        receive_window = window.ReceiveWindow(root, _v28_executor)
         for index, bare in enumerate(slow):
             wait = bare / 'hooks' / 'pre-receive'
-            wait.write_text('#!/bin/sh\ncat >/dev/null\nsleep 3\n')
+            wait.write_text(receive_window.hook())
             wait.chmod(0o755)
         config['receivers']['git-slow-fan-out'] = {'kind': 'publication', 'repository': str(clone), 'remote': slow_url,
-                                                   'ref': 'refs/heads/main', 'git_step_seconds': 5}
+                                                   'ref': 'refs/heads/main', 'git_step_seconds': window.WAIT_HANG_SECONDS}
         config_path.write_text(_v28_json.dumps(config))
         slow_config = private / 'slow-fan-out-config.json'
         slow_config.write_text(_v28_json.dumps(dict(config, accept_seconds=2)))
         slow_request, _, _, _ = setup('publication', 'slow-fan-out', target='git-slow-fan-out',
                                       payload={'commit': tip, 'tree': tree, 'old_tip': old})
-        began = _v28_time.monotonic()
-        try:
-            slow_answer = _v28_executor.call(slow_config, slow_request, 'worker', private / 'worker')
-        except E.Refused as error:
-            slow_answer = {'supervisor_refusal': error.code}
-        slow_seconds = _v28_time.monotonic() - began
+        with receive_window.supervisor_clock(globals(), '_v28_time'):
+            began = _v28_time.monotonic()
+            try:
+                slow_answer = _v28_executor.call(slow_config, slow_request, 'worker', private / 'worker')
+            except E.Refused as error:
+                slow_answer = {'supervisor_refusal': error.code}
+            slow_seconds = _v28_time.monotonic() - began
         seen_result('slow-fan-out', slow_answer.get('result', {}), seconds=round(slow_seconds, 1),
                     supervisor_refusal=slow_answer.get('supervisor_refusal'))
         # Retain the supervisor's announced time window for every destination of the call.
@@ -986,7 +992,8 @@ print(json.dumps(result))
         row('publication-call-covers-every-destination', slow_answer.get('result', {}).get('completed') is True
             and slow_seconds > 2 and all(remote_main(bare) == tip for bare in slow)
             and recorded('slow-fan-out') == {'authorized_url': slow_url, 'destinations': reached(
-                *[(slow_url if index == 0 else str(bare), 'at-tip') for index, bare in enumerate(slow)])})
+                *[(slow_url if index == 0 else str(bare), 'at-tip') for index, bare in enumerate(slow)])}
+            and receive_window.budget > slow_seconds)
         # R8 scrub: anything that does not parse into a well-formed host is over-scrubbed. An
         # scp-style address loses everything up to the last `@` before its path (user:password
         # included, and a scheme-looking `ssh:` user), an `ext::` command keeps no command text,
