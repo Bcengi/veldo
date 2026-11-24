@@ -133,6 +133,16 @@ def _v309_suite():
     def check(row, good, detail=''):
         rows.setdefault(row, []).append((bool(good), detail))
 
+    def left_running(pid):
+        # Once the gate has returned, only its already-pending SIGKILL can end
+        # this FIFO-held child. No pending kill means the group was left alive.
+        try:
+            status = dict(line.split(':', 1) for line in Path('/proc/%d/status' % pid).read_text().splitlines())
+        except (FileNotFoundError, ProcessLookupError):
+            return False
+        pending = int(status['SigPnd'], 16) | int(status['ShdPnd'], 16)
+        return status['State'].strip()[0] not in ('Z', 'X') and not pending & (1 << (signal.SIGKILL - 1))
+
     def fixture(name, mode='act'):
         base = temp / name
         base.mkdir()
@@ -426,7 +436,7 @@ def _v309_suite():
                         pass
                     else:
                         waits.wait('gate leftover ended', lambda: g.process_start(pid) is None,
-                                   sources=[ended])
+                                   terminal=lambda: left_running(pid), sources=[ended])
                 running = pid > 0 and g.process_start(pid) is not None
                 stamp = (root / '.veldo/last_verify').exists()
                 if not session:
@@ -441,6 +451,11 @@ def _v309_suite():
                     # The gate led its own process group, and ended it at its exit.
                     check('exit/group-ended', done.returncode == 0 and stamp and not finished and not running,
                           str((done.returncode, stamp, finished, running)) + (base / 'out').read_text())
+                    if running:
+                        try:
+                            os.kill(pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
 
             # A graph the scheduler refuses ends red without the review events; an ordinary gate runs them.
             base, root = fixture(f'graph-{n}')

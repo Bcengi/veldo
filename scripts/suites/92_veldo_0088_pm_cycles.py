@@ -104,16 +104,22 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             result_file = base / 'answer.json'
             empty = dict(schema=PM.DOCUMENT, owner_questions=[], decomposition=[], proposals=[])
             result_file.write_text(json.dumps(empty))
+            (base / 'fixture_waits.py').write_bytes((ROOT / 'scripts/suites/support/waits.py').read_bytes())
             worker = base / 'worker.py'
             worker.write_text('import json,sys\nfrom pathlib import Path\np=json.load(sys.stdin)\n'
                 'Path(sys.argv[2]).write_text(json.dumps(p))\nimport time\n'
-                'if Path(sys.argv[3]).exists():\n'
-                ' hold=Path(sys.argv[3]).read_text(); time.sleep(float(hold) if hold.isdigit() else 1)\n'
+                'if p["station"] == "coordination" and Path(sys.argv[3]).exists():\n'
+                ' import stat\n'
+                ' if stat.S_ISFIFO(Path(sys.argv[3]).stat().st_mode):\n'
+                '  with open(sys.argv[3]) as release: release.read()\n'
+                ' else:\n'
+                '  hold=Path(sys.argv[3]).read_text(); time.sleep(float(hold) if hold.isdigit() else 1)\n'
                 'if p["station"] == "coordination": print(Path(sys.argv[1]).read_text())\n'
                 'else:\n'
                 ' import subprocess,os\n'
-                ' until=time.monotonic()+10\n'
-                ' while Path(sys.argv[4]).with_name("engineering-hold").exists() and time.monotonic()<until: time.sleep(.02)\n'
+                ' import fixture_waits as waits\n'
+                ' hold=Path(sys.argv[4]).with_name("engineering-hold")\n'
+                ' waits.wait("engineering released", lambda: not hold.exists(), sources=[waits.PathAppears(hold)])\n'
                 ' if p["station"] == "build":\n'
                 '  selection=p["configuration"]["role_revision"]["mcp"][0]\n'
                 '  catalog=json.loads(Path(sys.argv[4]).read_text())\n'
@@ -258,7 +264,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                 result_file.write_text(json.dumps(empty))
                 request_id, receipt = f['present']('pending-88', {'kind': 'pm', 'ref': 'proj-a',
                     'digest': PM.SN.digest(b'pending')}, 'Answer this coordination question.')
-                (base / 'hold').write_text('hold')
+                __import__('os').mkfifo(base / 'hold')
                 held = cycles.start('proj-a', cycles.inputs('proj-a'))
                 try:
                     cycles.start('proj-a', cycles.inputs('proj-a'))
@@ -271,6 +277,8 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                 check('cycle/pending-follow-up', 'owner answer retained while one cycle holds the project',
                       answered.get('outcome') == 'settled' and 'proj-a' in cycles.pending
                       and len([r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]) == 1)
+                with open(base / 'hold', 'w'):
+                    pass
                 if held.get('dispatch') in runner.launches:
                     runner.wait(runner.launches[held['dispatch']], timeout=15)
                 (base / 'hold').unlink()

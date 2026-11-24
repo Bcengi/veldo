@@ -159,6 +159,9 @@ def _v161_suite():
             yield wire
     watch = put_back = None
     connections, servers, services = [], [], []
+    notifications = []
+    waits = load('v161_waits', ROOT / 'scripts/suites/support/waits.py')
+    readiness = load('v161_ready', ROOT / 'scripts/suites/support/service_ready.py')
     with tempfile.TemporaryDirectory(prefix='v161-', dir=fast_temp()) as directory:
         base = Path(directory)
         mods = base / 'i' / '.veldo'
@@ -476,14 +479,14 @@ def _v161_suite():
                     if line.startswith('ExecStart='):
                         values['argv'] = line[len('ExecStart='):].split()
                 env = {k: v for k, v in os.environ.items() if k not in ('NOTIFY_SOCKET',)}
+                notification = readiness.ServiceReady(waits)
+                notifications.append(notification)
+                env['NOTIFY_SOCKET'] = notification.address
                 proc = subprocess.Popen(values['argv'], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                                         stderr=subprocess.PIPE, env=env)
                 services.append(proc)
-                deadline = time.monotonic() + 30
-                while time.monotonic() < deadline and not os.path.exists(service_config['socket']):
-                    if proc.poll() is not None:
-                        raise RuntimeError('the service exited: %s' % proc.stderr.read().decode()[-500:])
-                    time.sleep(0.05)
+                if not notification.wait(proc):
+                    raise RuntimeError('the service exited: %s' % proc.stderr.read().decode()[-500:])
                 return proc
 
             def stop_service(proc):
@@ -1919,6 +1922,8 @@ def _v161_suite():
                     with contextlib.suppress(Exception):
                         proc.kill()
                         proc.wait(timeout=10)
+            for notification in notifications:
+                notification.close()
             for server in servers:
                 with contextlib.suppress(Exception):
                     server.shutdown()

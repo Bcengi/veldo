@@ -20,7 +20,8 @@ AC4). A declaration is stale when a file it was proposed from changed or it reco
 re-proposal is reported with the files its trace reads that the old declaration omitted.
 
 All workers have an owned process group, removed with their temporary tree. A traced run is bounded
-only against a hang, by the gate's WORKER_CEILING (VELDO-0285) without trace or output progress.
+by four WORKER_CEILING intervals (VELDO-0285), and by one interval without trace or output
+progress. Each interval is at least 120 seconds.
 """
 import argparse
 import ast
@@ -158,21 +159,25 @@ def observation_digest(observation):
 
 def run_traced(argv, env, cwd, directory, ceiling):
     """Run argv under strace in its own process group; (exit, seconds, stdout, stderr, trace)."""
+    ceiling = max(120, ceiling)
     trace = Path(directory) / 'trace'
     start = time.monotonic()
     with open(Path(directory) / 'stdout', 'w+b') as stdout, open(Path(directory) / 'stderr', 'w+b') as stderr:
         proc = subprocess.Popen(T.command(trace, argv), env=env, cwd=cwd, stdin=subprocess.DEVNULL,
                                 stdout=stdout, stderr=stderr, start_new_session=True)
         try:
+            reason = 'exited 124'
             progress = (0, 0, 0)
-            while True:
+            for interval in range(4):
                 try:
                     code = proc.wait(timeout=ceiling)
                     break
                 except subprocess.TimeoutExpired:
                     observed = (trace.stat().st_size if trace.exists() else 0,
                                 os.fstat(stdout.fileno()).st_size, os.fstat(stderr.fileno()).st_size)
-                    if observed == progress:
+                    if observed == progress or interval == 3:
+                        reason = ('made no progress for %gs' % ceiling if observed == progress else
+                                  'exceeded the outer bound of %gs' % (4 * ceiling))
                         code = 124
                         break
                     progress = observed
@@ -189,7 +194,7 @@ def run_traced(argv, env, cwd, directory, ceiling):
     if code == 124:
         # The tracer died with its tracees, so the trace ends mid-call: no evidence, and no read
         # set may be proposed from it. Say why, rather than what the parser then finds.
-        raise TimeoutError('traced run made no progress for %gs; its trace is incomplete' % ceiling)
+        raise TimeoutError('traced run %s; its trace is incomplete' % reason)
     return code, round(time.monotonic() - start, 3), out, err, trace
 
 

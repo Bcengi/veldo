@@ -57,6 +57,9 @@ _v117_spec = _v117_import.spec_from_file_location(
 _v117_FX = _v117_import.module_from_spec(_v117_spec)
 _v117_spec.loader.exec_module(_v117_FX)
 
+_v117_waits = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/waits.py'))
+_v117_ready = __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/service_ready.py'))
+
 # The modules an authority runs: three for the child authorities of this suite, and the service
 # for the installed ones. The mutation driver replaces one of these paths.
 _v117_SOURCES = {
@@ -417,6 +420,8 @@ class _v117_Served:
         env = dict(_v117_os.environ, PYTHONDONTWRITEBYTECODE="1")
         for key in ("VELDO_CONTROL_TEST_HARNESS", "VELDO_CONTROL_KILL_AT", "NOTIFY_SOCKET"):
             env.pop(key, None)
+        self.notification = _v117_ready['ServiceReady'](__import__('types').SimpleNamespace(**_v117_waits))
+        env['NOTIFY_SOCKET'] = self.notification.address
         with open(self.errors, "wb") as errors:
             self.process = _v117_sp.Popen(
                 [_v117_os.path.realpath(_v117_sys.executable), "-B", report["executable"], "serve", report["config"]],
@@ -424,15 +429,8 @@ class _v117_Served:
         world["processes"].append(self)
 
     def listening(self, bound=_v117_START):
-        """Whether the instance bound its socket within the bound; False when it ended first."""
-        deadline = _v117_time.monotonic() + bound[0]
-        while _v117_time.monotonic() < deadline:
-            if _v117_os.path.exists(self.config["socket"]):
-                return True
-            if self.process.poll() is not None:
-                return False
-            _v117_time.sleep(0.05)
-        return False
+        """Whether the installed service announced READY=1 before ending."""
+        return self.notification.wait(self.process)
 
     def said(self):
         try:
@@ -463,6 +461,9 @@ class _v117_Served:
             except _v117_sp.TimeoutExpired:
                 self.process.kill()
                 self.process.wait()
+        if self.notification is not None:
+            self.notification.close()
+            self.notification = None
         return self.process.returncode
 
 
