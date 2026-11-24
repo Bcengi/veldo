@@ -645,15 +645,18 @@ sys.exit(chosen['code'])
                 self.idle_at = None
                 result = WAITS.wait('a pass of instance %s after %d' % (self.tag, after), done,
                                     lambda: not self.live() or self.idle(), self.sources(), _depth=2)
-                return found[0] if result.done else None
+                # The pass can be logged after done() reads but before idle()
+                # reads. Only a read AFTER the terminal reply proves absence.
+                return found[0] if result.done else done()[1]
 
             def wait_until(self, predicate, more=()):
                 """`predicate` holding, woken by the pass log, the store or the sources named; False when the service
                 answered idle without it or has ended."""
                 self.idle_at = None
-                return WAITS.wait('a state of instance %s' % self.tag, predicate,
+                result = WAITS.wait('a state of instance %s' % self.tag, predicate,
                                   lambda: not self.live() or (not predicate() and self.idle()),
-                                  self.sources(*more), _depth=2).done
+                                  self.sources(*more), _depth=2)
+                return result.done or predicate()
 
             def send(self, payload):
                 try:
@@ -675,6 +678,36 @@ sys.exit(chosen['code'])
                             command_id=next_id('answer'), nonce=next_id('an'),
                             request_version=record.get('request_version'), ruling=ruling)
                 return self.send({'command': body, 'signature': owner_sign(S.canonical_bytes(body))})
+
+        # Force the completion event between the wait's predicate read and its
+        # idle reply. No scheduler timing is needed to reproduce the loaded race.
+        for helper in ('wait_pass', 'wait_until'):
+            for completes in (True, False):
+                probe = Instance.__new__(Instance)
+                probe.tag = 'idle-race'
+                probe.idle_at = None
+                probe.observations = base / 'idle-race.log'
+                probe.observations.write_text('')
+                probe.live = lambda: True
+                probe.sources = lambda *more: [WAITS.PathAppears(probe.observations, modify=True)]
+                report = dict(kind='loop', operation='loop_pass', **{'pass': 1}, sources=['journal'])
+                probe.send = lambda payload: {'loop': dict(available=True, passes=probe.last_pass(),
+                    pending_wakes=0, running=[], orphans=[], timer=None, unwatched=[])}
+
+                def complete_before_idle():
+                    if completes:
+                        probe.observations.write_text(json.dumps(report) + '\n')
+                    return Instance.idle(probe)
+
+                probe.idle = complete_before_idle
+                if helper == 'wait_pass':
+                    observed = probe.wait_pass(lambda p: 'journal' in p['sources'], 0)
+                    correct = observed == (report if completes else None)
+                else:
+                    observed = probe.wait_until(lambda: bool(probe.passes()))
+                    correct = observed is completes
+                check('loop/no-other-timer', '%s rechecks completion after idle, while a missing event remains '
+                      'impossible [completion=%s, observed=%s]' % (helper, completes, observed), correct)
 
         def dig(value, *keys):
             for key in keys:
