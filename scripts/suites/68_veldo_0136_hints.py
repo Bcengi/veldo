@@ -105,15 +105,23 @@ def _v136_checks(base):
     organs.mkdir()
     for source in sorted((ROOT / '.veldo').glob('*.py')):
         _v136_shutil.copyfile(source, organs / source.name)
+    # Overlay each selected production copy before loading any organs. Lazy sibling
+    # imports must see the same mutation, and settlement ownership binds the module
+    # path as well as its bytes, so every participant needs this one complete tree.
+    _v136_shutil.copyfile(ROOT / ".veldo" / "control_channel_presentation.py",
+                         organs / 'control_channel_presentation.py')
+    _v136_shutil.copyfile(ROOT / ".veldo" / "control_channel_attribution.py",
+                         organs / 'control_channel_attribution.py')
+    intake_path = ROOT / ".veldo" / "control_intake.py"
+    if intake_path.is_file():
+        _v136_shutil.copyfile(intake_path, organs / 'control_intake.py')
     claims = _v136_load('v136_claims', organs / 'control_claim.py')
     S, CM, AUTHC = claims.S, claims.CM, claims.AC
     I = _v136_load('v136_inbox', organs / 'control_assignment.py')
     P = _v136_load('v136_projection', organs / 'control_channel_projection.py')
-    # The production copies under test; mutation workers replace exactly these paths.
-    V = _v136_load('v136_presentation', ROOT / ".veldo" / "control_channel_presentation.py")
-    A = _v136_load('v136_attribution', ROOT / ".veldo" / "control_channel_attribution.py")
-    intake_path = ROOT / ".veldo" / "control_intake.py"
-    IN = _v136_load('v136_intake', intake_path) if intake_path.is_file() else None
+    V = _v136_load('v136_presentation', organs / 'control_channel_presentation.py')
+    A = _v136_load('v136_attribution', organs / 'control_channel_attribution.py')
+    IN = _v136_load('v136_intake', organs / 'control_intake.py') if intake_path.is_file() else None
 
     keys = base / 'keys'
     keys.mkdir()
@@ -199,7 +207,7 @@ def _v136_checks(base):
         journal_signer='authority', sign=journal_sign, asker=V.TelegramPresentationEdge(P, url, 'sandbox-bot'),
         request_sign=lambda m: sign_as('authority', m))
     # VELDO-0181: settlement settles his answer to the unclear question's presentation.
-    ST = _v136_load('v136_settlement', ROOT / '.veldo' / 'control_request_settlement.py')
+    ST = _v136_load('v136_settlement', organs / 'control_request_settlement.py')
     settlement = ST.Settlement(S, CM, inbox, presenter, conn, 'authority', journal_sign, assignment=I, presentation=V,
                                api_edge='api-edge')
     neighbor152 = __import__('runpy').run_path(str(Path(__suite_file__).resolve().parents[2] / 'proof/VELDO-0152/neighbors.py'))
