@@ -1010,6 +1010,12 @@ class Workers:
             metered = getattr(self.meters.get(name), 'started', None)
             record['cleanup'] = ownership.cleanup(self.homes[name], self.ledgers[name],
                                                   **({'born_after': metered} if metered is not None else {}))
+            # Materialized production trees are not ownership-ledger entries. Reap
+            # this worker's scratch after reading its evidence, before admitting
+            # another worker; retaining every copy until stage end fills the disk.
+            # stdout, stderr, traces and the ledger live beside home and survive.
+            ownership.remove_tree(home)
+            record['cleanup']['scratch_removed'] = True
         except Exception as cleanup_error:
             error = Refused('worker_cleanup_error', name + ': ' + str(cleanup_error))
             record.update(error=error.code, detail=error.detail)
