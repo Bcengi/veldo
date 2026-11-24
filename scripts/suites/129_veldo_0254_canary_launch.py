@@ -744,6 +744,10 @@ out.close()
                     continue
                 try:
                     os.write(pipe, provisioner_text)
+                except BrokenPipeError:
+                    # The provisioner can reject the FIFO and exit after our open.
+                    # The row still checks its recorded refusal below.
+                    pass
                 finally:
                     os.close(pipe)
                 return

@@ -173,6 +173,10 @@ def _v148_sample_members(self):
         with open(%r, 'a') as samples:
             samples.write(json.dumps({'cgroup': self.cgroup, 'members': members}) + chr(10))
         os.write(release, b'1')
+    except BrokenPipeError:
+        # A previous sample can have released the heartbeat, which closes its reader.
+        # The membership sample remains valid; there is no heartbeat left to release.
+        pass
     finally:
         os.close(release)
     return members
