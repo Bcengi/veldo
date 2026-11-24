@@ -58,8 +58,8 @@ def _v183_suite():
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
 
-    def watched(label, stores, opened, run):
-        return FIX.watched(check, label, stores, opened, run)
+    def watched(label, stores, opened, run, existing=None):
+        return FIX.watched(check, label, stores, opened, run, existing=existing)
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -814,7 +814,7 @@ print(json.dumps(out))
                               ('memory_kb', 'after')])
         again = watched('servers step rerun', stores, base / 'stores', lambda: MS.setup_servers(
             root, str(owner_key), runner=manager, unit_dir=str(units), install_root=str(base / 'install-v183'),
-            python=sys.executable, factory=str(mods), host=host))
+            python=sys.executable, factory=str(mods), host=host), existing=server_pids)
         check('AC4/assistant-entries', 'a second run leaves entries that name the bridge alone and saves nothing [%s]'
               % again['outcome'],
               again['outcome'] == 'already_done' and again['assistant_mcp']['outcome'] == 'already_done'
@@ -830,7 +830,8 @@ print(json.dumps(out))
                 (files / writer / ('%03d.md' % i)).write_text('kb %s document %03d' % (writer, i))
         results, errors = {}, []
         before_writers = len(FIX.opens(base / 'stores'))
-        before_holders = {part: FIX.holders(data) for part, data in stores.items()}
+        before_snapshot = FIX.snapshot(base / 'stores', stores)
+        before_holders = {part: sample['pids'] for part, sample in before_snapshot.items()}
 
         def session(name, command, arguments, tool, inputs):
             try:
@@ -882,20 +883,24 @@ print(json.dumps(out))
             writer.start()
         for writer in writers:
             writer.join()
-        writer_events = FIX.opens(base / 'stores')[before_writers:]
+        after_snapshot = FIX.snapshot(base / 'stores', stores)
+        writer_history = FIX.opens(base / 'stores')
+        writer_events = writer_history[before_writers:]
         counts = {name: len(value) for name, value in results.items()}
         print('  VELDO-0183 AC4 writers:', counts, errors[:3])
         for part in MS.STORES:
             opened, beside, diagnostics = FIX.EVENTS.evidence(writer_events, stores[part])
             # Every open names its opener plus the other store holders at that event.
-            seen = [before_holders[part], FIX.holders(stores[part])] + [
+            seen = [before_holders[part], after_snapshot[part]['pids']] + [
                 {event['pid'], *event['others']} for event in opened]
+            unobserved = (before_snapshot[part]['unobserved'] | after_snapshot[part]['unobserved']
+                          | FIX.EVENTS.unobserved(writer_history, stores[part], before_writers))
             others = sorted({pid for sample in seen for pid in sample} - {server_pids[part]})
             print('  VELDO-0183 writer open evidence:', part, len(opened),
                   json.dumps([e for e in opened if e['holders']] + diagnostics))
             check('AC4/one-opener', '%s: its files were held open by exactly its store server throughout [%d events, '
                   'others %s]' % (part, len(opened), others),
-                  seen and all(sample == {server_pids[part]} for sample in seen) and not beside)
+                  seen and all(sample == {server_pids[part]} for sample in seen) and not beside and not unobserved)
         mem_ids = [r['id'] for name in ('ava/bridge', 'ava/assistant') for r in results.get(name, [])]
         kb_ids = [i for name in ('kb/bridge', 'kb/assistant', 'kb/command') for r in results.get(name, []) for i in r]
         check('AC4/all-written', 'every write was answered [%s %s]' % (counts, errors[:2]),
@@ -975,11 +980,13 @@ print(json.dumps(dict(by_id=len(by_id), by_search=len(by_search), total=len(want
         try:
             def run(label):
                 # The raw manifest names code directories; each store lies under its data directory.
+                existing = {part: manager.pid('veldo-memory-%s.service' % part.replace('_', '-')) for part in MS_STORES}
+                existing = existing if all(existing.values()) else None
                 return watched(label, {part: str(Path(manifest['parts'][part]['code']) / 'data') for part in MS_STORES},
                                base / 'stores-setup',
                                lambda: h['setup'](root, workspace, base / 'trust-v183s' / 'host.json',
                                                   base / 'install-v183s', units, manager,
-                                                  **{'--memory': str(manifest_path)}))
+                                                  **{'--memory': str(manifest_path)}), existing=existing)
             code, report = run('factory setup')
             print('  VELDO-0183 setup with memory:', code, report.get('outcome'), report.get('reason'))
             first = next((s for s in report.get('steps') or [] if s.get('step') == 'memory_servers'), {})

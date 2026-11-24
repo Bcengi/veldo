@@ -18,8 +18,7 @@ _INSTALLED = False
 
 
 def store_file(path):
-    name = os.path.basename(path)
-    return (name != 'veldo-store.lock' and not name.endswith(('.lock', '.log'))
+    return (os.path.basename(path) in ('chroma.sqlite3', 'chroma.sqlite3-wal', 'chroma.sqlite3-shm')
             and not os.path.isdir(path))
 
 
@@ -56,7 +55,12 @@ def _audit(event, args):
     try:
         path = args[0]
         if isinstance(path, int):
-            path = os.readlink('/proc/self/fd/%d' % path)
+            try:
+                path = os.readlink('/proc/self/fd/%d' % path)
+            except OSError:
+                # A process-global hook must not break unrelated audited calls on
+                # stale fds or when a later suite cannot inspect /proc/self/fd.
+                return
         if not isinstance(path, (str, bytes, os.PathLike)):
             return
         path = os.fsdecode(path)
@@ -106,3 +110,21 @@ def evidence(events, directory):
     matching = [e for e in events if e['path'].startswith(directory + os.sep) or e['path'] == directory]
     opened = [e for e in matching if e['kind'] == 'store']
     return opened, [e for e in opened if e['others']], [e for e in matching if e['kind'] == 'diagnostic']
+
+
+def unobserved(events, directory, since=0):
+    """Holders without a preceding store-open event, at each event in this window.
+
+    Check the prefix at each event, so a later hook cannot excuse an earlier
+    unobserved holder. Auxiliary descriptors never count as store evidence.
+    """
+    directory = os.path.realpath(directory)
+    known, missing = set(), set()
+    for index, event in enumerate(events):
+        if event['path'] != directory and not event['path'].startswith(directory + os.sep):
+            continue
+        if event['kind'] == 'store':
+            known.add(event['pid'])
+        if index >= since:
+            missing.update(h['pid'] for h in event['holders'] if h['kind'] == 'store' and h['pid'] not in known)
+    return missing
