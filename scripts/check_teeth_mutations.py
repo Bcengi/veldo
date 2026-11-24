@@ -18609,6 +18609,27 @@ def cases():
     add(359, 'store359-conversation-any-record', query359, 'control_run_query.py',
         "    if gate.repository_uuid is None:\n", "    if False:\n", ['query/scope'])
 
+    # VELDO-0210 AC6: a stop queued before child registration must be masked, then
+    # kill the starting tree. Both controls and mutants run the complete confined suite.
+    for name, old, new in (
+        ('profile210-fork-stop-unmasked',
+         '    mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)\n'
+         '    try:\n        if roots is not None:\n',
+         '    mask = signal.pthread_sigmask(signal.SIG_BLOCK, set())  # defect: stops stay unblocked\n'
+         '    try:\n        if roots is not None:\n'),
+        ('profile210-start-stop-not-killed',
+         '            if not started:\n'
+         '                try:\n'
+         '                    os.killpg(pid, signal.SIGKILL)\n'
+         '                except ProcessLookupError:\n'
+         '                    pass\n',
+         ''),
+    ):
+        add(210, name, '102_veldo_0210_agent_profile_runtime.py', 'agent_sandbox.py', old, new,
+            ['scratch/stop-during-fork-forwarded-to-child'])
+        result[-1]['dir'] = 'scripts'
+        result[-1]['confined_only'] = True
+
     # Suite 48's registered falsifiers target its ordinary confined rows, not the
     # ptrace census composite. Explicitly retain the worker boundary for the whole
     # suite; its census claim still stands down there, and suite 113 proves it in

@@ -885,7 +885,6 @@
   {"class": "S2", "count": 1, "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py", "function": "_v210_agent_profile.settled", "rule": "R1", "text": "time.sleep(0.05)"},
   {"class": "S2", "count": 1, "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py", "function": "_v210_agent_profile.stopped", "rule": "R1", "text": "time.sleep(0.05)"},
   {"class": "ST", "count": 3, "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py", "function": "_v210_agent_profile", "rule": "R1", "text": "time.sleep(0.2)"},
-  {"class": "ST", "count": 1, "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py", "function": "_v210_agent_profile", "rule": "R1", "text": "time.sleep(1)"},
   {"class": "ST", "count": 1, "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py", "function": "_v210_agent_profile", "rule": "R1", "text": "time.sleep(1.5)"},
   {"class": "S3", "count": 2, "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py", "function": "_v210_agent_profile", "rule": "R1", "text": "time.sleep(120)"},
   {"class": "S1", "count": 1, "file": "scripts/suites/102_veldo_0210_agent_profile_runtime.py", "function": "_v210_agent_profile", "rule": "R1", "text": "time.sleep(3)"},
