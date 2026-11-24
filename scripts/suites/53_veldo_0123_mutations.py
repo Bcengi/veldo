@@ -13,6 +13,7 @@ import subprocess as _m123_sp
 import sys as _m123_sys
 import tempfile as _m123_tmp
 import time as _m123_time
+import unittest as _m123_unittest
 
 _m123_sys.dont_write_bytecode = True
 
@@ -314,6 +315,11 @@ def qualification(module, repository, selected=None):
 
 
 if 'expect' in globals():
+    _m123_materialize_tests = import_gate(ROOT / 'scripts/test_mutation_materialize.py')
+    _m123_materialize_result = _m123_unittest.TextTestRunner().run(
+        _m123_unittest.defaultTestLoader.loadTestsFromModule(_m123_materialize_tests))
+    expect('VELDO-0123 gate/materializer-preserves-production-tree',
+           _m123_materialize_result.wasSuccessful())
     _m123_gate = import_gate(ROOT / 'scripts/check_gate_mutations.py')
     _m123_answers, _m123_evidence = qualification(_m123_gate, ROOT)
     for _m123_row, _m123_ok in _m123_answers.items():
