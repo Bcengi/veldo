@@ -68,7 +68,8 @@ def _v359_guard_suite():
     # A fresh directory outside run homes and temporary/runtime roots is essential to placement.
     # Keep fixture names short enough for real pathname Unix sockets under a per-user state root.
     # Never discover, open, or remove an existing store; TemporaryDirectory creates exclusively.
-    with tempfile.TemporaryDirectory(prefix='b', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as directory:
+    with tempfile.TemporaryDirectory(prefix='b', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo')) as directory, \
+            contextlib.ExitStack() as cleanup:
         base = Path(directory)
         mods = base / 'installed/.veldo'
         mods.mkdir(parents=True)
@@ -100,11 +101,16 @@ def _v359_guard_suite():
         trust.write_text(json.dumps(dict(schema='veldo.host_trust/v1', host_identity='fixture-host',
                                         enrollment_signers=str(signers))))
         config['host_trust'] = str(trust)
-        profile = dict(kind='linux-systemd', slice='app.slice', lock=str(base / 'admission.lock'), concurrency=4,
+        # Mutation controls run concurrently. Their held survivors must count
+        # against this fixture's admission limit, never another copy's limit.
+        profile = dict(kind='linux-systemd', slice='v359' + base.name.encode().hex() + '.slice',
+                       lock=str(base / 'admission.lock'), concurrency=4,
                        runtime_seconds=HANG, memory_bytes=256 << 20, cpu_percent=150, file_bytes=8 << 20,
                        tasks_max=128, stop_grace_seconds=1, kill_grace_seconds=1,
                        heartbeat_seconds=120, heartbeat_window_seconds=240)
         config['profile'] = profile
+        cleanup.callback(subprocess.run, ['systemctl', '--user', 'stop', profile['slice']],
+                         env=L.C.tool_environment(), stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         risky_config = base / 'probe-runner.json'
         risky_config.write_text((ROOT / 'scripts/agent_sandbox.json').read_text())
         sample = L.RQ.switch(db)
@@ -187,7 +193,7 @@ if mode == 'attacks':
     trial('marker-create', lambda: create(store / 'store-guard.off', 'file'))
     trial('marker-link', lambda: link_out(work / 'source', store / 'store-guard.off'))
     trial('marker-rename', lambda: rename_back(work / 'source', store / 'store-guard.off'))
-    trial('parent-move', lambda: rename_back(store.parent, store.parent.with_name('moved-state')))
+    trial('parent-move', lambda: rename_back(store.parent, store.parent.with_name(store.parent.name + '-moved-state')))
     trial('work-write', lambda: create(work / 'allowed', 'file'))
     trial('home-write', lambda: create(Path(os.environ['HOME']) / 'allowed', 'file'))
     trial('tmp-write', lambda: create(Path(os.environ['TMPDIR']) / 'allowed', 'file'))
@@ -214,7 +220,7 @@ elif mode == 'switch-attempts':
     trial('link', lambda: link_out(work / 'source', store / 'store-guard.off'))
     trial('rename', lambda: rename_back(work / 'source', store / 'store-guard.off'))
     trial('store', lambda: rename_back(store, store.with_name('moved-store')))
-    trial('parent', lambda: rename_back(store.parent, store.parent.with_name('moved-parent')))
+    trial('parent', lambda: rename_back(store.parent, store.parent.with_name(store.parent.name + '-moved-parent')))
 elif mode == 'route':
     target = Path(sys.argv[4]); target = target if target.is_absolute() else Path.home() / target
     result['sentinel'] = target.read_text()
@@ -782,7 +788,9 @@ print(json.dumps({'results': results}))
                     off = surviving(True); on = surviving(False)
                     check('switch/transitions', 'status on after removal', L.RQ.switch(db)['state'] == 'on')
                     following, _ = launch()
-                    check('switch/transitions', 'new launch guarded with both survivors alive', outcome(following) == 'applied' and json.loads(following.payload_output)['read'] == errno.EACCES)
+                    check('switch/transitions', 'new launch guarded with both survivors alive: %r' %
+                          (dict(guard=following.store_guard, output=following.payload_output, errors=following.payload_errors),),
+                          outcome(following) == 'applied' and json.loads(following.payload_output)['read'] == errno.EACCES)
                     (store / 'store-guard.off').write_text('off again')
                     for receiver, worker in processes:
                         output, errors = worker.communicate(b'x', timeout=HANG)

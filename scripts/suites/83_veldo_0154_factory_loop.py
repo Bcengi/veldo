@@ -1157,7 +1157,11 @@ sys.exit(chosen['code'])
             # His no leaves the unit stopped.
             mark = last_pass()
             no = answer(questions.get(runs['L3'].get('dispatch_id')) or {}, 'stop')
-            stop = wait_pass(lambda p: 'journal' in p['sources'], mark)
+            # A preceding run can still have a journal pass to log after its
+            # terminal store write. Await the pass that observes this answer;
+            # wait_pass still returns None if the service becomes idle without it.
+            stop = wait_pass(lambda p: 'journal' in p['sources']
+                             and any(s['unit'] == U['L3'] for s in p.get('stopped') or []), mark)
             mark = last_pass()
             note()
             later = wait_pass(lambda p: 'journal' in p['sources'], mark)
@@ -1354,7 +1358,8 @@ sys.exit(chosen['code'])
                     print('  VELDO-0154 %s detail: %s' % (name, label))
             if not observed:
                 print('  VELDO-0154 %s detail: no check ran' % name)
-        expect('VELDO-0154 ' + name, ok)
+        detail = ': ' + '; '.join(label for label, one in observed if not one) if not ok else ''
+        expect('VELDO-0154 ' + name + detail, ok)
     for line in conform_formats.describe('0154_factory_loop', *fake_capture):
         print(line)
     expect('VELDO-0172 fake/capture:0154_factory_loop', bool(fake_capture[1]) and not fake_capture[0])

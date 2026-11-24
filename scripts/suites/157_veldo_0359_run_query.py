@@ -884,7 +884,9 @@ L.main()
         # runtime directory is outside the grant, so use a private short directory instead.
         check('query/place', 'production fallback roots remain fixed',
               Q.SHORT == (('/run/user/%d', False), ('/tmp/veldo-%d', True)))
-        real_fallback = os.environ.get('VELDO_GATE_LEG') != 'confined'
+        # Mutation workers carry the broker marker without a unit-leg selector.
+        real_fallback = (os.environ.get('VELDO_GATE_LEG') != 'confined'
+                         and os.environ.get('VELDO_SANDBOX_BROKERED') != '1')
         fallback = Q.SHORT if real_fallback else ((str(first) + '%.0s', False),)
         with patch.dict(os.environ, dict(long_env, V359_SHORT='' if real_fallback else str(first))), \
                 patch.object(Q, 'SHORT', fallback):

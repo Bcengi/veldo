@@ -53,7 +53,11 @@ if 'expect' in globals():
             chunks.append(chunk)
             return len(chunk)
 
-        with patch.object(census.os, 'write', side_effect=short_write):
+        # Mutation workers capture stdout in StringIO, which has no descriptor.
+        # Give the receipt writer its own stream while forcing short writes.
+        with _v113_tempfile.TemporaryFile() as output, \
+                patch.object(census.sys, 'stdout', output), \
+                patch.object(census.os, 'write', side_effect=short_write):
             census.write_receipt(value)
         wire = b''.join(chunks)
         return len(chunks) > 1 and wire.endswith(b'\n') and _v113_json.loads(wire) == value
