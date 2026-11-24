@@ -90,8 +90,19 @@ class FastMCP:
 # open is recorded by store_events in opens.jsonl beside the fixture stores (OPENS), including opens
 # outside Collection, so a second opener is seen at its synchronous Python audit event.
 OPENS = 'opens.jsonl'
-CHROMA = r'''import json, os, sqlite3, uuid
+CHROMA = r'''import importlib.util, json, os, sqlite3, sys, uuid
 from pathlib import Path
+
+# Product bridges use the bare interpreter and PATH/HOME only. Load from the
+# fixture's absolute path even under -I/-E/-S, sharing the wrapper's hook if present.
+_root = Path(__file__).resolve().parent.parent
+_events = sys.modules.get('store_events')
+if _events is None or Path(_events.__file__).resolve() != _root / 'store_events.py':
+    _spec = importlib.util.spec_from_file_location('store_events', _root / 'store_events.py')
+    _events = importlib.util.module_from_spec(_spec)
+    sys.modules['store_events'] = _events
+    _spec.loader.exec_module(_events)
+_events.install(_root)
 
 
 class Collection:
@@ -506,7 +517,7 @@ def build(root, host=None):
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     interpreter = root / 'python'
-    # The fixture interpreter always loads the observer, even when product code scrubs its environment.
+    # Normal wrapper launches load the observer; Collection also installs it for bare/isolated Python.
     interpreter.write_text('#!/bin/sh\nPYTHONPATH=' + shlex.quote(str(root.resolve()))
                            + '${PYTHONPATH:+:$PYTHONPATH} exec ' + shlex.quote(sys.executable) + ' "$@"\n')
     shutil.copyfile(Path(__file__).with_name('store_events.py'), root / 'store_events.py')
@@ -595,26 +606,58 @@ def holders(directory, exclude=()):
     return {h['pid'] for h in EVENTS.descriptors(directory, exclude) if h['kind'] == 'store'}
 
 
+def snapshot(root, stores):
+    """Endpoint evidence, paired with the hook history available at this endpoint."""
+    found = {part: EVENTS.descriptors(data) for part, data in stores.items()}
+    history = opens(root)
+    result = {}
+    for part, data in stores.items():
+        recorded, _, _ = EVENTS.evidence(history, data)
+        pids = {h['pid'] for h in found[part] if h['kind'] == 'store'}
+        result[part] = dict(holders=found[part], pids=pids,
+                            unobserved=pids - {e['pid'] for e in recorded})
+    return result
+
+
 _spec = importlib.util.spec_from_file_location('v183_store_events', Path(__file__).with_name('store_events.py'))
 EVENTS = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(EVENTS)
 
 
-def watched(check, label, stores, opened, run):
-    """Judge synchronous store opens, retaining every other descriptor as evidence."""
+def watched(check, label, stores, opened, run, existing=None):
+    """Judge synchronous opens with store-only /proc cross-checks at both endpoints
+    and every hooked event. Non-Python opens and mmaps outliving their fd can
+    escape between these observations; /proc is a safety net, not a tracer.
+
+    Startup windows require fresh sqlite/flock evidence. A declared rerun must
+    keep exactly its already-observed servers and perform no new store opens.
+    """
     before = len(opens(opened))
+    start = snapshot(opened, stores)
     try:
         return run()
     finally:
-        seen = opens(opened)[before:]
+        end = snapshot(opened, stores)
+        history = opens(opened)
+        seen = history[before:]
         for part, data in stores.items():
             events, beside, diagnostics = EVENTS.evidence(seen, data)
-            history, _, prior_diagnostics = EVENTS.evidence(opens(opened), data)
-            coverage = {e['event'] for e in history + prior_diagnostics}
+            coverage = {e['event'] for e in events + diagnostics}
+            missing = start[part]['unobserved'] | end[part]['unobserved'] | EVENTS.unobserved(history, data, before)
+            endpoints = [start[part]['pids'], end[part]['pids']]
+            prior, _, prior_diagnostics = EVENTS.evidence(history[:before], data)
+            expected = {existing[part]} if existing is not None else {
+                e['pid'] for e in prior_diagnostics + diagnostics if e['event'] == 'fcntl.flock'}
+            endpoint_ok = all(len(pids) <= 1 and pids <= expected for pids in endpoints)
             check('AC4/one-opener', '%s, %s: sqlite and store-lock audit hooks active [%s]'
-                  % (label, part, sorted(coverage)), {'sqlite3.connect', 'fcntl.flock'} <= coverage)
+                  % (label, part, sorted(coverage)), {'sqlite3.connect', 'fcntl.flock'} <= coverage
+                  if existing is None else (
+                      not events and all(pids == expected for pids in endpoints)
+                      and {'sqlite3.connect', 'fcntl.flock'} <= {
+                          e['event'] for e in prior + prior_diagnostics if e['pid'] in expected}))
             print('  VELDO-0183 open evidence:', label, part, json.dumps(dict(
                 opens=len(events), conflicts=beside,
+                endpoints=[start[part]['holders'], end[part]['holders']], unobserved=sorted(missing),
                 extra_holders=[e for e in events if e['holders']], diagnostics=diagnostics)))
             check('AC4/one-opener', '%s, %s: no store open beside another holder [%d opens; %d conflicts %s]'
-                  % (label, part, len(events), len(beside), beside), not beside)
+                  % (label, part, len(events), len(beside), beside), not beside and endpoint_ok and not missing)
