@@ -18708,6 +18708,12 @@ def materialize(case, mode, directory, root=ROOT):
             # companion list can make an identity replacement fail before its target.
             shutil.copytree(base, destination / 'veldo', ignore=shutil.ignore_patterns('__pycache__'))
             mutant = destination / 'veldo' / case['module']
+            # Frozen inputs are read-only. The old sparse layout created writable
+            # files for the selected module and companions; restore only those
+            # write sites, leaving the complete tree's other modes untouched.
+            for name in (case['module'], *case.get('companions', ())):
+                copied = destination / 'veldo' / name
+                copied.chmod(copied.stat().st_mode | 0o200)
         target = mutant / case['module'] if fixture else mutant
         target.parent.mkdir(parents=True, exist_ok=True)
         for name in case.get('companions', ()):

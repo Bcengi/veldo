@@ -160,6 +160,14 @@ expect('fixture target', namespace['value'] == 1)
             def run_worker(source, suffix, expected_failure=False, force=False):
                 for mark in (top / 'cache' / 'stale').glob('*.json'):
                     mark.unlink()
+                if not expected_failure:
+                    # Noop/mutant workers now copy the complete production tree.
+                    # Keep the baseline undeclared-listing probes below sparse.
+                    declared = copy.deepcopy(declaration)
+                    for entry in declared['cases'].values():
+                        entry['directories'].append('.veldo')
+                    source = dict(source)
+                    qualify(declared, source)
                 current = session(source, force=force)
                 parent = top / suffix; parent.mkdir()
                 job = dict(case=case, mode='baseline', **current.prepare(case, parent / 'cases'))

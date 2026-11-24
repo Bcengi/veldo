@@ -940,7 +940,7 @@ def _v208_traced_workers():
                 observed[mode] = json.loads(process.stdout)
                 tracer.check(trace, worker_root, ['scripts/suites/shared.py', 'scripts/suites/fixture.py',
                     '.veldo/subject.py'], runtime=('/usr', '/lib', '/lib64', '/etc'), scratch=scratch,
-                    after_confinement=True)
+                    directories=('.veldo',), after_confinement=True)
         expect('VELDO-0208 candidate/authority-observes-kill', len(observed) == 3
                and observed['baseline']['observation']['failed_rows'] == []
                and observed['noop']['observation']['failed_rows'] == []
