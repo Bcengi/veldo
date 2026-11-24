@@ -8612,9 +8612,17 @@ def cases():
               "            pass  # defect: the API is told nothing until the run has ended\n",
               ['api/live'])
     record141('record-wrapper-line-dropped', 'control_launch.py',
+              "            if getattr(worker, 'identity_line', None) is not None and not getattr(worker, 'identity_recorded', False):\n"
               "                recorder.line('wrapper', worker.identity_line)\n",
+              "            if getattr(worker, 'identity_line', None) is not None and not getattr(worker, 'identity_recorded', False):\n"
               "                pass  # defect: the wrapper's identity line is not kept\n",
               ['record/claude-complete', 'record/codex-complete'])
+    # Guarded launches record the identity during spawn; drop that copy too.
+    result[-1]['also'] = [(
+        "                    recorder.line('wrapper', worker.identity_line)\n"
+        "                    worker.identity_recorded = True\n",
+        "                    # defect: the wrapper's identity line is not kept\n"
+        "                    worker.identity_recorded = True\n")]
     record141('record-exit-uncommitted', 'control_launch.py',
               "                             execution_record=self.committed)\n",
               "                             execution_record=None)  # defect: the exit commits nothing of the record\n",
@@ -18622,6 +18630,10 @@ def cases():
         # copy directly. Keep that copy's imports complete without changing its fixture grants.
         if case['module'] in ('agent_sandbox.py', 'run_scope.py') and not case.get('siblings'):
             case['companions'] = sorted(set(case.get('companions', ())) | {'gate_fixtures.py'})
+        # The re-land suite also loads the isolated containment copy directly to
+        # check its release parser. Its import loads the adjacent timers table.
+        if case['module'] == 'control_containment.py' and not case.get('siblings'):
+            case['companions'] = sorted(set(case.get('companions', ())) | {'timers.py'})
 
     return result
 
