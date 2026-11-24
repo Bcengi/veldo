@@ -95,6 +95,29 @@ def observe():
 
 
 class WorkerScratch(unittest.TestCase):
+    def test_read_only_directory_link_preserves_target_mode(self):
+        for name in ('scripts/mutation_ownership.py', 'engine/scripts/mutation_ownership.py'):
+            with self.subTest(ownership=name):
+                ownership = load(ROOT / name)
+                with load(ROOT / 'scripts/gate_fixtures.py').directory() as directory:
+                    top = Path(directory)
+                    home = top / 'home'
+                    readonly = home / 'ro'
+                    readonly.mkdir(parents=True)
+                    original = top / 'input'
+                    original.mkdir()
+                    original.chmod(0o555)
+                    link = readonly / 'link'
+                    link.symlink_to(original, target_is_directory=True)
+                    readonly.chmod(0o500)
+
+                    ownership.remove_tree(home)
+
+                    self.assertFalse(link.is_symlink())
+                    self.assertFalse(home.exists())
+                    self.assertTrue(original.is_dir())
+                    self.assertEqual(original.stat().st_mode & 0o777, 0o555)
+
     def test_finished_workers_release_scratch_and_preserve_evidence(self):
         import io
         import json
