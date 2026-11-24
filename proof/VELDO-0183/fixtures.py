@@ -7,9 +7,11 @@ Chroma clients over one persist directory do. Each holds its SQLite file open fo
 that opened a store is visible in /proc.
 """
 import contextlib
+import importlib.util
 import json
 import os
 from pathlib import Path
+import shlex
 import shutil
 import socket
 import sqlite3
@@ -85,41 +87,17 @@ class FastMCP:
 '''
 
 # A Chroma-like persisted collection: SQLite held open for life, the index loaded once and written back whole. Each
-# open is recorded with the other processes then holding the store's files, in opens.jsonl beside the fixture's
-# stores (OPENS), so a second opener of a store a store server holds is seen at the moment it opens.
+# open is recorded by store_events in opens.jsonl beside the fixture stores (OPENS), including opens
+# outside Collection, so a second opener is seen at its synchronous Python audit event.
 OPENS = 'opens.jsonl'
 CHROMA = r'''import json, os, sqlite3, uuid
 from pathlib import Path
-
-
-def holders(directory):
-    directory = os.path.realpath(str(directory)) + os.sep
-    found = set()
-    for entry in os.listdir('/proc'):
-        if not entry.isdigit():
-            continue
-        try:
-            for fd in os.listdir('/proc/%s/fd' % entry):
-                try:
-                    if os.readlink('/proc/%s/fd/%s' % (entry, fd)).startswith(directory):
-                        found.add(int(entry))
-                        break
-                except OSError:
-                    continue
-        except OSError:
-            continue
-    return found
 
 
 class Collection:
     def __init__(self, directory, name):
         self.directory, self.name = Path(directory), name
         self.db = sqlite3.connect(str(self.directory / 'chroma.sqlite3'), timeout=120)  # busy wait: a hang bound
-        # The store is the data directory above chromadb (mem0_memory's, whose lock is there) or chromadb itself.
-        store = self.directory.resolve().parent
-        others = sorted(holders(store) - {os.getpid()})
-        with open(str(store.parents[1] / 'opens.jsonl'), 'a') as out:
-            out.write(json.dumps(dict(pid=os.getpid(), store=str(self.directory.resolve()), others=others)) + '\n')
         self.db.execute('CREATE TABLE IF NOT EXISTS rows(id TEXT, collection TEXT, text TEXT)')
         self.path = self.directory / ('index-%s.json' % name)
         self.index = json.loads(self.path.read_text()) if self.path.is_file() else {}
@@ -528,7 +506,20 @@ def build(root, host=None):
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     interpreter = root / 'python'
-    shutil.copyfile(Path(sys.executable).resolve(), interpreter)
+    # The fixture interpreter always loads the observer, even when product code scrubs its environment.
+    interpreter.write_text('#!/bin/sh\nPYTHONPATH=' + shlex.quote(str(root.resolve()))
+                           + '${PYTHONPATH:+:$PYTHONPATH} exec ' + shlex.quote(sys.executable) + ' "$@"\n')
+    shutil.copyfile(Path(__file__).with_name('store_events.py'), root / 'store_events.py')
+    (root / 'sitecustomize.py').write_text("""import importlib.machinery, importlib.util, pathlib, sys
+from store_events import install
+root = pathlib.Path(__file__).resolve().parent
+install(root)
+# Preserve the installed-host fixture's existing network guard.
+paths = [p for p in sys.path if pathlib.Path(p).resolve() != root]
+spec = importlib.machinery.PathFinder.find_spec('sitecustomize', paths)
+if spec and spec.loader:
+    spec.loader.exec_module(importlib.util.module_from_spec(spec))
+""")
     interpreter.chmod(0o700)
     files = root / 'files'
     files.mkdir()
@@ -583,6 +574,7 @@ def build(root, host=None):
     assistant.write_text(json.dumps({'mcpServers': {
         'ava-memory': {'command': str(interpreter), 'args': [str(mem / 'mcp_server.py')]},
         'other': {'command': '/bin/true', 'args': []}}}, indent=2) + '\n')
+    EVENTS.install(root)
     return dict(host=host, assistant_mcp=str(assistant), parts=dict(
         file_memory=dict(data=str(files)),
         ava_memory=dict(code=str(mem), interpreter=str(interpreter)),
@@ -599,20 +591,30 @@ def opens(root):
 
 
 def holders(directory, exclude=()):
-    """The pids holding any file under `directory` open, read from /proc as the store server reads it."""
-    directory = os.path.realpath(str(directory)) + os.sep
-    found = set()
-    for entry in os.listdir('/proc'):
-        if not entry.isdigit() or int(entry) in exclude:
-            continue
-        try:
-            for fd in os.listdir('/proc/%s/fd' % entry):
-                try:
-                    if os.readlink('/proc/%s/fd/%s' % (entry, fd)).startswith(directory):
-                        found.add(int(entry))
-                        break
-                except OSError:
-                    continue
-        except OSError:
-            continue
-    return found
+    """Store-file holders only; full descriptor evidence remains available for diagnostics."""
+    return {h['pid'] for h in EVENTS.descriptors(directory, exclude) if h['kind'] == 'store'}
+
+
+_spec = importlib.util.spec_from_file_location('v183_store_events', Path(__file__).with_name('store_events.py'))
+EVENTS = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(EVENTS)
+
+
+def watched(check, label, stores, opened, run):
+    """Judge synchronous store opens, retaining every other descriptor as evidence."""
+    before = len(opens(opened))
+    try:
+        return run()
+    finally:
+        seen = opens(opened)[before:]
+        for part, data in stores.items():
+            events, beside, diagnostics = EVENTS.evidence(seen, data)
+            history, _, prior_diagnostics = EVENTS.evidence(opens(opened), data)
+            coverage = {e['event'] for e in history + prior_diagnostics}
+            check('AC4/one-opener', '%s, %s: sqlite and store-lock audit hooks active [%s]'
+                  % (label, part, sorted(coverage)), {'sqlite3.connect', 'fcntl.flock'} <= coverage)
+            print('  VELDO-0183 open evidence:', label, part, json.dumps(dict(
+                opens=len(events), conflicts=beside,
+                extra_holders=[e for e in events if e['holders']], diagnostics=diagnostics)))
+            check('AC4/one-opener', '%s, %s: no store open beside another holder [%d opens; %d conflicts %s]'
+                  % (label, part, len(events), len(beside), beside), not beside)

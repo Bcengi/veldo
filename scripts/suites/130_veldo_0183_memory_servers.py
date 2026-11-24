@@ -33,7 +33,6 @@ def _v183_suite():
     import subprocess
     import sys
     import threading
-    import time
 
     # Literal anchors: the registered mutation driver substitutes each production copy here, and the fixture's
     # module copy (which setup installs and every server, bridge and command here runs) takes each of them.
@@ -60,35 +59,7 @@ def _v183_suite():
         rows[row].append((label, bool(condition)))
 
     def watched(label, stores, opened, run):
-        """`run` with each store's holders sampled from /proc throughout, and each open of a fixture store under
-        `opened` recorded at that moment with the other pids then holding its files (FIX.opens): AC4/one-opener over
-        the servers step, where no store a store server holds may be opened by a second process."""
-        sampled = {part: [] for part in stores}
-        stop = threading.Event()
-
-        def sample():
-            while not stop.is_set():
-                for part, data in stores.items():
-                    sampled[part].append(FIX.holders(data))
-                time.sleep(0.01)
-        before = len(FIX.opens(opened))
-        sampler = threading.Thread(target=sample)
-        sampler.start()
-        try:
-            return run()
-        finally:
-            stop.set()
-            sampler.join()
-            seen = FIX.opens(opened)[before:]
-            for part, data in stores.items():
-                shared = [sorted(s) for s in sampled[part] if len(s) > 1]
-                prefix = os.path.realpath(data) + os.sep
-                beside = [(o['pid'], o['others']) for o in seen if (o['store'] + os.sep).startswith(prefix) and o['others']]
-                check('AC4/one-opener', '%s, %s: never held by two processes [%d samples, %d by two or more %s; %d opens, '
-                      '%d beside another holder %s]' % (label, part, len(sampled[part]), len(shared), shared[:2],
-                                                        len([o for o in seen if (o['store'] + os.sep).startswith(prefix)]),
-                                                        len(beside), beside[:2]),
-                      sampled[part] and not shared and not beside)
+        return FIX.watched(check, label, stores, opened, run)
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -850,7 +821,7 @@ print(json.dumps(out))
               and Path(manifest['assistant_mcp']).read_text() == json.dumps({'mcpServers': rewritten}, indent=2) + '\n')
 
         # The writers at once: one through a conversation's catalog bridge and one through the assistant's entry on
-        # each ChromaDB store, and `veldo memory kb` on memory_kb's store, each adding 200; /proc sampled meanwhile.
+        # each ChromaDB store, and `veldo memory kb` on memory_kb's store, each adding 200. Every store open is recorded.
         COUNT = 200
         files = base / 'writes'
         for writer in ('bridge', 'assistant', 'command'):
@@ -858,14 +829,8 @@ print(json.dumps(out))
             for i in range(COUNT):
                 (files / writer / ('%03d.md' % i)).write_text('kb %s document %03d' % (writer, i))
         results, errors = {}, []
-        sampled = {part: [] for part in MS.STORES}
-        stop = threading.Event()
-
-        def sample():
-            while not stop.is_set():
-                for part in MS.STORES:
-                    sampled[part].append(FIX.holders(MS.store_data(definition, part), {os.getpid()}))
-                time.sleep(0.05)
+        before_writers = len(FIX.opens(base / 'stores'))
+        before_holders = {part: FIX.holders(data) for part, data in stores.items()}
 
         def session(name, command, arguments, tool, inputs):
             try:
@@ -913,22 +878,24 @@ print(json.dumps(out))
                                                    entries['memory-kb']['args'], 'index-file',
                                                    [{'path': str(files / 'assistant' / ('%03d.md' % i))} for i in range(COUNT)])),
             threading.Thread(target=commands)]
-        sampler = threading.Thread(target=sample)
-        sampler.start()
         for writer in writers:
             writer.start()
         for writer in writers:
             writer.join()
-        stop.set()
-        sampler.join()
+        writer_events = FIX.opens(base / 'stores')[before_writers:]
         counts = {name: len(value) for name, value in results.items()}
         print('  VELDO-0183 AC4 writers:', counts, errors[:3])
         for part in MS.STORES:
-            seen = sampled[part]
-            others = sorted({pid for s in seen for pid in s} - {server_pids[part]})
-            check('AC4/one-opener', '%s: its files were held open by exactly its store server throughout [%d samples, '
-                  'others %s]' % (part, len(seen), others),
-                  seen and all(s == {server_pids[part]} for s in seen))
+            opened, beside, diagnostics = FIX.EVENTS.evidence(writer_events, stores[part])
+            # Every open names its opener plus the other store holders at that event.
+            seen = [before_holders[part], FIX.holders(stores[part])] + [
+                {event['pid'], *event['others']} for event in opened]
+            others = sorted({pid for sample in seen for pid in sample} - {server_pids[part]})
+            print('  VELDO-0183 writer open evidence:', part, len(opened),
+                  json.dumps([e for e in opened if e['holders']] + diagnostics))
+            check('AC4/one-opener', '%s: its files were held open by exactly its store server throughout [%d events, '
+                  'others %s]' % (part, len(opened), others),
+                  seen and all(sample == {server_pids[part]} for sample in seen) and not beside)
         mem_ids = [r['id'] for name in ('ava/bridge', 'ava/assistant') for r in results.get(name, [])]
         kb_ids = [i for name in ('kb/bridge', 'kb/assistant', 'kb/command') for r in results.get(name, []) for i in r]
         check('AC4/all-written', 'every write was answered [%s %s]' % (counts, errors[:2]),

@@ -1192,8 +1192,6 @@
   {"class": "ST", "count": 1, "file": "scripts/suites/130_veldo_0176_conversation_history.py", "function": "_v176_suite", "rule": "R1", "text": "while (MARKERS / ('hold-' + conversation)).exists(): time.sleep(.02)"},
   {"class": "D1", "count": 1, "file": "scripts/suites/130_veldo_0176_conversation_history.py", "function": "_v176_suite.install", "rule": "R2", "text": "concurrency=1, now=time.time())"},
   {"class": "D1", "count": 1, "file": "scripts/suites/130_veldo_0176_conversation_history.py", "function": "_v176_suite", "rule": "R2", "text": "question.get('until', '').isdigit() and int(question['until']) > time.time())"},
-  {"class": "S2", "count": 1, "file": "scripts/suites/130_veldo_0183_memory_servers.py", "function": "_v183_suite.watched.sample", "rule": "R1", "text": "time.sleep(0.01)"},
-  {"class": "S2", "count": 1, "file": "scripts/suites/130_veldo_0183_memory_servers.py", "function": "_v183_suite.exercise.sample", "rule": "R1", "text": "time.sleep(0.05)"},
   {"class": "T", "count": 1, "file": "scripts/suites/130_veldo_0183_memory_servers.py", "function": "_v183_suite.exercise", "rule": "R3", "text": "command = subprocess.run([sys.executable, '-B', factory_module, 'kb', '--state-root', str(root), 'search',"},
   {"class": "T", "count": 1, "file": "scripts/suites/130_veldo_0183_memory_servers.py", "function": "_v183_suite.exercise", "rule": "R3", "text": "conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=HANG_SECONDS)"},
   {"class": "T", "count": 1, "file": "scripts/suites/130_veldo_0183_memory_servers.py", "function": "_v183_suite.setup_step.read", "rule": "R3", "text": "conn = sqlite3.connect('file:%s?mode=ro' % store_path, uri=True, timeout=HANG_SECONDS)"},
