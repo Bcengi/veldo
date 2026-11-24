@@ -452,11 +452,20 @@ sys.exit(child.wait())
             def describe(self):
                 return 'launch-pipe(%s)' % self.launch.dispatch_id
 
-        def check_request(launch, name):
+        def check_request(launch, name, *, advance=None):
             """VELDO-0358 C4: ask the receiver whether a stop is begun (the test harness's check request). Its answer, a
             `checked` message naming the cause it began a stop for, or None, comes on the launch pipe."""
-            launch.child.stdin.write((json.dumps({'check': name}) + '\n').encode())
-            launch.child.stdin.flush()
+            message = {'check': name}
+            if advance is not None:
+                message['advance'] = advance
+            try:
+                launch.child.stdin.write((json.dumps(message) + '\n').encode())
+                launch.child.stdin.flush()
+            except BrokenPipeError:
+                # The requested stop can finish before this diagnostic reaches the receiver.
+                # settle_stopped still judges the durable end, receiver exit and stop cause;
+                # a closed pipe alone is never evidence that the stop succeeded.
+                pass
 
         def answered(launch, name):
             return [m for m in launch.messages if isinstance(m, dict) and m.get('event') == 'checked'
@@ -762,9 +771,7 @@ sys.exit(child.wait())
                 closing_marker = marker_for(closing.dispatch_id)
                 file_of(markers / ('%s.closed' % closing_marker.get('pid')), closing_marker.get('pid'),
                         'the worker of %s to close its output' % closing.dispatch_id)
-                closing.child.stdin.write((json.dumps({'advance': closing.contract['deadline'] - now() + 1,
-                                                       'check': 'past-deadline'}) + '\n').encode())
-                closing.child.stdin.flush()
+                check_request(closing, 'past-deadline', advance=closing.contract['deadline'] - now() + 1)
 
                 def deadline_stopped():
                     state = rec(closing.dispatch_id).get('state')
@@ -816,9 +823,7 @@ sys.exit(child.wait())
                 ur = admitted('VELDO-9322')
                 remote = runner.submit(ur, 'build', **job(release='never-9322', adapter='wrapped-engine'))
                 marker_for(remote.dispatch_id)
-                remote.child.stdin.write((json.dumps({'advance': remote.contract['deadline'] - now() + 1,
-                                                      'check': 'remote-past-deadline'}) + '\n').encode())
-                remote.child.stdin.flush()
+                check_request(remote, 'remote-past-deadline', advance=remote.contract['deadline'] - now() + 1)
                 remote_judged = WAITS.wait(
                     'the deadline stop of %s on the supplied clock' % remote.dispatch_id,
                     lambda: rec(remote.dispatch_id).get('state') not in D.STOPPABLE,
@@ -1115,6 +1120,10 @@ sys.exit(child.wait())
                     swept_end = runner.honor_stops()
                 finally:
                     del dispatches.stop_result
+                if interleaved.get('end') == 'done':
+                    # Exercise the closed-reader ordering on every run, before the diagnostic
+                    # write in settle_stopped. Reaping here does not consume the launch output.
+                    ending.child.wait(timeout=WAITS.WAIT_HANG_SECONDS)
                 waited_end = settle_stopped(ending)
                 ended_first = rec(eid)
                 cause_end = stop_cause(ending, ended_first)

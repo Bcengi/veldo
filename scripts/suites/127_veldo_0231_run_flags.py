@@ -153,6 +153,9 @@ def _v231_suite():
                 return
             try:
                 os.write(writer, byte)
+            except BrokenPipeError:
+                # A stop can close the engine's FIFO after open succeeded.
+                pass
             finally:
                 os.close(writer)
 
@@ -442,6 +445,9 @@ def _v231_suite():
                 return
             try:
                 os.write(writer, byte)
+            except BrokenPipeError:
+                # The engine can finish its stop between opening and writing the FIFO.
+                pass
             finally:
                 os.close(writer)
 
