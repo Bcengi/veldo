@@ -296,7 +296,7 @@ store, markers, domain = %(store)r, Path(%(markers)r), %(domain)r
 dispatch = os.environ.get('VELDO_DISPATCH_ID', '')
 key = 'reservation:invocation:' + json.dumps([domain, 'invocation/' + dispatch], separators=(',', ':'))
 try:
-    db = sqlite3.connect('file:%%s?mode=ro' %% store, uri=True, timeout=10)
+    db = sqlite3.connect('file:%%s?mode=ro' %% store, uri=True, timeout=%(wait_hang)s)
     row = db.execute('SELECT data FROM entities WHERE id=?', (key,)).fetchone()
     seen = json.loads(row[0]) if row else None
     db.close()
@@ -388,7 +388,8 @@ for step in payload.get('script') or []:
 out.close()
 (markers / ('%%d.done' %% os.getpid())).write_text('done')
 sys.exit(payload.get('code', 0))
-''' % {'python': sys.executable, 'store': str(db), 'markers': str(markers), 'domain': DOMAIN}
+''' % {'python': sys.executable, 'store': str(db), 'markers': str(markers), 'domain': DOMAIN,
+       'wait_hang': WAITS.WAIT_HANG_SECONDS}
         fake = fake_formats.embed(fake)
         # The installer's layout: ~/.local/share/claude/versions/<version>, here a directory of this run's.
         versions = base / 'home' / '.local' / 'share' / 'claude' / 'versions'
@@ -573,7 +574,7 @@ sys.exit(payload.get('code', 0))
         # ('perturbed', kind, conforming source event, bytes printed).
         printed_steps = []
 
-        def job(adapter, script, code=0, deadline=40, resume=None):
+        def job(adapter, script, code=0, deadline=WAITS.WAIT_HANG_SECONDS, resume=None):
             for step in script if not adapter.startswith('codex') else ():
                 if 'line' in step:
                     printed_steps.append(('line', step['line']))

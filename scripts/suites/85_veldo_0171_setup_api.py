@@ -82,10 +82,16 @@ def _v171_suite():
         def __enter__(self):
             return self
 
+    timer_tables = {}
+
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
+        table = getattr(module, 'TIMERS', None)
+        if table is not None:
+            table.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)
+            timer_tables[id(table)] = table
         return module
 
     profiler = None
@@ -245,6 +251,10 @@ def _v171_suite():
 
         def __init__(self, unit_dir):
             self.unit_dir, self.procs, self.calls, self.logs = Path(unit_dir), {}, [], []
+            # A worker's writable home must be a sibling of the authority stores, never their
+            # ancestor. The load driver also runs this fixture without a shard-provided HOME.
+            self.home = base / 'worker-home'
+            self.home.mkdir(mode=0o700, exist_ok=True)
 
         def _field(self, unit, key):
             path = self.unit_dir / unit
@@ -286,10 +296,11 @@ def _v171_suite():
                 return 1, '', 'a unit it binds to is inactive'
             if not self.alive(unit):
                 kind = (self._field(unit, 'Type') or ['simple'])[0]
-                env = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': os.environ.get('HOME', str(base)),
+                env = {'PATH': os.environ.get('PATH', '/usr/bin:/bin'), 'HOME': str(self.home),
                        'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8', 'TZ': 'UTC', 'PYTHONDONTWRITEBYTECODE': '1',
                        'PYTHONPATH': str(guard_dir), 'VELDO_V171_GUARD_LOG': str(guard_log),
-                       'VELDO_V171_GUARD_ARMED': str(guard_armed)}
+                       'VELDO_V171_GUARD_ARMED': str(guard_armed),
+                       'VELDO_TIMERS_PROFILE': json.dumps({'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS})}
                 if os.environ.get('XDG_RUNTIME_DIR'):
                     env['XDG_RUNTIME_DIR'] = os.environ['XDG_RUNTIME_DIR']
                 notify = base / ('n%d.sock' % len(self.logs))
@@ -1365,6 +1376,8 @@ def _v171_suite():
                 os.chmod(directory, 0o700)
         shutil.rmtree(str(base), ignore_errors=True)
         shutil.rmtree(cache)
+        for table in timer_tables.values():
+            table.reset_profile()
 
     if profiler is not None:
         profiler.disable()
