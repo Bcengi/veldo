@@ -491,8 +491,11 @@ sys.exit(child.wait())
                 nothing_begun = any(m.get('due') is None for m in answered(launch, name))
                 return (state in D.STOPPABLE and (receiver is not None or nothing_begun),
                         {'state': state, 'receiver_exit': receiver, 'answer': answered(launch, name)})
+            # An earlier terminal observation may already have reaped the receiver. Its
+            # returncode and remaining output still settle it; that PID can no longer be opened.
+            exited = [] if launch.child.returncode is not None else [WAITS.Pidfd(launch.child)]
             result = WAITS.wait('dispatch %s to reach a terminal state' % launch.dispatch_id, ended, impossible,
-                                [WAITS.Store(db), WAITS.Pidfd(launch.child), LaunchPipe(launch)])
+                                [WAITS.Store(db), *exited, LaunchPipe(launch)])
             if result.done:
                 runner.wait(launch)
                 return None
@@ -1120,10 +1123,13 @@ sys.exit(child.wait())
                     swept_end = runner.honor_stops()
                 finally:
                     del dispatches.stop_result
-                if interleaved.get('end') == 'done':
+                if interleaved.get('end') == 'done' and ending.child.returncode is None:
                     # Exercise the closed-reader ordering on every run, before the diagnostic
-                    # write in settle_stopped. Reaping here does not consume the launch output.
-                    ending.child.wait(timeout=WAITS.WAIT_HANG_SECONDS)
+                    # write in settle_stopped. Observe exit without reaping: settlement owns that.
+                    WAITS.wait('the stopped receiver to exit before its diagnostic',
+                               lambda: os.waitid(os.P_PID, ending.child.pid,
+                                                 os.WEXITED | os.WNOWAIT | os.WNOHANG) is not None,
+                               sources=[WAITS.Pidfd(ending.child)])
                 waited_end = settle_stopped(ending)
                 ended_first = rec(eid)
                 cause_end = stop_cause(ending, ended_first)
