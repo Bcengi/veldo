@@ -64,7 +64,7 @@ def observe(v):
     v['result_file'].write_text(json.dumps(v['empty']))
     rid, receipt = f['present']('combined-88', {'kind': 'pm', 'ref': 'proj-a',
         'digest': PM.SN.digest(b'combined')}, 'Accept the combined input?')
-    __import__('os').mkfifo(base / 'hold')
+    (base / 'hold').write_text('hold')
     held = cycles.start('proj-a', cycles.inputs('proj-a'))
     before = len(cycles.records('proj-a'))
     answered = f['answer'](receipt, 'accept')
@@ -78,11 +78,9 @@ def observe(v):
           answered.get('outcome') == 'settled' and after_both != after_answer
           and cycles.pending.get('proj-a') == after_both
           and len([r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]) == 1)
-    with open(base / 'hold', 'w'):
-        pass
+    (base / 'hold').unlink()
     if held.get('dispatch') in runner.launches:
         runner.wait(runner.launches[held['dispatch']], timeout=15)
-    (base / 'hold').unlink()
     cycles.pass_once()
     active = [r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]
     check('cycle/combined-inputs', 'exactly one follow-up binds both new accepted inputs',

@@ -93,7 +93,7 @@ def budget(v):
         v['run'](v['empty'])
     _, receipt = f['present']('budget-pending', {'kind': 'pm', 'ref': 'proj-a',
         'digest': v['PM'].SN.digest(b'budget-pending')}, 'Choose the remaining scope.')
-    (v['base'] / 'hold').write_text('5')
+    (v['base'] / 'hold').write_text('hold')
     held = cycles.start('proj-a', cycles.inputs('proj-a'))
     print('  VELDO-0088 detail: last cycle:', held['state'], held.get('refusal'), (v['dispatches'].record(held.get('dispatch')) or {}).get('reason'))
     answered = f['answer'](receipt, 'accept')
@@ -101,9 +101,9 @@ def budget(v):
     pending = factory.run()
     check('review/pending-budget', 'new accepted input is pending at the last allowed cycle',
           answered.get('outcome') == 'settled' and not pending['faults'] and 'proj-a' in cycles.pending)
+    (v['base'] / 'hold').unlink()
     if held.get('dispatch') in v['runner'].launches:
         v['runner'].wait(v['runner'].launches[held['dispatch']], timeout=15)
-    (v['base'] / 'hold').unlink()
     factory.wake('run_end')
     finished = factory.run()
     events = [json.loads(s) for s in (v['base'] / 'service-events.jsonl').read_text().splitlines()]

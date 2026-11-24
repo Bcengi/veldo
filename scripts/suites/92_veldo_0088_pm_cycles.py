@@ -107,17 +107,13 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
             (base / 'fixture_waits.py').write_bytes((ROOT / 'scripts/suites/support/waits.py').read_bytes())
             worker = base / 'worker.py'
             worker.write_text('import json,sys\nfrom pathlib import Path\np=json.load(sys.stdin)\n'
-                'Path(sys.argv[2]).write_text(json.dumps(p))\nimport time\n'
-                'if p["station"] == "coordination" and Path(sys.argv[3]).exists():\n'
-                ' import stat\n'
-                ' if stat.S_ISFIFO(Path(sys.argv[3]).stat().st_mode):\n'
-                '  with open(sys.argv[3]) as release: release.read()\n'
-                ' else:\n'
-                '  hold=Path(sys.argv[3]).read_text(); time.sleep(float(hold) if hold.isdigit() else 1)\n'
+                'Path(sys.argv[2]).write_text(json.dumps(p))\nimport fixture_waits as waits\n'
+                'if p["station"] == "coordination":\n'
+                ' hold=Path(sys.argv[3])\n'
+                ' waits.wait("coordination released", lambda: not hold.exists(), sources=[waits.PathAppears(hold)])\n'
                 'if p["station"] == "coordination": print(Path(sys.argv[1]).read_text())\n'
                 'else:\n'
                 ' import subprocess,os\n'
-                ' import fixture_waits as waits\n'
                 ' hold=Path(sys.argv[4]).with_name("engineering-hold")\n'
                 ' waits.wait("engineering released", lambda: not hold.exists(), sources=[waits.PathAppears(hold)])\n'
                 ' if p["station"] == "build":\n'
@@ -264,7 +260,7 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                 result_file.write_text(json.dumps(empty))
                 request_id, receipt = f['present']('pending-88', {'kind': 'pm', 'ref': 'proj-a',
                     'digest': PM.SN.digest(b'pending')}, 'Answer this coordination question.')
-                __import__('os').mkfifo(base / 'hold')
+                (base / 'hold').write_text('hold')
                 held = cycles.start('proj-a', cycles.inputs('proj-a'))
                 try:
                     cycles.start('proj-a', cycles.inputs('proj-a'))
@@ -277,11 +273,9 @@ def _v88_suite(review_only=False, setup_only=False, fault_only=False):
                 check('cycle/pending-follow-up', 'owner answer retained while one cycle holds the project',
                       answered.get('outcome') == 'settled' and 'proj-a' in cycles.pending
                       and len([r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]) == 1)
-                with open(base / 'hold', 'w'):
-                    pass
+                (base / 'hold').unlink()
                 if held.get('dispatch') in runner.launches:
                     runner.wait(runner.launches[held['dispatch']], timeout=15)
-                (base / 'hold').unlink()
                 follow = cycles.pass_once()
                 active = [r for r in cycles.records('proj-a') if r['state'] not in PM.FINAL]
                 check('cycle/pending-follow-up', 'one follow-up binds a newer accepted snapshot',
