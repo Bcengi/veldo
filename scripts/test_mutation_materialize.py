@@ -1,7 +1,6 @@
 """Regression for lazy imports through a mutation worker's production tree."""
 import importlib.util
 from pathlib import Path
-import tempfile
 import unittest
 
 
@@ -41,13 +40,15 @@ def observe():
         for name in ('scripts/check_teeth_mutations.py', 'scripts/mutation_observer.py',
                      'engine/scripts/mutation_observer.py'):
             materializer = load(ROOT / name)
-            with tempfile.TemporaryDirectory() as directory:
+            with load(ROOT / 'scripts/gate_fixtures.py').directory() as directory:
                 root = Path(directory) / 'input'
                 base = root / '.veldo'
                 base.mkdir(parents=True)
                 (base / 'subject.py').write_text(source)
                 (base / 'sibling.py').write_text(sibling)
                 (base / 'unrelated.py').write_text('value = 42\n')
+                for source_name in ('subject.py', 'sibling.py', 'unrelated.py'):
+                    (base / source_name).chmod(0o444)
                 (base / '__pycache__').mkdir()
                 (base / '__pycache__/stale.pyc').write_bytes(b'not executable')
                 for layout in ({}, {'companions': ['unrelated.py']}, {'siblings': True}):
@@ -63,15 +64,20 @@ def observe():
                             self.assertEqual(made['replacement_count'], 1)
                             self.assertEqual(made['old_digest'] == made['new_digest'], mode != 'mutant')
                             self.assertEqual((base / 'subject.py').read_text(), source)
+                            self.assertEqual((base / 'subject.py').stat().st_mode & 0o777, 0o444)
                             if mode != 'baseline':
                                 self.assertNotEqual(path.parent, base)
+                                self.assertTrue(path.stat().st_mode & 0o200)
+                                self.assertEqual((path.parent / 'sibling.py').stat().st_mode & 0o777, 0o444)
+                                self.assertEqual((path.parent / 'unrelated.py').stat().st_mode & 0o777,
+                                                 0o644 if layout.get('companions') else 0o444)
                                 self.assertFalse((path.parent / '__pycache__/stale.pyc').exists())
 
     def test_fixture_and_script_layouts(self):
         for name in ('scripts/check_teeth_mutations.py', 'scripts/mutation_observer.py',
                      'engine/scripts/mutation_observer.py'):
             materializer = load(ROOT / name)
-            with tempfile.TemporaryDirectory() as directory:
+            with load(ROOT / 'scripts/gate_fixtures.py').directory() as directory:
                 root = Path(directory) / 'input'
                 for index, options in enumerate(({'fixture': True}, {'dir': 'scripts'},
                                                  {'dir': 'scripts', 'siblings': True})):
