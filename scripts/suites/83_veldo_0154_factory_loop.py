@@ -79,6 +79,9 @@ def _v154_suite():
             'format/fake-lines', 'timers/profile-applied', 'loop/end-after-fault', 'loop/orphan-release-once')
     rows = {name: [] for name in ROWS}
 
+    class TerminalState(AssertionError):
+        """A broken service state that also prevents later rows from progressing."""
+
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
 
@@ -89,6 +92,8 @@ def _v154_suite():
         except Exception as exc:  # noqa: BLE001 - a raise reds its rows, never skips them
             for row in names:
                 check(row, 'the row ran to its end (it raised %s: %s)' % (type(exc).__name__, str(exc)[:300]), False)
+            if isinstance(exc, TerminalState):
+                raise
 
     def load(name, path):
         spec = importlib.util.spec_from_file_location(name, str(path))
@@ -633,7 +638,7 @@ sys.exit(chosen['code'])
                 self.idle_at = (logged, quiet)
                 return quiet
 
-            def wait_pass(self, predicate, after):
+            def wait_pass(self, predicate, after, terminal=None, more=()):
                 """The first pass numbered after `after` for which `predicate` holds, woken by the pass log; None
                 when the service answered idle without it or has ended (impossible: the row fails on that
                 evidence). Past the wait hang bound the row is hung, never read as None."""
@@ -644,7 +649,8 @@ sys.exit(chosen['code'])
                     return bool(found), (found or [None])[0]
                 self.idle_at = None
                 result = WAITS.wait('a pass of instance %s after %d' % (self.tag, after), done,
-                                    lambda: not self.live() or self.idle(), self.sources(), _depth=2)
+                                    lambda: not self.live() or (terminal is not None and terminal()) or self.idle(),
+                                    self.sources(*more), _depth=2)
                 # The pass can be logged after done() reads but before idle()
                 # reads. Only a read AFTER the terminal reply proves absence.
                 return found[0] if result.done else done()[1]
@@ -1037,14 +1043,54 @@ sys.exit(chosen['code'])
             receiver = victim.get('receiver') or {}
             worker = victim.get('process') or {}
             killed = False
+            death_sources = []
+            receiver_pipe = None
             fields = proc_stat(receiver['pid']) if isinstance(receiver.get('pid'), int) else None
             if fields and fields[19] == receiver.get('start'):
+                # Keep a read-only handle without consuming the service's pipe.
+                # Empty after receiver exit proves EOF, independently of pump().
+                pipe = os.readlink('/proc/%d/fd/1' % receiver['pid'])
+                for descriptor in Path('/proc/%d/fd' % service_pid).iterdir():
+                    with contextlib.suppress(FileNotFoundError):
+                        if os.readlink(descriptor) == pipe:
+                            receiver_pipe = os.open(descriptor, os.O_RDONLY | os.O_NONBLOCK)
+                            break
+                if receiver_pipe is None:
+                    raise TerminalState('receiver output absent from the service descriptors')
+                death_sources.append(WAITS.Pidfd(receiver['pid']))
                 mark = last_pass()
                 os.kill(receiver['pid'], signal.SIGKILL)
                 killed = True
+
+            def ignored_eof():
+                import array
+                import fcntl
+                import termios
+                if alive(receiver):
+                    return False
+                unread = array.array('i', [0])
+                fcntl.ioctl(receiver_pipe, termios.FIONREAD, unread)
+                if unread[0]:
+                    return False
+                # Inspect precedes pipe handling in each service turn. The first
+                # reply may precede draining pump's buffered lines; the second
+                # precede reading EOF. The third observes both completed turns.
+                for _ in range(3):
+                    status = send({'operation': 'inspect', 'entity_ids': []})
+                loop = ((status or {}).get('result') or status or {}).get('loop') or {}
+                return (loop.get('available') is True and loop.get('pending_wakes') == 0
+                        and victim.get('dispatch_id') in loop.get('running', []))
+
             # VELDO-0358: only a receiver this suite killed can end the run (its worker waits on a gate); with no
             # kill there is nothing to wait for, and the rows below say so instead of a wait running out.
-            death = wait_pass(lambda p: bool(ended(p, U['U2'])), mark) if killed else None
+            try:
+                death = wait_pass(lambda p: bool(ended(p, U['U2'])), mark,
+                                  terminal=ignored_eof, more=death_sources) if killed else None
+            finally:
+                if receiver_pipe is not None:
+                    os.close(receiver_pipe)
+            if killed and death is None:
+                raise TerminalState('receiver EOF left its dispatch running without a run-end wake')
             events = A.events()
             stops = [i for i, e in enumerate(events) if e.get('operation') == 'orphan_wait'
                      and e.get('dispatch_id') == victim.get('dispatch_id') and e.get('stop_issued') is True]
