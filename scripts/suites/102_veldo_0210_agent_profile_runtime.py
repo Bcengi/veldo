@@ -234,7 +234,7 @@ print(json.dumps(r))
                bool(found.get('scratch')) and not Path(found['scratch']).exists())
 
 
-def _v210_agent_profile():
+def _v210_agent_profile(launcher, ROOT):
     import fcntl
     import importlib.util
     import json
@@ -246,19 +246,19 @@ def _v210_agent_profile():
     import threading
     import time
 
-    launcher = ROOT / 'scripts/agent_sandbox.py'
     # The real launcher's main() with module constants replaced (fixture resolver paths, a short
     # grace): the code under test is the launcher's own, only its host paths move into the fixture.
     # FORK_THEN_SIGNAL sends TERM before parent registration, with the child held just after
-    # setsid. The ready byte proves killpg can reach it; the hold prevents command startup.
-    # The existing parent delay is scheduling pressure, never evidence that the child is ready.
+    # setsid. The ready byte proves killpg can reach it; the parent releases it immediately
+    # after queuing TERM. Only the product's startup stop/launcher-gone guard prevents startup.
     wrapper = '''import importlib.util, json, sys
 from pathlib import Path
 spec = importlib.util.spec_from_file_location('agent_sandbox', sys.argv[1])
 m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 values = json.loads(sys.argv[2])
-if values.pop('FORK_THEN_SIGNAL', None):
-    import os, signal, time
+status_path = values.pop('FORK_THEN_SIGNAL', None)
+if status_path:
+    import os, signal
     fork = os.fork
     ready, report = os.pipe()
     held, release = os.pipe()
@@ -270,8 +270,16 @@ if values.pop('FORK_THEN_SIGNAL', None):
             os.close(held)
             assert os.read(ready, 1) == b'1'
             os.close(ready)
+            waitpid = os.waitpid
+            def waited(child, options):
+                reaped, status = waitpid(child, options)
+                if reaped == pid:
+                    Path(status_path).write_text(json.dumps(status))
+                return reaped, status
+            os.waitpid = waited
             os.kill(os.getpid(), signal.SIGTERM)
-            time.sleep(1)
+            os.write(release, b'1')
+            os.close(release)
         else:
             os.close(ready)
             os.close(release)
@@ -281,10 +289,8 @@ if values.pop('FORK_THEN_SIGNAL', None):
                 setsid()
                 os.write(report, b'1')
                 os.close(report)
-                # Only launcher death closes the writer. A correct start-time stop kills
-                # this session while it is held here, before any command can run.
                 os.read(held, 1)
-                os._exit(97)
+                os.close(held)
             os.setsid = session
         return pid
     os.fork = forked
@@ -714,6 +720,7 @@ print(json.dumps(r))
                and S.launcher_write_problem([(Path('/'), S.READ | S.WRITE)]) is not None
                and S.launcher_write_problem([(own.parent, S.READ), (own.parent / 'suites', S.READ | S.WRITE),
                                              (Path('/dev/null'), (1 << 1) | (1 << 2))]) is None
+               and 'mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)' in source[source.index('def run_tree('):]
                and source.index('grants += [(real, READ | WRITE) for real, _ in state]')
                < source.index('problem = launcher_write_problem(grants)')
                < source.index('mask = signal.pthread_sigmask(signal.SIG_BLOCK, STOP_SIGNALS)',
@@ -1926,18 +1933,21 @@ time.sleep(120)
             # still starting then, and a stop during the start ends it at once (AC6): the command never
             # runs.
             late, termed = worktree / 'outlived-launcher', worktree / 'stop-forwarded'
+            status_path = worktree / 'fork-stop-status.json'
             for path in (late, termed):
                 path.unlink(missing_ok=True)
             result = run(client_config, worktree, [sys.executable, '-I', '-S', '-c',
                          'import signal, sys, time\n'
                          'signal.signal(signal.SIGTERM, lambda *_: (open(%r, "w").close(), sys.exit(0)))\n'
                          'time.sleep(3); open(%r, "w").close()' % (str(termed), str(late))],
-                         patch={'FORK_THEN_SIGNAL': True}, client='claude', env=scratch_env)
+                         patch={'FORK_THEN_SIGNAL': str(status_path)}, client='claude', env=scratch_env)
             time.sleep(3)
-            expect('VELDO-0210 scratch/stop-during-fork-forwarded-to-child: %s %s' % (result.returncode,
+            status = json.loads(status_path.read_text()) if status_path.exists() else None
+            killed = status is not None and os.WIFSIGNALED(status) and os.WTERMSIG(status) == signal.SIGKILL
+            expect('VELDO-0210 scratch/stop-during-fork-forwarded-to-child: %s status=%s %s' % (result.returncode, status,
                                                                                       result.stderr[-200:]),
                    result.returncode == 128 + signal.SIGTERM and not termed.exists() and not late.exists()
-                   and leftovers() == [])
+                   and leftovers() == [] and killed)
 
             def alive(pid):
                 try:
@@ -2046,4 +2056,29 @@ time.sleep(120)
 
 
 if leg_runs():
-    _v210_agent_profile()
+    import contextlib
+
+    @contextlib.contextmanager
+    def _v210_launcher():
+        import shutil
+        import tempfile
+        from pathlib import Path
+
+        source = ROOT / "scripts" / "agent_sandbox.py"
+        if source == ROOT / 'scripts/agent_sandbox.py':
+            yield source
+            return
+        # Teeth supplies a no-op or mutant module. Its real launcher resolves policy and
+        # namespace-init dependencies relative to its installation, including in subprocesses.
+        with tempfile.TemporaryDirectory(prefix='v210-install-') as temporary:
+            installed = Path(temporary)
+            shutil.copytree(ROOT / '.veldo', installed / '.veldo', ignore=shutil.ignore_patterns('__pycache__'))
+            shutil.copytree(ROOT / 'scripts', installed / 'scripts', ignore=shutil.ignore_patterns('__pycache__'))
+            for name in ('specs', 'docs'):
+                (installed / name).symlink_to(ROOT / name, target_is_directory=True)
+            launcher = installed / 'scripts/agent_sandbox.py'
+            shutil.copyfile(source, launcher)
+            yield launcher
+
+    with _v210_launcher() as launcher:
+        _v210_agent_profile(launcher, launcher.parent.parent)
