@@ -430,6 +430,56 @@ def _v217_traced():
     T = P.T
     with tempfile.TemporaryDirectory(prefix='v217-traced-') as temporary:
         top = Path(temporary)
+        # Drive the real wait loop with controlled completion/output events. No
+        # host speed or shortened hang detector decides these timeout rows.
+        from unittest.mock import call, patch
+        def bounded_trace(name, growing, completes=None, ceiling=600):
+            directory = top / name
+            directory.mkdir()
+            class Child:
+                pid = 123456789
+                intervals = []
+                collected = False
+                def wait(self, timeout=None):
+                    if timeout is None:
+                        self.collected = True
+                        return 0
+                    self.intervals.append(timeout)
+                    count = len(self.intervals)
+                    # A broken unbounded loop still ends this regression promptly.
+                    if count > 5:
+                        raise AssertionError('trace wait has no outer bound')
+                    if count == completes:
+                        return 0
+                    if growing or count == 1:
+                        with (directory / 'trace').open('ab') as stream:
+                            stream.write(b'progress\n')
+                    raise subprocess.TimeoutExpired(['fixture'], timeout)
+            child = Child()
+            with patch.object(P.subprocess, 'Popen', return_value=child), \
+                 patch.object(P.os, 'killpg') as kill:
+                try:
+                    result = P.run_traced(['fixture'], {}, ROOT, directory, ceiling)
+                    outcome = result[0]
+                except TimeoutError as error:
+                    outcome = str(error)
+                cleaned = child.collected and kill.call_args_list == [
+                    call(child.pid, P.signal.SIGKILL)]
+            return outcome, child.intervals, cleaned
+
+        progress = bounded_trace('progress', True, completes=3)
+        stalled = bounded_trace('stalled', False)
+        growing = bounded_trace('growing', True)
+        minimum = bounded_trace('minimum', False, ceiling=1)
+        expect('VELDO-0207 case/trace-progress-continues', progress == (0, [600, 600, 600], True))
+        expect('VELDO-0207 case/trace-stalled-124',
+               stalled == ('traced run made no progress for 600s; its trace is incomplete', [600, 600], True))
+        expect('VELDO-0207 case/trace-growing-bounded',
+               growing == ('traced run exceeded the outer bound of 2400s; its trace is incomplete',
+                           [600, 600, 600, 600], True))
+        expect('VELDO-0207 case/trace-hang-minimum',
+               minimum == ('traced run made no progress for 120s; its trace is incomplete', [120, 120], True))
+
         # Another host process: a listener on loopback and a Unix socket outside the case's roots.
         listener = socket.create_server(('127.0.0.1', 0))
         host_socket = socket.socket(socket.AF_UNIX)
