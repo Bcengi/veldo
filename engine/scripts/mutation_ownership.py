@@ -200,7 +200,7 @@ def remove_tree(path, outside=False):
             raise error
         parent = Path(name).parent
         parent.chmod(parent.stat().st_mode | 0o700)
-        if Path(name).is_dir():
+        if Path(name).is_dir() and not Path(name).is_symlink():
             Path(name).chmod(Path(name).stat().st_mode | 0o700)
         function(name)
     if Path(path).exists():
