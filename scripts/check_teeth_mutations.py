@@ -18702,9 +18702,10 @@ def materialize(case, mode, directory, root=ROOT):
         mutant = destination / ('fixtures' if fixture else case['module'])
         if fixture:
             shutil.copytree(base, mutant, ignore=shutil.ignore_patterns('__pycache__'))
-        elif case.get('siblings') is True:
-            # A module that loads its siblings by its own path (control_membership loads
-            # authority_contract and control_store next to itself) gets a whole .veldo copy.
+        elif case.get('dir', '.veldo') == '.veldo' or case.get('siblings') is True:
+            # Baseline modules live in a complete tree. Give every production copy the
+            # same siblings, including dependencies loaded only on first use. A sparse
+            # companion list can make an identity replacement fail before its target.
             shutil.copytree(base, destination / 'veldo', ignore=shutil.ignore_patterns('__pycache__'))
             mutant = destination / 'veldo' / case['module']
         target = mutant / case['module'] if fixture else mutant
