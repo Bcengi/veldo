@@ -159,7 +159,7 @@ if sys.argv[1:2] == ['exec']:
                                                                     for name in names]}).encode()
         try:
             urllib.request.urlopen(urllib.request.Request(provider['base_url'] + '/responses', data=body,
-                                                          headers={'Content-Type': 'application/json'}), timeout=10)
+                                                          headers={'Content-Type': 'application/json'}), timeout=@@WAIT_HANG@@)
         except Exception:
             pass
         sys.exit(1)
@@ -220,7 +220,7 @@ else:
     print(json.dumps({'type': 'turn.completed', 'usage': {'input_tokens': 3, 'cached_input_tokens': 0,
           'cache_write_input_tokens': 0, 'output_tokens': 2, 'reasoning_output_tokens': 0}}), flush=True)
 '''.replace('@@PYTHON@@', sys.executable).replace('@@CODEX_TOOLS@@', repr(codex_tools()))
-       .replace('@@CODE_MODE@@', repr(code_mode())))
+       .replace('@@CODE_MODE@@', repr(code_mode())).replace('@@WAIT_HANG@@', repr(WAITS.WAIT_HANG_SECONDS)))
     fake_capture = (['teardown not reached'], [])
     # The owner's accounts as his case has them: three Claude Code and one Codex, one Claude Code logged out.
     # Fresh accounts tie on utilization, active runs and last use, so the pool chooses by id.
@@ -513,6 +513,15 @@ else:
             if started[0]:
                 raise RuntimeError('the installed authority did not start')
             try:
+                environment = dict(item.split(b'=', 1) for item in Path(
+                    '/proc/%d/environ' % main['manager'].pid(unit)).read_bytes().split(b'\0') if b'=' in item)
+                home = Path(os.fsdecode(environment[b'HOME'])).resolve()
+                check('loop/configured', 'the service has a private worker home outside its authority store',
+                      home == main['manager'].home.resolve() and home.is_dir()
+                      and home != store.parent and home not in store.parents and store.parent not in home.parents)
+                check('timers/profile-applied', 'the service receives the hang profile before starting',
+                      json.loads(environment[b'VELDO_TIMERS_PROFILE']) == {
+                          'except': None, 'hang_seconds': WAITS.WAIT_HANG_SECONDS})
                 status = h['service_send'](root, {'operation': 'inspect', 'entity_ids': []})
                 loop = ((status or {}).get('result') or {}).get('loop') or {}
                 # VELDO-0174 starts the loop for the conversations receiver alone, so configured no longer
@@ -902,7 +911,7 @@ else:
               started and all(started) and not unset and len(started) == len([r for r in found if r['state'] == 'exited']))
         for path, text in receiver_configs.items():
             Path(path).write_text(text)
-        L.TIMERS.reset_profile()
+        # The shared fixture keeps its table profiled through the remaining login checks and resets it at teardown.
         if slots:
             print('VELDO-0185 journey: the wait ended with worker slots still held: %s' % slots)
         by_account = {}

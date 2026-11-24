@@ -211,7 +211,7 @@ if os.environ.get('VELDO_RUN_QUERY'):
 else:
     # The explicitly reported remote adapter is outside this host's guard.
     try:
-        db = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=10)
+        db = sqlite3.connect('file:%s?mode=ro' % store, uri=True, timeout=WAIT_HANG_SECONDS)
         row = db.execute('SELECT data FROM entities WHERE id=?', ('dispatch:' + dispatch,)).fetchone()
         seen = json.loads(row[0]) if row else None
         db.close()
@@ -248,7 +248,7 @@ out = json.dumps(dict(payload.get('say', {}), worker_token=os.urandom(8).hex()))
 sys.stdout.buffer.write(out)
 sys.stdout.flush()
 sys.exit(payload.get('code', 0))
-''')
+'''.replace('timeout=WAIT_HANG_SECONDS', 'timeout=' + repr(WAITS.WAIT_HANG_SECONDS)))
         host_trust = private / 'host_trust.json'
         enrollment_signers = private / 'enrollment_signers'
         enrollment_signers.write_text('')
