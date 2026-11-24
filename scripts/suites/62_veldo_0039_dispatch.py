@@ -185,6 +185,7 @@ def released(path):
     libc = ctypes.CDLL(None, use_errno=True)
     fd = libc.inotify_init1(os.O_CLOEXEC)
     libc.inotify_add_watch(fd, os.path.dirname(path).encode(), 0x100 | 0x80 | 0x8)  # create, moved to, close write
+    (markers / ('%d.waiting' % os.getpid())).write_text(path)
     while not Path(path).exists():
         select.select([fd], [], [])
         os.read(fd, 65536)
@@ -877,6 +878,14 @@ sys.exit(child.wait())
                 u7 = admitted('VELDO-9307')
                 orphaned = runner.submit(u7, 'build', **job(release='u7'))
                 o7 = marker_for(orphaned.dispatch_id)
+                # Birth precedes the stdin read. Killing the receiver before its feeder sends the packet
+                # gives the worker EOF with no release instruction: it exits and its group can disappear
+                # before the orphan stop. Wait until the worker has consumed the packet and armed its wait.
+                waiting = file_of(markers / ('%s.waiting' % o7.get('pid')), o7.get('pid'),
+                                  'the orphan worker to wait for its release')
+                orphan_packet = json.loads((markers / ('%s.packet' % o7.get('pid'))).read_text()) if waiting else {}
+                check('dispatch/orphan-worker-ready',
+                      waiting and (orphan_packet.get('payload') or {}).get('release') == str(base / 'release-u7'))
                 # The receiver that owns the running worker is stopped: the outcome is unknown.
                 orphaned.child.kill()
                 orphaned.child.wait()  # killed: its exit is certain
