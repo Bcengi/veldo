@@ -131,11 +131,17 @@ def _v65_checks(base):
     organs.mkdir()
     for source in sorted((ROOT / '.veldo').glob('*.py')):
         _v65_shutil.copyfile(source, organs / source.name)
+    # Overlay the selected production copies before any imports. Lazy imports and
+    # path-bound store registrations must use this same complete fixture tree.
+    _v65_shutil.copyfile(ROOT / ".veldo" / "control_channel_projection.py",
+                        organs / 'control_channel_projection.py')
+    _v65_shutil.copyfile(ROOT / ".veldo" / "control_channel_presentation.py",
+                        organs / 'control_channel_presentation.py')
     claims = _v65_load('v65_claims', organs / 'control_claim.py')
     S, CM, AUTHC = claims.S, claims.CM, claims.AC
     I = _v65_load('v65_inbox', organs / 'control_assignment.py')
-    P = _v65_load('v65_projection', ROOT / ".veldo" / "control_channel_projection.py")
-    V = _v65_load('v65_presentation', ROOT / ".veldo" / "control_channel_presentation.py")
+    P = _v65_load('v65_projection', organs / 'control_channel_projection.py')
+    V = _v65_load('v65_presentation', organs / 'control_channel_presentation.py')
 
     keys = base / 'keys'
     keys.mkdir()
