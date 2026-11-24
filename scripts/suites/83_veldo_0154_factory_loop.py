@@ -1131,6 +1131,14 @@ sys.exit(chosen['code'])
             check('loop/receiver-death', 'the unit\'s next station is not offered as if the run had succeeded [%s]'
                   % dispatches(U['U2'], 'review'),
                   not dispatches(U['U2'], 'review') and not any(offered(p, U['U2']) for p in after))
+            # The completed death pass must hand the freed account to W while the
+            # other accounts are gated. A no_account refusal despite its release
+            # proves the slot was kept; later account waits cannot repair that
+            # state (in particular the owner's yes would wait for a reset timer).
+            blocked = [w for w in (death or {}).get('waiting') or []
+                       if w['unit'] == U['W'] and w.get('refusal') == 'no_account']
+            if slot.get('account_released') and not took and blocked:
+                raise TerminalState('released account slot still counted busy: %r' % blocked)
             mark = last_pass()
             release('blockers')
             release('w')
@@ -1411,6 +1419,11 @@ sys.exit(chosen['code'])
         for one in instances:
             if one.proc is not None and one.proc.poll() is None:
                 one.proc.send_signal(signal.SIGTERM)
+        if watcher[0] is not None:
+            # Its pidfd observes service exit. Join before polling that same
+            # Popen here: concurrent poll() can miss the one-shot exit wake
+            # while the other thread holds Popen's waitpid lock.
+            watcher[0].join()
         for one in instances:
             proc = one.proc
             if proc is not None and proc.poll() is None:
@@ -1419,7 +1432,6 @@ sys.exit(chosen['code'])
             if one.notification is not None:
                 one.notification.close()
         if watcher[0] is not None:
-            watcher[0].join()  # its waits end impossible once its service has exited
             with contextlib.suppress(Exception):
                 text = (base / ('service-%s.err' % one.tag)).read_text()[-1500:]
                 if text.strip():
