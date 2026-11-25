@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0219, VELDO-0220]
 placement: [enforcement]
-protected_paths: [scripts/gate_schedule.py, engine/scripts/gate_schedule.py]
+protected_paths: [scripts/gate_schedule.py, engine/scripts/gate_schedule.py, scripts/suites/wallclock_baseline.json]
 footprint:
   - scripts/gate_schedule.py
   - engine/scripts/gate_schedule.py
@@ -78,6 +78,9 @@ under the existing host lock and memory cap. The native probes and selected work
 to that host. Threat model: accidental unsupported hosts and incomplete evidence, not malicious
 same-account replacement of authority code or forged local receipts. Independent review and a
 canonical gate remain outstanding; the owner explicitly excludes running that gate in this task.
+
+The protected `scripts/suites/wallclock_baseline.json` change removes the two converted
+signing sleep/clock entries. Policy requires lowering the baseline when converting these sites.
 
 ## Bounded evidence and remaining blockers
 

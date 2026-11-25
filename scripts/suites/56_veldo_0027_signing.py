@@ -48,6 +48,7 @@ fixture_at = json.loads(Path(__file__).with_name('fixture-clock.json').read_text
 if fixture_at is not None:
     time = SimpleNamespace(time=lambda: fixture_at)
 """
+    assert _v27_signer_source.count("if __name__ == '__main__':") == 1, 'fixture clock insertion point missing or ambiguous'
     _v27_signer_path.write_text(_v27_signer_source.replace(
         "if __name__ == '__main__':", _v27_clock_hook + "\nif __name__ == '__main__':"))
     _v27_signer = _v27_load('v27_signer', _v27_modules / 'control_signer.py')

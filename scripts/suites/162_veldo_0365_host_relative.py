@@ -1,7 +1,7 @@
 """Host-relative reservations and explicit fail-closed native qualification policy."""
 
 
-def _v364_checks():
+def _v365_checks():
     import contextlib
     import importlib.util
     import io
@@ -88,4 +88,4 @@ def _v364_checks():
         and not qualification.qualified({}))
 
 
-_v364_checks()
+_v365_checks()
