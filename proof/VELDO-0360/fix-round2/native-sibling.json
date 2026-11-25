@@ -1,0 +1,171 @@
+{
+  "schema": "veldo.gate-schedule/v1",
+  "graph": "sha256:7ee7a26a3b2630b8d33b787a50223d3df9354e670824f54f68b4a600db3f192a",
+  "stages": {
+    "worker": "pass",
+    "red": "pass"
+  },
+  "nodes": {
+    "red": {
+      "start": 0.003519961144775152,
+      "end": 0.0819485541433096,
+      "wall_seconds": 0.07842859299853444,
+      "verdict": "pass",
+      "returncode": 0,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.026799,
+      "peak_anon_bytes": 8978432,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false,
+      "admission_dependencies": []
+    },
+    "worker": {
+      "start": 0.0002612587995827198,
+      "end": 0.09280771110206842,
+      "wall_seconds": 0.0925464523024857,
+      "verdict": "pass",
+      "returncode": 0,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.045645,
+      "peak_anon_bytes": 13152256,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false,
+      "admission_dependencies": []
+    }
+  },
+  "checks_run": 2,
+  "inputs_unchanged": true,
+  "original_inputs_unchanged": true,
+  "first_failure": null,
+  "collect_all": false,
+  "error": null,
+  "wall_seconds": 0.09370979806408286,
+  "critical_path_seconds": 0.0925464523024857,
+  "critical_path_end": "worker",
+  "capacities": {
+    "cpu": 2,
+    "memory": 4294967296,
+    "manager": 2
+  },
+  "peak_granted": {
+    "cpu": 2,
+    "memory": 2147483648,
+    "manager": 0
+  },
+  "ledger": [
+    {
+      "at": 3242510.775726689,
+      "action": "grant",
+      "claimant": "worker",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "granted": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3242510.779014502,
+      "action": "grant",
+      "claimant": "red",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "granted": {
+        "cpu": 2,
+        "memory": 2147483648,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3242510.841957712,
+      "action": "grant",
+      "claimant": "worker/child",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 0,
+        "memory": 0,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "granted": {
+        "cpu": 2,
+        "memory": 2147483648,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3242510.858936654,
+      "action": "release",
+      "claimant": "red",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3242510.862521749,
+      "action": "release",
+      "claimant": "worker/child",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3242510.869258564,
+      "action": "release",
+      "claimant": "worker",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 0,
+        "memory": 0,
+        "manager": 0
+      }
+    }
+  ],
+  "claims": {
+    "worker": {
+      "cpu": 1,
+      "memory": 1073741824,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "none"
+    },
+    "red": {
+      "cpu": 1,
+      "memory": 1073741824,
+      "manager": "none",
+      "ports": [],
+      "host_lock": "none"
+    }
+  },
+  "claim_sources": {
+    "worker": "recorded startup estimate: tiny native fixture",
+    "red": "recorded startup estimate: tiny native fixture"
+  }
+}

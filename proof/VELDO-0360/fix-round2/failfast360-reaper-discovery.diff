@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-reaper-discovery
+@@ -883,7 +883,7 @@
+ 
+ 
+ def child_pids():
+-    return {int(pid) for pid in Path('/proc/self/task/%d/children' % os.getpid()).read_text().split()}
++    return set()
+ 
+ 
+ def reap_exited_children(excluded=()):

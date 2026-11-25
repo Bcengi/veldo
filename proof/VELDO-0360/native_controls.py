@@ -25,13 +25,14 @@ supervisor.mkdir()
 (supervisor / 'cgroup.procs').write_text(str(os.getpid()))
 (group / 'cgroup.subtree_control').write_text('+memory')
 observations = []
-output = Path(__file__).parent / 'fix-round1'
+output = Path(__file__).parent / 'fix-round2'
 output.mkdir(exist_ok=True)
 with tempfile.TemporaryDirectory(prefix='v360-native-') as temporary:
     base = Path(temporary)
     (base / 'wrapper.py').write_text(wrapper)
     for tag, mode, setting in (('early', 'early', ''), ('diagnostic', 'diagnostic', '1'),
                                 ('green', 'green', ''), ('green-diagnostic', 'green', '1'),
+                                ('sibling', 'sibling', ''),
                                 ('mutation-cancel', 'mutation-cancel', ''),
                                 ('mutation-killed', 'mutation-killed', ''),
                                 ('mutation-exception', 'mutation-exception', '')):
@@ -40,6 +41,8 @@ with tempfile.TemporaryDirectory(prefix='v360-native-') as temporary:
         (top / 'stage.py').write_text(strings['stage'])
         nodes = {'worker': [], 'red': [], 'tail': [], 'load': ['red', 'worker', 'tail'],
                  'mutation': ['load'], 'after': ['mutation']}
+        if mode == 'sibling':
+            nodes = dict(worker=[], red=[])
         if mode.startswith('mutation-'):
             nodes = dict(mutation=[], red=[], worker=['mutation'], tail=['mutation'],
                          load=['red', 'worker', 'tail'], after=['mutation'])
@@ -91,7 +94,7 @@ with tempfile.TemporaryDirectory(prefix='v360-native-') as temporary:
                  and all(not Path('/proc/%d' % pid).exists() for pid in pids)
                  and not (top / 'unreaped').exists())
         assert clean and 'worker/child' in grants
-        assert proc.returncode == (0 if mode == 'green' else 1)
+        assert proc.returncode == (0 if mode in ('green', 'sibling') else 1)
         if mode == 'early':
             assert receipt['stages'] == dict(worker='cancelled', red='FAIL', tail='not_started',
                                             load='not_run', mutation='not_started', after='not_started')
@@ -101,8 +104,12 @@ with tempfile.TemporaryDirectory(prefix='v360-native-') as temporary:
                                             load='not_run', mutation='pass', after='FAIL')
         else:
             assert set(receipt['stages'].values()) == {'pass'}
-        assert receipt['first_failure'] is None if mode == 'green' else (
+        assert receipt['first_failure'] is None if mode in ('green', 'sibling') else (
             receipt['first_failure']['node'] == 'red' and receipt['first_failure']['returncode'] == 7)
+        if mode == 'sibling':
+            assert (top / 'sibling.survived').read_text() == 'True'
+            assert receipt['stages'] == dict(worker='pass', red='pass')
+            assert receipt['nodes']['red']['end'] < receipt['nodes']['worker']['end']
         observations.append(dict(control=tag, scheduler_sha256=hashlib.sha256(source.read_bytes()).hexdigest(), stages=receipt['stages'], first_failure=receipt['first_failure'],
                                  cleanup=clean, grants=len(grants), releases=len(releases),
                                  metrics={n: {k: r.get(k) for k in ('wall_seconds', 'cpu_seconds', 'peak_anon_bytes')}
@@ -110,4 +117,4 @@ with tempfile.TemporaryDirectory(prefix='v360-native-') as temporary:
         (output / ('native-' + tag + '.json')).write_text(json.dumps(receipt, indent=2) + '\n')
 assert observations[2]['stages'] == observations[3]['stages']
 (output / 'native-controls.json').write_text(json.dumps(observations, indent=2) + '\n')
-print('7 native controls passed; all worker PIDs reaped, cgroups removed, grants released', flush=True)
+print('8 native controls passed; all worker PIDs reaped, cgroups removed, grants released', flush=True)

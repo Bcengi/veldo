@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-pending-diagnostic
+@@ -650,7 +650,7 @@
+                 if not depends[name] <= results.keys():
+                     continue
+                 hold = held(name, depends, results, collect_all)
+-                if hold is None and first_failure is not None and not collect_all:
++                if hold is None and first_failure is not None:
+                     hold = ('not_started', 'first failure: ' + first_failure['node'])
+                 if hold is not None:
+                     at = max((results[d]['end'] for d in depends[name]), default=0.0)  # when it was decided

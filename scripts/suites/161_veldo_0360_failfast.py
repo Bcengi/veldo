@@ -33,6 +33,23 @@ def _v360_checks():
         and scheduler.held('tail', deps, results, True) is None
         and scheduler.held('mutation', deps, {'load': {'verdict': 'FAIL'}}, True) is not None)
 
+    # Probe syscall flags before the live control, so a blocking mutant is rejected
+    # without deadlocking the event handshake that deliberately holds a child alive.
+    with patch.object(scheduler, 'child_pids', return_value={11, 99}) as children, \
+            patch.object(scheduler.os, 'waitpid', return_value=(0, 0)) as reap, \
+            patch.object(scheduler.os, 'kill') as kill:
+        scheduler.reap_exited_children({99})
+        nonblocking = reap.call_args_list == [((11, os.WNOHANG),)] and not kill.called
+        row('zombie-only', nonblocking and children.call_count == 1)
+    with patch.object(scheduler, 'child_pids', return_value={11}), \
+            patch.object(scheduler.os, 'waitpid', side_effect=ChildProcessError):
+        try:
+            scheduler.reap_exited_children()
+            raced = True
+        except ChildProcessError:
+            raced = False
+        row('zombie-race', raced)
+
     # The CLI sets subreaper status and reaps adopted grandchildren before publishing its receipt.
     # Its meter uses the production finish() against a simulated cgroup filesystem. cgroup.kill
     # really kills the fixture processes; cgroup.events reads their kernel process state.
@@ -173,7 +190,7 @@ def run(*args, **kwargs):
 s.run = run
 code = s.main(['--root', str(top), '--directory', str(top / 'out'), '--record', str(top / 'legs'),
                '--receipt', str(top / 'mutation.receipt'),
-               *[arg for name in ('worker', 'red', 'tail', 'load', 'mutation', 'after')
+               *[arg for name in (('worker', 'red') if mode == 'sibling' else ('worker', 'red', 'tail', 'load', 'mutation', 'after'))
                  for arg in ('--stage', name, 'fixture')]])
 pids = json.loads((top / 'worker.pids').read_text()) if (top / 'worker.pids').exists() else []
 if any(Path('/proc/%d' % pid).exists() for pid in pids): (top / 'unreaped').write_text('1')
@@ -194,7 +211,7 @@ ctypes.CDLL(None).prctl(37, ctypes.byref(flag), 0, 0, 0)
 raise SystemExit(code)
 '''
     stage = r'''
-import importlib.util, json, os, signal, subprocess, sys
+import importlib.util, json, os, select, signal, socket, subprocess, sys
 from pathlib import Path
 top, name, mode = Path(__file__).parent, sys.argv[1], sys.argv[2]
 source = Path(os.environ['V360_SOURCE'])
@@ -233,6 +250,38 @@ signal.pause()
     (top / 'mutation.pids').write_text(json.dumps(pids))
     (top / 'mutation.ready').write_text('1')
     signal.pause()
+elif name == 'worker' and mode == 'sibling':
+    client = s.Client()
+    assert client.acquire('child', 0, 0)
+    parent, child = socket.socketpair()
+    program = r"""
+import os, socket, sys
+sock = socket.socket(fileno=int(sys.argv[1]))
+if os.fork(): os._exit(0)
+os.setsid()
+sock.sendall(str(os.getpid()).encode() + b'\n')
+assert sock.recv(1) == b'!'
+sock.sendall(b'Y')
+"""
+    middle = subprocess.Popen([sys.executable, '-c', program, str(child.fileno())], pass_fds=(child.fileno(),))
+    child.close()
+    helper = int(parent.makefile('rb').readline())
+    middle.wait()  # Adoption is complete before the other node may finish.
+    assert int(Path('/proc/%d/stat' % helper).read_text().rsplit(')', 1)[1].split()[1]) == os.getppid()
+    fd = os.pidfd_open(helper)
+    (top / 'worker.pids').write_text(json.dumps([os.getpid(), helper]))
+    (top / 'worker.ready').write_text('1')
+    wait('other node collected', lambda: (top / 'red.settled').exists(), sources=[PathAppears(top / 'red.settled')])
+    try:
+        parent.sendall(b'!')
+        survived = parent.recv(1) == b'Y'
+    except (BrokenPipeError, ConnectionResetError):
+        survived = False
+    parent.close()
+    poll = select.poll(); poll.register(fd, select.POLLIN); poll.poll(); os.close(fd)
+    client.release('child'); client.close()
+    (top / 'sibling.survived').write_text(str(survived))
+    raise SystemExit(0 if survived else 8)
 elif name == 'worker':
     client = s.Client()
     assert client.acquire('child', 0, 0)
@@ -249,7 +298,7 @@ elif name == 'red':
     if mode == 'mutation-exception': signal.pause()
     if mode == 'mutation-killed': os.kill(json.loads((top / 'mutation.pids').read_text())[0], signal.SIGKILL)
     (top / 'red.done').write_text('1')
-    raise SystemExit(0 if mode == 'green' else 7)
+    raise SystemExit(0 if mode in ('green', 'sibling') else 7)
 elif name == 'after':
     raise SystemExit(0 if mode == 'green' else 9)
 elif name == 'mutation':
@@ -262,14 +311,20 @@ elif name == 'mutation':
         for tag, mode, setting in (('early', 'early', ''), ('diagnostic', 'diagnostic', '1'),
                                     ('green', 'green', ''), ('green-diagnostic', 'green', '1'),
                                     ('not-opted-in', 'early', 'true'),
+                                    ('sibling', 'sibling', ''),
                                     ('mutation-cancel', 'mutation-cancel', ''),
                                     ('mutation-killed', 'mutation-killed', ''),
                                     ('mutation-exception', 'mutation-exception', '')):
+            if mode == 'sibling' and not nonblocking:
+                row('sibling-survives', False)
+                continue
             top = base / tag
             top.mkdir()
             (top / 'stage.py').write_text(stage)
             nodes = {'worker': [], 'red': [], 'tail': [], 'load': ['red', 'worker', 'tail'],
                      'mutation': ['load'], 'after': ['mutation']}
+            if mode == 'sibling':
+                nodes = dict(worker=[], red=[])
             if mode.startswith('mutation-'):
                 nodes = dict(mutation=[], red=[], worker=['mutation'], tail=['mutation'],
                              load=['red', 'worker', 'tail'], after=['mutation'])
@@ -306,6 +361,12 @@ elif name == 'mutation':
             if not receipt_path.exists():
                 print(proc.stdout, proc.stderr)
             receipt = json.loads(receipt_path.read_text()) if receipt_path.exists() else {}
+            if mode == 'sibling':
+                row('sibling-survives', proc.returncode == 0
+                    and receipt.get('stages') == dict(worker='pass', red='pass')
+                    and (top / 'sibling.survived').read_text() == 'True'
+                    and receipt['nodes']['red']['end'] < receipt['nodes']['worker']['end'])
+                continue
             observations[tag] = receipt
             row(tag + '/status', proc.returncode == (0 if mode == 'green' else 1))
             first = receipt.get('first_failure') or {}
@@ -374,7 +435,7 @@ elif name == 'mutation':
         excluded = {123, 456}
         with patch.object(scheduler, 'Path', return_value=root), \
                 patch.object(scheduler, 'empty_group', side_effect=lambda p: calls.append(p)), \
-                patch.object(scheduler, 'reap_children', side_effect=lambda e: calls.append(('reap', e))):
+                patch.object(scheduler, 'reap_exited_children', side_effect=lambda e: calls.append(('reap', e))):
             result = None
             try:
                 result = scheduler.finish_node(name, dict(meter=meter, proc=SimpleNamespace(pid=123)), scope, excluded)

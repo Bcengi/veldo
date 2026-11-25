@@ -13,7 +13,7 @@ spec.loader.exec_module(teeth)
 cases = [case for case in teeth.cases() if case['finding'] == 360]
 source = ROOT / 'scripts/gate_schedule.py'
 results = []
-output = Path(__file__).parent / 'fix-round1'
+output = Path(__file__).parent / 'fix-round2'
 output.mkdir(exist_ok=True)
 with tempfile.TemporaryDirectory(prefix='v360-mutants-') as temporary:
     top = Path(temporary)

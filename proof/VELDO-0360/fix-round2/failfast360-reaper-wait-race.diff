@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-reaper-wait-race
+@@ -907,7 +907,7 @@
+             try:
+                 os.waitpid(pid, 0)
+             except ChildProcessError:
+-                pass
++                raise
+ 
+ 
+ def main(argv=None):

@@ -18713,7 +18713,7 @@ def cases():
         "    result = item['meter'].finish()\n    try:\n        return result\n    finally:\n", ['failfast/cleanup-metrics-error'])
     result[-1]['dir'] = 'scripts'
     add(360, 'failfast360-node-reap', '161_veldo_0360_failfast.py', 'gate_schedule.py',
-        '        reap_children(excluded)\n',
+        '        reap_exited_children(excluded)\n',
         '        pass\n', ['failfast/cleanup-workers', 'failfast/mutation-cancel/release-order'])
     result[-1]['dir'] = 'scripts'
     add(360, 'failfast360-collector-cleanup', '161_veldo_0360_failfast.py', 'gate_schedule.py',
@@ -18755,6 +18755,30 @@ def cases():
     add(360, 'failfast360-reaper-wait-race', '161_veldo_0360_failfast.py', 'gate_schedule.py',
         '            except ChildProcessError:\n                pass\n',
         '            except ChildProcessError:\n                raise\n', ['failfast/reaper-race-waitpid'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-completion-kills-sibling', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '        reap_exited_children(excluded)\n',
+        '        reap_children(excluded)\n', ['failfast/sibling-survives'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-zombie-discovery', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '    for pid in child_pids() - set(excluded):\n',
+        '    for pid in ():\n', ['failfast/zombie-only'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-zombie-exclusion', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '    for pid in child_pids() - set(excluded):\n',
+        '    for pid in child_pids():\n', ['failfast/zombie-only'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-zombie-nonblocking', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '            os.waitpid(pid, os.WNOHANG)\n',
+        '            os.waitpid(pid, 0)\n', ['failfast/zombie-only'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-zombie-reap', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '            os.waitpid(pid, os.WNOHANG)\n',
+        '            pass\n', ['failfast/zombie-only'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-zombie-race', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '        except ChildProcessError:\n            pass\n',
+        '        except ChildProcessError:\n            raise\n', ['failfast/zombie-race'])
     result[-1]['dir'] = 'scripts'
     add(360, 'failfast360-meter-finally', '161_veldo_0360_failfast.py', 'gate_schedule.py',
         "        try:\n            result = self.sample()\n        finally:\n            populated = 'populated 1' in (self.path / 'cgroup.events').read_text()\n            empty_group(self.path)\n",

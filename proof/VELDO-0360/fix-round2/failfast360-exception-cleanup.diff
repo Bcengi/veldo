@@ -1,0 +1,12 @@
+--- scripts/gate_schedule.py
++++ failfast360-exception-cleanup
+@@ -864,8 +864,7 @@
+             try:
+                 item['proc'].kill()
+                 item['proc'].wait()
+-                finish_node(name, item, scope, inherited_children |
+-                            {other['proc'].pid for other in active.values()})
++                item['meter'].finish()
+                 for claimant in item['children']:
+                     ledger.release(claimant)
+                 ledger.release(name)

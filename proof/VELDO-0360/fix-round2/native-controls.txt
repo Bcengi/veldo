@@ -1,0 +1,16 @@
+Running as unit: veldo-0360-fix2-controls.service; invocation ID: 9691e4649c5140798a57393b71dc2193
+early exit 1
+diagnostic exit 1
+green exit 0
+green-diagnostic exit 0
+sibling exit 0
+mutation-cancel exit 1
+mutation-killed exit 1
+mutation-exception exit 1
+8 native controls passed; all worker PIDs reaped, cgroups removed, grants released
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 2.156s
+CPU time consumed: 2.106s
+Memory peak: 256.0K
+Memory swap peak: 0B

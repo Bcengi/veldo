@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-zombie-race
+@@ -892,7 +892,7 @@
+         try:
+             os.waitpid(pid, os.WNOHANG)
+         except ChildProcessError:
+-            pass
++            raise
+ 
+ 
+ def reap_children(excluded=()):

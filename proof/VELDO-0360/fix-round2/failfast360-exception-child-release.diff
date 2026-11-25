@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-exception-child-release
+@@ -866,8 +866,6 @@
+                 item['proc'].wait()
+                 finish_node(name, item, scope, inherited_children |
+                             {other['proc'].pid for other in active.values()})
+-                for claimant in item['children']:
+-                    ledger.release(claimant)
+                 ledger.release(name)
+             except Exception as error:
+                 cleanup_errors.append('%s: %s' % (name, error))

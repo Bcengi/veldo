@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-reaper-wait
+@@ -905,7 +905,7 @@
+                 pass
+         for pid in children:
+             try:
+-                os.waitpid(pid, 0)
++                os.waitpid(pid, os.WNOHANG)
+             except ChildProcessError:
+                 pass
+ 
