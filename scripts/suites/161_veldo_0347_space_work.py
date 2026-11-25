@@ -90,6 +90,7 @@ def _v347_space_work_suite():
     import json
     import os
     import shutil
+    import sqlite3
     import subprocess
     import tempfile
     from pathlib import Path
@@ -118,6 +119,11 @@ def _v347_space_work_suite():
             'ac3/compare-before-delete', 'ac3/put-back-at-stop', 'ac3/table-1-keeps-its-handling',
             'ac4/digest-at-removal', 'ac4/declared-trunk', 'ac4/no-copy-unread',
             'ac5/own-folder', 'ac5/clone-row',
+            'ac1/build-output-is-not-work', 'ac2/clean-clone-goes', 'ac2/work-tree-and-stash', 'ac2/last-look',
+            'ac3/keep-first', 'ac3/clone-request', 'ac3/worker-clone-saved', 'ac3/changed-after-snapshot',
+            'ac3/renamed-back', 'ac3/table-1-clone', 'ac3/table-2-clone',
+            'ac4/held-files-go', 'ac4/changed-after-measure', 'ac4/unreadable-is-no-copy',
+            'ac5/registry-row', 'ac5/no-form',
             'canon')
     rows = {name: [] for name in ROWS}
 
@@ -183,6 +189,7 @@ def _v347_space_work_suite():
         CFG = load('v347_control_space_config', VELDO / 'control_space_config.py')
         YAML = load('v347_yamlish', VELDO / 'yamlish.py')
         RC = load('v347_control_space_reconcile', VELDO / 'control_space_reconcile.py')
+        ST = load('v347_control_request_settlement', VELDO / 'control_request_settlement.py')
         AC = CM.AC
         NOW = 1000.0
 
@@ -317,10 +324,13 @@ def _v347_space_work_suite():
                 self.handed.append(identity)
                 return RM.remove(ledger, probe, identity, record, **kwargs)
 
+        LAST = [None]  # the Recording remover of the last event sent with none given
+
         def send(event, subject, **given):
             recording = None
             if 'remover' not in given:
                 recording = given['remover'] = Recording()
+            LAST[0] = recording
             done = _send(event, subject, **given)
             if recording is not None and CURRENT[0] is not None:
                 # Rules 5 and 6 defer before rule 7: an item they hold is never handed to a remover, and an
@@ -429,6 +439,8 @@ def _v347_space_work_suite():
             check(ROW, 'the worktree is deferred as unique work by rule 5 [%s %s]' % (named(done, item), found),
                   named(done, item) == ('deferred', 'unique_work', 'unique_work') and 3 in (found.get('cases') or ())
                   and 'settings.local' in (found.get('ignored') or ()) and 'settings.local' in (found.get('untracked') or ()))
+            check(ROW, 'the deferral names the ignored path, and it alone [%s]' % (found.get('ignored'),),
+                  found.get('ignored') == ['settings.local'])
             check(ROW, 'the worktree and the file are whole at its path',
                   listed(where) and text_of(where / 'settings.local') == SETTINGS)
             control = WORKTREES / 'settings-control'
@@ -454,6 +466,8 @@ def _v347_space_work_suite():
             (where / 'personal-notes-347').mkdir()
             (where / 'personal-notes-347' / 'n.txt').write_text('notes only info/exclude ignores\n')
             (where / 'private-347.md').write_text('a file only info/exclude ignores\n')
+            (where / 'build').mkdir()
+            (where / 'build' / 'out.bin').write_bytes(b'o' * 300)
             check(ROW, 'git reads the worktree as clean', git(where, 'status', '--porcelain') == '')
             done = send('landed', {'ticket': 'VELDO-9472'})
             found = found_of(item)
@@ -461,6 +475,9 @@ def _v347_space_work_suite():
                   % (named(done, item), found.get('ignored')),
                   named(done, item) == ('deferred', 'unique_work', 'unique_work')
                   and {'personal-notes-347/', 'private-347.md'} <= set(found.get('ignored') or ()))
+            check(ROW, 'it names exactly the folder and the file a personal rule covers, and not the build output '
+                  '[%s]' % (found.get('ignored'),),
+                  sorted(found.get('ignored') or ()) == ['personal-notes-347/', 'private-347.md'])
             check(ROW, 'both are whole', text_of(where / 'personal-notes-347' / 'n.txt') == 'notes only info/exclude ignores\n'
                   and text_of(where / 'private-347.md') == 'a file only info/exclude ignores\n')
 
@@ -485,6 +502,14 @@ def _v347_space_work_suite():
             traced = P.ignored_work(str(where), run=client)
             check(ROW, 'traced to the committed ignore file, the same folder is build output [%s]' % (traced,),
                   traced == {'read': True, 'said': None, 'work': [], 'build': ['build']})
+            check(ROW, 'untraced, it is case 3 alone and the only ignored path named [%s %s]'
+                  % (facts.get('cases'), facts.get('ignored')),
+                  facts.get('cases') == [3] and facts.get('ignored') == ['build/'])
+            check(ROW, 'traced, rule 5 finds no case in the worktree',
+                  P.unique_work(str(where), run=client).get('cases') == [])
+            check(ROW, 'the deferral names the untraced folder alone, and its file is in place [%s]'
+                  % (found_of(item).get('ignored'),),
+                  found_of(item).get('ignored') == ['build/'] and (where / 'build' / 'out.o').is_file())
 
 
         @row('ac1/build-output-passes')
@@ -512,6 +537,13 @@ def _v347_space_work_suite():
                   and held_paths(item) == [('path:' + str(inner), 'unrecorded')])
             check(ROW, 'the clone and its only commit are whole',
                   git(inner, 'rev-parse', 'HEAD') == only and (where / 'leftover.bin').is_file())
+            unclean = P.clean_clone(str(inner), client)
+            check(ROW, 'the probe says why: the commit no remote-tracking ref reaches, by its id [%s]' % (unclean,),
+                  unclean.get('read') is True and unclean.get('clean_clone') is False
+                  and unclean.get('why') == 'a commit no remote-tracking ref reaches: ' + only)
+            check(ROW, 'the commit\'s file and the scratch\'s own file are there byte for byte',
+                  text_of(inner / 'only-here.txt') == 'a commit no remote holds\n'
+                  and (where / 'leftover.bin').read_bytes() == b'x' * 4096)
             git(UPSTREAM, 'fetch', '-q', str(inner), 'main:main')
             git(inner, 'fetch', '-q', 'origin')
             reading = P.clean_clone(str(inner), client)
@@ -520,6 +552,7 @@ def _v347_space_work_suite():
                   % (reading, named(done, item)),
                   reading.get('clean_clone') is True and named(done, item)[0] == 'removed'
                   and not os.path.lexists(str(where)) and holds(UPSTREAM, only))
+            check(ROW, 'the remote\'s main is the commit', git(UPSTREAM, 'rev-parse', 'main') == only)
 
 
         @row('ac2/reset-log')
@@ -532,11 +565,22 @@ def _v347_space_work_suite():
             check(ROW, 'the commit is named by the HEAD log alone, and every ref is at its remote',
                   lost in git(inner, 'rev-list', '--walk-reflogs', 'HEAD').split()
                   and git(inner, 'rev-list', '--branches', '--not', '--remotes') == '' and not holds(UPSTREAM, lost))
+            check(ROW, 'after the reset the work tree is clean, HEAD is the remote\'s commit and no ref is ahead of it',
+                  git(inner, 'status', '--porcelain') == ''
+                  and git(inner, 'rev-parse', 'HEAD') == git(inner, 'rev-parse', 'origin/main')
+                  and git(inner, 'rev-list', '--count', '--all', '--not', '--remotes') == '0')
+            unclean = P.clean_clone(str(inner), client)
             done = send('run_finished', {'run': 'run-9475'})
+            check(ROW, 'the probe names the commit only the log names [%s]' % (unclean,),
+                  unclean.get('read') is True and unclean.get('clean_clone') is False
+                  and unclean.get('why') == 'a commit no remote-tracking ref reaches: ' + lost)
             check(ROW, 'the clone holds its scratch [%s %s]' % (named(done, item), held_paths(item)),
                   named(done, item) == ('deferred', 'in_use', 'children')
                   and held_paths(item) == [('path:' + str(inner), 'unrecorded')])
             check(ROW, 'the commit only its log names is still in it', holds(inner, lost) and inner.is_dir())
+            check(ROW, 'it is a commit and its file reads as written',
+                  git(inner, 'cat-file', '-t', lost) == 'commit'
+                  and git(inner, 'show', lost + ':lost.txt') == 'only a log names this')
 
 
         @row('ac2/forged-remote-ref')
@@ -548,6 +592,10 @@ def _v347_space_work_suite():
             git(inner, 'update-ref', 'refs/remotes/origin/main', forged)
             check(ROW, 'every ref is held by a remote-tracking ref, and the local remote lacks the commit',
                   git(inner, 'rev-list', '--branches', '--not', '--remotes') == '' and not holds(UPSTREAM, forged))
+            unclean = P.clean_clone(str(inner), client)
+            check(ROW, 'the probe says the local remote does not hold the commit, by its id [%s]' % (unclean,),
+                  unclean.get('read') is True and unclean.get('clean_clone') is False
+                  and unclean.get('why') == 'the local remote origin does not hold ' + forged)
             done = send('run_finished', {'run': 'run-9476'})
             check(ROW, 'the clone holds its scratch [%s %s]' % (named(done, item), held_paths(item)),
                   named(done, item) == ('deferred', 'in_use', 'children')
@@ -574,6 +622,15 @@ def _v347_space_work_suite():
                       named(done, item) == ('deferred', 'in_use', 'children')
                       and held_paths(item) == [('path:' + str(inner), 'unrecorded')]
                       and sorted(os.listdir(str(inner))) == snapshot)
+            item, where = scratch('build-unpushed', run_owner('run-9477-unpushed'), kind='build_output', root=BUILD)
+            inner = clone_into(where / 'deps' / 'clone')
+            local = commit(inner, 'patch.txt', 'a patch made in the build folder\n', 'a patch')
+            done = send('run_finished', {'run': 'run-9477-unpushed'})
+            check(ROW, 'an unpushed commit in a clone holds the build output item, the clone at that commit [%s %s]'
+                  % (named(done, item), held_paths(item)),
+                  named(done, item) == ('deferred', 'in_use', 'children')
+                  and held_paths(item) == [('path:' + str(inner), 'unrecorded')]
+                  and git(inner, 'rev-parse', 'HEAD') == local)
 
 
         @row('ac2/unreadable')
@@ -808,6 +865,12 @@ def _v347_space_work_suite():
                         'control_launch_work.py': "form='candidate_workspace'"}
             for name, text in creators.items():
                 check(ROW, '%s declares the kind agent repository with its form' % name, text in (VELDO / name).read_text())
+            for name, form in (('control_clone.py', 'worker_clone'), ('control_batch.py', 'batch_clone'),
+                               ('lander.py', 'candidate_workspace'), ('control_launch_work.py', 'candidate_workspace')):
+                calls = [call for call in (VELDO / name).read_text().split('creation.item(')[1:]
+                         if ("form='%s'" % form) in call[:400]]
+                check(ROW, '%s makes exactly one declaration with the form %s, of the kind agent repository [%d]'
+                      % (name, form, len(calls)), len(calls) == 1 and calls[0].startswith("'agent_repository'"))
             check(ROW, "the clone's work tree carries the form worker_clone",
                   "start=accepted['commit'], form='worker_clone')" in (VELDO / 'control_clone.py').read_text())
 
@@ -1208,7 +1271,13 @@ def _v347_space_work_suite():
                   % (named(done, item), held_paths(item)),
                   named(done, item) == ('deferred', 'in_use', 'children')
                   and held_paths(item) == [('path:' + str(where), 'unrecorded')])
-            check(ROW, 'its only commit is whole', git(where, 'rev-parse', 'HEAD') == mine)
+            check(ROW, 'its only commit is whole', git(where, 'rev-parse', 'HEAD') == mine and (where / '.git').is_dir())
+            check(ROW, 'what holds it is its own folder, read as a repository by the probe',
+                  P.own_repository(str(where)) is True)
+            check(ROW, 'the probe: a folder with a .git entry and a bare git folder are repositories, a plain folder '
+                  'and a missing one are not',
+                  P.own_repository(str(where)) is True and P.own_repository(str(UPSTREAM)) is True
+                  and P.own_repository(str(SCRATCH)) is False and P.own_repository(str(temp / 'nothing-here')) is False)
             evidence = SCRATCH / 'evidence-repository'
             evidence.mkdir()
             git(evidence, 'init', '-q', '-b', 'main')
@@ -1249,6 +1318,591 @@ def _v347_space_work_suite():
             check(ROW, 'an item declared under table 1 reads table 1, which has no such row',
                   [one['row'] for one in K.due('run_finished', [(worker, old)], look=lambda identity, record: {})]
                   == [])
+
+        # ==== Restored clauses of the incoming suite (Space V1 fix round 2) ==============================
+        # Each row below has the name of a row of the incoming suite (proof/VELDO-0347/historical-space-v1)
+        # and asserts, on the current implementation and the fixtures above, the clauses of that row the
+        # rows above did not (the audit's fix_round_2 entries for VELDO-0347 name each one, and the clauses
+        # retired with the incoming implementation's own forms).
+
+        def deferral_of(identity):
+            return (L.item(identity) or {}).get('deferral') or {}
+
+        def removal_of(identity):
+            return (L.item(identity) or {}).get('removal') or {}
+
+        def snapshots_of(identity):
+            return ((L.item(identity) or {}).get('kept') or {}).get('snapshots') or []
+
+        def held_in_main(commit_id):
+            """Whether a kept ref of the main repository reaches the commit."""
+            return holds(REPOSITORY, commit_id) and bool(git(REPOSITORY, 'for-each-ref', '--format=%(refname)',
+                                                             '--contains', commit_id, 'refs/veldo/kept/'))
+
+        def handed():
+            return list(LAST[0].handed) if LAST[0] is not None else None
+
+        def session_scratch(name):
+            session = 'session-347-' + name
+            item, where = scratch('sessions/w/' + session, {'scope': A, 'session': session})
+            return item, where, session
+
+        @row('ac1/build-output-is-not-work')
+        def _ac1_build_output_is_not_work():
+            ROW = 'ac1/build-output-is-not-work'
+            item, where = worktree('output-patterns', 'VELDO-9404')
+            (where / 'build').mkdir()
+            (where / 'build' / 'out.bin').write_bytes(b'o' * 300)
+            exclude = Path(git(where, 'rev-parse', '--path-format=absolute', '--git-path', 'info/exclude'))
+            exclude.parent.mkdir(exist_ok=True)
+            with open(str(exclude), 'a') as rules_file:
+                rules_file.write('target-347/\nempty-347/\n')
+            (where / 'target-347').mkdir()
+            (where / 'target-347' / 'out.o').write_bytes(b't' * 300)
+            (where / 'empty-347').mkdir()
+            facts = P.unique_work(str(where), run=client)
+            check(ROW, 'a folder only a personal rule covers is work; an empty one holds none [%s %s]'
+                  % (facts.get('cases'), facts.get('ignored')),
+                  facts.get('cases') == [3] and facts.get('ignored') == ['target-347/'])
+            facts = P.unique_work(str(where), run=client, patterns=['target-347'])
+            check(ROW, 'with the pattern declared it is build output, like the folder the committed rule covers '
+                  '[%s %s]' % (facts.get('cases'), facts.get('ignored')),
+                  facts.get('cases') == [] and facts.get('ignored') == [])
+            facts = P.unique_work(str(where), run=client, patterns=['target-347'], adopted=True)
+            check(ROW, 'in an adopted worktree only the declared pattern counts: the committed rule\'s folder is '
+                  'work [%s %s]' % (facts.get('cases'), facts.get('ignored')),
+                  facts.get('cases') == [3] and facts.get('ignored') == ['build/'])
+            shutil.rmtree(str(where / 'target-347'))
+            done = send('landed', {'ticket': 'VELDO-9404'})
+            check(ROW, 'a worktree that holds build output and nothing else goes, by the remover [%s %s]'
+                  % (named(done, item), handed()),
+                  named(done, item)[0] == 'removed' and not os.path.lexists(str(where)) and handed() == [item])
+
+        @row('ac2/clean-clone-goes')
+        def _ac2_clean_clone_goes():
+            ROW = 'ac2/clean-clone-goes'
+            item, where, session = session_scratch('clean')
+            lib = clone_into(where / 'vendor' / 'lib')
+            read = P.clean_clone(str(lib), client)
+            check(ROW, 'the probe reads a fresh clone of a remote on this host as a clean clone, with no reason '
+                  '[%s]' % (read,),
+                  read.get('read') is True and read.get('clean_clone') is True and read.get('why') is None
+                  and read.get('said') is None)
+            done = send('session_ended', {'session': session})
+            check(ROW, 'the scratch goes, and the clean clone with it [%s %s]' % (named(done, item), deferral_of(item)),
+                  named(done, item)[0] == 'removed' and not os.path.lexists(str(where)))
+
+        @row('ac2/work-tree-and-stash')
+        def _ac2_work_tree_and_stash():
+            ROW = 'ac2/work-tree-and-stash'
+            DIRTY = 'a modified, staged or untracked file'
+            lib = clone_into(temp / 'probe-clone')
+            (lib / 'new.txt').write_text('new\n')
+            read = P.clean_clone(str(lib), client)
+            check(ROW, 'an untracked file: not a clean clone [%s]' % (read.get('why'),),
+                  read.get('read') is True and read.get('clean_clone') is False and read.get('why') == DIRTY)
+            (lib / 'new.txt').unlink()
+            (lib / 'tracked.txt').write_text('edited\n')
+            read = P.clean_clone(str(lib), client)
+            check(ROW, 'an uncommitted edit: not a clean clone [%s]' % (read.get('why'),),
+                  read.get('read') is True and read.get('clean_clone') is False and read.get('why') == DIRTY)
+            git(lib, 'stash', '-q')
+            read = P.clean_clone(str(lib), client)
+            check(ROW, 'a stash entry: not a clean clone, with a clean work tree [%s]' % (read.get('why'),),
+                  git(lib, 'status', '--porcelain') == '' and read.get('why') == 'a stash entry'
+                  and read.get('clean_clone') is False)
+            git(lib, 'stash', 'drop', '-q')
+            git(lib, 'branch', 'local-name')
+            git(lib, 'tag', 'local-tag')
+            read = P.clean_clone(str(lib), client)
+            check(ROW, 'a branch and a tag at a commit the remote holds do not hold it [%s]' % (read,),
+                  read.get('clean_clone') is True)
+            git(lib, 'remote', 'set-url', 'origin', 'relative/path.git')
+            read = P.clean_clone(str(lib), client)
+            check(ROW, 'a remote whose address names no repository: not read, not clean [%s]' % (read,),
+                  read.get('read') is False and read.get('clean_clone') is False)
+            item, where, session = session_scratch('dirty')
+            lib = clone_into(where / 'lib')
+            (lib / 'new.txt').write_text('new\n')
+            read = P.clean_clone(str(lib), client)
+            done = send('session_ended', {'session': session})
+            check(ROW, 'a clone with an untracked file holds its scratch, and the file is in place [%s %s %s]'
+                  % (named(done, item), held_paths(item), read.get('why')),
+                  named(done, item) == ('deferred', 'in_use', 'children')
+                  and held_paths(item) == [('path:' + str(lib), 'unrecorded')] and read.get('why') == DIRTY
+                  and text_of(lib / 'new.txt') == 'new\n')
+
+        @row('ac2/last-look')
+        def _ac2_last_look():
+            ROW = 'ac2/last-look'
+            item, where, session = session_scratch('late')
+            lib = clone_into(where / 'lib')
+            late = []
+
+            class Late(Recording):
+                """The remover, with a commit made in the clone after the rules looked and before it runs."""
+                def remove(self, ledger, probe, identity, record, **kwargs):
+                    late.append(commit(lib, 'late.txt', 'made after rule 6 looked\n', 'late'))
+                    return Recording.remove(self, ledger, probe, identity, record, **kwargs)
+
+            remover = Late()
+            done = send('session_ended', {'session': session}, remover=remover)
+            check(ROW, 'the remover\'s own look finds the commit and refuses, by the tool [%s %s]'
+                  % (named(done, item), found_of(item).get('said')),
+                  named(done, item) == ('deferred', 'in_use', 'tool') and len(late) == 1 and remover.handed == [item])
+            check(ROW, 'the folder is back at its path with the clone and its commit',
+                  len(late) == 1 and not os.path.lexists(RM.marked(str(where), item))
+                  and git(lib, 'rev-parse', 'HEAD') == late[0]
+                  and text_of(lib / 'late.txt') == 'made after rule 6 looked\n')
+
+        @row('ac3/keep-first')
+        def _ac3_keep_first():
+            ROW = 'ac3/keep-first'
+            METHOD = {'worker_clone': 'keep_snapshot_then_rename_probe_compare_delete'}
+            for form in ('batch_clone', 'candidate_workspace', 'worker_clone'):
+                run_id = 'run-keep-' + form
+                item, work = private('keep-' + form, form, run_id)
+                own = commit(work, 'own.txt', 'made in the clone and never brought across\n', 'in the ' + form)
+                before = holds(REPOSITORY, own)
+                done = send('run_finished', {'run': run_id})
+                check(ROW, '%s: before, no repository but the clone held its commit; it is removed, keep step '
+                      'first [%s %s]' % (form, named(done, item), removal_of(item).get('method')),
+                      before is False and named(done, item)[0] == 'removed' and not os.path.lexists(str(work))
+                      and removal_of(item).get('method') == METHOD.get(form, 'keep_then_rename_probe_delete'))
+                check(ROW, '%s: the commit is on a kept ref of the main repository, its file readable there' % form,
+                      held_in_main(own) and git(REPOSITORY, 'show', own + ':own.txt', ok=False) == 0
+                      and git(REPOSITORY, 'show', own + ':own.txt') == 'made in the clone and never brought across')
+
+        @row('ac3/clone-request')
+        def _ac3_clone_request():
+            ROW = 'ac3/clone-request'
+            for form, edited, content, case in (('batch_clone', 'notes.txt', 'notes nobody committed\n', 'untracked'),
+                                                ('candidate_workspace', 'tracked.txt', 'edited\n', 'modified')):
+                run_id = 'run-ask-' + form
+                item, work = private('ask-' + form, form, run_id)
+                (work / edited).write_text(content)
+                done = send('run_finished', {'run': run_id})
+                entry = outcome_of(done, item)
+                asked = (L.item(item) or {}).get('disposition') or {}
+                proposal = asked.get('proposal') or {}
+                check(ROW, '%s: deferred as unique work by rule 5, no remover handed it, the file named [%s %s %s]'
+                      % (form, named(done, item), handed(), found_of(item).get(case)),
+                      named(done, item) == ('deferred', 'unique_work', 'unique_work') and handed() == []
+                      and found_of(item).get(case) == [edited])
+                check(ROW, '%s: one request is raised on the space disposition touchpoint [%s %s]'
+                      % (form, entry.get('decision_request'), entry.get('request_refusal')),
+                      (entry.get('decision_request') or {}).get('ok') is True and asked.get('state') == 'requested'
+                      and asked.get('number') == 1 and deferral_of(item).get('decision_request') == asked.get('alias'))
+                check(ROW, '%s: its terms name the clone as a clone, with its form and the file, and no worktree [%s]'
+                      % (form, proposal),
+                      proposal == {'keep': ST.SPACE_CLONE_KEEP,
+                                   'clones': [{'item': item, 'path': str(work), 'form': form, 'files': [edited]}]})
+                shown = ST.space_presentation(proposal) if proposal else {}
+                brief = shown.get('brief') or ''
+                check(ROW, '%s: it is shown as a clone and offers Keep alone [%s]' % (form, shown.get('choices')),
+                      shown.get('choices') == ['accept keep'] and ('Clone: ' + json.dumps(str(work))) in brief
+                      and ('Form: ' + json.dumps(form)) in brief and json.dumps(edited) in brief
+                      and 'Worktree' not in brief and 'Discard' not in brief.replace('no Discard', ''))
+                done = send('run_finished', {'run': run_id})
+                again = (L.item(item) or {}).get('disposition') or {}
+                check(ROW, '%s: the next event raises no second request, and the file is in place [%s]'
+                      % (form, (outcome_of(done, item).get('decision_request') or {}).get('reason')),
+                      again == asked and not (L.item(item) or {}).get('disposition_history')
+                      and text_of(work / edited) == content and state_of(item) == 'deferred')
+
+        @row('ac3/worker-clone-saved')
+        def _ac3_worker_clone_saved():
+            ROW = 'ac3/worker-clone-saved'
+            item, work = private('saved', 'worker_clone', 'run-saved')
+            own = commit(work, 'own.txt', 'made in the clone\n', 'in the clone')
+            (work / 'tracked.txt').write_text('edited by the worker\n')
+            (work / 'draft.txt').write_text('a draft the worker never committed\n')
+            (work / '.git' / 'info').mkdir(exist_ok=True)
+            with open(str(work / '.git' / 'info' / 'exclude'), 'a') as rules_file:
+                rules_file.write('notes-private.md\n')
+            (work / 'notes-private.md').write_text('notes a personal rule hides\n')
+            (work / 'settings.local').write_text('key = local\n')
+            (work / 'sketches' / 'deep').mkdir(parents=True)
+            (work / 'sketches' / 'deep' / 'idea.txt').write_text('an idea in an untracked folder\n')
+            os.symlink('draft.txt', str(work / 'latest'))
+            (work / 'build').mkdir()
+            (work / 'build' / 'out.bin').write_bytes(b'o' * 500)
+            done = send('run_finished', {'run': 'run-saved'})
+            attempts = snapshots_of(item)
+            saved = Path(str((attempts or [{}])[-1].get('path') or temp / 'no-snapshot')) / 'work'
+            check(ROW, 'an ended worker clone with uncommitted files is removed, not deferred [%s %s]'
+                  % (named(done, item), removal_of(item).get('method')),
+                  named(done, item)[0] == 'removed' and not os.path.lexists(str(work))
+                  and removal_of(item).get('method') == 'keep_snapshot_then_rename_probe_compare_delete')
+            check(ROW, 'no request was raised for it',
+                  not (L.item(item) or {}).get('disposition') and 'decision_request' not in outcome_of(done, item))
+            check(ROW, 'each file that was work is in the snapshot store, byte for byte [%s]' % (saved,),
+                  len(attempts) == 1 and str(saved).startswith(str(STATE / 'space-saved') + os.sep)
+                  and text_of(saved / 'tracked.txt') == 'edited by the worker\n'
+                  and text_of(saved / 'draft.txt') == 'a draft the worker never committed\n'
+                  and text_of(saved / 'notes-private.md') == 'notes a personal rule hides\n'
+                  and text_of(saved / 'settings.local') == 'key = local\n')
+            check(ROW, 'a file in an untracked folder is saved at its own path, and a link as a link',
+                  text_of(saved / 'sketches' / 'deep' / 'idea.txt') == 'an idea in an untracked folder\n'
+                  and os.path.islink(str(saved / 'latest')) and os.readlink(str(saved / 'latest')) == 'draft.txt')
+            check(ROW, 'build output is not saved, and the clone\'s commit is on a kept ref of the main repository',
+                  not os.path.lexists(str(saved / 'build')) and held_in_main(own))
+
+        def stopped_draft(name, run_id):
+            """A worker clone whose removal the comparison stops: a draft the snapshot holds is rewritten
+            once, under the marked name, between the last look and the delete."""
+            item, work = private(name, 'worker_clone', run_id)
+            head = git(work, 'rev-parse', 'HEAD')
+            (work / 'draft.txt').write_text('the first draft\n')
+            mark = RM.marked(str(work), item)
+            real_measure, wrote = RM.measure, []
+
+            def late_write(folder, *argv, **given):
+                if given.get('own') is True and not wrote and os.path.isdir(mark):
+                    wrote.append(True)
+                    (Path(mark) / 'draft.txt').write_text('rewritten after the snapshot\n')
+                return real_measure(folder, *argv, **given)
+
+            RM.measure = late_write
+            try:
+                done = send('run_finished', {'run': run_id})
+            finally:
+                RM.measure = real_measure
+            return item, work, head, mark, wrote, done
+
+        @row('ac3/changed-after-snapshot')
+        def _ac3_changed_after_snapshot():
+            ROW = 'ac3/changed-after-snapshot'
+            item, work, head, mark, wrote, done = stopped_draft('changed', 'run-changed')
+            first = snapshots_of(item)
+            check(ROW, 'the comparison stops the delete once: deferred keep_failed, by the remover [%s %s]'
+                  % (named(done, item), found_of(item).get('said')),
+                  wrote == [True] and named(done, item) == ('deferred', 'keep_failed', 'tool')
+                  and state_of(item) == 'deferred')
+            check(ROW, 'the rewritten file is in place with its new content, at the clone\'s own path [%s]'
+                  % (text_of(work / 'draft.txt'),), text_of(work / 'draft.txt') == 'rewritten after the snapshot\n')
+            check(ROW, 'the first snapshot holds what the file was when it was saved',
+                  len(first) == 1 and text_of(Path(first[0]['path']) / 'work' / 'draft.txt') == 'the first draft\n')
+
+        @row('ac3/renamed-back')
+        def _ac3_renamed_back():
+            ROW = 'ac3/renamed-back'
+            item, work, head, mark, wrote, done = stopped_draft('put-back', 'run-put-back')
+            check(ROW, 'the comparison stopped this clone\'s removal too [%s]' % (named(done, item),),
+                  wrote == [True] and named(done, item) == ('deferred', 'keep_failed', 'tool'))
+            check(ROW, 'the folder is back at its locator, a repository git reads, and nothing is at the marked name',
+                  (work / '.git').is_dir() and git(work, 'rev-parse', 'HEAD') == head and not os.path.lexists(mark))
+            check(ROW, 'the item keeps its id and its locator, deferred and not left removing [%s %s]'
+                  % (state_of(item), deferral_of(item).get('left_at')),
+                  ((L.item(item) or {}).get('locator') or {}).get('path') == str(work) and state_of(item) == 'deferred'
+                  and 'left_at' not in deferral_of(item))
+            check(ROW, 'reconcile reads the item as there, with nothing under its marked name [%s]'
+                  % (RC.places(str(work), item, RM),), RC.places(str(work), item, RM) == (True, False))
+            done = send('run_finished', {'run': 'run-put-back'})
+            second = snapshots_of(item)
+            check(ROW, 'the next attempt saves what is left under the next number and removes the clone [%s %s]'
+                  % (named(done, item), [attempt.get('number') for attempt in second]),
+                  named(done, item)[0] == 'removed' and not os.path.lexists(str(work)) and len(second) == 2
+                  and [attempt.get('number') for attempt in second] == [1, 2]
+                  and text_of(Path(second[1]['path']) / 'work' / 'draft.txt') == 'rewritten after the snapshot\n'
+                  and text_of(Path(second[0]['path']) / 'work' / 'draft.txt') == 'the first draft\n')
+
+        def ledger_of_table_1():
+            """A Ledger on its own connection to the same store that declares under table 1 (a Ledger
+            binds its transitions on the connection it is given)."""
+            first = K.REGISTRY['tables']['1']
+            conn_1 = S.open_store(str(store_path))
+            connections.append(conn_1)
+            return SP.Ledger(S, conn_1, 'authority', journal_sign, config=CONFIG, projects=[ORCHARD],
+                             state_root=str(STATE), host='fixture-host', device=lambda where: 'dev-host',
+                             lifecycle={'version': '1', 'events': list(first['events']),
+                                        'ends_on': {kind: list(events) for kind, events in first['ends_on'].items()}})
+
+        def two_clones(name, ledger, ticket):
+            """A batch clone with a file in no commit and a worker clone with an edited file and a draft,
+            declared by `ledger`, owned by one run of `ticket`: (batch, its path, worker, its path)."""
+            made = []
+            for form in ('batch_clone', 'worker_clone'):
+                where = SCRATCH / 'clones' / (name + '-' + form)
+                where.parent.mkdir(exist_ok=True)
+                git(temp, 'clone', '-q', str(REPOSITORY), str(where))
+                declared_now = ledger.declare('agent_repository', {'path': str(where)}, run_owner('run-' + ticket, ticket),
+                                              'seam', start=git(where, 'rev-parse', 'HEAD'), form=form)
+                if not declared_now['ok']:
+                    raise RuntimeError('declare %s: %s' % (form, declared_now.get('reason')))
+                ledger.confirm(declared_now['item'])
+                made += [declared_now['item'], where]
+            batch, batch_work, worker, worker_work = made
+            (batch_work / 'notes.txt').write_text('notes nobody committed\n')
+            (worker_work / 'tracked.txt').write_text('edited by the worker\n')
+            (worker_work / 'draft.txt').write_text('a draft the worker never committed\n')
+            return batch, batch_work, worker, worker_work
+
+        @row('ac3/table-1-clone')
+        def _ac3_table_1_clone():
+            ROW = 'ac3/table-1-clone'
+            L1 = ledger_of_table_1()
+            batch, batch_work, worker, worker_work = two_clones('t1', L1, 'VELDO-9611')
+            versions = [((L.item(item) or {}).get('ends_on') or {}).get('version') for item in (batch, worker)]
+            events = ((L.item(batch) or {}).get('ends_on') or {}).get('events') or ()
+            check(ROW, 'fixture: both clones have their form and were declared under table 1, which ends them at '
+                  'no run finished [%s %s]' % (versions, events),
+                  versions == ['1', '1'] and 'run_finished' not in events and 'ticket_ended' in events
+                  and (L.item(batch) or {}).get('form') == 'batch_clone'
+                  and (L.item(worker) or {}).get('form') == 'worker_clone')
+            done = send('ticket_ended', {'ticket': 'VELDO-9611'})
+            entry = outcome_of(done, batch)
+            check(ROW, 'a table 1 batch clone with a file in no commit: rule 5 does not read its work tree, the '
+                  'remover is handed it and refuses, keep_failed [%s %s]' % (named(done, batch), handed()),
+                  named(done, batch) == ('deferred', 'keep_failed', 'tool') and sorted(handed()) == sorted([batch, worker])
+                  and 'work_tree' not in found_of(batch))
+            check(ROW, 'no request is raised for it: table 1 names none [%s]' % (entry.get('decision_request'),),
+                  'decision_request' not in entry and 'request_refusal' not in entry
+                  and not (L.item(batch) or {}).get('disposition') and 'decision_request' not in deferral_of(batch))
+            check(ROW, 'the clone is at its locator with its file, byte for byte',
+                  text_of(batch_work / 'notes.txt') == 'notes nobody committed\n' and (batch_work / '.git').is_dir()
+                  and not os.path.lexists(RM.marked(str(batch_work), batch)))
+            check(ROW, 'a table 1 worker clone with uncommitted files is not saved and removed: the remover refuses, '
+                  'keep_failed, and nothing is in the snapshot store [%s %s]' % (named(done, worker), snapshots_of(worker)),
+                  named(done, worker) == ('deferred', 'keep_failed', 'tool') and sorted(handed()) == sorted([batch, worker])
+                  and snapshots_of(worker) == [] and 'work_tree' not in found_of(worker))
+            check(ROW, 'its files are in place, byte for byte, at its locator',
+                  text_of(worker_work / 'tracked.txt') == 'edited by the worker\n'
+                  and text_of(worker_work / 'draft.txt') == 'a draft the worker never committed\n'
+                  and not os.path.lexists(RM.marked(str(worker_work), worker)))
+            where = SCRATCH / 'clones' / 't1-clean'
+            git(temp, 'clone', '-q', str(REPOSITORY), str(where))
+            made = L1.declare('agent_repository', {'path': str(where)}, run_owner('run-VELDO-9612', 'VELDO-9612'),
+                              'seam', start=git(where, 'rev-parse', 'HEAD'), form='batch_clone')
+            if not made['ok']:
+                raise RuntimeError('declare under table 1: %s' % made.get('reason'))
+            L1.confirm(made['item'])
+            clean = made['item']
+            own = commit(where, 'own.txt', 'made in a clone of table 1\n', 'in the clone')
+            done = send('ticket_ended', {'ticket': 'VELDO-9612'})
+            check(ROW, 'a table 1 clone with nothing uncommitted goes as an agent repository goes, keep step first '
+                  '[%s %s]' % (named(done, clean), removal_of(clean).get('method')),
+                  named(done, clean)[0] == 'removed' and not os.path.lexists(str(where))
+                  and removal_of(clean).get('method') == 'keep_then_rename_probe_delete' and held_in_main(own))
+
+        @row('ac3/table-2-clone')
+        def _ac3_table_2_clone():
+            # Under table 2 the clone row ends at run finished alone (candidate retained, owner order 43607):
+            # the incoming row's "same event" was ticket ended, which no longer makes a clone due.
+            ROW = 'ac3/table-2-clone'
+            batch, batch_work, worker, worker_work = two_clones('t2', L, 'VELDO-9613')
+            versions = [((L.item(item) or {}).get('ends_on') or {}).get('version') for item in (batch, worker)]
+            check(ROW, 'fixture: the same two clones, declared under table 2 [%s]' % (versions,), versions == ['2', '2'])
+            done = send('run_finished', {'run': 'run-VELDO-9613'})
+            entry = outcome_of(done, batch)
+            asked = (L.item(batch) or {}).get('disposition') or {}
+            check(ROW, 'a table 2 batch clone with a file in no commit: deferred as unique work, no remover handed '
+                  'it [%s %s]' % (named(done, batch), handed()),
+                  named(done, batch) == ('deferred', 'unique_work', 'unique_work') and batch not in handed()
+                  and found_of(batch).get('untracked') == ['notes.txt'])
+            check(ROW, 'one request is raised, naming it as a clone [%s]' % (entry.get('decision_request'),),
+                  (entry.get('decision_request') or {}).get('ok') is True and asked.get('state') == 'requested'
+                  and [clone.get('item') for clone in (asked.get('proposal') or {}).get('clones') or ()] == [batch]
+                  and text_of(batch_work / 'notes.txt') == 'notes nobody committed\n')
+            attempts = snapshots_of(worker)
+            saved = Path(str((attempts or [{}])[-1].get('path') or temp / 'no-snapshot')) / 'work'
+            check(ROW, 'a table 2 worker clone with uncommitted files, at the same event: saved in the snapshot store '
+                  'and removed, with no request [%s %s]' % (named(done, worker), removal_of(worker).get('method')),
+                  named(done, worker)[0] == 'removed' and not os.path.lexists(str(worker_work))
+                  and removal_of(worker).get('method') == 'keep_snapshot_then_rename_probe_compare_delete'
+                  and not (L.item(worker) or {}).get('disposition'))
+            check(ROW, 'both files are in its snapshot, byte for byte',
+                  len(attempts) == 1 and text_of(saved / 'tracked.txt') == 'edited by the worker\n'
+                  and text_of(saved / 'draft.txt') == 'a draft the worker never committed\n')
+
+        # AC4's copies, read from the real store and the real main repository: the store's reader is a
+        # function over the digests the store records (the candidate's seam, `held`).
+        def store_held(sha256):
+            return conn.execute('SELECT 1 FROM entities WHERE digest = ?', ('sha256:' + sha256,)).fetchone() is not None
+
+        made_for_ac4 = {}
+
+        def copies():
+            """Made once: a blob the store holds, a report in a commit only a kept ref reaches, and a file
+            of the trunk no kept ref reaches."""
+            if 'made' not in made_for_ac4:
+                stored = conn.execute('SELECT kind, version, data, digest FROM entities ORDER BY id LIMIT 1').fetchone()
+                blob = S.canonical_bytes({'kind': stored[0], 'data': json.loads(stored[2]), 'version': stored[1]})
+                report = b'a review report\n'
+                blob_id = subprocess.run(['git', '-C', str(REPOSITORY), 'hash-object', '-w', '--stdin'], input=report,
+                                         env=ENVIRONMENT, check=True, capture_output=True).stdout.decode().strip()
+                tree_id = subprocess.run(['git', '-C', str(REPOSITORY), 'mktree'],
+                                         input=('100644 blob %s\treport.txt\n' % blob_id).encode(), env=ENVIRONMENT,
+                                         check=True, capture_output=True).stdout.decode().strip()
+                kept_commit = git(REPOSITORY, 'commit-tree', tree_id, '-m', 'a kept report')
+                git(REPOSITORY, 'update-ref', 'refs/veldo/kept/fixture-347/report/head', kept_commit)
+                landed = b'landed after every kept ref\n'
+                commit(REPOSITORY, 'landed-later.txt', landed.decode(), 'landed later')
+                made_for_ac4['made'] = (stored, blob, report, landed)
+            return made_for_ac4['made']
+
+        EVIDENCE = STATE / 'evidence'
+
+        def evidence(name, files, ticket_id):
+            where = EVIDENCE / name
+            where.mkdir(parents=True)
+            for inner, content in files.items():
+                (where / inner).parent.mkdir(parents=True, exist_ok=True)
+                (where / inner).write_bytes(content)
+            return declared('evidence', {'path': str(where)}, {'scope': A, 'ticket': ticket_id}), where
+
+        def held_removal(identity, held=store_held, landing=LANDING):
+            """The evidence remover, asked directly."""
+            return RM.remove(L, P, identity, L.item(identity), action='remove_held', free=free, run=client,
+                             proc=str(PROC), held=held, landing=landing)
+
+        def paths(listed):
+            return [entry['path'] if isinstance(entry, dict) else entry for entry in listed or ()]
+
+        @row('ac4/held-files-go')
+        def _ac4_held_files_go():
+            ROW = 'ac4/held-files-go'
+            stored, blob, REPORT, LANDED = copies()
+            check(ROW, 'fixture: the store holds a blob whose digest is the digest of these bytes',
+                  'sha256:' + hashlib.sha256(blob).hexdigest() == stored[3] and store_held(hashlib.sha256(blob).hexdigest()))
+            item, where = evidence('e-held', {'entity.json': blob, 'tracked-copy.txt': b'base\n',
+                                              'report-copy.txt': REPORT, 'only-here.log': b'the only copy\n',
+                                              'deep/again.txt': b'base\n'}, 'VELDO-9480')
+            os.symlink('only-here.log', str(where / 'link'))
+            answers = []
+
+            class Answered(Recording):
+                def remove(self, ledger, probe, identity, record, **kwargs):
+                    answers.append(Recording.remove(self, ledger, probe, identity, record, **kwargs))
+                    return answers[-1]
+
+            remover = Answered()
+            done = send('ticket_ended', {'ticket': 'VELDO-9480'}, remover=remover, held=store_held)
+            facts = answers[-1] if answers else {}
+            check(ROW, 'the evidence remover ran and the item stays, kept [%s %s]' % (outcome_of(done, item), remover.handed),
+                  named(done, item)[0] == 'kept' and outcome_of(done, item).get('action') == 'remove_held'
+                  and remover.handed == [item] and where.is_dir())
+            check(ROW, 'the files a copy holds are gone: store, trunk commit, kept ref [%s]' % (sorted(os.listdir(str(where))),),
+                  sorted(os.listdir(str(where))) == ['deep', 'link', 'only-here.log'] and os.listdir(str(where / 'deep')) == [])
+            check(ROW, 'the file with no copy and the link are as they were',
+                  (where / 'only-here.log').read_bytes() == b'the only copy\n'
+                  and os.readlink(str(where / 'link')) == 'only-here.log')
+            removed = facts.get('removed_files') or []
+            copies_of = {}
+            for entry in removed:
+                copies_of[entry.get('copy')] = copies_of.get(entry.get('copy'), 0) + 1
+            check(ROW, 'the answer says what went, what stayed and where the copies are [%s]' % (facts,),
+                  sorted(paths(removed)) == ['deep/again.txt', 'entity.json', 'report-copy.txt', 'tracked-copy.txt']
+                  and copies_of == {'store': 1, 'commit': 3} and facts.get('kept_files') == ['only-here.log'])
+
+        @row('ac4/changed-after-measure')
+        def _ac4_changed_after_measure():
+            ROW = 'ac4/changed-after-measure'
+            copies()
+            later = {'kind': 'note', 'data': {'text': 'a receipt the store takes later'}, 'version': 1}
+            receipt = S.canonical_bytes(later)
+            item, where = evidence('e-changed', {'receipt.json': receipt}, 'VELDO-9481')
+            said = held_removal(item)
+            check(ROW, 'measured while no copy is held: the file stays [%s]' % (said,),
+                  said.get('ok') is True and said.get('kept_files') == ['receipt.json'] and said.get('removed_files') == []
+                  and (where / 'receipt.json').read_bytes() == receipt)
+            conn.execute('INSERT INTO entities (id, kind, version, digest, data) VALUES (?, ?, ?, ?, ?)',
+                         ('note:fixture-347', 'note', 1, S.digest_of(later), json.dumps(later['data'])))
+            conn.commit()
+            (where / 'receipt.json').write_bytes(b'changed after it was measured\n')
+            said = held_removal(item)
+            check(ROW, 'the store now holds what was measured, and the file has changed since: it stays [%s]' % (said,),
+                  store_held(hashlib.sha256(receipt).hexdigest())
+                  and said.get('ok') is True and said.get('removed_files') == [] and said.get('kept_files') == ['receipt.json']
+                  and (where / 'receipt.json').read_bytes() == b'changed after it was measured\n')
+            (where / 'receipt.json').write_bytes(receipt)
+            said = held_removal(item)
+            check(ROW, 'with the content the store holds, read now, it goes [%s]' % (said,),
+                  paths(said.get('removed_files')) == ['receipt.json'] and not os.path.lexists(str(where / 'receipt.json')))
+            (where / 'gate.log').write_bytes(b'base\n')
+            real_held_copy, swapped = RM._held_copy, []
+
+            def held_then_written(ctx, sha256, blob, committed):
+                """The copy check, and after the digest was read, a write to the file by somebody else."""
+                found = real_held_copy(ctx, sha256, blob, committed)
+                if not swapped:
+                    swapped.append(found)
+                    (where / 'gate.log').write_bytes(b'written while it was read\n')
+                return found
+
+            RM._held_copy = held_then_written
+            try:
+                said = held_removal(item)
+            finally:
+                RM._held_copy = real_held_copy
+            check(ROW, 'a file written between the read of its digest and its delete stays [%s %s]' % (swapped, said),
+                  swapped == ['commit'] and said.get('removed_files') == []
+                  and (where / 'gate.log').read_bytes() == b'written while it was read\n')
+
+        @row('ac4/unreadable-is-no-copy')
+        def _ac4_unreadable_is_no_copy():
+            ROW = 'ac4/unreadable-is-no-copy'
+            stored, blob, REPORT, LANDED = copies()
+            item, where = evidence('e-unread', {'entity.json': blob, 'tracked-copy.txt': LANDED}, 'VELDO-9482')
+
+            def no_store(sha256):
+                raise sqlite3.OperationalError('unable to open database file')
+
+            UNREAD_TRUNK = {ORCHARD['project']: {'trunk': 'no-such-branch'}}
+            said = held_removal(item, held=no_store, landing=UNREAD_TRUNK)
+            check(ROW, 'a store and a trunk that cannot be read are no copy: both files stay [%s]' % (said,),
+                  said.get('ok') is True and said.get('removed_files') == []
+                  and sorted(said.get('kept_files') or ()) == ['entity.json', 'tracked-copy.txt']
+                  and (where / 'entity.json').read_bytes() == blob and (where / 'tracked-copy.txt').read_bytes() == LANDED)
+            said = held_removal(item, landing=UNREAD_TRUNK)
+            check(ROW, 'with the store read again its copy goes, and the file only the unread trunk holds stays [%s]'
+                  % (said,),
+                  paths(said.get('removed_files')) == ['entity.json'] and said.get('kept_files') == ['tracked-copy.txt']
+                  and (where / 'tracked-copy.txt').read_bytes() == LANDED)
+            said = held_removal(item)
+            check(ROW, 'and with the trunk read it goes [%s]' % (said,),
+                  paths(said.get('removed_files')) == ['tracked-copy.txt'])
+
+        @row('ac5/registry-row')
+        def _ac5_registry_row():
+            ROW = 'ac5/registry-row'
+            first_table, second_table = K.REGISTRY['tables']['1'], K.REGISTRY['tables'].get('2') or {'rows': {}}
+            check(ROW, 'table 1 is as it was issued, to the byte of its canonical form',
+                  hashlib.sha256(json.dumps(first_table, sort_keys=True).encode()).hexdigest()
+                  == '31d2ce87d3e45137b63cea3f1f0cb3f314fef44535b7c0cb493553d1c59830ec')
+            check(ROW, 'table 2, the current one, has the row for an agent repository that is a clone; table 1 has not',
+                  K.REGISTRY['version'] == '2' and 'agent_repository_clone' in second_table['rows']
+                  and 'agent_repository_clone' not in first_table['rows'] and L.lifecycle['version'] == '2')
+            item, work = private('registry-row', 'batch_clone', 'run-registry-row')
+            record = dict(L.item(item), state='due')
+            old = dict(record, ends_on={'version': '1', 'events': list(first_table['ends_on']['agent_repository'])})
+            got = K.due('landed', [(item, old)], look=lambda identity, found: {})
+            check(ROW, 'the same item declared under table 1 reads the agent repository\'s row, as before [%s]' % (got,),
+                  len(got) == 1 and got[0]['row'] == 'agent_repository' and got[0]['version'] == '1'
+                  and K.due('run_finished', [(item, old)], look=lambda identity, found: {}) == [])
+            plain = dict(record, form=None,
+                         ends_on={'version': '2', 'events': list(second_table['ends_on']['agent_repository'])})
+            got = K.due('landed', [(item, plain)], look=lambda identity, found: {})
+            check(ROW, 'an item with no form reads the agent repository\'s own row under table 2 [%s]' % (got,),
+                  len(got) == 1 and got[0]['row'] == 'agent_repository'
+                  and got[0].get('requires') == 'branches_in_shared_repository')
+
+        @row('ac5/no-form')
+        def _ac5_no_form():
+            ROW = 'ac5/no-form'
+            home = SCRATCH / 'agents' / 'no-form'
+            home.parent.mkdir(exist_ok=True)
+            git(temp, 'clone', '-q', str(REPOSITORY), str(home))
+            agent = declared('agent_repository', {'path': str(home)}, run_owner('run-no-form'))
+            tree = SCRATCH / 'agents' / 'no-form-tree'
+            git(home, 'worktree', 'add', '-q', '--detach', str(tree), 'HEAD')
+            declared('worktree', {'path': str(tree)}, run_owner('run-no-form'), parent=agent,
+                     start=git(tree, 'rev-parse', 'HEAD'))
+            done = send('run_finished', {'run': 'run-no-form'})
+            check(ROW, 'run finished does not make it due, its worktree still in place [%s %s %s]'
+                  % (state_of(agent), outcome_of(done, agent), handed()),
+                  state_of(agent) == 'present' and outcome_of(done, agent) == {} and agent not in handed()
+                  and (home / '.git').is_dir() and (tree / 'tracked.txt').is_file())
 
         @row('canon')
         def _canon():
