@@ -813,7 +813,7 @@ def _v318_suite():
             # no-space end pins (VELDO-0317) has no file and no commit to name, and VELDO-0327 AC2
             # raises no request with neither. What this row holds is that it stays, and says so.
             item, path, owner = tree('pinned-clean', dirty=False)
-            end = {'space_end': {'worktree': str(path), 'classification': 'environment_failure:no_space'}}
+            end = {'space_failure': {'worktree': str(path), 'classification': 'environment_failure:no_space'}}
             conn.execute('INSERT INTO entities(id,kind,version,digest,data) VALUES(?,?,?,?,?)',
                          ('dispatch:pinned-clean', 'dispatch', 1, S.digest_of(end), json.dumps(end)))
             conn.commit()
