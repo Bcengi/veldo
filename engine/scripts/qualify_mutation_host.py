@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Explicit native mutation-host qualification (VELDO-0364), never a full gate.
+"""Explicit native mutation-host qualification (VELDO-0365), never a full gate.
 
 Run from a reviewed authority: --receipt FILE [--cases JSON --batch-receipt FILE].
 JSON is a nonempty list of case names. All probes must pass before the existing

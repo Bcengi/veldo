@@ -1,6 +1,6 @@
 ---
 schema: veldo.spec/v1
-id: VELDO-0364
+id: VELDO-0365
 title: Smaller mutation hosts have bounded reservations and explicit native qualification
 status: ready
 risk: high
@@ -15,13 +15,15 @@ footprint:
   - engine/scripts/gate_schedule.py
   - scripts/qualify_mutation_host.py
   - engine/scripts/qualify_mutation_host.py
-  - scripts/suites/162_veldo_0364_host_relative.py
+  - scripts/suites/162_veldo_0365_host_relative.py
+  - scripts/suites/56_veldo_0027_signing.py
+  - scripts/suites/wallclock_baseline.json
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
   - scripts/check_teeth_mutations.py
-  - specs/VELDO-0364-host-relative-mutation-qualification.md
+  - specs/VELDO-0365-host-relative-mutation-qualification.md
   - specs/index.md
-  - proof/VELDO-0364/*
+  - proof/VELDO-0365/*
 behavior_bearing: true
 observability:
   logs: Each native qualification reports all required checks and concrete failures.
@@ -52,6 +54,15 @@ acceptance_criteria:
       no invalid result and complete cleanup. A missing prerequisite is recorded as blocked with the
       exact owner setup step, never installed by the agent.
     falsified_by: Changing, omitting or duplicating any selected verdict fails the bounded receipt comparison.
+  - id: AC4
+    text: >
+      Signing crash-after-rotation observations use an injected clock and retain every assertion.
+      Baseline and no-op pass; the truncated-clock mutant deterministically fails historical
+      receipt verification and the named transition-clock row on both hosts. Light serial
+      single-case repeats record all observations and timestamp operands. A regression control
+      fails with the former wall-clock-dependent fixture. No live-capture module or confinement
+      exemption changes; census green, personal-setup findings and stale anchors zero.
+    falsified_by: Restoring the former fixture fails the deterministic timestamp and verdict regression.
 required_evidence: [unit, integration]
 rollback: Revert this ticket; no host installation or persistent qualification authorization is created.
 ---
@@ -83,3 +94,9 @@ npm exist only for the remote supervisor, not for workers. Owner installation an
 qualification are required. The five guard mutants are killed; census, personal setup,
 stale anchors and template sync pass. The ticket stays ready, with partial proof; no
 canonical gate, independent review or landing approval is claimed.
+
+## Ticket identity
+
+Renumbered from this branch's former VELDO-0364 to VELDO-0365 because speed-reuse owns
+VELDO-0364. Existing commits and raw receipts retain their historical identities and bytes.
+All current source registrations, commands and proof paths use VELDO-0365.

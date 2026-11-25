@@ -2547,12 +2547,12 @@
    }
   },
   {
-   "name": "162_veldo_0364_host_relative",
-   "file": "162_veldo_0364_host_relative.py",
+   "name": "162_veldo_0365_host_relative",
+   "file": "162_veldo_0365_host_relative.py",
    "requires": [
-    "162_veldo_0364_host_relative"
+    "162_veldo_0365_host_relative"
    ],
-   "regions": "VELDO-0364 host-relative admission and explicit qualification refusal; fixture capacities only.",
+   "regions": "VELDO-0365 host-relative admission and explicit qualification refusal; fixture capacities only.",
    "requires_note": "Only ROOT and expect. No native probe runs inside this suite."
   }
  ],

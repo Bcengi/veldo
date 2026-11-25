@@ -1,6 +1,6 @@
 {
   "schema": "veldo.proof/v1",
-  "spec_id": "VELDO-0364",
+  "spec_id": "VELDO-0365",
   "commit": "f3b2f373983d65f3c4f98866eb6d3ad6ab5efdc5",
   "producer": "bounded native execution on the second host",
   "status": "partial",
@@ -12,11 +12,11 @@
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0364/targeted.json"
+          "ref": "proof/VELDO-0365/targeted.json"
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0364/guard-receipt.json.gz"
+          "ref": "proof/VELDO-0365/guard-receipt.json.gz"
         }
       ]
     },
@@ -26,7 +26,7 @@
       "evidence": [
         {
           "type": "integration",
-          "ref": "proof/VELDO-0364/qualification.json.gz",
+          "ref": "proof/VELDO-0365/qualification.json.gz",
           "detail": "Kernel checks pass; worker-visible node and npm are absent, so full qualification refuses."
         }
       ]
@@ -37,12 +37,12 @@
       "evidence": [
         {
           "type": "integration",
-          "ref": "proof/VELDO-0364/comparison.json",
+          "ref": "proof/VELDO-0365/comparison.json",
           "detail": "All 100 cases killed and named verdicts match; strict full-observation equality refuses one off-target row difference."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0364/comparator-controls.json"
+          "ref": "proof/VELDO-0365/comparator-controls.json"
         }
       ]
     }

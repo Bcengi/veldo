@@ -17,7 +17,7 @@ for case in cases:
         observer.mutate(path.read_bytes(), case)
     except Exception as error:
         stale.append(dict(identity=case['identity'], error=str(error)))
-expected = json.loads((root / 'proof/VELDO-0364/expected.json').read_text())
+expected = json.loads((root / 'proof/VELDO-0365/expected.json').read_text())
 by_name = {c['name']: c for c in cases}
 selection_ok = all(by_name.get(v['case']['name']) == v['case'] for v in expected)
 result = dict(count=len(stale), stale=stale, inventory=len(cases), selection_unchanged=selection_ok)

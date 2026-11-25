@@ -20,7 +20,7 @@ def _v364_checks():
     configured = graph['mutation_floor']
 
     def row(name, passed):
-        expect('VELDO-0364 host-relative/' + name, passed)
+        expect('VELDO-0365 host-relative/' + name, passed)
 
     def capacity(cpu=8, memory=15 * 2**30):
         return dict(cpu=cpu, memory=memory, manager=16)

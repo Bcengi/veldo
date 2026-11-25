@@ -12025,7 +12025,7 @@ def cases():
         ['declarations/review-record-bound'])
     result[-1]['dir'] = 'scripts'
 
-    # VELDO-0364: reservation elasticity never changes individual demand validation.
+    # VELDO-0365: reservation elasticity never changes individual demand validation.
     for name, module, old, new, row in [
         ('absolute-floor', 'gate_schedule.py',
          '        self.floor = {r: min(v, capacity[r]) for r, v in requested.items()}',
@@ -12044,7 +12044,7 @@ def cases():
          "set(checks) == set(REQUIRED) and all(checks[n].get('passed') is True for n in REQUIRED)",
          "all(v.get('passed') is True for v in checks.values())", 'qualification-fail-closed'),
     ]:
-        add(364, 'host364-' + name, '162_veldo_0364_host_relative.py', module,
+        add(365, 'host365-' + name, '162_veldo_0365_host_relative.py', module,
             old, new, ['host-relative/' + row])
         result[-1]['dir'] = 'scripts'
 
