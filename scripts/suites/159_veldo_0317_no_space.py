@@ -320,9 +320,11 @@ def _v317_suite():
                         check('ac3/edit-kept', (work / 'unfinished.txt').is_file()
                               and (work / 'unfinished.txt').read_text() == 'unique uncommitted work'
                               and retained_state in retained_states)
-                        signal = load('control_space_signal')
-                        result = signal.signal(f.ledger, 'reconnect', {}, **{key: value for key, value in f.space.items()
-                                               if key != 'ledger'})
+                        # Reconnecting starts the service's reconciler; reconnect is not a
+                        # lifecycle event. Use the real service entry and its disk/store read.
+                        service = object.__new__(SV.Service)
+                        service.space, service.repositories = f.space, {}
+                        result = service.space_received_reconcile()
                         if not result['ok']:
                             print('space317 reconnect', mode, result)
                         check('ac3/reconnect', result['ok'] and (work / 'unfinished.txt').read_text() == 'unique uncommitted work')
