@@ -209,6 +209,12 @@ def _v316_suite():
                 return {kind: self.conn.execute('SELECT count(*) FROM entities WHERE kind=?', (kind,)).fetchone()[0]
                         for kind in ('dispatch', 'dispatch_active', 'subscription_reservation')}
 
+            def slots(self):
+                # Worker slots only: the subscription policies configured above are not reservations.
+                return [json.loads(raw) for (raw,) in self.conn.execute(
+                    "SELECT data FROM entities WHERE kind='subscription_reservation'")
+                    if json.loads(raw).get('type') == 'worker']
+
             def close(self):
                 self.conn.close()
 
@@ -310,7 +316,7 @@ def _v316_suite():
                       and hold['state'] == 'advised' and hold['source'] == {'host': 'default', 'image': 'default'}
                       and hold['reason'] == dict(pool='host', need=100, free=110, held=0, floor=20))
                 check('ac3/advised-counts', ADM.held(f.ledger, 'host') == 100)
-                check('ac3/started-advised', f.tables()['subscription_reservation'] == 1)
+                check('ac3/started-advised', len(f.slots()) == 1)
                 check('ac1/metrics', ADM.status(f.ledger, f.space['free'])['holds'] ==
                       dict(admitted=0, waiting=0, advised=1))
             finally:
@@ -374,12 +380,13 @@ def _v316_suite():
                 legacy.pop('space')
                 check('ac4/legacy', D.contract_problems(legacy) == [])
                 assert f.ledger.release(contract['space']['hold'])['ok']
+                started = list(f.started)
                 try:
                     f.receive(contract)
                     check('accept/released-hold', False)
                 except Exception as error:
                     check('accept/released-hold', getattr(error, 'code', '') == 'space_hold_state:released'
-                          and f.dispatches.record(contract['dispatch_id'])['state'] == 'prepared' and not f.started)
+                          and f.dispatches.record(contract['dispatch_id'])['state'] == 'prepared' and f.started == started)
             finally:
                 f.close()
         run('ac4/five-before-measured', history)
@@ -520,7 +527,7 @@ def _v316_suite():
                     except Exception as error:
                         check('release/preparation-failed', getattr(error, 'code', None) == 'capacity_exceeded'
                               and [h['state'] for h in f.ledger.holds().values()] == ['released']
-                              and f.tables()['subscription_reservation'] == 0)
+                              and not f.slots())
                 contract = f.prepare()
                 check('release/preparation-failed', contract['attempt'] == 1
                       and f.ledger.hold(contract['space']['hold'])['state'] == 'admitted')
@@ -586,7 +593,8 @@ def _v316_suite():
                                   and next(iter(holds.values()))['state'] == 'admitted'
                                   and len(reads) == count
                                   and f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == head
-                                  and all(count == 0 for count in f.tables().values()))
+                                  and f.tables()['dispatch'] == 0 and f.tables()['dispatch_active'] == 0
+                                  and not f.slots())
                     bound = f.prepare()
                     check('fix4/no-account-keeps-hold', bound['space']['hold'] in holds)
                 finally:

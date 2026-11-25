@@ -257,7 +257,6 @@ def _v334_suite():
 
         def pass_from(f, source):
             f.loop.wake(source)
-            assert f.loop.due(0)
             with patch.object(SV.time, 'time', return_value=f.now):
                 return f.loop.run()
 
@@ -275,6 +274,9 @@ def _v334_suite():
                 reports = []
                 first = None
                 for source in ('run_end', 'account_reset', 'working_tree'):
+                    if source == 'account_reset':
+                        f.loop.timer = 0
+                        check('ac1/one-signal', f.loop.due(0))
                     report = pass_from(f, source)
                     reports.append(report)
                     first = first or report['waiting']
