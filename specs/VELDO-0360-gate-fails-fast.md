@@ -9,7 +9,7 @@ human_approval: required
 lane: standalone
 depends_on: [VELDO-0216, VELDO-0358]
 placement: [enforcement]
-protected_paths: [scripts/gate_schedule.py, engine/scripts/gate_schedule.py]
+protected_paths: [scripts/gate_schedule.py, engine/scripts/gate_schedule.py, scripts/suites/wallclock_baseline.json]
 footprint:
   - scripts/gate_schedule.py
   - engine/scripts/gate_schedule.py
@@ -17,6 +17,7 @@ footprint:
   - scripts/suites/114_veldo_0216_concurrent_stages.py
   - scripts/suites/160_veldo_0358_load_leg.py
   - scripts/suites/161_veldo_0360_failfast.py
+  - scripts/suites/wallclock_baseline.json
   - scripts/suites/manifest.json
   - scripts/suites/requires.json
   - specs/VELDO-0360-gate-fails-fast.md
@@ -34,7 +35,7 @@ acceptance_criteria:
     falsified_by: Remove the generic prerequisite guard or the first-failure pending guard; held-chain and early-red rows must fail.
   - id: AC2
     text: First red cancels active siblings, reaps their processes and descendants, removes their cgroups and releases all grants only after cleanup. Keep the first failure and partial logs/receipts. Never report green for incomplete work.
-    falsified_by: Registered failfast360-cancel, failfast360-reap and failfast360-first-red remove cancellation, reaping or first-failure retention; their stopped, error-cleanup and first-red rows must fail. Native controls additionally require every descendant PID and node cgroup gone, with all grants released.
+    falsified_by: Registered failfast360-cancel, failfast360-reap and failfast360-first-red remove cancellation, reaping or first-failure retention; their stopped, error-cleanup and first-red rows must fail. Native controls additionally cancel or kill an active mutation coordinator and inject a scheduler sampling exception, requiring every descendant PID, node cgroup and worker cgroup gone before any grant release.
   - id: AC3
     text: Explicit VELDO_GATE_COLLECT_ALL=1 restores diagnostic inventory execution, including mutation after load not_run. Default is fail-fast. A green control has identical stage verdicts and no cancellations in either mode.
     falsified_by: Invert the diagnostic mode guard or cancel passing nodes; collect-all and green rows must fail.

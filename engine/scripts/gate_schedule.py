@@ -18,6 +18,7 @@ from pathlib import Path
 import re
 import selectors
 import shutil
+import signal
 import socket
 import subprocess
 import sys
@@ -399,19 +400,35 @@ class Meter:
     def finish(self):
         if self.finished is not None:
             return self.finished
-        result = self.sample()
-        populated = 'populated 1' in (self.path / 'cgroup.events').read_text()
-        if populated:
-            (self.path / 'cgroup.kill').write_text('1')
-            while 'populated 1' in (self.path / 'cgroup.events').read_text():
-                time.sleep(.05)
-        for path in sorted(self.path.rglob('*'), reverse=True):
-            if path.is_dir():
-                path.rmdir()
-        self.path.rmdir()
+        try:
+            result = self.sample()
+        finally:
+            populated = 'populated 1' in (self.path / 'cgroup.events').read_text()
+            empty_group(self.path)
         result['live_descendants'] = populated
         self.finished = result
         return result
+
+
+def empty_group(path):
+    """Kill the entire owned subtree, wait for its exit event, then remove it."""
+    load_module('mutation_ownership').wait_for_empty(path)
+    for child in sorted(path.rglob('*'), reverse=True):
+        if child.is_dir():
+            child.rmdir()
+    path.rmdir()
+
+
+def finish_node(name, item, scope, excluded):
+    """A dead coordinator cannot create workers while its sibling groups are drained."""
+    try:
+        return item['meter'].finish()
+    finally:
+        if name == 'mutation' and scope:
+            group = Path('/sys/fs/cgroup') / scope.lstrip('/')
+            for path in group.glob('worker-%d-*' % item['proc'].pid):
+                empty_group(path)
+        reap_children(excluded)
 
 
 def input_guard(root):
@@ -625,6 +642,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
     # Start mutation first so its floor cannot deadlock an unmeasured first run.
     pending.sort(key=lambda n: n != 'mutation')
     active, results = {}, {}
+    inherited_children = child_pids()
     waited_for = {name: set() for name in required}
     selector = selectors.DefaultSelector()
     started = time.monotonic()
@@ -768,7 +786,8 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 if code is None:
                     continue
                 end = time.monotonic()
-                metrics = item['meter'].finish()
+                metrics = finish_node(name, item, scope, inherited_children |
+                                      {other['proc'].pid for other in active.values()})
                 tree_ok = item['inputs'].unchanged() if item['inputs'] else True
                 if not tree_ok:
                     failed_tree = True
@@ -851,7 +870,12 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
         for name, item in active.items():
             try:
                 item['proc'].kill()
-                item['meter'].finish()
+                item['proc'].wait()
+                finish_node(name, item, scope, inherited_children |
+                            {other['proc'].pid for other in active.values()})
+                for claimant in item['children']:
+                    ledger.release(claimant)
+                ledger.release(name)
             except Exception as error:
                 cleanup_errors.append('%s: %s' % (name, error))
             finally:
@@ -865,13 +889,23 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
             raise Refused('node cleanup failed: ' + '; '.join(cleanup_errors))
 
 
-def reap_children():
-    """CLI owns only its graph children; run() has already emptied every node cgroup."""
-    while True:
-        try:
-            os.waitpid(-1, 0)
-        except ChildProcessError:
-            return
+def child_pids():
+    return {int(pid) for pid in Path('/proc/self/task/%d/children' % os.getpid()).read_text().split()}
+
+
+def reap_children(excluded=()):
+    """Kill adopted children before waiting; repeat for descendants adopted at exit."""
+    while children := child_pids() - set(excluded):
+        for pid in children:
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        for pid in children:
+            try:
+                os.waitpid(pid, 0)
+            except ChildProcessError:
+                pass
 
 
 def main(argv=None):

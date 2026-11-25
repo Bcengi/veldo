@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-prerequisite-green
+@@ -547,7 +547,7 @@
+         red = sorted(d for d in depends[name] if results[d]['verdict'] != 'pass')
+         if red:
+             return 'not_run', 'a stage before the load-proof leg is red: ' + ', '.join(red)
+-    if not collect_all and any(results[d]['verdict'] != 'pass' for d in depends[name]):
++    if not collect_all:
+         return 'not_started', 'failed prerequisite: ' + ', '.join(sorted(
+             d for d in depends[name] if results[d]['verdict'] != 'pass'))
+     if LOAD in depends[name] and results[LOAD]['verdict'] not in ('pass', 'not_run'):

@@ -1,0 +1,393 @@
+[
+  {
+    "control": "early",
+    "scheduler_sha256": "5f2d655ba8756a77702563abf4d607ff9966d1425a068715a8277eb35a17e860",
+    "stages": {
+      "worker": "cancelled",
+      "red": "FAIL",
+      "tail": "not_started",
+      "load": "not_run",
+      "mutation": "not_started",
+      "after": "not_started"
+    },
+    "first_failure": {
+      "node": "red",
+      "start": 0.0031945831142365932,
+      "end": 0.06837391387671232,
+      "wall_seconds": 0.06517933076247573,
+      "verdict": "FAIL",
+      "returncode": 7,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.028574,
+      "peak_anon_bytes": 8069120,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "cleanup": true,
+    "grants": 3,
+    "releases": 3,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.06517933076247573,
+        "cpu_seconds": 0.028574,
+        "peak_anon_bytes": 8069120
+      },
+      "tail": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "worker": {
+        "wall_seconds": 0.0701457648538053,
+        "cpu_seconds": 0.031287,
+        "peak_anon_bytes": 12554240
+      },
+      "load": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "mutation": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "after": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      }
+    }
+  },
+  {
+    "control": "diagnostic",
+    "scheduler_sha256": "5f2d655ba8756a77702563abf4d607ff9966d1425a068715a8277eb35a17e860",
+    "stages": {
+      "worker": "pass",
+      "red": "FAIL",
+      "tail": "pass",
+      "load": "not_run",
+      "mutation": "pass",
+      "after": "FAIL"
+    },
+    "first_failure": {
+      "node": "red",
+      "start": 0.0028411089442670345,
+      "end": 0.06798827089369297,
+      "wall_seconds": 0.06514716194942594,
+      "verdict": "FAIL",
+      "returncode": 7,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.028881,
+      "peak_anon_bytes": 8060928,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "cleanup": true,
+    "grants": 6,
+    "releases": 6,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.06514716194942594,
+        "cpu_seconds": 0.028881,
+        "peak_anon_bytes": 8060928
+      },
+      "worker": {
+        "wall_seconds": 0.07756357034668326,
+        "cpu_seconds": 0.035314,
+        "peak_anon_bytes": 12615680
+      },
+      "tail": {
+        "wall_seconds": 0.05429019592702389,
+        "cpu_seconds": 0.02512,
+        "peak_anon_bytes": 0
+      },
+      "load": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "mutation": {
+        "wall_seconds": 0.06499984487891197,
+        "cpu_seconds": 0.028266,
+        "peak_anon_bytes": 5816320
+      },
+      "after": {
+        "wall_seconds": 0.07030275510624051,
+        "cpu_seconds": 0.028853,
+        "peak_anon_bytes": 4616192
+      }
+    }
+  },
+  {
+    "control": "green",
+    "scheduler_sha256": "5f2d655ba8756a77702563abf4d607ff9966d1425a068715a8277eb35a17e860",
+    "stages": {
+      "worker": "pass",
+      "red": "pass",
+      "tail": "pass",
+      "load": "pass",
+      "mutation": "pass",
+      "after": "pass"
+    },
+    "first_failure": null,
+    "cleanup": true,
+    "grants": 7,
+    "releases": 7,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.069451997987926,
+        "cpu_seconds": 0.029682,
+        "peak_anon_bytes": 8871936
+      },
+      "worker": {
+        "wall_seconds": 0.08071131072938442,
+        "cpu_seconds": 0.039245,
+        "peak_anon_bytes": 11943936
+      },
+      "tail": {
+        "wall_seconds": 0.06781757576391101,
+        "cpu_seconds": 0.029912,
+        "peak_anon_bytes": 7143424
+      },
+      "load": {
+        "wall_seconds": 0.07254499476402998,
+        "cpu_seconds": 0.024568,
+        "peak_anon_bytes": 2445312
+      },
+      "mutation": {
+        "wall_seconds": 0.06641521817073226,
+        "cpu_seconds": 0.0284,
+        "peak_anon_bytes": 5267456
+      },
+      "after": {
+        "wall_seconds": 0.062065895181149244,
+        "cpu_seconds": 0.025535,
+        "peak_anon_bytes": 6410240
+      }
+    }
+  },
+  {
+    "control": "green-diagnostic",
+    "scheduler_sha256": "5f2d655ba8756a77702563abf4d607ff9966d1425a068715a8277eb35a17e860",
+    "stages": {
+      "worker": "pass",
+      "red": "pass",
+      "tail": "pass",
+      "load": "pass",
+      "mutation": "pass",
+      "after": "pass"
+    },
+    "first_failure": null,
+    "cleanup": true,
+    "grants": 7,
+    "releases": 7,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.07549026794731617,
+        "cpu_seconds": 0.029846,
+        "peak_anon_bytes": 8871936
+      },
+      "worker": {
+        "wall_seconds": 0.09008772065863013,
+        "cpu_seconds": 0.039477,
+        "peak_anon_bytes": 11771904
+      },
+      "tail": {
+        "wall_seconds": 0.07066388195380569,
+        "cpu_seconds": 0.02945,
+        "peak_anon_bytes": 7405568
+      },
+      "load": {
+        "wall_seconds": 0.06815714621916413,
+        "cpu_seconds": 0.024717,
+        "peak_anon_bytes": 4141056
+      },
+      "mutation": {
+        "wall_seconds": 0.07207017578184605,
+        "cpu_seconds": 0.029293,
+        "peak_anon_bytes": 4026368
+      },
+      "after": {
+        "wall_seconds": 0.05562273180112243,
+        "cpu_seconds": 0.026451,
+        "peak_anon_bytes": 8871936
+      }
+    }
+  },
+  {
+    "control": "mutation-cancel",
+    "scheduler_sha256": "5f2d655ba8756a77702563abf4d607ff9966d1425a068715a8277eb35a17e860",
+    "stages": {
+      "worker": "not_started",
+      "red": "FAIL",
+      "tail": "not_started",
+      "load": "not_run",
+      "mutation": "cancelled",
+      "after": "not_started"
+    },
+    "first_failure": {
+      "node": "red",
+      "start": 0.0028957100585103035,
+      "end": 0.11956506688147783,
+      "wall_seconds": 0.11666935682296753,
+      "verdict": "FAIL",
+      "returncode": 7,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.02955,
+      "peak_anon_bytes": 8081408,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "worker_pids": [
+      3495961,
+      3495967,
+      3495976,
+      3495977,
+      3495978
+    ],
+    "cleanup": true,
+    "release_observations": [
+      {
+        "name": "mutation/child1",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation/child0",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation",
+        "gone": true,
+        "removed": true
+      }
+    ],
+    "grants": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ],
+    "releases": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ]
+  },
+  {
+    "control": "mutation-killed",
+    "scheduler_sha256": "5f2d655ba8756a77702563abf4d607ff9966d1425a068715a8277eb35a17e860",
+    "stages": {
+      "worker": "not_started",
+      "red": "FAIL",
+      "tail": "not_started",
+      "load": "not_run",
+      "mutation": "FAIL",
+      "after": "not_started"
+    },
+    "first_failure": {
+      "node": "mutation",
+      "start": 0.00023195380344986916,
+      "end": 0.12173554487526417,
+      "wall_seconds": 0.1215035910718143,
+      "verdict": "FAIL",
+      "returncode": -9,
+      "error": "unreleased_ledger_claim",
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.054705,
+      "peak_anon_bytes": 14606336,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "worker_pids": [
+      3495980,
+      3496001,
+      3496002,
+      3496003,
+      3496004
+    ],
+    "cleanup": true,
+    "release_observations": [
+      {
+        "name": "mutation/child0",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation/child1",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation",
+        "gone": true,
+        "removed": true
+      }
+    ],
+    "grants": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ],
+    "releases": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ]
+  },
+  {
+    "control": "mutation-exception",
+    "scheduler_sha256": "5f2d655ba8756a77702563abf4d607ff9966d1425a068715a8277eb35a17e860",
+    "stages": null,
+    "first_failure": null,
+    "worker_pids": [
+      3496006,
+      3496008,
+      3496009,
+      3496010,
+      3496013
+    ],
+    "cleanup": true,
+    "release_observations": [
+      {
+        "name": "mutation/child1",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation/child0",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation",
+        "gone": true,
+        "removed": true
+      }
+    ],
+    "grants": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ],
+    "releases": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ]
+  }
+]

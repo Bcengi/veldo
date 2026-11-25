@@ -787,7 +787,6 @@
   {"class": "D1", "count": 1, "file": "scripts/gate_legs.py", "function": "run_stage.leg_run", "rule": "R2", "text": "seconds = time.monotonic() - started"},
   {"class": "D1", "count": 1, "file": "scripts/gate_legs.py", "function": "run_stage.leg_run", "rule": "R2", "text": "started = time.monotonic()"},
   {"class": "T", "count": 1, "file": "scripts/gate_legs.py", "function": "ShardClaims.close", "rule": "R3", "text": "self.thread.join(120)"},
-  {"class": "S2", "count": 1, "file": "scripts/gate_schedule.py", "function": "Meter.finish", "rule": "R1", "text": "time.sleep(.05)"},
   {"class": "D1", "count": 1, "file": "scripts/gate_schedule.py", "function": "run", "rule": "R2", "text": "end = time.monotonic()"},
   {"class": "D1", "count": 1, "file": "scripts/gate_schedule.py", "function": "run", "rule": "R2", "text": "node_started = time.monotonic()"},
   {"class": "D1", "count": 1, "file": "scripts/gate_schedule.py", "function": "Ledger.event", "rule": "R2", "text": "self.events.append(dict(at=time.monotonic(), action=action, claimant=name, resource=resource,"},
