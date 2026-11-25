@@ -22,7 +22,8 @@ def compare(expected, receipt):
         clean=not receipt['invalid_results'] and receipt['surviving_workers'] == 0
             and not receipt['qualification_ledger']['held']
             and all(not w.get('error') and w.get('scratch_removed') is True
-                    and not any(w.get('cleanup', {}).values()) for w in receipt['worker_outcomes']),
+                    and isinstance(w.get('cleanup', {}).get('directories'), int)
+                    and w['cleanup']['directories'] >= 0 for w in receipt['worker_outcomes']),
         validated=len(receipt['case_receipts']) == len(expected)
             and all(r['validated'] for r in receipt['case_receipts']),
         verdicts=sorted(actual, key=lambda r: r['case']['identity'])

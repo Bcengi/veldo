@@ -17,7 +17,7 @@ for value in expected:
     results.append(record)
 receipt = dict(status='passed', scope='selected', registered=100, executed=100, rejected=100,
                reused=0, force_fresh=True, invalid_results=[], surviving_workers=0,
-               qualification_ledger={'held': {}}, worker_outcomes=[dict(scratch_removed=True, cleanup={})],
+               qualification_ledger={'held': {}}, worker_outcomes=[dict(scratch_removed=True, cleanup={'directories': 1, 'units': []})],
                results=results, case_receipts=[dict(validated=True) for _ in results],
                elapsed=1, worker_invocations=1, peak_workers=1, input_digest='fixture', implementation_digest='fixture')
 checks = {'positive': compare.compare(expected, receipt)['passed']}

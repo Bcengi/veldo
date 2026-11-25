@@ -217,7 +217,17 @@ def native(args):
                 names = json.loads(args.cases.read_text())
                 if not isinstance(names, list) or not names or any(not isinstance(n, str) for n in names) or len(set(names)) != len(names):
                     raise ValueError('cases must be distinct nonempty names')
-                receipt['batch_passed'] = batch(names, scope, capacity, ledger, graph, args.batch_receipt)
+                # Unix socket fixtures need a short physical scratch path. The remote
+                # supervisor's run directory can already exceed sun_path's 107 bytes.
+                # This private allocation is removed on every normal or exceptional exit.
+                with tempfile.TemporaryDirectory(prefix='vq-', dir='/tmp') as scratch:
+                    previous = tempfile.tempdir
+                    try:
+                        tempfile.tempdir = scratch
+                        receipt['batch_passed'] = batch(names, scope, capacity, ledger, graph, args.batch_receipt)
+                    finally:
+                        tempfile.tempdir = previous
+                receipt['batch_scratch_removed'] = not Path(scratch).exists()
         cg = Path('/sys/fs/cgroup') / scope.lstrip('/')
         receipt['scope_counters'] = {n: (cg / n).read_text() for n in ('memory.peak', 'memory.events', 'cpu.stat')}
     except Exception as error:

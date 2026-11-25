@@ -7,14 +7,14 @@ def _v364_checks():
     import io
     import json
 
-    def load(name):
-        spec = importlib.util.spec_from_file_location(name, ROOT / 'scripts' / (name + '.py'))
+    def load(path):
+        spec = importlib.util.spec_from_file_location(path.stem, path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
 
-    scheduler = load('gate_schedule')
-    qualification = load('qualify_mutation_host')
+    scheduler = load(ROOT / "scripts" / "gate_schedule.py")
+    qualification = load(ROOT / "scripts" / "qualify_mutation_host.py")
     graph = json.loads((ROOT / 'scripts/gate_graph.json').read_text())
     node = graph['nodes']['mutation']
     configured = graph['mutation_floor']
