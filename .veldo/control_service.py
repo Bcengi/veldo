@@ -1781,6 +1781,11 @@ class Service:
         self.conn = ledger.conn
         channel = self.channel
         if channel is not None:
+            # The consumer closed inherited store handles. The activation reader must use the
+            # child's connection too, including for a plain-repository or no-project request.
+            gate = getattr(channel.ingress, 'gate', None)
+            if gate is not None:
+                gate.conn = ledger.conn
             st = _organ('control_request_settlement')
             presentation = _organ('control_channel_presentation')
             projection = _organ('control_channel_projection')

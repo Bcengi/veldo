@@ -677,8 +677,16 @@ def _v318_suite():
             service.conn, service.domain, service.store = conn, ids['domain_uuid'], ids['store_uuid']
             service.principal, service.sign, service.generation = 'steward', journal_sign, 1
             service.config = {'journal_key': str(keys['steward'])}
-            service.channel = types.SimpleNamespace(record=lambda: {'owner': 'owner'},
-                ingress=types.SimpleNamespace(activations=types.SimpleNamespace(ids=ids)))
+            # The real activation reader starts on the inherited connection, which the Consumer
+            # closes in its child. Publication of a plain-repository request must rebind it.
+            activation = {'owner': 'owner'}
+            conn.execute('INSERT INTO entities(id,kind,version,digest,data) VALUES(?,?,?,?,?)',
+                         (SV.CH.ACT.activation_id(SV.CH.ACT.CHANNEL), SV.CH.ACT.ACTIVATION_KIND, 1,
+                          S.digest_of(activation), json.dumps(activation)))
+            conn.commit()
+            activation_gate = SV.CH.ACT.Gate(S, conn)
+            service.channel = types.SimpleNamespace(record=activation_gate.current,
+                ingress=types.SimpleNamespace(gate=activation_gate, activations=types.SimpleNamespace(ids=ids)))
             service.space_consumer = CON.Consumer(ledger, given)
             item, path, owner = tree('worker-request')
             publish = ledger.disposition_publish

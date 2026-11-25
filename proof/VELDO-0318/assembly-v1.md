@@ -1,0 +1,3 @@
+# Space V1 service worker integration
+
+The candidate consumer closes inherited database handles before opening its child connection. Disposition publication already rebound the service and inbox; the channel activation reader must also use the child connection when resolving the owner of a plain-repository or no-project request. The joined service now rebinds that reader. Suite 150_0318 worker/reconnect-request uses the real activation Gate over the inherited handle rather than an owner-returning lambda, preserving the existing worker PID and durable request assertions. Runtime validation is pending Gate 18.
