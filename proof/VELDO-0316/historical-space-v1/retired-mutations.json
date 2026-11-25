@@ -1,6 +1,6 @@
 {
   "schema": "veldo.space-v1-retired-mutations/v1",
-  "reason": "Superseded old APIs; see retirement.md row mapping and current candidate cases. Distinct unmet behaviors have current API mutations.",
+  "reason": "Archived incoming registrations. See retirement.md and the clause-level distinct-assertion audit for current coverage; a row mapping is not proof that every historical predicate has a current mutation.",
   "cases": [
     {
       "finding": 316,

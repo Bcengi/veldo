@@ -50,7 +50,9 @@ declare the kind and the form), ac3/commit-kept (the declared falsifier row: a b
 runner never brought across is on a kept ref of the main repository after the clone is removed at run
 finished), ac3/unique-work-request (a batch clone and a candidate workspace whose work tree holds an
 untracked or modified file are deferred as unique work and their registry entry raises one decision
-request, as a worktree's does), ac3/worker-snapshot (the declared falsifier row: a dead run's worker
+request, as a worktree's does), ac3/ledger-keep-only (settled Save and Discard of a clone are
+refused without changing its record or files, while a worktree's Discard is accepted), ac3/request-kind
+(a clone refuses worktree terms and accepts its own terms), ac3/worker-snapshot (the declared falsifier row: a dead run's worker
 clone with a modified, an untracked and an ignored settings file is removed with no request, and each
 file is in the snapshot store byte for byte), ac3/compare-before-delete (the declared falsifier row: a
 file rewritten after the snapshot and the last look stops the delete, keep_failed, and the new content

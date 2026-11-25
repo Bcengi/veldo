@@ -2566,11 +2566,11 @@
           "disposition": "retained",
           "evidence": "ac1/loose-ignored-file",
           "current_checks": [
-            "161_veldo_0347_space_work.py:391",
-            "161_veldo_0347_space_work.py:395",
-            "161_veldo_0347_space_work.py:398",
-            "161_veldo_0347_space_work.py:404",
-            "161_veldo_0347_space_work.py:408"
+            "161_veldo_0347_space_work.py:393",
+            "161_veldo_0347_space_work.py:397",
+            "161_veldo_0347_space_work.py:400",
+            "161_veldo_0347_space_work.py:406",
+            "161_veldo_0347_space_work.py:410"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -2582,11 +2582,11 @@
           "disposition": "retained",
           "evidence": "ac1/loose-ignored-file",
           "current_checks": [
-            "161_veldo_0347_space_work.py:391",
-            "161_veldo_0347_space_work.py:395",
-            "161_veldo_0347_space_work.py:398",
-            "161_veldo_0347_space_work.py:404",
-            "161_veldo_0347_space_work.py:408"
+            "161_veldo_0347_space_work.py:393",
+            "161_veldo_0347_space_work.py:397",
+            "161_veldo_0347_space_work.py:400",
+            "161_veldo_0347_space_work.py:406",
+            "161_veldo_0347_space_work.py:410"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -2598,11 +2598,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/loose-ignored-file",
           "current_checks": [
-            "161_veldo_0347_space_work.py:391",
-            "161_veldo_0347_space_work.py:395",
-            "161_veldo_0347_space_work.py:398",
-            "161_veldo_0347_space_work.py:404",
-            "161_veldo_0347_space_work.py:408"
+            "161_veldo_0347_space_work.py:393",
+            "161_veldo_0347_space_work.py:397",
+            "161_veldo_0347_space_work.py:400",
+            "161_veldo_0347_space_work.py:406",
+            "161_veldo_0347_space_work.py:410"
           ],
           "comparison": "Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses."
         },
@@ -2614,11 +2614,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/loose-ignored-file",
           "current_checks": [
-            "161_veldo_0347_space_work.py:391",
-            "161_veldo_0347_space_work.py:395",
-            "161_veldo_0347_space_work.py:398",
-            "161_veldo_0347_space_work.py:404",
-            "161_veldo_0347_space_work.py:408"
+            "161_veldo_0347_space_work.py:393",
+            "161_veldo_0347_space_work.py:397",
+            "161_veldo_0347_space_work.py:400",
+            "161_veldo_0347_space_work.py:406",
+            "161_veldo_0347_space_work.py:410"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -2630,11 +2630,11 @@
           "disposition": "retained",
           "evidence": "ac1/loose-ignored-file",
           "current_checks": [
-            "161_veldo_0347_space_work.py:391",
-            "161_veldo_0347_space_work.py:395",
-            "161_veldo_0347_space_work.py:398",
-            "161_veldo_0347_space_work.py:404",
-            "161_veldo_0347_space_work.py:408"
+            "161_veldo_0347_space_work.py:393",
+            "161_veldo_0347_space_work.py:397",
+            "161_veldo_0347_space_work.py:400",
+            "161_veldo_0347_space_work.py:406",
+            "161_veldo_0347_space_work.py:410"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -2646,9 +2646,9 @@
           "disposition": "retained",
           "evidence": "ac1/personal-rule",
           "current_checks": [
-            "161_veldo_0347_space_work.py:423",
-            "161_veldo_0347_space_work.py:426",
-            "161_veldo_0347_space_work.py:430"
+            "161_veldo_0347_space_work.py:425",
+            "161_veldo_0347_space_work.py:428",
+            "161_veldo_0347_space_work.py:432"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -2660,9 +2660,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/personal-rule",
           "current_checks": [
-            "161_veldo_0347_space_work.py:423",
-            "161_veldo_0347_space_work.py:426",
-            "161_veldo_0347_space_work.py:430"
+            "161_veldo_0347_space_work.py:425",
+            "161_veldo_0347_space_work.py:428",
+            "161_veldo_0347_space_work.py:432"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -2674,9 +2674,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/personal-rule",
           "current_checks": [
-            "161_veldo_0347_space_work.py:423",
-            "161_veldo_0347_space_work.py:426",
-            "161_veldo_0347_space_work.py:430"
+            "161_veldo_0347_space_work.py:425",
+            "161_veldo_0347_space_work.py:428",
+            "161_veldo_0347_space_work.py:432"
           ],
           "comparison": "Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses."
         },
@@ -2688,9 +2688,9 @@
           "disposition": "retained",
           "evidence": "ac1/personal-rule",
           "current_checks": [
-            "161_veldo_0347_space_work.py:423",
-            "161_veldo_0347_space_work.py:426",
-            "161_veldo_0347_space_work.py:430"
+            "161_veldo_0347_space_work.py:425",
+            "161_veldo_0347_space_work.py:428",
+            "161_veldo_0347_space_work.py:432"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -2702,9 +2702,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/untraced-rule",
           "current_checks": [
-            "161_veldo_0347_space_work.py:446",
             "161_veldo_0347_space_work.py:448",
-            "161_veldo_0347_space_work.py:452"
+            "161_veldo_0347_space_work.py:450",
+            "161_veldo_0347_space_work.py:454"
           ],
           "comparison": "Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses."
         },
@@ -2716,9 +2716,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/untraced-rule",
           "current_checks": [
-            "161_veldo_0347_space_work.py:446",
             "161_veldo_0347_space_work.py:448",
-            "161_veldo_0347_space_work.py:452"
+            "161_veldo_0347_space_work.py:450",
+            "161_veldo_0347_space_work.py:454"
           ],
           "comparison": "Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations."
         },
@@ -2730,9 +2730,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/untraced-rule",
           "current_checks": [
-            "161_veldo_0347_space_work.py:446",
             "161_veldo_0347_space_work.py:448",
-            "161_veldo_0347_space_work.py:452"
+            "161_veldo_0347_space_work.py:450",
+            "161_veldo_0347_space_work.py:454"
           ],
           "comparison": "Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses."
         },
@@ -2744,7 +2744,7 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/build-output-passes",
           "current_checks": [
-            "161_veldo_0347_space_work.py:463"
+            "161_veldo_0347_space_work.py:465"
           ],
           "comparison": "Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations."
         },
@@ -2756,7 +2756,7 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/build-output-passes",
           "current_checks": [
-            "161_veldo_0347_space_work.py:463"
+            "161_veldo_0347_space_work.py:465"
           ],
           "comparison": "Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations."
         },
@@ -2768,7 +2768,7 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/build-output-passes",
           "current_checks": [
-            "161_veldo_0347_space_work.py:463"
+            "161_veldo_0347_space_work.py:465"
           ],
           "comparison": "Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations."
         },
@@ -2780,7 +2780,7 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac1/build-output-passes",
           "current_checks": [
-            "161_veldo_0347_space_work.py:463"
+            "161_veldo_0347_space_work.py:465"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -2792,11 +2792,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/clean-clone-reading",
           "current_checks": [
-            "161_veldo_0347_space_work.py:724",
-            "161_veldo_0347_space_work.py:727",
-            "161_veldo_0347_space_work.py:732",
-            "161_veldo_0347_space_work.py:737",
-            "161_veldo_0347_space_work.py:740"
+            "161_veldo_0347_space_work.py:726",
+            "161_veldo_0347_space_work.py:729",
+            "161_veldo_0347_space_work.py:734",
+            "161_veldo_0347_space_work.py:739",
+            "161_veldo_0347_space_work.py:742"
           ],
           "comparison": "Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause."
         },
@@ -2808,11 +2808,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/clean-clone-reading",
           "current_checks": [
-            "161_veldo_0347_space_work.py:724",
-            "161_veldo_0347_space_work.py:727",
-            "161_veldo_0347_space_work.py:732",
-            "161_veldo_0347_space_work.py:737",
-            "161_veldo_0347_space_work.py:740"
+            "161_veldo_0347_space_work.py:726",
+            "161_veldo_0347_space_work.py:729",
+            "161_veldo_0347_space_work.py:734",
+            "161_veldo_0347_space_work.py:739",
+            "161_veldo_0347_space_work.py:742"
           ],
           "comparison": "Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause."
         },
@@ -2824,9 +2824,9 @@
           "disposition": "retained",
           "evidence": "ac2/unpushed-in-session-scratch",
           "current_checks": [
-            "161_veldo_0347_space_work.py:476",
-            "161_veldo_0347_space_work.py:479",
-            "161_veldo_0347_space_work.py:485"
+            "161_veldo_0347_space_work.py:478",
+            "161_veldo_0347_space_work.py:481",
+            "161_veldo_0347_space_work.py:487"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -2838,9 +2838,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/unpushed-in-session-scratch",
           "current_checks": [
-            "161_veldo_0347_space_work.py:476",
-            "161_veldo_0347_space_work.py:479",
-            "161_veldo_0347_space_work.py:485"
+            "161_veldo_0347_space_work.py:478",
+            "161_veldo_0347_space_work.py:481",
+            "161_veldo_0347_space_work.py:487"
           ],
           "comparison": "Current row checks unrecorded child retention, not the exact reason and commit list."
         },
@@ -2852,9 +2852,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/unpushed-in-session-scratch",
           "current_checks": [
-            "161_veldo_0347_space_work.py:476",
-            "161_veldo_0347_space_work.py:479",
-            "161_veldo_0347_space_work.py:485"
+            "161_veldo_0347_space_work.py:478",
+            "161_veldo_0347_space_work.py:481",
+            "161_veldo_0347_space_work.py:487"
           ],
           "comparison": "Current row checks retained commit/folder; historical exact file bytes and remover-call list are not all asserted."
         },
@@ -2866,9 +2866,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/unpushed-in-session-scratch",
           "current_checks": [
-            "161_veldo_0347_space_work.py:476",
-            "161_veldo_0347_space_work.py:479",
-            "161_veldo_0347_space_work.py:485"
+            "161_veldo_0347_space_work.py:478",
+            "161_veldo_0347_space_work.py:481",
+            "161_veldo_0347_space_work.py:487"
           ],
           "comparison": "Current remote holding and clone removal are checked; exact remote main ref equality is not asserted."
         },
@@ -2880,9 +2880,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/reset-log",
           "current_checks": [
-            "161_veldo_0347_space_work.py:498",
-            "161_veldo_0347_space_work.py:502",
-            "161_veldo_0347_space_work.py:505"
+            "161_veldo_0347_space_work.py:500",
+            "161_veldo_0347_space_work.py:504",
+            "161_veldo_0347_space_work.py:507"
           ],
           "comparison": "Current reflog-only fixture checks log, branches and remote absence; historical status, HEAD and all-ref equalities are not all asserted."
         },
@@ -2894,9 +2894,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/reset-log",
           "current_checks": [
-            "161_veldo_0347_space_work.py:498",
-            "161_veldo_0347_space_work.py:502",
-            "161_veldo_0347_space_work.py:505"
+            "161_veldo_0347_space_work.py:500",
+            "161_veldo_0347_space_work.py:504",
+            "161_veldo_0347_space_work.py:507"
           ],
           "comparison": "Current row checks unrecorded child retention, not the exact reason and commit list."
         },
@@ -2908,9 +2908,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/reset-log",
           "current_checks": [
-            "161_veldo_0347_space_work.py:498",
-            "161_veldo_0347_space_work.py:502",
-            "161_veldo_0347_space_work.py:505"
+            "161_veldo_0347_space_work.py:500",
+            "161_veldo_0347_space_work.py:504",
+            "161_veldo_0347_space_work.py:507"
           ],
           "comparison": "Current row checks retained commit/folder; historical exact file bytes and remover-call list are not all asserted."
         },
@@ -2922,9 +2922,9 @@
           "disposition": "retained",
           "evidence": "ac2/forged-remote-ref",
           "current_checks": [
-            "161_veldo_0347_space_work.py:515",
-            "161_veldo_0347_space_work.py:518",
-            "161_veldo_0347_space_work.py:521"
+            "161_veldo_0347_space_work.py:517",
+            "161_veldo_0347_space_work.py:520",
+            "161_veldo_0347_space_work.py:523"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -2936,9 +2936,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/forged-remote-ref",
           "current_checks": [
-            "161_veldo_0347_space_work.py:515",
-            "161_veldo_0347_space_work.py:518",
-            "161_veldo_0347_space_work.py:521"
+            "161_veldo_0347_space_work.py:517",
+            "161_veldo_0347_space_work.py:520",
+            "161_veldo_0347_space_work.py:523"
           ],
           "comparison": "Current row checks unrecorded child retention, not the exact reason and commit list."
         },
@@ -2950,9 +2950,9 @@
           "disposition": "retained",
           "evidence": "ac2/forged-remote-ref",
           "current_checks": [
-            "161_veldo_0347_space_work.py:515",
-            "161_veldo_0347_space_work.py:518",
-            "161_veldo_0347_space_work.py:521"
+            "161_veldo_0347_space_work.py:517",
+            "161_veldo_0347_space_work.py:520",
+            "161_veldo_0347_space_work.py:523"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -2964,11 +2964,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/clean-clone-reading",
           "current_checks": [
-            "161_veldo_0347_space_work.py:724",
-            "161_veldo_0347_space_work.py:727",
-            "161_veldo_0347_space_work.py:732",
-            "161_veldo_0347_space_work.py:737",
-            "161_veldo_0347_space_work.py:740"
+            "161_veldo_0347_space_work.py:726",
+            "161_veldo_0347_space_work.py:729",
+            "161_veldo_0347_space_work.py:734",
+            "161_veldo_0347_space_work.py:739",
+            "161_veldo_0347_space_work.py:742"
           ],
           "comparison": "Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause."
         },
@@ -2980,11 +2980,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/clean-clone-reading",
           "current_checks": [
-            "161_veldo_0347_space_work.py:724",
-            "161_veldo_0347_space_work.py:727",
-            "161_veldo_0347_space_work.py:732",
-            "161_veldo_0347_space_work.py:737",
-            "161_veldo_0347_space_work.py:740"
+            "161_veldo_0347_space_work.py:726",
+            "161_veldo_0347_space_work.py:729",
+            "161_veldo_0347_space_work.py:734",
+            "161_veldo_0347_space_work.py:739",
+            "161_veldo_0347_space_work.py:742"
           ],
           "comparison": "Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause."
         },
@@ -2996,11 +2996,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/clean-clone-reading",
           "current_checks": [
-            "161_veldo_0347_space_work.py:724",
-            "161_veldo_0347_space_work.py:727",
-            "161_veldo_0347_space_work.py:732",
-            "161_veldo_0347_space_work.py:737",
-            "161_veldo_0347_space_work.py:740"
+            "161_veldo_0347_space_work.py:726",
+            "161_veldo_0347_space_work.py:729",
+            "161_veldo_0347_space_work.py:734",
+            "161_veldo_0347_space_work.py:739",
+            "161_veldo_0347_space_work.py:742"
           ],
           "comparison": "Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause."
         },
@@ -3012,11 +3012,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/clean-clone-reading",
           "current_checks": [
-            "161_veldo_0347_space_work.py:724",
-            "161_veldo_0347_space_work.py:727",
-            "161_veldo_0347_space_work.py:732",
-            "161_veldo_0347_space_work.py:737",
-            "161_veldo_0347_space_work.py:740"
+            "161_veldo_0347_space_work.py:726",
+            "161_veldo_0347_space_work.py:729",
+            "161_veldo_0347_space_work.py:734",
+            "161_veldo_0347_space_work.py:739",
+            "161_veldo_0347_space_work.py:742"
           ],
           "comparison": "Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause."
         },
@@ -3028,11 +3028,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/clean-clone-reading",
           "current_checks": [
-            "161_veldo_0347_space_work.py:724",
-            "161_veldo_0347_space_work.py:727",
-            "161_veldo_0347_space_work.py:732",
-            "161_veldo_0347_space_work.py:737",
-            "161_veldo_0347_space_work.py:740"
+            "161_veldo_0347_space_work.py:726",
+            "161_veldo_0347_space_work.py:729",
+            "161_veldo_0347_space_work.py:734",
+            "161_veldo_0347_space_work.py:739",
+            "161_veldo_0347_space_work.py:742"
           ],
           "comparison": "Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause."
         },
@@ -3044,11 +3044,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/clean-clone-reading",
           "current_checks": [
-            "161_veldo_0347_space_work.py:724",
-            "161_veldo_0347_space_work.py:727",
-            "161_veldo_0347_space_work.py:732",
-            "161_veldo_0347_space_work.py:737",
-            "161_veldo_0347_space_work.py:740"
+            "161_veldo_0347_space_work.py:726",
+            "161_veldo_0347_space_work.py:729",
+            "161_veldo_0347_space_work.py:734",
+            "161_veldo_0347_space_work.py:739",
+            "161_veldo_0347_space_work.py:742"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -3060,10 +3060,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/unreadable (candidate sandbox exception retained)",
           "current_checks": [
-            "161_veldo_0347_space_work.py:553",
-            "161_veldo_0347_space_work.py:562",
-            "161_veldo_0347_space_work.py:576",
-            "161_veldo_0347_space_work.py:590"
+            "161_veldo_0347_space_work.py:555",
+            "161_veldo_0347_space_work.py:564",
+            "161_veldo_0347_space_work.py:578",
+            "161_veldo_0347_space_work.py:592"
           ],
           "comparison": "Current unread fixtures check retention, but malformed/missing remote reads are classified unrecorded; old exact unread diagnostic and clean control are not all reproduced."
         },
@@ -3075,10 +3075,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/unreadable (candidate sandbox exception retained)",
           "current_checks": [
-            "161_veldo_0347_space_work.py:553",
-            "161_veldo_0347_space_work.py:562",
-            "161_veldo_0347_space_work.py:576",
-            "161_veldo_0347_space_work.py:590"
+            "161_veldo_0347_space_work.py:555",
+            "161_veldo_0347_space_work.py:564",
+            "161_veldo_0347_space_work.py:578",
+            "161_veldo_0347_space_work.py:592"
           ],
           "comparison": "Current unread fixtures check retention, but malformed/missing remote reads are classified unrecorded; old exact unread diagnostic and clean control are not all reproduced."
         },
@@ -3090,10 +3090,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/unreadable (candidate sandbox exception retained)",
           "current_checks": [
-            "161_veldo_0347_space_work.py:553",
-            "161_veldo_0347_space_work.py:562",
-            "161_veldo_0347_space_work.py:576",
-            "161_veldo_0347_space_work.py:590"
+            "161_veldo_0347_space_work.py:555",
+            "161_veldo_0347_space_work.py:564",
+            "161_veldo_0347_space_work.py:578",
+            "161_veldo_0347_space_work.py:592"
           ],
           "comparison": "Current unread fixtures check retention, but malformed/missing remote reads are classified unrecorded; old exact unread diagnostic and clean control are not all reproduced."
         },
@@ -3105,10 +3105,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/unreadable (candidate sandbox exception retained)",
           "current_checks": [
-            "161_veldo_0347_space_work.py:553",
-            "161_veldo_0347_space_work.py:562",
-            "161_veldo_0347_space_work.py:576",
-            "161_veldo_0347_space_work.py:590"
+            "161_veldo_0347_space_work.py:555",
+            "161_veldo_0347_space_work.py:564",
+            "161_veldo_0347_space_work.py:578",
+            "161_veldo_0347_space_work.py:592"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -3120,7 +3120,7 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/build-output",
           "current_checks": [
-            "161_veldo_0347_space_work.py:539"
+            "161_veldo_0347_space_work.py:541"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -3132,11 +3132,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/clean-clone-reading; remover suite 138 final descriptor guard",
           "current_checks": [
-            "161_veldo_0347_space_work.py:724",
-            "161_veldo_0347_space_work.py:727",
-            "161_veldo_0347_space_work.py:732",
-            "161_veldo_0347_space_work.py:737",
-            "161_veldo_0347_space_work.py:740"
+            "161_veldo_0347_space_work.py:726",
+            "161_veldo_0347_space_work.py:729",
+            "161_veldo_0347_space_work.py:734",
+            "161_veldo_0347_space_work.py:739",
+            "161_veldo_0347_space_work.py:742"
           ],
           "comparison": "Mapped current rows do not reproduce the late nested-clone commit after rule 6 and marked-path restoration together."
         },
@@ -3148,11 +3148,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac2/clean-clone-reading; remover suite 138 final descriptor guard",
           "current_checks": [
-            "161_veldo_0347_space_work.py:724",
-            "161_veldo_0347_space_work.py:727",
-            "161_veldo_0347_space_work.py:732",
-            "161_veldo_0347_space_work.py:737",
-            "161_veldo_0347_space_work.py:740"
+            "161_veldo_0347_space_work.py:726",
+            "161_veldo_0347_space_work.py:729",
+            "161_veldo_0347_space_work.py:734",
+            "161_veldo_0347_space_work.py:739",
+            "161_veldo_0347_space_work.py:742"
           ],
           "comparison": "Mapped current rows do not reproduce the late nested-clone commit after rule 6 and marked-path restoration together."
         },
@@ -3164,10 +3164,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/kind-and-form",
           "current_checks": [
-            "161_veldo_0347_space_work.py:756",
-            "161_veldo_0347_space_work.py:770",
-            "161_veldo_0347_space_work.py:776",
-            "161_veldo_0347_space_work.py:777"
+            "161_veldo_0347_space_work.py:758",
+            "161_veldo_0347_space_work.py:772",
+            "161_veldo_0347_space_work.py:778",
+            "161_veldo_0347_space_work.py:779"
           ],
           "comparison": "Creator wiring is checked by literal source anchors, not the historical one-call AST cardinality assertion."
         },
@@ -3179,10 +3179,10 @@
           "disposition": "retained",
           "evidence": "ac3/kind-and-form",
           "current_checks": [
-            "161_veldo_0347_space_work.py:756",
-            "161_veldo_0347_space_work.py:770",
-            "161_veldo_0347_space_work.py:776",
-            "161_veldo_0347_space_work.py:777"
+            "161_veldo_0347_space_work.py:758",
+            "161_veldo_0347_space_work.py:772",
+            "161_veldo_0347_space_work.py:778",
+            "161_veldo_0347_space_work.py:779"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3194,10 +3194,10 @@
           "disposition": "retained",
           "evidence": "ac3/kind-and-form",
           "current_checks": [
-            "161_veldo_0347_space_work.py:756",
-            "161_veldo_0347_space_work.py:770",
-            "161_veldo_0347_space_work.py:776",
-            "161_veldo_0347_space_work.py:777"
+            "161_veldo_0347_space_work.py:758",
+            "161_veldo_0347_space_work.py:772",
+            "161_veldo_0347_space_work.py:778",
+            "161_veldo_0347_space_work.py:779"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3209,9 +3209,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/commit-kept",
           "current_checks": [
-            "161_veldo_0347_space_work.py:786",
-            "161_veldo_0347_space_work.py:789",
-            "161_veldo_0347_space_work.py:791"
+            "161_veldo_0347_space_work.py:788",
+            "161_veldo_0347_space_work.py:791",
+            "161_veldo_0347_space_work.py:793"
           ],
           "comparison": "Current batch commit is retained on a ref; all three clone forms, method names and exact git-show content are not asserted here."
         },
@@ -3223,9 +3223,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/commit-kept",
           "current_checks": [
-            "161_veldo_0347_space_work.py:786",
-            "161_veldo_0347_space_work.py:789",
-            "161_veldo_0347_space_work.py:791"
+            "161_veldo_0347_space_work.py:788",
+            "161_veldo_0347_space_work.py:791",
+            "161_veldo_0347_space_work.py:793"
           ],
           "comparison": "Current batch commit is retained on a ref; all three clone forms, method names and exact git-show content are not asserted here."
         },
@@ -3237,12 +3237,12 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/unique-work-request",
           "current_checks": [
-            "161_veldo_0347_space_work.py:811",
-            "161_veldo_0347_space_work.py:814",
-            "161_veldo_0347_space_work.py:818",
+            "161_veldo_0347_space_work.py:813",
+            "161_veldo_0347_space_work.py:816",
             "161_veldo_0347_space_work.py:820",
-            "161_veldo_0347_space_work.py:824",
-            "161_veldo_0347_space_work.py:826"
+            "161_veldo_0347_space_work.py:822",
+            "161_veldo_0347_space_work.py:826",
+            "161_veldo_0347_space_work.py:828"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -3254,12 +3254,12 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/unique-work-request",
           "current_checks": [
-            "161_veldo_0347_space_work.py:811",
-            "161_veldo_0347_space_work.py:814",
-            "161_veldo_0347_space_work.py:818",
+            "161_veldo_0347_space_work.py:813",
+            "161_veldo_0347_space_work.py:816",
             "161_veldo_0347_space_work.py:820",
-            "161_veldo_0347_space_work.py:824",
-            "161_veldo_0347_space_work.py:826"
+            "161_veldo_0347_space_work.py:822",
+            "161_veldo_0347_space_work.py:826",
+            "161_veldo_0347_space_work.py:828"
           ],
           "comparison": "Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent."
         },
@@ -3271,12 +3271,12 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/unique-work-request",
           "current_checks": [
-            "161_veldo_0347_space_work.py:811",
-            "161_veldo_0347_space_work.py:814",
-            "161_veldo_0347_space_work.py:818",
+            "161_veldo_0347_space_work.py:813",
+            "161_veldo_0347_space_work.py:816",
             "161_veldo_0347_space_work.py:820",
-            "161_veldo_0347_space_work.py:824",
-            "161_veldo_0347_space_work.py:826"
+            "161_veldo_0347_space_work.py:822",
+            "161_veldo_0347_space_work.py:826",
+            "161_veldo_0347_space_work.py:828"
           ],
           "comparison": "Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent."
         },
@@ -3288,12 +3288,12 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/unique-work-request",
           "current_checks": [
-            "161_veldo_0347_space_work.py:811",
-            "161_veldo_0347_space_work.py:814",
-            "161_veldo_0347_space_work.py:818",
+            "161_veldo_0347_space_work.py:813",
+            "161_veldo_0347_space_work.py:816",
             "161_veldo_0347_space_work.py:820",
-            "161_veldo_0347_space_work.py:824",
-            "161_veldo_0347_space_work.py:826"
+            "161_veldo_0347_space_work.py:822",
+            "161_veldo_0347_space_work.py:826",
+            "161_veldo_0347_space_work.py:828"
           ],
           "comparison": "Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent."
         },
@@ -3305,12 +3305,12 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/unique-work-request",
           "current_checks": [
-            "161_veldo_0347_space_work.py:811",
-            "161_veldo_0347_space_work.py:814",
-            "161_veldo_0347_space_work.py:818",
+            "161_veldo_0347_space_work.py:813",
+            "161_veldo_0347_space_work.py:816",
             "161_veldo_0347_space_work.py:820",
-            "161_veldo_0347_space_work.py:824",
-            "161_veldo_0347_space_work.py:826"
+            "161_veldo_0347_space_work.py:822",
+            "161_veldo_0347_space_work.py:826",
+            "161_veldo_0347_space_work.py:828"
           ],
           "comparison": "Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent."
         },
@@ -3322,12 +3322,12 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/unique-work-request",
           "current_checks": [
-            "161_veldo_0347_space_work.py:811",
-            "161_veldo_0347_space_work.py:814",
-            "161_veldo_0347_space_work.py:818",
+            "161_veldo_0347_space_work.py:813",
+            "161_veldo_0347_space_work.py:816",
             "161_veldo_0347_space_work.py:820",
-            "161_veldo_0347_space_work.py:824",
-            "161_veldo_0347_space_work.py:826"
+            "161_veldo_0347_space_work.py:822",
+            "161_veldo_0347_space_work.py:826",
+            "161_veldo_0347_space_work.py:828"
           ],
           "comparison": "Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent."
         },
@@ -3339,8 +3339,8 @@
           "disposition": "retained",
           "evidence": "ac3/request-kind",
           "current_checks": [
-            "161_veldo_0347_space_work.py:900",
-            "161_veldo_0347_space_work.py:906"
+            "161_veldo_0347_space_work.py:902",
+            "161_veldo_0347_space_work.py:908"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3352,9 +3352,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/worker-snapshot",
           "current_checks": [
-            "161_veldo_0347_space_work.py:921",
-            "161_veldo_0347_space_work.py:924",
-            "161_veldo_0347_space_work.py:926"
+            "161_veldo_0347_space_work.py:923",
+            "161_veldo_0347_space_work.py:926",
+            "161_veldo_0347_space_work.py:928"
           ],
           "comparison": "Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted."
         },
@@ -3366,9 +3366,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/worker-snapshot",
           "current_checks": [
-            "161_veldo_0347_space_work.py:921",
-            "161_veldo_0347_space_work.py:924",
-            "161_veldo_0347_space_work.py:926"
+            "161_veldo_0347_space_work.py:923",
+            "161_veldo_0347_space_work.py:926",
+            "161_veldo_0347_space_work.py:928"
           ],
           "comparison": "Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted."
         },
@@ -3380,9 +3380,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/worker-snapshot",
           "current_checks": [
-            "161_veldo_0347_space_work.py:921",
-            "161_veldo_0347_space_work.py:924",
-            "161_veldo_0347_space_work.py:926"
+            "161_veldo_0347_space_work.py:923",
+            "161_veldo_0347_space_work.py:926",
+            "161_veldo_0347_space_work.py:928"
           ],
           "comparison": "Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted."
         },
@@ -3394,9 +3394,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/worker-snapshot",
           "current_checks": [
-            "161_veldo_0347_space_work.py:921",
-            "161_veldo_0347_space_work.py:924",
-            "161_veldo_0347_space_work.py:926"
+            "161_veldo_0347_space_work.py:923",
+            "161_veldo_0347_space_work.py:926",
+            "161_veldo_0347_space_work.py:928"
           ],
           "comparison": "Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted."
         },
@@ -3408,9 +3408,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/worker-snapshot",
           "current_checks": [
-            "161_veldo_0347_space_work.py:921",
-            "161_veldo_0347_space_work.py:924",
-            "161_veldo_0347_space_work.py:926"
+            "161_veldo_0347_space_work.py:923",
+            "161_veldo_0347_space_work.py:926",
+            "161_veldo_0347_space_work.py:928"
           ],
           "comparison": "Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted."
         },
@@ -3422,10 +3422,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/compare-before-delete",
           "current_checks": [
-            "161_veldo_0347_space_work.py:958",
             "161_veldo_0347_space_work.py:960",
-            "161_veldo_0347_space_work.py:965",
-            "161_veldo_0347_space_work.py:968"
+            "161_veldo_0347_space_work.py:962",
+            "161_veldo_0347_space_work.py:967",
+            "161_veldo_0347_space_work.py:970"
           ],
           "comparison": "Current comparison stops deletion and preserves bytes at locator or snapshot; historical exact single rewrite, locator-only and first snapshot predicates are not all asserted."
         },
@@ -3437,10 +3437,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/compare-before-delete",
           "current_checks": [
-            "161_veldo_0347_space_work.py:958",
             "161_veldo_0347_space_work.py:960",
-            "161_veldo_0347_space_work.py:965",
-            "161_veldo_0347_space_work.py:968"
+            "161_veldo_0347_space_work.py:962",
+            "161_veldo_0347_space_work.py:967",
+            "161_veldo_0347_space_work.py:970"
           ],
           "comparison": "Current comparison stops deletion and preserves bytes at locator or snapshot; historical exact single rewrite, locator-only and first snapshot predicates are not all asserted."
         },
@@ -3452,10 +3452,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/compare-before-delete",
           "current_checks": [
-            "161_veldo_0347_space_work.py:958",
             "161_veldo_0347_space_work.py:960",
-            "161_veldo_0347_space_work.py:965",
-            "161_veldo_0347_space_work.py:968"
+            "161_veldo_0347_space_work.py:962",
+            "161_veldo_0347_space_work.py:967",
+            "161_veldo_0347_space_work.py:970"
           ],
           "comparison": "Current comparison stops deletion and preserves bytes at locator or snapshot; historical exact single rewrite, locator-only and first snapshot predicates are not all asserted."
         },
@@ -3467,9 +3467,9 @@
           "disposition": "retained",
           "evidence": "ac3/put-back-at-stop",
           "current_checks": [
-            "161_veldo_0347_space_work.py:976",
             "161_veldo_0347_space_work.py:978",
-            "161_veldo_0347_space_work.py:985"
+            "161_veldo_0347_space_work.py:980",
+            "161_veldo_0347_space_work.py:987"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3481,9 +3481,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/put-back-at-stop",
           "current_checks": [
-            "161_veldo_0347_space_work.py:976",
             "161_veldo_0347_space_work.py:978",
-            "161_veldo_0347_space_work.py:985"
+            "161_veldo_0347_space_work.py:980",
+            "161_veldo_0347_space_work.py:987"
           ],
           "comparison": "Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row."
         },
@@ -3495,9 +3495,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/put-back-at-stop",
           "current_checks": [
-            "161_veldo_0347_space_work.py:976",
             "161_veldo_0347_space_work.py:978",
-            "161_veldo_0347_space_work.py:985"
+            "161_veldo_0347_space_work.py:980",
+            "161_veldo_0347_space_work.py:987"
           ],
           "comparison": "Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row."
         },
@@ -3509,9 +3509,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/put-back-at-stop",
           "current_checks": [
-            "161_veldo_0347_space_work.py:976",
             "161_veldo_0347_space_work.py:978",
-            "161_veldo_0347_space_work.py:985"
+            "161_veldo_0347_space_work.py:980",
+            "161_veldo_0347_space_work.py:987"
           ],
           "comparison": "Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row."
         },
@@ -3523,9 +3523,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/put-back-at-stop",
           "current_checks": [
-            "161_veldo_0347_space_work.py:976",
             "161_veldo_0347_space_work.py:978",
-            "161_veldo_0347_space_work.py:985"
+            "161_veldo_0347_space_work.py:980",
+            "161_veldo_0347_space_work.py:987"
           ],
           "comparison": "Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row."
         },
@@ -3545,13 +3545,13 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/table-1-keeps-its-handling",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1024",
-            "161_veldo_0347_space_work.py:1029",
-            "161_veldo_0347_space_work.py:1033",
-            "161_veldo_0347_space_work.py:1040",
-            "161_veldo_0347_space_work.py:1048",
-            "161_veldo_0347_space_work.py:1056",
-            "161_veldo_0347_space_work.py:997"
+            "161_veldo_0347_space_work.py:1026",
+            "161_veldo_0347_space_work.py:1031",
+            "161_veldo_0347_space_work.py:1035",
+            "161_veldo_0347_space_work.py:1042",
+            "161_veldo_0347_space_work.py:1050",
+            "161_veldo_0347_space_work.py:1058",
+            "161_veldo_0347_space_work.py:999"
           ],
           "comparison": "Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced."
         },
@@ -3563,13 +3563,13 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/table-1-keeps-its-handling",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1024",
-            "161_veldo_0347_space_work.py:1029",
-            "161_veldo_0347_space_work.py:1033",
-            "161_veldo_0347_space_work.py:1040",
-            "161_veldo_0347_space_work.py:1048",
-            "161_veldo_0347_space_work.py:1056",
-            "161_veldo_0347_space_work.py:997"
+            "161_veldo_0347_space_work.py:1026",
+            "161_veldo_0347_space_work.py:1031",
+            "161_veldo_0347_space_work.py:1035",
+            "161_veldo_0347_space_work.py:1042",
+            "161_veldo_0347_space_work.py:1050",
+            "161_veldo_0347_space_work.py:1058",
+            "161_veldo_0347_space_work.py:999"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -3581,13 +3581,13 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/table-1-keeps-its-handling",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1024",
-            "161_veldo_0347_space_work.py:1029",
-            "161_veldo_0347_space_work.py:1033",
-            "161_veldo_0347_space_work.py:1040",
-            "161_veldo_0347_space_work.py:1048",
-            "161_veldo_0347_space_work.py:1056",
-            "161_veldo_0347_space_work.py:997"
+            "161_veldo_0347_space_work.py:1026",
+            "161_veldo_0347_space_work.py:1031",
+            "161_veldo_0347_space_work.py:1035",
+            "161_veldo_0347_space_work.py:1042",
+            "161_veldo_0347_space_work.py:1050",
+            "161_veldo_0347_space_work.py:1058",
+            "161_veldo_0347_space_work.py:999"
           ],
           "comparison": "Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced."
         },
@@ -3599,13 +3599,13 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/table-1-keeps-its-handling",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1024",
-            "161_veldo_0347_space_work.py:1029",
-            "161_veldo_0347_space_work.py:1033",
-            "161_veldo_0347_space_work.py:1040",
-            "161_veldo_0347_space_work.py:1048",
-            "161_veldo_0347_space_work.py:1056",
-            "161_veldo_0347_space_work.py:997"
+            "161_veldo_0347_space_work.py:1026",
+            "161_veldo_0347_space_work.py:1031",
+            "161_veldo_0347_space_work.py:1035",
+            "161_veldo_0347_space_work.py:1042",
+            "161_veldo_0347_space_work.py:1050",
+            "161_veldo_0347_space_work.py:1058",
+            "161_veldo_0347_space_work.py:999"
           ],
           "comparison": "Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced."
         },
@@ -3617,13 +3617,13 @@
           "disposition": "retained",
           "evidence": "ac3/table-1-keeps-its-handling",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1024",
-            "161_veldo_0347_space_work.py:1029",
-            "161_veldo_0347_space_work.py:1033",
-            "161_veldo_0347_space_work.py:1040",
-            "161_veldo_0347_space_work.py:1048",
-            "161_veldo_0347_space_work.py:1056",
-            "161_veldo_0347_space_work.py:997"
+            "161_veldo_0347_space_work.py:1026",
+            "161_veldo_0347_space_work.py:1031",
+            "161_veldo_0347_space_work.py:1035",
+            "161_veldo_0347_space_work.py:1042",
+            "161_veldo_0347_space_work.py:1050",
+            "161_veldo_0347_space_work.py:1058",
+            "161_veldo_0347_space_work.py:999"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3635,13 +3635,13 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/table-1-keeps-its-handling",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1024",
-            "161_veldo_0347_space_work.py:1029",
-            "161_veldo_0347_space_work.py:1033",
-            "161_veldo_0347_space_work.py:1040",
-            "161_veldo_0347_space_work.py:1048",
-            "161_veldo_0347_space_work.py:1056",
-            "161_veldo_0347_space_work.py:997"
+            "161_veldo_0347_space_work.py:1026",
+            "161_veldo_0347_space_work.py:1031",
+            "161_veldo_0347_space_work.py:1035",
+            "161_veldo_0347_space_work.py:1042",
+            "161_veldo_0347_space_work.py:1050",
+            "161_veldo_0347_space_work.py:1058",
+            "161_veldo_0347_space_work.py:999"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -3653,13 +3653,13 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/table-1-keeps-its-handling",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1024",
-            "161_veldo_0347_space_work.py:1029",
-            "161_veldo_0347_space_work.py:1033",
-            "161_veldo_0347_space_work.py:1040",
-            "161_veldo_0347_space_work.py:1048",
-            "161_veldo_0347_space_work.py:1056",
-            "161_veldo_0347_space_work.py:997"
+            "161_veldo_0347_space_work.py:1026",
+            "161_veldo_0347_space_work.py:1031",
+            "161_veldo_0347_space_work.py:1035",
+            "161_veldo_0347_space_work.py:1042",
+            "161_veldo_0347_space_work.py:1050",
+            "161_veldo_0347_space_work.py:1058",
+            "161_veldo_0347_space_work.py:999"
           ],
           "comparison": "Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced."
         },
@@ -3671,13 +3671,13 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/table-1-keeps-its-handling",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1024",
-            "161_veldo_0347_space_work.py:1029",
-            "161_veldo_0347_space_work.py:1033",
-            "161_veldo_0347_space_work.py:1040",
-            "161_veldo_0347_space_work.py:1048",
-            "161_veldo_0347_space_work.py:1056",
-            "161_veldo_0347_space_work.py:997"
+            "161_veldo_0347_space_work.py:1026",
+            "161_veldo_0347_space_work.py:1031",
+            "161_veldo_0347_space_work.py:1035",
+            "161_veldo_0347_space_work.py:1042",
+            "161_veldo_0347_space_work.py:1050",
+            "161_veldo_0347_space_work.py:1058",
+            "161_veldo_0347_space_work.py:999"
           ],
           "comparison": "Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced."
         },
@@ -3689,10 +3689,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/kind-and-form",
           "current_checks": [
-            "161_veldo_0347_space_work.py:756",
-            "161_veldo_0347_space_work.py:770",
-            "161_veldo_0347_space_work.py:776",
-            "161_veldo_0347_space_work.py:777"
+            "161_veldo_0347_space_work.py:758",
+            "161_veldo_0347_space_work.py:772",
+            "161_veldo_0347_space_work.py:778",
+            "161_veldo_0347_space_work.py:779"
           ],
           "comparison": "Current form/request rows cover table 2 and clone identity; old paired fixture and exact decision-request result/file clauses are not all asserted."
         },
@@ -3704,12 +3704,12 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/unique-work-request",
           "current_checks": [
-            "161_veldo_0347_space_work.py:811",
-            "161_veldo_0347_space_work.py:814",
-            "161_veldo_0347_space_work.py:818",
+            "161_veldo_0347_space_work.py:813",
+            "161_veldo_0347_space_work.py:816",
             "161_veldo_0347_space_work.py:820",
-            "161_veldo_0347_space_work.py:824",
-            "161_veldo_0347_space_work.py:826"
+            "161_veldo_0347_space_work.py:822",
+            "161_veldo_0347_space_work.py:826",
+            "161_veldo_0347_space_work.py:828"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -3721,12 +3721,12 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/unique-work-request",
           "current_checks": [
-            "161_veldo_0347_space_work.py:811",
-            "161_veldo_0347_space_work.py:814",
-            "161_veldo_0347_space_work.py:818",
+            "161_veldo_0347_space_work.py:813",
+            "161_veldo_0347_space_work.py:816",
             "161_veldo_0347_space_work.py:820",
-            "161_veldo_0347_space_work.py:824",
-            "161_veldo_0347_space_work.py:826"
+            "161_veldo_0347_space_work.py:822",
+            "161_veldo_0347_space_work.py:826",
+            "161_veldo_0347_space_work.py:828"
           ],
           "comparison": "Current form/request rows cover table 2 and clone identity; old paired fixture and exact decision-request result/file clauses are not all asserted."
         },
@@ -3738,9 +3738,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac3/worker-snapshot",
           "current_checks": [
-            "161_veldo_0347_space_work.py:921",
-            "161_veldo_0347_space_work.py:924",
-            "161_veldo_0347_space_work.py:926"
+            "161_veldo_0347_space_work.py:923",
+            "161_veldo_0347_space_work.py:926",
+            "161_veldo_0347_space_work.py:928"
           ],
           "comparison": "Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted."
         },
@@ -3752,9 +3752,9 @@
           "disposition": "retained",
           "evidence": "ac3/worker-snapshot",
           "current_checks": [
-            "161_veldo_0347_space_work.py:921",
-            "161_veldo_0347_space_work.py:924",
-            "161_veldo_0347_space_work.py:926"
+            "161_veldo_0347_space_work.py:923",
+            "161_veldo_0347_space_work.py:926",
+            "161_veldo_0347_space_work.py:928"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3766,11 +3766,11 @@
           "disposition": "retained",
           "evidence": "ac3/ledger-keep-only",
           "current_checks": [
-            "161_veldo_0347_space_work.py:863",
-            "161_veldo_0347_space_work.py:867",
-            "161_veldo_0347_space_work.py:871",
-            "161_veldo_0347_space_work.py:874",
-            "161_veldo_0347_space_work.py:884"
+            "161_veldo_0347_space_work.py:865",
+            "161_veldo_0347_space_work.py:869",
+            "161_veldo_0347_space_work.py:873",
+            "161_veldo_0347_space_work.py:876",
+            "161_veldo_0347_space_work.py:886"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3782,11 +3782,11 @@
           "disposition": "retained",
           "evidence": "ac3/ledger-keep-only",
           "current_checks": [
-            "161_veldo_0347_space_work.py:863",
-            "161_veldo_0347_space_work.py:867",
-            "161_veldo_0347_space_work.py:871",
-            "161_veldo_0347_space_work.py:874",
-            "161_veldo_0347_space_work.py:884"
+            "161_veldo_0347_space_work.py:865",
+            "161_veldo_0347_space_work.py:869",
+            "161_veldo_0347_space_work.py:873",
+            "161_veldo_0347_space_work.py:876",
+            "161_veldo_0347_space_work.py:886"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3798,11 +3798,11 @@
           "disposition": "retained",
           "evidence": "ac3/ledger-keep-only",
           "current_checks": [
-            "161_veldo_0347_space_work.py:863",
-            "161_veldo_0347_space_work.py:867",
-            "161_veldo_0347_space_work.py:871",
-            "161_veldo_0347_space_work.py:874",
-            "161_veldo_0347_space_work.py:884"
+            "161_veldo_0347_space_work.py:865",
+            "161_veldo_0347_space_work.py:869",
+            "161_veldo_0347_space_work.py:873",
+            "161_veldo_0347_space_work.py:876",
+            "161_veldo_0347_space_work.py:886"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3814,11 +3814,11 @@
           "disposition": "retained",
           "evidence": "ac3/ledger-keep-only",
           "current_checks": [
-            "161_veldo_0347_space_work.py:863",
-            "161_veldo_0347_space_work.py:867",
-            "161_veldo_0347_space_work.py:871",
-            "161_veldo_0347_space_work.py:874",
-            "161_veldo_0347_space_work.py:884"
+            "161_veldo_0347_space_work.py:865",
+            "161_veldo_0347_space_work.py:869",
+            "161_veldo_0347_space_work.py:873",
+            "161_veldo_0347_space_work.py:876",
+            "161_veldo_0347_space_work.py:886"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3830,11 +3830,11 @@
           "disposition": "retained",
           "evidence": "ac3/ledger-keep-only",
           "current_checks": [
-            "161_veldo_0347_space_work.py:863",
-            "161_veldo_0347_space_work.py:867",
-            "161_veldo_0347_space_work.py:871",
-            "161_veldo_0347_space_work.py:874",
-            "161_veldo_0347_space_work.py:884"
+            "161_veldo_0347_space_work.py:865",
+            "161_veldo_0347_space_work.py:869",
+            "161_veldo_0347_space_work.py:873",
+            "161_veldo_0347_space_work.py:876",
+            "161_veldo_0347_space_work.py:886"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -3846,10 +3846,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/digest-at-removal",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1088",
             "161_veldo_0347_space_work.py:1090",
             "161_veldo_0347_space_work.py:1092",
-            "161_veldo_0347_space_work.py:1094"
+            "161_veldo_0347_space_work.py:1094",
+            "161_veldo_0347_space_work.py:1096"
           ],
           "comparison": "Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted."
         },
@@ -3861,10 +3861,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/digest-at-removal",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1088",
             "161_veldo_0347_space_work.py:1090",
             "161_veldo_0347_space_work.py:1092",
-            "161_veldo_0347_space_work.py:1094"
+            "161_veldo_0347_space_work.py:1094",
+            "161_veldo_0347_space_work.py:1096"
           ],
           "comparison": "Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted."
         },
@@ -3876,10 +3876,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/digest-at-removal",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1088",
             "161_veldo_0347_space_work.py:1090",
             "161_veldo_0347_space_work.py:1092",
-            "161_veldo_0347_space_work.py:1094"
+            "161_veldo_0347_space_work.py:1094",
+            "161_veldo_0347_space_work.py:1096"
           ],
           "comparison": "Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted."
         },
@@ -3891,10 +3891,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/digest-at-removal",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1088",
             "161_veldo_0347_space_work.py:1090",
             "161_veldo_0347_space_work.py:1092",
-            "161_veldo_0347_space_work.py:1094"
+            "161_veldo_0347_space_work.py:1094",
+            "161_veldo_0347_space_work.py:1096"
           ],
           "comparison": "Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted."
         },
@@ -3906,10 +3906,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/digest-at-removal",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1088",
             "161_veldo_0347_space_work.py:1090",
             "161_veldo_0347_space_work.py:1092",
-            "161_veldo_0347_space_work.py:1094"
+            "161_veldo_0347_space_work.py:1094",
+            "161_veldo_0347_space_work.py:1096"
           ],
           "comparison": "Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted."
         },
@@ -3921,10 +3921,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/digest-at-removal",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1088",
             "161_veldo_0347_space_work.py:1090",
             "161_veldo_0347_space_work.py:1092",
-            "161_veldo_0347_space_work.py:1094"
+            "161_veldo_0347_space_work.py:1094",
+            "161_veldo_0347_space_work.py:1096"
           ],
           "comparison": "Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced."
         },
@@ -3936,10 +3936,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/digest-at-removal",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1088",
             "161_veldo_0347_space_work.py:1090",
             "161_veldo_0347_space_work.py:1092",
-            "161_veldo_0347_space_work.py:1094"
+            "161_veldo_0347_space_work.py:1094",
+            "161_veldo_0347_space_work.py:1096"
           ],
           "comparison": "Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced."
         },
@@ -3951,10 +3951,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/digest-at-removal",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1088",
             "161_veldo_0347_space_work.py:1090",
             "161_veldo_0347_space_work.py:1092",
-            "161_veldo_0347_space_work.py:1094"
+            "161_veldo_0347_space_work.py:1094",
+            "161_veldo_0347_space_work.py:1096"
           ],
           "comparison": "Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced."
         },
@@ -3966,10 +3966,10 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/digest-at-removal",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1088",
             "161_veldo_0347_space_work.py:1090",
             "161_veldo_0347_space_work.py:1092",
-            "161_veldo_0347_space_work.py:1094"
+            "161_veldo_0347_space_work.py:1094",
+            "161_veldo_0347_space_work.py:1096"
           ],
           "comparison": "Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced."
         },
@@ -3981,8 +3981,8 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/no-copy-unread",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1149",
-            "161_veldo_0347_space_work.py:1155"
+            "161_veldo_0347_space_work.py:1151",
+            "161_veldo_0347_space_work.py:1157"
           ],
           "comparison": "Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted."
         },
@@ -3994,8 +3994,8 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/no-copy-unread",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1149",
-            "161_veldo_0347_space_work.py:1155"
+            "161_veldo_0347_space_work.py:1151",
+            "161_veldo_0347_space_work.py:1157"
           ],
           "comparison": "Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted."
         },
@@ -4007,8 +4007,8 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/no-copy-unread",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1149",
-            "161_veldo_0347_space_work.py:1155"
+            "161_veldo_0347_space_work.py:1151",
+            "161_veldo_0347_space_work.py:1157"
           ],
           "comparison": "Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted."
         },
@@ -4020,8 +4020,8 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac4/no-copy-unread",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1149",
-            "161_veldo_0347_space_work.py:1155"
+            "161_veldo_0347_space_work.py:1151",
+            "161_veldo_0347_space_work.py:1157"
           ],
           "comparison": "Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted."
         },
@@ -4033,10 +4033,10 @@
           "disposition": "retained",
           "evidence": "ac4/declared-trunk",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1107",
-            "161_veldo_0347_space_work.py:1119",
-            "161_veldo_0347_space_work.py:1125",
-            "161_veldo_0347_space_work.py:1132"
+            "161_veldo_0347_space_work.py:1109",
+            "161_veldo_0347_space_work.py:1121",
+            "161_veldo_0347_space_work.py:1127",
+            "161_veldo_0347_space_work.py:1134"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -4048,9 +4048,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/own-folder",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1167",
-            "161_veldo_0347_space_work.py:1171",
-            "161_veldo_0347_space_work.py:1178"
+            "161_veldo_0347_space_work.py:1169",
+            "161_veldo_0347_space_work.py:1173",
+            "161_veldo_0347_space_work.py:1180"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -4062,9 +4062,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/own-folder",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1167",
-            "161_veldo_0347_space_work.py:1171",
-            "161_veldo_0347_space_work.py:1178"
+            "161_veldo_0347_space_work.py:1169",
+            "161_veldo_0347_space_work.py:1173",
+            "161_veldo_0347_space_work.py:1180"
           ],
           "comparison": "Current own-folder row checks unrecorded retention and HEAD; exact reason, .git and is_repository truth-table clauses are not all asserted."
         },
@@ -4076,9 +4076,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/own-folder",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1167",
-            "161_veldo_0347_space_work.py:1171",
-            "161_veldo_0347_space_work.py:1178"
+            "161_veldo_0347_space_work.py:1169",
+            "161_veldo_0347_space_work.py:1173",
+            "161_veldo_0347_space_work.py:1180"
           ],
           "comparison": "Current own-folder row checks unrecorded retention and HEAD; exact reason, .git and is_repository truth-table clauses are not all asserted."
         },
@@ -4090,9 +4090,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/own-folder",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1167",
-            "161_veldo_0347_space_work.py:1171",
-            "161_veldo_0347_space_work.py:1178"
+            "161_veldo_0347_space_work.py:1169",
+            "161_veldo_0347_space_work.py:1173",
+            "161_veldo_0347_space_work.py:1180"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -4104,9 +4104,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/own-folder",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1167",
-            "161_veldo_0347_space_work.py:1171",
-            "161_veldo_0347_space_work.py:1178"
+            "161_veldo_0347_space_work.py:1169",
+            "161_veldo_0347_space_work.py:1173",
+            "161_veldo_0347_space_work.py:1180"
           ],
           "comparison": "Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields."
         },
@@ -4118,9 +4118,9 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/own-folder",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1167",
-            "161_veldo_0347_space_work.py:1171",
-            "161_veldo_0347_space_work.py:1178"
+            "161_veldo_0347_space_work.py:1169",
+            "161_veldo_0347_space_work.py:1173",
+            "161_veldo_0347_space_work.py:1180"
           ],
           "comparison": "Current own-folder row checks unrecorded retention and HEAD; exact reason, .git and is_repository truth-table clauses are not all asserted."
         },
@@ -4132,11 +4132,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/clone-row",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1194",
-            "161_veldo_0347_space_work.py:1200",
-            "161_veldo_0347_space_work.py:1206",
-            "161_veldo_0347_space_work.py:1209",
-            "161_veldo_0347_space_work.py:762"
+            "161_veldo_0347_space_work.py:1196",
+            "161_veldo_0347_space_work.py:1202",
+            "161_veldo_0347_space_work.py:1208",
+            "161_veldo_0347_space_work.py:1211",
+            "161_veldo_0347_space_work.py:764"
           ],
           "comparison": "Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause."
         },
@@ -4148,11 +4148,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/clone-row",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1194",
-            "161_veldo_0347_space_work.py:1200",
-            "161_veldo_0347_space_work.py:1206",
-            "161_veldo_0347_space_work.py:1209",
-            "161_veldo_0347_space_work.py:762"
+            "161_veldo_0347_space_work.py:1196",
+            "161_veldo_0347_space_work.py:1202",
+            "161_veldo_0347_space_work.py:1208",
+            "161_veldo_0347_space_work.py:1211",
+            "161_veldo_0347_space_work.py:764"
           ],
           "comparison": "Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause."
         },
@@ -4164,11 +4164,11 @@
           "disposition": "retained",
           "evidence": "ac5/clone-row",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1194",
-            "161_veldo_0347_space_work.py:1200",
-            "161_veldo_0347_space_work.py:1206",
-            "161_veldo_0347_space_work.py:1209",
-            "161_veldo_0347_space_work.py:762"
+            "161_veldo_0347_space_work.py:1196",
+            "161_veldo_0347_space_work.py:1202",
+            "161_veldo_0347_space_work.py:1208",
+            "161_veldo_0347_space_work.py:1211",
+            "161_veldo_0347_space_work.py:764"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -4180,11 +4180,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/clone-row",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1194",
-            "161_veldo_0347_space_work.py:1200",
-            "161_veldo_0347_space_work.py:1206",
-            "161_veldo_0347_space_work.py:1209",
-            "161_veldo_0347_space_work.py:762"
+            "161_veldo_0347_space_work.py:1196",
+            "161_veldo_0347_space_work.py:1202",
+            "161_veldo_0347_space_work.py:1208",
+            "161_veldo_0347_space_work.py:1211",
+            "161_veldo_0347_space_work.py:764"
           ],
           "comparison": "Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause."
         },
@@ -4196,11 +4196,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/clone-row",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1194",
-            "161_veldo_0347_space_work.py:1200",
-            "161_veldo_0347_space_work.py:1206",
-            "161_veldo_0347_space_work.py:1209",
-            "161_veldo_0347_space_work.py:762"
+            "161_veldo_0347_space_work.py:1196",
+            "161_veldo_0347_space_work.py:1202",
+            "161_veldo_0347_space_work.py:1208",
+            "161_veldo_0347_space_work.py:1211",
+            "161_veldo_0347_space_work.py:764"
           ],
           "comparison": "Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause."
         },
@@ -4212,10 +4212,10 @@
           "disposition": "retained",
           "evidence": "ac3/kind-and-form",
           "current_checks": [
-            "161_veldo_0347_space_work.py:756",
-            "161_veldo_0347_space_work.py:770",
-            "161_veldo_0347_space_work.py:776",
-            "161_veldo_0347_space_work.py:777"
+            "161_veldo_0347_space_work.py:758",
+            "161_veldo_0347_space_work.py:772",
+            "161_veldo_0347_space_work.py:778",
+            "161_veldo_0347_space_work.py:779"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -4227,11 +4227,11 @@
           "disposition": "partial_current_coverage",
           "evidence": "ac5/clone-row",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1194",
-            "161_veldo_0347_space_work.py:1200",
-            "161_veldo_0347_space_work.py:1206",
-            "161_veldo_0347_space_work.py:1209",
-            "161_veldo_0347_space_work.py:762"
+            "161_veldo_0347_space_work.py:1196",
+            "161_veldo_0347_space_work.py:1202",
+            "161_veldo_0347_space_work.py:1208",
+            "161_veldo_0347_space_work.py:1211",
+            "161_veldo_0347_space_work.py:764"
           ],
           "comparison": "Current no-form fixture checks present folders and child state; exact empty outcome/no-remover and child file predicates are not all asserted."
         },
@@ -4243,10 +4243,10 @@
           "disposition": "retained",
           "evidence": "ac3/kind-and-form",
           "current_checks": [
-            "161_veldo_0347_space_work.py:756",
-            "161_veldo_0347_space_work.py:770",
-            "161_veldo_0347_space_work.py:776",
-            "161_veldo_0347_space_work.py:777"
+            "161_veldo_0347_space_work.py:758",
+            "161_veldo_0347_space_work.py:772",
+            "161_veldo_0347_space_work.py:778",
+            "161_veldo_0347_space_work.py:779"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         },
@@ -4258,7 +4258,7 @@
           "disposition": "retained",
           "evidence": "canon",
           "current_checks": [
-            "161_veldo_0347_space_work.py:1216"
+            "161_veldo_0347_space_work.py:1218"
           ],
           "comparison": "Behavior retained in the cited current predicate(s), with current fixture values and APIs. This is a text comparison, not a mutation receipt for every clause."
         }
@@ -5919,86 +5919,77 @@
       "predicate": "bool(continued['offered']) and (not continued['waiting']) and (len(f.signals) == 1) and (next(iter(f.ledger.holds().values()))['state'] == 'advised')",
       "suite_sha256": "72f1379a53aca2a14ca0d4a84a3572ba38f5c9f673cf5877111bd94aa1f4bae1"
     },
-    "161_veldo_0347_space_work.py:391": {
+    "161_veldo_0347_space_work.py:393": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 391,
+      "line": 393,
       "rows": [
         "ac1/loose-ignored-file"
       ],
       "predicate": "git(where, 'status', '--porcelain') == '' and git(where, 'check-ignore', 'settings.local')",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:395": {
+    "161_veldo_0347_space_work.py:397": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 395,
+      "line": 397,
       "rows": [
         "ac1/loose-ignored-file"
       ],
       "predicate": "named(done, item) == ('deferred', 'unique_work', 'unique_work') and 3 in (found.get('cases') or ()) and ('settings.local' in (found.get('ignored') or ())) and ('settings.local' in (found.get('untracked') or ()))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:398": {
+    "161_veldo_0347_space_work.py:400": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 398,
+      "line": 400,
       "rows": [
         "ac1/loose-ignored-file"
       ],
       "predicate": "listed(where) and text_of(where / 'settings.local') == SETTINGS",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:404": {
+    "161_veldo_0347_space_work.py:406": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 404,
+      "line": 406,
       "rows": [
         "ac1/loose-ignored-file"
       ],
       "predicate": "removed == 0 and (not os.path.lexists(str(control / 'settings.local')))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:408": {
+    "161_veldo_0347_space_work.py:410": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 408,
+      "line": 410,
       "rows": [
         "ac1/loose-ignored-file"
       ],
       "predicate": "named(done, item)[0] == 'removed' and (not os.path.lexists(str(where)))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:423": {
+    "161_veldo_0347_space_work.py:425": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 423,
+      "line": 425,
       "rows": [
         "ac1/personal-rule"
       ],
       "predicate": "git(where, 'status', '--porcelain') == ''",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:426": {
+    "161_veldo_0347_space_work.py:428": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 426,
+      "line": 428,
       "rows": [
         "ac1/personal-rule"
       ],
       "predicate": "named(done, item) == ('deferred', 'unique_work', 'unique_work') and {'personal-notes-347/', 'private-347.md'} <= set(found.get('ignored') or ())",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:430": {
+    "161_veldo_0347_space_work.py:432": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 430,
+      "line": 432,
       "rows": [
         "ac1/personal-rule"
       ],
       "predicate": "text_of(where / 'personal-notes-347' / 'n.txt') == 'notes only info/exclude ignores\\n' and text_of(where / 'private-347.md') == 'a file only info/exclude ignores\\n'",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
-    },
-    "161_veldo_0347_space_work.py:446": {
-      "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 446,
-      "rows": [
-        "ac1/untraced-rule"
-      ],
-      "predicate": "facts.get('read') is True and 3 in facts['cases'] and ('build/' in facts['ignored'])",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
     "161_veldo_0347_space_work.py:448": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
@@ -6006,323 +5997,323 @@
       "rows": [
         "ac1/untraced-rule"
       ],
-      "predicate": "named(done, item) == ('deferred', 'unique_work', 'unique_work') and text_of(where / 'build' / 'out.o') == 'built\\n'",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "facts.get('read') is True and 3 in facts['cases'] and ('build/' in facts['ignored'])",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:452": {
+    "161_veldo_0347_space_work.py:450": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 452,
+      "line": 450,
+      "rows": [
+        "ac1/untraced-rule"
+      ],
+      "predicate": "named(done, item) == ('deferred', 'unique_work', 'unique_work') and text_of(where / 'build' / 'out.o') == 'built\\n'",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
+    },
+    "161_veldo_0347_space_work.py:454": {
+      "suite": "scripts/suites/161_veldo_0347_space_work.py",
+      "line": 454,
       "rows": [
         "ac1/untraced-rule"
       ],
       "predicate": "traced == {'read': True, 'said': None, 'work': [], 'build': ['build']}",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:463": {
+    "161_veldo_0347_space_work.py:465": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 463,
+      "line": 465,
       "rows": [
         "ac1/build-output-passes"
       ],
       "predicate": "named(done, item)[0] == 'removed' and (not os.path.lexists(str(where)))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:476": {
+    "161_veldo_0347_space_work.py:478": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 476,
+      "line": 478,
       "rows": [
         "ac2/unpushed-in-session-scratch"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(inner), 'unrecorded')]",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:479": {
+    "161_veldo_0347_space_work.py:481": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 479,
+      "line": 481,
       "rows": [
         "ac2/unpushed-in-session-scratch"
       ],
       "predicate": "git(inner, 'rev-parse', 'HEAD') == only and (where / 'leftover.bin').is_file()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:485": {
+    "161_veldo_0347_space_work.py:487": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 485,
+      "line": 487,
       "rows": [
         "ac2/unpushed-in-session-scratch"
       ],
       "predicate": "reading.get('clean_clone') is True and named(done, item)[0] == 'removed' and (not os.path.lexists(str(where))) and holds(UPSTREAM, only)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:498": {
+    "161_veldo_0347_space_work.py:500": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 498,
+      "line": 500,
       "rows": [
         "ac2/reset-log"
       ],
       "predicate": "lost in git(inner, 'rev-list', '--walk-reflogs', 'HEAD').split() and git(inner, 'rev-list', '--branches', '--not', '--remotes') == '' and (not holds(UPSTREAM, lost))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:502": {
+    "161_veldo_0347_space_work.py:504": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 502,
+      "line": 504,
       "rows": [
         "ac2/reset-log"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(inner), 'unrecorded')]",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:505": {
+    "161_veldo_0347_space_work.py:507": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 505,
+      "line": 507,
       "rows": [
         "ac2/reset-log"
       ],
       "predicate": "holds(inner, lost) and inner.is_dir()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:515": {
+    "161_veldo_0347_space_work.py:517": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 515,
+      "line": 517,
       "rows": [
         "ac2/forged-remote-ref"
       ],
       "predicate": "git(inner, 'rev-list', '--branches', '--not', '--remotes') == '' and (not holds(UPSTREAM, forged))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:518": {
+    "161_veldo_0347_space_work.py:520": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 518,
+      "line": 520,
       "rows": [
         "ac2/forged-remote-ref"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(inner), 'unrecorded')]",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:521": {
+    "161_veldo_0347_space_work.py:523": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 521,
+      "line": 523,
       "rows": [
         "ac2/forged-remote-ref"
       ],
       "predicate": "holds(inner, forged) and text_of(inner / 'forged.txt') == 'the remote never had this\\n'",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:553": {
+    "161_veldo_0347_space_work.py:555": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 553,
+      "line": 555,
       "rows": [
         "ac2/unreadable"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(broken), 'unrecorded')] and broken.is_dir()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:562": {
+    "161_veldo_0347_space_work.py:564": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 562,
+      "line": 564,
       "rows": [
         "ac2/unreadable"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(inner), 'unrecorded')] and inner.is_dir()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:576": {
+    "161_veldo_0347_space_work.py:578": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 576,
+      "line": 578,
       "rows": [
         "ac2/unreadable"
       ],
       "predicate": "seen['read'] is False and named(done, item) == ('deferred', 'in_use', 'children') and (held_paths(item) == [('path:' + str(where), 'unread')]) and (text_of(shut / 'inside.txt') == 'cannot be listed\\n')",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:590": {
+    "161_veldo_0347_space_work.py:592": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 590,
+      "line": 592,
       "rows": [
         "ac2/unreadable"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(where), 'unread')] and holds(inner, hidden) and (where / 'leftover.bin').is_file()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:605": {
+    "161_veldo_0347_space_work.py:607": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 605,
+      "line": 607,
       "rows": [
         "ac2/sandbox-scratch"
       ],
       "predicate": "'SCRATCH_PREFIX = %r' % SIG.SANDBOX_SCRATCH_PREFIX in sandbox",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:633": {
+    "161_veldo_0347_space_work.py:635": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 633,
+      "line": 635,
       "rows": [
         "ac2/sandbox-scratch"
       ],
       "predicate": "named(done, item)[0] == 'removed' and named(done, root_item)[0] == 'removed' and (not os.path.lexists(str(root)))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:647": {
+    "161_veldo_0347_space_work.py:649": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 647,
+      "line": 649,
       "rows": [
         "ac2/sandbox-scratch"
       ],
       "predicate": "named(done, item) == ('deferred', 'remove_refused', 'tool') and holds(inner, hidden) and (where / 'leftover.bin').is_file()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:673": {
+    "161_veldo_0347_space_work.py:675": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 673,
+      "line": 675,
       "rows": [
         "ac2/sandbox-scratch"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(where), 'unread')] and (text_of(where / 'shut' / 'inside.txt') == \"not this account's to open\\n\")",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:687": {
+    "161_veldo_0347_space_work.py:689": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 687,
+      "line": 689,
       "rows": [
         "ac2/sandbox-scratch"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(where), 'unread')]",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:705": {
+    "161_veldo_0347_space_work.py:707": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 705,
+      "line": 707,
       "rows": [
         "ac2/unreachable-in-remote"
       ],
       "predicate": "holds(remote, dropped) and git(remote, 'for-each-ref', '--contains', dropped) == '' and (git(inner, 'rev-parse', 'refs/remotes/origin/side') == dropped)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:710": {
+    "161_veldo_0347_space_work.py:712": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 710,
+      "line": 712,
       "rows": [
         "ac2/unreachable-in-remote"
       ],
       "predicate": "reading.get('read') is True and reading.get('clean_clone') is False and ('reaches' in str(reading.get('why')))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:714": {
+    "161_veldo_0347_space_work.py:716": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 714,
+      "line": 716,
       "rows": [
         "ac2/unreachable-in-remote"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(inner), 'unrecorded')]",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:717": {
+    "161_veldo_0347_space_work.py:719": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 717,
+      "line": 719,
       "rows": [
         "ac2/unreachable-in-remote"
       ],
       "predicate": "holds(inner, dropped) and text_of(inner / 'dropped.txt') == 'fetched by the remote on a branch since deleted\\n'",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:724": {
+    "161_veldo_0347_space_work.py:726": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 724,
+      "line": 726,
       "rows": [
         "ac2/clean-clone-reading"
       ],
       "predicate": "P.clean_clone(str(fresh), client).get('clean_clone') is True",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:727": {
+    "161_veldo_0347_space_work.py:729": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 727,
+      "line": 729,
       "rows": [
         "ac2/clean-clone-reading"
       ],
       "predicate": "reading.get('clean_clone') is False and reading.get('read') is True",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:732": {
+    "161_veldo_0347_space_work.py:734": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 732,
+      "line": 734,
       "rows": [
         "ac2/clean-clone-reading"
       ],
       "predicate": "reading.get('clean_clone') is False",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:737": {
+    "161_veldo_0347_space_work.py:739": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 737,
+      "line": 739,
       "rows": [
         "ac2/clean-clone-reading"
       ],
       "predicate": "reading.get('clean_clone') is False and str(nested_inside) in str(reading.get('why'))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:740": {
+    "161_veldo_0347_space_work.py:742": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 740,
+      "line": 742,
       "rows": [
         "ac2/clean-clone-reading"
       ],
       "predicate": "reading.get('clean_clone') is False and reading.get('read') is False",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:756": {
+    "161_veldo_0347_space_work.py:758": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 756,
+      "line": 758,
       "rows": [
         "ac3/kind-and-form"
       ],
       "predicate": "all((events_of[form] == {'version': '2', 'events': ['run_finished']} for form in ('worker_clone', 'batch_clone', 'candidate_workspace')))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:762": {
+    "161_veldo_0347_space_work.py:764": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 762,
+      "line": 764,
       "rows": [
         "ac5/clone-row"
       ],
       "predicate": "all((events_of[form] == {'version': '2', 'events': own} for form in ('agent', None))) and 'run_finished' not in own",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:770": {
+    "161_veldo_0347_space_work.py:772": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 770,
+      "line": 772,
       "rows": [
         "ac3/kind-and-form"
       ],
       "predicate": "made.get('ok') is not True",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:777": {
+    "161_veldo_0347_space_work.py:779": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 777,
+      "line": 779,
       "rows": [
         "ac3/kind-and-form"
       ],
       "predicate": "\"start=accepted['commit'], form='worker_clone')\" in (VELDO / 'control_clone.py').read_text()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:786": {
+    "161_veldo_0347_space_work.py:788": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 786,
+      "line": 788,
       "rows": [
         "ac3/commit-kept"
       ],
       "predicate": "not holds(REPOSITORY, lone)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
-    },
-    "161_veldo_0347_space_work.py:789": {
-      "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 789,
-      "rows": [
-        "ac3/commit-kept"
-      ],
-      "predicate": "named(done, item)[0] == 'removed' and (not os.path.lexists(str(where)))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
     "161_veldo_0347_space_work.py:791": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
@@ -6330,53 +6321,53 @@
       "rows": [
         "ac3/commit-kept"
       ],
-      "predicate": "holds(REPOSITORY, lone) and bool(git(REPOSITORY, 'for-each-ref', '--contains', lone, prefix))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "named(done, item)[0] == 'removed' and (not os.path.lexists(str(where)))",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:884": {
+    "161_veldo_0347_space_work.py:793": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 884,
+      "line": 793,
+      "rows": [
+        "ac3/commit-kept"
+      ],
+      "predicate": "holds(REPOSITORY, lone) and bool(git(REPOSITORY, 'for-each-ref', '--contains', lone, prefix))",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
+    },
+    "161_veldo_0347_space_work.py:886": {
+      "suite": "scripts/suites/161_veldo_0347_space_work.py",
+      "line": 886,
       "rows": [
         "ac3/ledger-keep-only"
       ],
       "predicate": "asked == 'requested' and applied.get('ok') is True and (state_of(tree) == 'due') and (((L.item(tree) or {}).get('disposition') or {}).get('choice') == 'discard') and (text_of(tree_path / 'draft.txt') == 'a draft\\n')",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:900": {
+    "161_veldo_0347_space_work.py:902": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 900,
+      "line": 902,
       "rows": [
         "ac3/request-kind"
       ],
       "predicate": "deferred.get('ok') is True and 'worktrees' in shaped and (refused.get('ok') is False) and (refused.get('reason') == 'space_disposition_item') and (L.item(item) == before) and (text_of(work / 'notes.txt') == 'notes\\n')",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:906": {
+    "161_veldo_0347_space_work.py:908": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 906,
+      "line": 908,
       "rows": [
         "ac3/request-kind"
       ],
       "predicate": "accepted.get('ok') is True and L.item(item)['disposition']['proposal'] == proposal",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:921": {
+    "161_veldo_0347_space_work.py:923": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 921,
+      "line": 923,
       "rows": [
         "ac3/worker-snapshot"
       ],
       "predicate": "named(done, item)[0] == 'removed' and (not os.path.lexists(str(where))) and (len(attempts) == 1)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
-    },
-    "161_veldo_0347_space_work.py:924": {
-      "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 924,
-      "rows": [
-        "ac3/worker-snapshot"
-      ],
-      "predicate": "all((text_of(folder_one / name) == text for name, text in FILES.items()))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
     "161_veldo_0347_space_work.py:926": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
@@ -6384,17 +6375,17 @@
       "rows": [
         "ac3/worker-snapshot"
       ],
-      "predicate": "holds(REPOSITORY, unpushed)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "all((text_of(folder_one / name) == text for name, text in FILES.items()))",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:958": {
+    "161_veldo_0347_space_work.py:928": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 958,
+      "line": 928,
       "rows": [
-        "ac3/compare-before-delete"
+        "ac3/worker-snapshot"
       ],
-      "predicate": "named(done, item) == ('deferred', 'keep_failed', 'tool')",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "holds(REPOSITORY, unpushed)",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
     "161_veldo_0347_space_work.py:960": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
@@ -6402,35 +6393,35 @@
       "rows": [
         "ac3/compare-before-delete"
       ],
-      "predicate": "text_of(where / 'tracked.txt') == REWRITTEN or any((text_of(one) == REWRITTEN for one in saved))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "named(done, item) == ('deferred', 'keep_failed', 'tool')",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:965": {
+    "161_veldo_0347_space_work.py:962": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 965,
+      "line": 962,
+      "rows": [
+        "ac3/compare-before-delete"
+      ],
+      "predicate": "text_of(where / 'tracked.txt') == REWRITTEN or any((text_of(one) == REWRITTEN for one in saved))",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
+    },
+    "161_veldo_0347_space_work.py:967": {
+      "suite": "scripts/suites/161_veldo_0347_space_work.py",
+      "line": 967,
       "rows": [
         "ac3/compare-before-delete"
       ],
       "predicate": "named(done, item)[0] == 'removed' and (not os.path.lexists(str(where))) and (len(listed_attempts) == 2)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:968": {
+    "161_veldo_0347_space_work.py:970": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 968,
+      "line": 970,
       "rows": [
         "ac3/compare-before-delete"
       ],
       "predicate": "text_of(store / str(listed_attempts[0]) / 'work' / 'new-347.txt') == 'saved before the delete\\n' and text_of(store / str(listed_attempts[-1]) / 'work' / 'tracked.txt') == REWRITTEN",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
-    },
-    "161_veldo_0347_space_work.py:976": {
-      "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 976,
-      "rows": [
-        "ac3/put-back-at-stop"
-      ],
-      "predicate": "named(done, item) == ('deferred', 'keep_failed', 'tool')",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
     "161_veldo_0347_space_work.py:978": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
@@ -6438,89 +6429,89 @@
       "rows": [
         "ac3/put-back-at-stop"
       ],
-      "predicate": "where.is_dir() and (not os.path.lexists(mark)) and (text_of(where / 'tracked.txt') == REWRITTEN)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "named(done, item) == ('deferred', 'keep_failed', 'tool')",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:985": {
+    "161_veldo_0347_space_work.py:980": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 985,
+      "line": 980,
+      "rows": [
+        "ac3/put-back-at-stop"
+      ],
+      "predicate": "where.is_dir() and (not os.path.lexists(mark)) and (text_of(where / 'tracked.txt') == REWRITTEN)",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
+    },
+    "161_veldo_0347_space_work.py:987": {
+      "suite": "scripts/suites/161_veldo_0347_space_work.py",
+      "line": 987,
       "rows": [
         "ac3/put-back-at-stop"
       ],
       "predicate": "state_of(item) == 'deferred' and text_of(where / 'tracked.txt') == REWRITTEN and (not os.path.lexists(mark))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:997": {
+    "161_veldo_0347_space_work.py:999": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 997,
+      "line": 999,
       "rows": [
         "ac3/table-1-keeps-its-handling"
       ],
       "predicate": "without == ['1'] and all((sorted(module.TABLES_WITHOUT_CLONE_ROW) == without for module in (SIG, KP, RM)))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1024": {
+    "161_veldo_0347_space_work.py:1026": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1024,
+      "line": 1026,
       "rows": [
         "ac3/table-1-keeps-its-handling"
       ],
       "predicate": "L.item(item).get('ends_on') == {'version': '1', 'events': list(first['ends_on']['agent_repository'])}",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1029": {
+    "161_veldo_0347_space_work.py:1031": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1029,
+      "line": 1031,
       "rows": [
         "ac3/table-1-keeps-its-handling"
       ],
       "predicate": "named(done, item) == ('deferred', 'unique_work', 'unique_work') and 'not_across' in found and ('form' not in found)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1033": {
+    "161_veldo_0347_space_work.py:1035": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1033,
+      "line": 1035,
       "rows": [
         "ac3/table-1-keeps-its-handling"
       ],
       "predicate": "holds(where, lone) and git(where, 'rev-parse', 'HEAD') == lone and (not holds(REPOSITORY, lone))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1040": {
+    "161_veldo_0347_space_work.py:1042": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1040,
+      "line": 1042,
       "rows": [
         "ac3/table-1-keeps-its-handling"
       ],
       "predicate": "refused.get('ok') is False and refused.get('reason') == 'space_disposition_state' and (L.item(item) == before) and (git(where, 'rev-parse', 'HEAD') == lone)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1048": {
+    "161_veldo_0347_space_work.py:1050": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1048,
+      "line": 1050,
       "rows": [
         "ac3/table-1-keeps-its-handling"
       ],
       "predicate": "named(done, item) == ('deferred', 'keep_failed', 'tool') and attempts == [] and (text_of(where / 'new-347.txt') == 'untracked in a worker clone declared under table 1\\n')",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1056": {
+    "161_veldo_0347_space_work.py:1058": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1056,
+      "line": 1058,
       "rows": [
         "ac3/table-1-keeps-its-handling"
       ],
       "predicate": "named(done, item) == ('deferred', 'keep_failed', 'tool') and len(saved) == 1 and (text_of(where / 'new-347.txt') == 'untracked in a worker clone declared under table 1\\n')",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
-    },
-    "161_veldo_0347_space_work.py:1088": {
-      "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1088,
-      "rows": [
-        "ac4/digest-at-removal"
-      ],
-      "predicate": "named(done, item)[0] == 'kept' and evidence.is_dir()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
     "161_veldo_0347_space_work.py:1090": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
@@ -6528,8 +6519,8 @@
       "rows": [
         "ac4/digest-at-removal"
       ],
-      "predicate": "(evidence / 'changed.json').read_bytes() == CHANGED if (evidence / 'changed.json').exists() else False",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "named(done, item)[0] == 'kept' and evidence.is_dir()",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
     "161_veldo_0347_space_work.py:1092": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
@@ -6537,8 +6528,8 @@
       "rows": [
         "ac4/digest-at-removal"
       ],
-      "predicate": "not os.path.lexists(str(evidence / 'held.json')) and (not os.path.lexists(str(evidence / 'committed.txt')))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "(evidence / 'changed.json').read_bytes() == CHANGED if (evidence / 'changed.json').exists() else False",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
     "161_veldo_0347_space_work.py:1094": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
@@ -6546,143 +6537,143 @@
       "rows": [
         "ac4/digest-at-removal"
       ],
-      "predicate": "(evidence / 'alone.json').read_bytes() == CONTENT['alone.json']",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "not os.path.lexists(str(evidence / 'held.json')) and (not os.path.lexists(str(evidence / 'committed.txt')))",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1132": {
+    "161_veldo_0347_space_work.py:1096": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1132,
+      "line": 1096,
+      "rows": [
+        "ac4/digest-at-removal"
+      ],
+      "predicate": "(evidence / 'alone.json').read_bytes() == CONTENT['alone.json']",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
+    },
+    "161_veldo_0347_space_work.py:1134": {
+      "suite": "scripts/suites/161_veldo_0347_space_work.py",
+      "line": 1134,
       "rows": [
         "ac4/declared-trunk"
       ],
       "predicate": "\"given.setdefault('landing', landing)\" in worker",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1149": {
+    "161_veldo_0347_space_work.py:1151": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1149,
+      "line": 1151,
       "rows": [
         "ac4/no-copy-unread"
       ],
       "predicate": "named(done, item)[0] == 'kept' and (evidence / 'held.json').read_bytes() == HELD",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1155": {
+    "161_veldo_0347_space_work.py:1157": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1155,
+      "line": 1157,
       "rows": [
         "ac4/no-copy-unread"
       ],
       "predicate": "named(done, item)[0] == 'kept' and (not os.path.lexists(str(receipt)))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1167": {
+    "161_veldo_0347_space_work.py:1169": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1167,
+      "line": 1169,
       "rows": [
         "ac5/own-folder"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(where), 'unrecorded')]",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1171": {
+    "161_veldo_0347_space_work.py:1173": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1171,
+      "line": 1173,
       "rows": [
         "ac5/own-folder"
       ],
       "predicate": "git(where, 'rev-parse', 'HEAD') == mine",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1178": {
+    "161_veldo_0347_space_work.py:1180": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1178,
+      "line": 1180,
       "rows": [
         "ac5/own-folder"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and (evidence / 'report.json').is_file()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1194": {
+    "161_veldo_0347_space_work.py:1196": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1194,
+      "line": 1196,
       "rows": [
         "ac5/clone-row"
       ],
       "predicate": "agent not in (done.get('items') or ()) and state_of(agent) == 'present' and home.is_dir() and tree.is_dir() and (state_of(inside_tree) in ('present', 'kept'))",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1200": {
+    "161_veldo_0347_space_work.py:1202": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1200,
+      "line": 1202,
       "rows": [
         "ac5/clone-row"
       ],
       "predicate": "len(entry) == 1 and entry[0]['row'] == 'agent_repository_clone' and (entry[0]['version'] == '2') and (entry[0]['action'] == 'remove')",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1206": {
+    "161_veldo_0347_space_work.py:1208": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1206,
+      "line": 1208,
       "rows": [
         "ac5/clone-row"
       ],
       "predicate": "worker in (done.get('items') or ())",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1209": {
+    "161_veldo_0347_space_work.py:1211": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1209,
+      "line": 1211,
       "rows": [
         "ac5/clone-row"
       ],
       "predicate": "[one['row'] for one in K.due('run_finished', [(worker, old)], look=lambda identity, record: {})] == []",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:539": {
+    "161_veldo_0347_space_work.py:541": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 539,
+      "line": 541,
       "rows": [
         "ac2/build-output"
       ],
       "predicate": "named(done, item) == ('deferred', 'in_use', 'children') and held_paths(item) == [('path:' + str(inner), 'unrecorded')] and (sorted(os.listdir(str(inner))) == snapshot)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:776": {
+    "161_veldo_0347_space_work.py:778": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 776,
+      "line": 778,
       "rows": [
         "ac3/kind-and-form"
       ],
       "predicate": "text in (VELDO / name).read_text()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:811": {
+    "161_veldo_0347_space_work.py:813": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 811,
+      "line": 813,
       "rows": [
         "ac3/unique-work-request"
       ],
       "predicate": "named(done, item) == ('deferred', 'unique_work', 'unique_work') and found_of(item).get('form') == form",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:814": {
+    "161_veldo_0347_space_work.py:816": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 814,
+      "line": 816,
       "rows": [
         "ac3/unique-work-request"
       ],
       "predicate": "len(entry) == 1 and entry[0]['row'] == 'agent_repository_clone' and (entry[0].get('unique_work') == 'decision_request') and (K.REGISTRY['tables']['2']['rows']['worktree']['landed'].get('method') == 'git_worktree_remove')",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
-    },
-    "161_veldo_0347_space_work.py:818": {
-      "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 818,
-      "rows": [
-        "ac3/unique-work-request"
-      ],
-      "predicate": "sorted(os.listdir(str(where))) == listing",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
     "161_veldo_0347_space_work.py:820": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
@@ -6690,17 +6681,17 @@
       "rows": [
         "ac3/unique-work-request"
       ],
-      "predicate": "request.get('state') == 'requested' and request['proposal'].get('clones', [{}])[0].get('item') == item and ('worktrees' not in request['proposal'])",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "sorted(os.listdir(str(where))) == listing",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:824": {
+    "161_veldo_0347_space_work.py:822": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 824,
+      "line": 822,
       "rows": [
         "ac3/unique-work-request"
       ],
-      "predicate": "settled.get('outcome') == 'settled' and (not edge.get('ok')) and marked.get('ok') and (L.item(item).get('owner_keep') == {'by': 'owner'})",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "request.get('state') == 'requested' and request['proposal'].get('clones', [{}])[0].get('item') == item and ('worktrees' not in request['proposal'])",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
     "161_veldo_0347_space_work.py:826": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
@@ -6708,80 +6699,89 @@
       "rows": [
         "ac3/unique-work-request"
       ],
-      "predicate": "sorted(os.listdir(str(where))) == listing",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "predicate": "settled.get('outcome') == 'settled' and (not edge.get('ok')) and marked.get('ok') and (L.item(item).get('owner_keep') == {'by': 'owner'})",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:863": {
+    "161_veldo_0347_space_work.py:828": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 863,
+      "line": 828,
+      "rows": [
+        "ac3/unique-work-request"
+      ],
+      "predicate": "sorted(os.listdir(str(where))) == listing",
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
+    },
+    "161_veldo_0347_space_work.py:865": {
+      "suite": "scripts/suites/161_veldo_0347_space_work.py",
+      "line": 865,
       "rows": [
         "ac3/ledger-keep-only"
       ],
       "predicate": "before.get('state') == 'deferred' and (before.get('disposition') or {}).get('state') == 'requested'",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:867": {
+    "161_veldo_0347_space_work.py:869": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 867,
+      "line": 869,
       "rows": [
         "ac3/ledger-keep-only"
       ],
       "predicate": "effect.get('choice') == 'accept ' + choice",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:871": {
+    "161_veldo_0347_space_work.py:873": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 871,
+      "line": 873,
       "rows": [
         "ac3/ledger-keep-only"
       ],
       "predicate": "applied.get('ok') is False and applied.get('reason') == 'space_disposition_choice'",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:874": {
+    "161_veldo_0347_space_work.py:876": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 874,
+      "line": 876,
       "rows": [
         "ac3/ledger-keep-only"
       ],
       "predicate": "after == before and after.get('state') == 'deferred' and (after.get('disposition') == before.get('disposition')) and (text_of(work / 'notes.txt') == 'notes nobody committed\\n') and (work / '.git').is_dir()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1107": {
+    "161_veldo_0347_space_work.py:1109": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1107,
+      "line": 1109,
       "rows": [
         "ac4/declared-trunk"
       ],
       "predicate": "git(REPOSITORY, 'rev-parse', '--abbrev-ref', 'HEAD') == 'side-347'",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1119": {
+    "161_veldo_0347_space_work.py:1121": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1119,
+      "line": 1121,
       "rows": [
         "ac4/declared-trunk"
       ],
       "predicate": "named(done, item)[0] == 'kept' and (not os.path.lexists(str(folder / 'trunk.txt'))) and (text_of(folder / 'side.txt') == SIDE_ONLY)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1125": {
+    "161_veldo_0347_space_work.py:1127": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1125,
+      "line": 1127,
       "rows": [
         "ac4/declared-trunk"
       ],
       "predicate": "named(done, item)[0] == 'kept' and text_of(folder / 'trunk.txt') == TRUNK_ONLY and (text_of(folder / 'side.txt') == SIDE_ONLY)",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     },
-    "161_veldo_0347_space_work.py:1216": {
+    "161_veldo_0347_space_work.py:1218": {
       "suite": "scripts/suites/161_veldo_0347_space_work.py",
-      "line": 1216,
+      "line": 1218,
       "rows": [
         "canon"
       ],
       "predicate": "(ROOT / 'engine' / '.veldo' / name).is_file() and (ROOT / 'engine' / '.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes()",
-      "suite_sha256": "791b63f6086c1031cc3498003e315e0223ecb1a9ffba92259f450d24f692cf52"
+      "suite_sha256": "48b1597d1e94f3b643ee6a0cac4346016740b452906220758d7e96529d53a1fa"
     }
   },
   "fix_round_1_recheck": {
@@ -6799,6 +6799,8 @@
       "ac3/request-kind",
       "ac3/table-1-keeps-its-handling",
       "space318/pin/clean-stays"
-    ]
+    ],
+    "source_audit_revision": "22bbcf5be35fce7cf0110eb547b4dbb6966e6994",
+    "suite_binding": "Each current predicate carries its owning suite SHA-256. The top-level revision identifies the historical audit, not a runtime validation of the current predicates."
   }
 }

@@ -3,7 +3,7 @@
 Old source: `150_veldo_0334_space_wait.py.txt` in this folder, preserved for audit. Its APIs belong to the old stack; it is not an executable joined-tree suite.
 Replacement: `scripts/suites/158_veldo_0334_space_freed.py`. Baseline implementation evidence: candidate 95851131e; see assembly-v1.md for the specific implementation commits.
 
-Rows below preserve the required assertion through the named current row(s). Rows saying SUPERSEDED describe incompatible old contracts, not removed safety guarantees. Dynamic subrows remain in the archived source and are covered by their parent family. `setup` is fixture infrastructure, replaced with the current fixtures. Runtime results are recorded separately; this mapping alone is not a green receipt.
+Rows below identify current row families, not equivalence of every historical predicate. The clause-level recheck in proof/VELDO-0319/distinct-assertion-audit.json is authoritative and records partial coverage explicitly. Rows saying SUPERSEDED describe incompatible old contracts, not removed safety guarantees. Dynamic subrows remain in the archived source and are covered by their parent family. `setup` is fixture infrastructure, replaced with the current fixtures. Runtime results are recorded separately; this mapping alone is not a green receipt.
 
 | Old row | Current assertion / disposition |
 | --- | --- |
