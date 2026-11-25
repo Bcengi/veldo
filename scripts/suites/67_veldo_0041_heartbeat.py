@@ -390,7 +390,13 @@ sys.exit(payload.get('code', 0))
             assert (ended and launch.child.poll() is not None) or (path.exists() and predicate(CLOCK.read(path))), (name, snapshot(launch))
             return CLOCK.read(path)
 
-        def pulse(launch, advance=0):
+        def hold_receiver(launch):
+            path = clocks / tag(launch) / 'receiver-tick-held'
+            turn = CLOCK.read(path)['turn'] if path.exists() else 0
+            os.write(clock_fds[tag(launch)]['receiver-tick'], b'h')
+            return await_state(launch, 'receiver-tick-held', lambda state: state['turn'] > turn)
+
+        def pulse(launch, advance=False):
             directory = clocks / tag(launch)
             before = clock(launch).monotonic()
             # Observe the sender's real poll boundary before advancing its clock.
@@ -398,15 +404,26 @@ sys.exit(payload.get('code', 0))
             assert state['timeout'] is not None, 'heartbeat waits for engine exit'
             assert state['timeout'] <= 250 if getattr(launch, 'heartbeat', {}).get('interval_seconds') == .25 else True
             if advance:
-                CLOCK.write(directory / 'now', before + advance)
+                receiver = hold_receiver(launch)
+                due = CLOCK.deadline(state)
+                assert due > before, state
+                assert due <= CLOCK.deadline(receiver), (state, receiver)
+                CLOCK.write(directory / 'now', due)
                 os.write(clock_fds[tag(launch)]['sender'], b't')
-                await_state(launch, 'sender-waiting', lambda state: state['now'] == before + advance)
+                await_state(launch, 'sender-waiting', lambda state: state['now'] == due)
+            else:
+                due = before
             os.write(clock_fds[tag(launch)]['receiver-tick'], b't')
             return await_state(launch, 'receiver',
-                               lambda state: state['heartbeat'].get('last') == before + advance)
+                               lambda state: state['heartbeat'].get('last') == due)
 
-        def tick(launch, advance):
-            CLOCK.write(clocks / tag(launch) / 'now', clock(launch).monotonic() + advance)
+        def tick(launch, before_wake=None):
+            # Hold at the actual poll, so a late native event cannot make the
+            # receiver act while the fixture observes subjects at this deadline.
+            state = hold_receiver(launch)
+            CLOCK.write(clocks / tag(launch) / 'now', CLOCK.deadline(state))
+            if before_wake:
+                before_wake()
             os.write(clock_fds[tag(launch)]['receiver-tick'], b't')
             return await_state(launch, 'receiver', lambda state: state['now'] == clock(launch).monotonic(), ended=True)
 
@@ -421,7 +438,7 @@ sys.exit(payload.get('code', 0))
                 if launch.child.poll() is not None or (steps and steps[-1]['step'] == 'kill'):
                     return
                 assert steps and state.get('due') is not None, state
-                tick(launch, max(0, state['due'] - clock(launch).monotonic()))
+                tick(launch)
             assert snapshot(launch)['steps'][-1]['step'] == 'kill', snapshot(launch)
 
         def unlatch(launch, name):
@@ -583,9 +600,11 @@ sys.exit(payload.get('code', 0))
             with region('heartbeat/blocked-call-liveness'):
                 blocked = started['blocked']
                 call = marker(blocked, 'call')
-                pulse(blocked)
-                for _ in range(8):
-                    pulse(blocked, .25)
+                sampled = pulse(blocked)
+                # Keep the model blocked for the original observation window,
+                # visiting every sender deadline, including shortened intervals.
+                while minus(sampled['now'], call.get('started')) < 2:
+                    sampled = pulse(blocked, advance=True)
                 unlatch(blocked, 'model-release')
                 answer = marker(blocked, 'answer')
                 ended = runner('fast').wait(blocked) or {}
@@ -625,16 +644,16 @@ sys.exit(payload.get('code', 0))
                 worker = marker(missing, 'worker')
                 cgroup = (getattr(missing, 'group', None) or {}).get('cgroup')
                 pulse(missing)
-                pulse(missing, .25)
-                pulse(missing, .25)
+                pulse(missing, advance=True)
+                pulse(missing, advance=True)
                 renewed_three = len(heartbeats(missing.dispatch_id)) >= 3
                 beaters = procs(str(cgroup) + '/' + GROUP) if cgroup else []
                 stopped_at = clock(missing).monotonic()
                 for pid in beaters:
                     os.kill(pid, signal.SIGSTOP)  # the wrapper's heartbeat stops answering
-                prior = tick(missing, .75)
+                prior = snapshot(missing)
                 assert prior.get('cause') is None, prior
-                expired = tick(missing, .25)
+                expired = tick(missing)
                 assert expired.get('cause') == 'heartbeat_missing', expired
                 WAITS.wait('missing heartbeat worker terminated', lambda: bool(times(missing, 'worker', 'term')),
                            lambda: not living(worker), [WAITS.PathAppears(markers / '.fixture-events')])
@@ -671,7 +690,7 @@ sys.exit(payload.get('code', 0))
                 worker = marker(signalled, 'worker')
                 cgroup = (getattr(signalled, 'group', None) or {}).get('cgroup')
                 pulse(signalled)
-                pulse(signalled, .25)
+                pulse(signalled, advance=True)
                 beating = len(heartbeats(signalled.dispatch_id)) >= 2
                 beaters = procs(str(cgroup) + '/' + GROUP) if cgroup else []
                 held = {pid: links(pid) for pid in beaters}
@@ -698,7 +717,7 @@ sys.exit(payload.get('code', 0))
                 release(signalled)
                 sent = marker(signalled, 'signalled')
                 for _ in range(7):
-                    pulse(signalled, .25)
+                    pulse(signalled, advance=True)
                 unlatch(signalled, 'signal-release')
                 ended = runner('fast').wait(signalled) or {}
                 supervision = getattr(signalled, 'supervision', None) or {}
@@ -768,7 +787,7 @@ sys.exit(payload.get('code', 0))
                 await_state(target, 'receiver', lambda state: state.get('cause') == 'requested')
                 WAITS.wait('cooperative signal observed', lambda: len(times(target, 'worker', 'term')) >= 1,
                            lambda: not living(worker), [WAITS.PathAppears(markers / (tag(target) + '.worker.term'))])
-                terminated = tick(target, 1.0)
+                terminated = tick(target)
                 assert [step['step'] for step in terminated['steps']] == ['cooperative', 'terminate'], terminated
                 assert (clocks / tag(target) / 'group-terminated').exists(), terminated
                 WAITS.wait('group termination observed', lambda: len(times(target, 'worker', 'term')) >= 2
@@ -776,12 +795,15 @@ sys.exit(payload.get('code', 0))
                            lambda: not living(worker), [WAITS.PathAppears(markers / '.fixture-events')])
                 WAITS.wait('cooperative descendant reaped', lambda: coop.get('pid') in seen,
                            None, [WAITS.PathAppears(markers / ('%d.death' % coop['pid']))])
-                tick(target, .4)
-                os.kill(stubborn['pid'], signal.SIGUSR2)
-                WAITS.wait('stubborn descendant still alive',
-                           lambda: times(target, 'stubborn', 'beat')[-1] == clock(target).monotonic(),
-                           lambda: not living(stubborn), [WAITS.PathAppears(markers / '.fixture-events')])
-                tick(target, .1)
+                def observe_stubborn():
+                    # At the product's kill deadline, observe the held descendant
+                    # before waking the receiver to deliver the scheduled kill.
+                    os.kill(stubborn['pid'], signal.SIGUSR2)
+                    WAITS.wait('stubborn descendant still alive',
+                               lambda: times(target, 'stubborn', 'beat')[-1] == clock(target).monotonic(),
+                               lambda: not living(stubborn), [WAITS.PathAppears(markers / '.fixture-events')])
+
+                tick(target, before_wake=observe_stubborn)
                 watcher.join(timeout=WAITS.WAIT_HANG_SECONDS)
                 assert not watcher.is_alive(), 'death watcher hung'
                 ended = runner('escalate').wait(target) or {}

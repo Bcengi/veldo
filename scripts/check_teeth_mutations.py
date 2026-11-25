@@ -3431,6 +3431,17 @@ def cases():
     beat('stop-kill-at-termination', 'control_containment.py',
          "{'cooperative': stop_grace, 'terminate': kill_grace,",
          "{'cooperative': stop_grace, 'terminate': 0,", 'stop/bounded-group-exit')
+    for name, stage, factor in (('stop-cooperative-grace-shortened', 'cooperative', 0.6),
+                                ('stop-kill-grace-shortened', 'terminate', 0.9)):
+        beat(name, 'control_containment.py',
+             "        self.due = now + self.grace[stage] if stage in self.grace else math.inf\n",
+             "        self.due = now + (self.grace[stage] * %s if stage == %r else self.grace[stage]) if stage in self.grace else math.inf\n" % (factor, stage),
+             'stop/bounded-group-exit')
+    beat('heartbeat-sender-interval-shortened', 'control_heartbeat.py',
+         "        started, seq = time.monotonic(), 0\n",
+         "        seconds *= 0.6  # defect: send before the configured interval\n"
+         "        started, seq = time.monotonic(), 0\n",
+         'heartbeat/blocked-call-liveness')
     # AC3, declared: the slot is released before the descendants have ended.
     beat('retire41-config-oserror-unhandled', 'control_launch.py',
          '    except (OSError, ValueError, KeyError, TypeError):\n        # No receiver ran',

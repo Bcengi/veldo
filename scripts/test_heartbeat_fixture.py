@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import threading
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,6 +26,15 @@ ALLOCATOR = load(ROOT / 'scripts/gate_fixtures.py')
 
 
 class HeartbeatFixture(unittest.TestCase):
+    def test_wake_follows_requested_deadline_including_shortened_graces(self):
+        for grace in (1.0, 0.6, 0.5, 0.45):
+            state = {'now': 100, 'timeout': 1000, 'observation': {'due': 100 + grace}}
+            self.assertEqual(CLOCK.deadline(state), 100 + grace)
+        self.assertEqual(CLOCK.deadline({'now': 100, 'timeout': 150}), 100.15)
+        self.assertEqual(CLOCK.deadline({'now': 100, 'timeout': 0}), 100)
+        with self.assertRaises(AssertionError):
+            CLOCK.deadline({'now': 100, 'timeout': None})
+
     def test_subject_survives_arbitrary_clock_advance_until_observed_and_released(self):
         tree = ast.parse((ROOT / 'scripts/suites/67_veldo_0041_heartbeat.py').read_text())
         common = next(n.value for n in ast.walk(tree) if isinstance(n, ast.Assign)
@@ -152,7 +162,48 @@ class HeartbeatFixture(unittest.TestCase):
                 self.assertEqual(CLOCK.read(directory / 'sender-waiting')['timeout'], 0)
             finally:
                 poller.poller.close()
+                poller.gate.close()
                 os.close(poller.tick)
+
+    def test_receiver_hold_defers_native_events_until_deadline_observation_finishes(self):
+        with ALLOCATOR.directory() as folder:
+            directory = Path(folder)
+            CLOCK.write(directory / 'now', 100)
+            os.mkfifo(directory / 'receiver-tick')
+            clock = CLOCK.Clock(directory)
+            poller = clock.select('receiver-tick').poll()
+            read_fd, write_fd = os.pipe()
+            poller.register(read_fd, 1)
+            returned = threading.Event()
+            result = []
+
+            def receive():
+                result.extend(poller.poll())
+                returned.set()
+
+            thread = threading.Thread(target=receive)
+            try:
+                thread.start()
+                os.write(poller.tick, b'h')
+                held = directory / 'receiver-tick-held'
+                WAITS.wait('receiver held at poll', held.exists, returned.is_set, [WAITS.PathAppears(held)])
+                self.assertTrue(held.exists())
+                CLOCK.write(directory / 'now', 100.45)
+                os.write(write_fd, b'native')
+                self.assertFalse(returned.is_set())
+                os.write(poller.tick, b't')
+                thread.join(timeout=WAITS.WAIT_HANG_SECONDS)
+                self.assertTrue(returned.is_set())
+                self.assertEqual(result, [])
+                self.assertEqual(poller.poll(), [(read_fd, 1)])
+            finally:
+                os.write(poller.tick, b't')
+                thread.join(timeout=WAITS.WAIT_HANG_SECONDS)
+                poller.poller.close()
+                poller.gate.close()
+                os.close(poller.tick)
+                os.close(read_fd)
+                os.close(write_fd)
 
 
 if __name__ == '__main__':

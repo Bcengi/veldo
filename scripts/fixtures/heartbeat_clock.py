@@ -29,6 +29,14 @@ def read(path):
     return json.loads(Path(path).read_text())
 
 
+def deadline(state):
+    """The requested wake, preserving Stop.due below poll's millisecond rounding."""
+    assert state['timeout'] is not None, state
+    due = state['now'] + state['timeout'] / 1000
+    stop_due = (state.get('observation') or {}).get('due')
+    return min(due, stop_due) if stop_due is not None else due
+
+
 class Clock:
     def __init__(self, directory):
         self.directory = Path(directory)
@@ -50,6 +58,9 @@ class Clock:
                 self.poller = EventSelector()
                 self.tick = os.open(clock.directory / role, os.O_RDWR | os.O_NONBLOCK)
                 self.poller.register(self.tick, selectors.EVENT_READ)
+                self.gate = EventSelector()
+                self.gate.register(self.tick, selectors.EVENT_READ)
+                self.held = False
                 self.turn = 0
 
             def register(self, fd, events):
@@ -60,21 +71,30 @@ class Clock:
 
             def poll(self, timeout=None):
                 self.turn += 1
-                write(clock.directory / (role + '-waiting'),
-                      {'now': clock.monotonic(), 'timeout': timeout, 'turn': self.turn})
+                observation = clock.directory / 'receiver'
+                state = {'now': clock.monotonic(), 'timeout': timeout, 'turn': self.turn,
+                         'observation': read(observation) if role == 'receiver-tick' and observation.exists() else None}
+                write(clock.directory / (role + '-waiting'), state)
                 # Only a hang detector is a real timeout. The supplied clock's
                 # deadline is awakened by the fixture's explicit tick.
-                events = self.poller.select(WAIT_HANG_SECONDS)
-                if not events:
-                    raise TimeoutError('heartbeat fixture event wait hung')
-                result = []
-                for key, mask in events:
-                    fd = key.fd
-                    if fd == self.tick:
-                        os.read(fd, 65536)
-                    else:
-                        result.append((fd, mask))
-                return result
+                while True:
+                    if self.held:
+                        write(clock.directory / (role + '-held'), state)
+                    waiting = self.gate if self.held else self.poller
+                    events = waiting.select(WAIT_HANG_SECONDS)
+                    if not events:
+                        raise TimeoutError('heartbeat fixture event wait hung')
+                    result = []
+                    for key, mask in events:
+                        fd = key.fd
+                        if fd == self.tick:
+                            self.held = os.read(fd, 65536).endswith(b'h')
+                        else:
+                            result.append((fd, mask))
+                    # Deliver already observed native events before acknowledging
+                    # a hold at the next product poll and its updated deadline.
+                    if result or not self.held:
+                        return result
 
         return types.SimpleNamespace(poll=Poll, POLLIN=select.POLLIN,
                                      POLLPRI=select.POLLPRI, POLLERR=select.POLLERR)
