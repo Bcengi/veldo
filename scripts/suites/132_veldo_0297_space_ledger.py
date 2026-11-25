@@ -241,9 +241,12 @@ def _v297_space_ledger_suite():
               step['ok'] and state_of(item) == 'removing')
         facts = {'event': 'run_finished', 'emitter': 'receiver', 'method': 'folder', 'bytes': 4096,
                  'free_before': 100, 'free_after': 4196}
+        # VELDO-0319 adds the store's removal order to the caller's unchanged facts.
+        removal_seq = L.conn.execute('SELECT COALESCE(MAX(seq), 0) + 1 FROM journal').fetchone()[0]
         step = L.outcome(item, 'removed', facts)
         check('ac1/declare-to-removed', 'outcome removed moves removing to removed with the removal facts [%s]'
-              % step.get('reason'), step['ok'] and state_of(item) == 'removed' and L.item(item)['removal'] == facts)
+              % step.get('reason'), step['ok'] and state_of(item) == 'removed'
+              and L.item(item)['removal'] == dict(facts, seq=removal_seq))
 
         # ---- AC1: confirm only from declared, outcome only from due or removing ----------------------
         for state in SP.STATES:
