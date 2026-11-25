@@ -34,7 +34,9 @@ def deadline(state):
     assert state['timeout'] is not None, state
     due = state['now'] + state['timeout'] / 1000
     stop_due = (state.get('observation') or {}).get('due')
-    return min(due, stop_due) if stop_due is not None else due
+    if stop_due is not None and due - 0.001 <= stop_due <= due:
+        return stop_due
+    return due
 
 
 class Clock:

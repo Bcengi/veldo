@@ -3442,6 +3442,10 @@ def cases():
          "        seconds *= 0.6  # defect: send before the configured interval\n"
          "        started, seq = time.monotonic(), 0\n",
          'heartbeat/blocked-call-liveness')
+    beat('rv39-stop-wake-late', 'control_launch.py',
+         "stop.due if stop is not None else math.inf,",
+         "stop.due + 0.4 if stop is not None else math.inf,",
+         'stop/bounded-group-exit')
     # AC3, declared: the slot is released before the descendants have ended.
     beat('retire41-config-oserror-unhandled', 'control_launch.py',
          '    except (OSError, ValueError, KeyError, TypeError):\n        # No receiver ran',

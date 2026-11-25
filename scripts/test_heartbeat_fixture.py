@@ -28,12 +28,22 @@ ALLOCATOR = load(ROOT / 'scripts/gate_fixtures.py')
 class HeartbeatFixture(unittest.TestCase):
     def test_wake_follows_requested_deadline_including_shortened_graces(self):
         for grace in (1.0, 0.6, 0.5, 0.45):
-            state = {'now': 100, 'timeout': 1000, 'observation': {'due': 100 + grace}}
+            state = {'now': 100, 'timeout': grace * 1000, 'observation': {'due': 100 + grace}}
             self.assertEqual(CLOCK.deadline(state), 100 + grace)
+            state['timeout'] += 400
+            self.assertEqual(CLOCK.deadline(state), 100 + state['timeout'] / 1000)
         self.assertEqual(CLOCK.deadline({'now': 100, 'timeout': 150}), 100.15)
         self.assertEqual(CLOCK.deadline({'now': 100, 'timeout': 0}), 100)
         with self.assertRaises(AssertionError):
             CLOCK.deadline({'now': 100, 'timeout': None})
+
+    def test_stop_deadline_only_absorbs_poll_rounding(self):
+        for stop_due, expected in ((100.999, 100.999), (100.9995, 100.9995),
+                                   (101, 101), (100.9989, 101), (101.0001, 101),
+                                   (None, 101)):
+            with self.subTest(stop_due=stop_due):
+                state = {'now': 100, 'timeout': 1000, 'observation': {'due': stop_due}}
+                self.assertEqual(CLOCK.deadline(state), expected)
 
     def test_subject_survives_arbitrary_clock_advance_until_observed_and_released(self):
         tree = ast.parse((ROOT / 'scripts/suites/67_veldo_0041_heartbeat.py').read_text())
