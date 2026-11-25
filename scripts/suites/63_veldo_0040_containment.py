@@ -944,6 +944,15 @@ sys.exit(payload.get('code', 0))
                 and not row['termination']['deadline_stop'] and row['elapsed'] == C.SETTLE_SECONDS  # supplied clock
                 for row in unreadable))
 
+        # Observe the operation boundary in each real receiver, after the supplied-clock
+        # rows above. A completed group stop that never called its group operation is
+        # already a failure: surface it on receiver exit, before any runtime/settle timer.
+        # The observer forwards real calls unchanged; every existing row still judges
+        # the processes, durable record, signal order and retirement itself.
+        boundary = ROOT / 'scripts' / 'fixtures' / 'containment_stop_boundary.py'
+        with (mods / 'control_containment.py').open('a') as installed:
+            installed.write('\n' + boundary.read_text() + '\nobserve_stop_boundary(Stop)\n')
+
         started, made = {}, []
         # From here every timer of the table is at the wait hang bound (the fake manager rows are done).
         TIMERS.set_profile(None, hang_seconds=WAITS.WAIT_HANG_SECONDS)

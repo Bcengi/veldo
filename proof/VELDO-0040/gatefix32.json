@@ -1,0 +1,72 @@
+{
+  "base": "4297af9a4b8337cfa253bf73975ea203e88451b3",
+  "target_runs": {
+    "old1": {
+      "elapsed": 192.85018580919132,
+      "estimate_seconds": 120
+    },
+    "old2": {
+      "elapsed": 192.94978591613472,
+      "estimate_seconds": 120
+    },
+    "old3": {
+      "elapsed": 195.96307436516508,
+      "estimate_seconds": 120
+    },
+    "fixed1": {
+      "elapsed": 34.4409037749283,
+      "estimate_seconds": 120
+    },
+    "fixed2": {
+      "elapsed": 27.049987686797976,
+      "estimate_seconds": 120
+    },
+    "fixed3": {
+      "elapsed": 26.628719481173903,
+      "estimate_seconds": 120
+    }
+  },
+  "other_cases": {
+    "attempted": 40,
+    "rejected": 39,
+    "interrupted": [
+      "containment-runtime-cap-ignored"
+    ],
+    "additional_slow_runs": [
+      {
+        "name": "containment-memory-cap-ignored",
+        "seconds": 75.269
+      },
+      {
+        "name": "containment-exit-leaves-descendants",
+        "seconds": 149.503
+      }
+    ]
+  },
+  "standalone_suite": {
+    "passed": 64,
+    "failed": 0
+  },
+  "regression": {
+    "boundary_tests_passed": 4,
+    "old_boundary_failures": 2,
+    "old_budget_failures": 3,
+    "fixed_budget_passes": 3
+  },
+  "checks": {
+    "wallclock": "passed; no new sites",
+    "personal_setup": 0,
+    "stale_mutants": 0,
+    "stale_scanned": 3976,
+    "lint": "passed",
+    "template_sync": "passed",
+    "original_assertions_unchanged": 33,
+    "gate_unconfined_unchanged": true
+  },
+  "protected_paths_touched": [],
+  "implementation_sha256": {
+    "scripts/suites/63_veldo_0040_containment.py": "89c52c8a1c83e323ba5a984bd338dbb2ade4b6baea7eb6e2bccc2e866348f2bc",
+    "scripts/fixtures/containment_stop_boundary.py": "34b5afb4c895352d15b8b595d495c307808b907cab24ce869531fd6015dbab11",
+    "scripts/test_containment_stop_boundary.py": "0048552fd7012c457bfbe075e609d22b4cca0700a0ce2992960a554219c50202"
+  }
+}
