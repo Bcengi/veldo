@@ -1,0 +1,19 @@
+{
+  "host": "dmitry-pc2",
+  "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "executable": "/usr/bin/python3",
+  "commit": "369d6d04e56b6bf6a771814e61447edba803e39d",
+  "node": "v22.22.1",
+  "npm": "9.2.0",
+  "engines": {
+    "codex": {
+      "path": "/home/dmitry/.local/share/codex-versions/0.166.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+      "sha256": "b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8"
+    },
+    "claude": {
+      "path": "/home/dmitry/.local/share/claude/versions/2.1.317",
+      "sha256": "eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0"
+    }
+  },
+  "fixture_removed": true
+}

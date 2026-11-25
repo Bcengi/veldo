@@ -1,0 +1,3065 @@
+{
+  "cases": {
+    "pool-shared-profile": {
+      "original": {
+        "status": "passed",
+        "elapsed": 147.6229394369293,
+        "executed": 1,
+        "rejected": 1,
+        "reused": 0,
+        "invalid_results": [],
+        "surviving_workers": 0,
+        "workers": [
+          {
+            "mode": "baseline",
+            "elapsed": 46.958531125914305,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 3,
+              "scratch_removed": true
+            },
+            "error": null
+          },
+          {
+            "mode": "noop",
+            "elapsed": 46.85914285504259,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 3,
+              "scratch_removed": true
+            },
+            "error": null
+          },
+          {
+            "mode": "mutant",
+            "elapsed": 46.904033261933364,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 3,
+              "scratch_removed": true
+            },
+            "error": null
+          }
+        ],
+        "kills": [
+          {
+            "row": "VELDO-0160 pool/per-account-isolation",
+            "kill_by": "unproven"
+          }
+        ],
+        "kill_by": "unproven",
+        "observations": {
+          "baseline": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0160 pool/per-account-isolation",
+              true
+            ],
+            [
+              "VELDO-0160 pool/one-registration",
+              true
+            ],
+            [
+              "VELDO-0160 pool/concurrent",
+              true
+            ],
+            [
+              "VELDO-0160 limit/stream-exhausted",
+              true
+            ],
+            [
+              "VELDO-0160 limit/rate-limit-result",
+              true
+            ],
+            [
+              "VELDO-0160 limit/claude-rejected-texts",
+              true
+            ],
+            [
+              "VELDO-0160 decision/rerun",
+              true
+            ],
+            [
+              "VELDO-0160 decision/ask",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unreadable-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/same-id-write",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unknown-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/redacted-name",
+              true
+            ],
+            [
+              "VELDO-0160 decision/tool-free-forms",
+              true
+            ],
+            [
+              "VELDO-0160 format/tool-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/repl-inner-call",
+              true
+            ],
+            [
+              "VELDO-0160 decision/task-progress-tool",
+              true
+            ],
+            [
+              "VELDO-0160 decision/frame-tool-names",
+              true
+            ],
+            [
+              "VELDO-0160 decision/subagent-calls",
+              true
+            ],
+            [
+              "VELDO-0160 decision/no-write-server-reruns",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-work-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-constructs",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unconfigured-call-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/remote-agent-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/outward-tool-asks",
+              true
+            ],
+            [
+              "VELDO-0160 pool/moved-off",
+              true
+            ],
+            [
+              "VELDO-0160 pool/added-account",
+              true
+            ],
+            [
+              "VELDO-0160 pool/one-run-while-unknown",
+              true
+            ],
+            [
+              "VELDO-0160 pool/usage-observes",
+              true
+            ],
+            [
+              "VELDO-0160 pool/selection-order",
+              true
+            ],
+            [
+              "VELDO-0160 pool/until-earliest",
+              true
+            ],
+            [
+              "VELDO-0160 install/assets",
+              true
+            ],
+            [
+              "VELDO-0160 format/claude-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0160 format/codex-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ],
+          "noop": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0160 pool/per-account-isolation",
+              true
+            ],
+            [
+              "VELDO-0160 pool/one-registration",
+              true
+            ],
+            [
+              "VELDO-0160 pool/concurrent",
+              true
+            ],
+            [
+              "VELDO-0160 limit/stream-exhausted",
+              true
+            ],
+            [
+              "VELDO-0160 limit/rate-limit-result",
+              true
+            ],
+            [
+              "VELDO-0160 limit/claude-rejected-texts",
+              true
+            ],
+            [
+              "VELDO-0160 decision/rerun",
+              true
+            ],
+            [
+              "VELDO-0160 decision/ask",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unreadable-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/same-id-write",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unknown-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/redacted-name",
+              true
+            ],
+            [
+              "VELDO-0160 decision/tool-free-forms",
+              true
+            ],
+            [
+              "VELDO-0160 format/tool-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/repl-inner-call",
+              true
+            ],
+            [
+              "VELDO-0160 decision/task-progress-tool",
+              true
+            ],
+            [
+              "VELDO-0160 decision/frame-tool-names",
+              true
+            ],
+            [
+              "VELDO-0160 decision/subagent-calls",
+              true
+            ],
+            [
+              "VELDO-0160 decision/no-write-server-reruns",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-work-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-constructs",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unconfigured-call-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/remote-agent-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/outward-tool-asks",
+              true
+            ],
+            [
+              "VELDO-0160 pool/moved-off",
+              true
+            ],
+            [
+              "VELDO-0160 pool/added-account",
+              true
+            ],
+            [
+              "VELDO-0160 pool/one-run-while-unknown",
+              true
+            ],
+            [
+              "VELDO-0160 pool/usage-observes",
+              true
+            ],
+            [
+              "VELDO-0160 pool/selection-order",
+              true
+            ],
+            [
+              "VELDO-0160 pool/until-earliest",
+              true
+            ],
+            [
+              "VELDO-0160 install/assets",
+              true
+            ],
+            [
+              "VELDO-0160 format/claude-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0160 format/codex-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ],
+          "mutant": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0160 pool/per-account-isolation",
+              false
+            ],
+            [
+              "VELDO-0160 pool/one-registration",
+              true
+            ],
+            [
+              "VELDO-0160 pool/concurrent",
+              true
+            ],
+            [
+              "VELDO-0160 limit/stream-exhausted",
+              true
+            ],
+            [
+              "VELDO-0160 limit/rate-limit-result",
+              true
+            ],
+            [
+              "VELDO-0160 limit/claude-rejected-texts",
+              true
+            ],
+            [
+              "VELDO-0160 decision/rerun",
+              true
+            ],
+            [
+              "VELDO-0160 decision/ask",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unreadable-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/same-id-write",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unknown-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/redacted-name",
+              true
+            ],
+            [
+              "VELDO-0160 decision/tool-free-forms",
+              true
+            ],
+            [
+              "VELDO-0160 format/tool-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/repl-inner-call",
+              true
+            ],
+            [
+              "VELDO-0160 decision/task-progress-tool",
+              true
+            ],
+            [
+              "VELDO-0160 decision/frame-tool-names",
+              true
+            ],
+            [
+              "VELDO-0160 decision/subagent-calls",
+              true
+            ],
+            [
+              "VELDO-0160 decision/no-write-server-reruns",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-work-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-constructs",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unconfigured-call-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/remote-agent-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/outward-tool-asks",
+              true
+            ],
+            [
+              "VELDO-0160 pool/moved-off",
+              true
+            ],
+            [
+              "VELDO-0160 pool/added-account",
+              true
+            ],
+            [
+              "VELDO-0160 pool/one-run-while-unknown",
+              true
+            ],
+            [
+              "VELDO-0160 pool/usage-observes",
+              true
+            ],
+            [
+              "VELDO-0160 pool/selection-order",
+              true
+            ],
+            [
+              "VELDO-0160 pool/until-earliest",
+              true
+            ],
+            [
+              "VELDO-0160 install/assets",
+              true
+            ],
+            [
+              "VELDO-0160 format/claude-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0160 format/codex-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ]
+        },
+        "failed_details": {
+          "baseline": [],
+          "noop": [],
+          "mutant": []
+        }
+      },
+      "split": {
+        "status": "passed",
+        "elapsed": 147.48881815490313,
+        "executed": 1,
+        "rejected": 1,
+        "reused": 0,
+        "invalid_results": [],
+        "surviving_workers": 0,
+        "workers": [
+          {
+            "mode": "baseline",
+            "elapsed": 46.6168386710342,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 3,
+              "scratch_removed": true
+            },
+            "error": null
+          },
+          {
+            "mode": "noop",
+            "elapsed": 46.96423371997662,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 3,
+              "scratch_removed": true
+            },
+            "error": null
+          },
+          {
+            "mode": "mutant",
+            "elapsed": 46.88479083997663,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 3,
+              "scratch_removed": true
+            },
+            "error": null
+          }
+        ],
+        "kills": [
+          {
+            "row": "VELDO-0160 pool/per-account-isolation",
+            "kill_by": "unproven"
+          }
+        ],
+        "kill_by": "unproven",
+        "observations": {
+          "baseline": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0160 pool/per-account-isolation",
+              true
+            ],
+            [
+              "VELDO-0160 pool/one-registration",
+              true
+            ],
+            [
+              "VELDO-0160 pool/concurrent",
+              true
+            ],
+            [
+              "VELDO-0160 limit/stream-exhausted",
+              true
+            ],
+            [
+              "VELDO-0160 limit/rate-limit-result",
+              true
+            ],
+            [
+              "VELDO-0160 limit/claude-rejected-texts",
+              true
+            ],
+            [
+              "VELDO-0160 decision/rerun",
+              true
+            ],
+            [
+              "VELDO-0160 decision/ask",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unreadable-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/same-id-write",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unknown-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/redacted-name",
+              true
+            ],
+            [
+              "VELDO-0160 decision/tool-free-forms",
+              true
+            ],
+            [
+              "VELDO-0160 format/tool-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/repl-inner-call",
+              true
+            ],
+            [
+              "VELDO-0160 decision/task-progress-tool",
+              true
+            ],
+            [
+              "VELDO-0160 decision/frame-tool-names",
+              true
+            ],
+            [
+              "VELDO-0160 decision/subagent-calls",
+              true
+            ],
+            [
+              "VELDO-0160 decision/no-write-server-reruns",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-work-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-constructs",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unconfigured-call-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/remote-agent-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/outward-tool-asks",
+              true
+            ],
+            [
+              "VELDO-0160 pool/moved-off",
+              true
+            ],
+            [
+              "VELDO-0160 pool/added-account",
+              true
+            ],
+            [
+              "VELDO-0160 pool/one-run-while-unknown",
+              true
+            ],
+            [
+              "VELDO-0160 pool/usage-observes",
+              true
+            ],
+            [
+              "VELDO-0160 pool/selection-order",
+              true
+            ],
+            [
+              "VELDO-0160 pool/until-earliest",
+              true
+            ],
+            [
+              "VELDO-0160 format/claude-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0160 format/codex-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ],
+          "noop": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0160 pool/per-account-isolation",
+              true
+            ],
+            [
+              "VELDO-0160 pool/one-registration",
+              true
+            ],
+            [
+              "VELDO-0160 pool/concurrent",
+              true
+            ],
+            [
+              "VELDO-0160 limit/stream-exhausted",
+              true
+            ],
+            [
+              "VELDO-0160 limit/rate-limit-result",
+              true
+            ],
+            [
+              "VELDO-0160 limit/claude-rejected-texts",
+              true
+            ],
+            [
+              "VELDO-0160 decision/rerun",
+              true
+            ],
+            [
+              "VELDO-0160 decision/ask",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unreadable-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/same-id-write",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unknown-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/redacted-name",
+              true
+            ],
+            [
+              "VELDO-0160 decision/tool-free-forms",
+              true
+            ],
+            [
+              "VELDO-0160 format/tool-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/repl-inner-call",
+              true
+            ],
+            [
+              "VELDO-0160 decision/task-progress-tool",
+              true
+            ],
+            [
+              "VELDO-0160 decision/frame-tool-names",
+              true
+            ],
+            [
+              "VELDO-0160 decision/subagent-calls",
+              true
+            ],
+            [
+              "VELDO-0160 decision/no-write-server-reruns",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-work-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-constructs",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unconfigured-call-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/remote-agent-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/outward-tool-asks",
+              true
+            ],
+            [
+              "VELDO-0160 pool/moved-off",
+              true
+            ],
+            [
+              "VELDO-0160 pool/added-account",
+              true
+            ],
+            [
+              "VELDO-0160 pool/one-run-while-unknown",
+              true
+            ],
+            [
+              "VELDO-0160 pool/usage-observes",
+              true
+            ],
+            [
+              "VELDO-0160 pool/selection-order",
+              true
+            ],
+            [
+              "VELDO-0160 pool/until-earliest",
+              true
+            ],
+            [
+              "VELDO-0160 format/claude-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0160 format/codex-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ],
+          "mutant": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0160 pool/per-account-isolation",
+              false
+            ],
+            [
+              "VELDO-0160 pool/one-registration",
+              true
+            ],
+            [
+              "VELDO-0160 pool/concurrent",
+              true
+            ],
+            [
+              "VELDO-0160 limit/stream-exhausted",
+              true
+            ],
+            [
+              "VELDO-0160 limit/rate-limit-result",
+              true
+            ],
+            [
+              "VELDO-0160 limit/claude-rejected-texts",
+              true
+            ],
+            [
+              "VELDO-0160 decision/rerun",
+              true
+            ],
+            [
+              "VELDO-0160 decision/ask",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unreadable-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/same-id-write",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unknown-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/redacted-name",
+              true
+            ],
+            [
+              "VELDO-0160 decision/tool-free-forms",
+              true
+            ],
+            [
+              "VELDO-0160 format/tool-forms",
+              true
+            ],
+            [
+              "VELDO-0160 decision/repl-inner-call",
+              true
+            ],
+            [
+              "VELDO-0160 decision/task-progress-tool",
+              true
+            ],
+            [
+              "VELDO-0160 decision/frame-tool-names",
+              true
+            ],
+            [
+              "VELDO-0160 decision/subagent-calls",
+              true
+            ],
+            [
+              "VELDO-0160 decision/no-write-server-reruns",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-work-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/nested-constructs",
+              true
+            ],
+            [
+              "VELDO-0160 decision/unconfigured-call-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/remote-agent-asks",
+              true
+            ],
+            [
+              "VELDO-0160 decision/outward-tool-asks",
+              true
+            ],
+            [
+              "VELDO-0160 pool/moved-off",
+              true
+            ],
+            [
+              "VELDO-0160 pool/added-account",
+              true
+            ],
+            [
+              "VELDO-0160 pool/one-run-while-unknown",
+              true
+            ],
+            [
+              "VELDO-0160 pool/usage-observes",
+              true
+            ],
+            [
+              "VELDO-0160 pool/selection-order",
+              true
+            ],
+            [
+              "VELDO-0160 pool/until-earliest",
+              true
+            ],
+            [
+              "VELDO-0160 format/claude-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0160 format/codex-fake-lines",
+              true
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ]
+        },
+        "failed_details": {
+          "baseline": [],
+          "noop": [],
+          "mutant": []
+        }
+      },
+      "green": true,
+      "same_named_kills": true,
+      "common_observations_match": {
+        "baseline": true,
+        "noop": true,
+        "mutant": true
+      },
+      "extracted_rows": {
+        "baseline": [
+          "VELDO-0160 install/assets"
+        ],
+        "noop": [
+          "VELDO-0160 install/assets"
+        ],
+        "mutant": [
+          "VELDO-0160 install/assets"
+        ]
+      }
+    },
+    "role127-resource-grant-omitted": {
+      "original": {
+        "status": "passed",
+        "elapsed": 226.81518658599816,
+        "executed": 1,
+        "rejected": 1,
+        "reused": 0,
+        "invalid_results": [],
+        "surviving_workers": 0,
+        "workers": [
+          {
+            "mode": "baseline",
+            "elapsed": 81.17029740195721,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 5,
+              "scratch_removed": true
+            },
+            "error": null
+          },
+          {
+            "mode": "noop",
+            "elapsed": 81.18217697401997,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 5,
+              "scratch_removed": true
+            },
+            "error": null
+          },
+          {
+            "mode": "mutant",
+            "elapsed": 57.6292726729298,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 4,
+              "scratch_removed": true
+            },
+            "error": null
+          }
+        ],
+        "kills": [
+          {
+            "row": "VELDO-0127 wire/resources",
+            "kill_by": "unproven"
+          }
+        ],
+        "kill_by": "unproven",
+        "observations": {
+          "baseline": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0127 revision/history",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/claude",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/codex",
+              true
+            ],
+            [
+              "VELDO-0127 dispatch/binding",
+              true
+            ],
+            [
+              "VELDO-0127 dispatch/refusal",
+              true
+            ],
+            [
+              "VELDO-0127 launch/push",
+              true
+            ],
+            [
+              "VELDO-0127 launch/unlisted",
+              true
+            ],
+            [
+              "VELDO-0127 launch/instructions",
+              true
+            ],
+            [
+              "VELDO-0127 live/claude",
+              true
+            ],
+            [
+              "VELDO-0127 live/codex",
+              true
+            ],
+            [
+              "VELDO-0127 format/fake-lines",
+              true
+            ],
+            [
+              "VELDO-0127 review/skill-commit",
+              true
+            ],
+            [
+              "VELDO-0127 review/skill-git-boundary",
+              true
+            ],
+            [
+              "VELDO-0127 review/probe-terminal",
+              true
+            ],
+            [
+              "VELDO-0127 review/init-bound",
+              true
+            ],
+            [
+              "VELDO-0127 review/slash-collision",
+              true
+            ],
+            [
+              "VELDO-0127 review/marker-debug",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-tools",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-mode",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-capture",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/fields",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/grants",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/integrity",
+              true
+            ],
+            [
+              "VELDO-0127 wire/normalization",
+              true
+            ],
+            [
+              "VELDO-0127 wire/resources",
+              true
+            ],
+            [
+              "VELDO-0127 wire/no-server",
+              true
+            ],
+            [
+              "VELDO-0127 wire/later-requests",
+              true
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ],
+          "noop": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0127 revision/history",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/claude",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/codex",
+              true
+            ],
+            [
+              "VELDO-0127 dispatch/binding",
+              true
+            ],
+            [
+              "VELDO-0127 dispatch/refusal",
+              true
+            ],
+            [
+              "VELDO-0127 launch/push",
+              true
+            ],
+            [
+              "VELDO-0127 launch/unlisted",
+              true
+            ],
+            [
+              "VELDO-0127 launch/instructions",
+              true
+            ],
+            [
+              "VELDO-0127 live/claude",
+              true
+            ],
+            [
+              "VELDO-0127 live/codex",
+              true
+            ],
+            [
+              "VELDO-0127 format/fake-lines",
+              true
+            ],
+            [
+              "VELDO-0127 review/skill-commit",
+              true
+            ],
+            [
+              "VELDO-0127 review/skill-git-boundary",
+              true
+            ],
+            [
+              "VELDO-0127 review/probe-terminal",
+              true
+            ],
+            [
+              "VELDO-0127 review/init-bound",
+              true
+            ],
+            [
+              "VELDO-0127 review/slash-collision",
+              true
+            ],
+            [
+              "VELDO-0127 review/marker-debug",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-tools",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-mode",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-capture",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/fields",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/grants",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/integrity",
+              true
+            ],
+            [
+              "VELDO-0127 wire/normalization",
+              true
+            ],
+            [
+              "VELDO-0127 wire/resources",
+              true
+            ],
+            [
+              "VELDO-0127 wire/no-server",
+              true
+            ],
+            [
+              "VELDO-0127 wire/later-requests",
+              true
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ],
+          "mutant": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0127 revision/history",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/claude",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/codex",
+              false
+            ],
+            [
+              "VELDO-0127 dispatch/binding",
+              true
+            ],
+            [
+              "VELDO-0127 dispatch/refusal",
+              true
+            ],
+            [
+              "VELDO-0127 launch/push",
+              true
+            ],
+            [
+              "VELDO-0127 launch/unlisted",
+              false
+            ],
+            [
+              "VELDO-0127 launch/instructions",
+              false
+            ],
+            [
+              "VELDO-0127 live/claude",
+              true
+            ],
+            [
+              "VELDO-0127 live/codex",
+              false
+            ],
+            [
+              "VELDO-0127 format/fake-lines",
+              true
+            ],
+            [
+              "VELDO-0127 review/skill-commit",
+              false
+            ],
+            [
+              "VELDO-0127 review/skill-git-boundary",
+              true
+            ],
+            [
+              "VELDO-0127 review/probe-terminal",
+              true
+            ],
+            [
+              "VELDO-0127 review/init-bound",
+              true
+            ],
+            [
+              "VELDO-0127 review/slash-collision",
+              true
+            ],
+            [
+              "VELDO-0127 review/marker-debug",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-tools",
+              false
+            ],
+            [
+              "VELDO-0127 review/codex-mode",
+              false
+            ],
+            [
+              "VELDO-0127 review/codex-capture",
+              false
+            ],
+            [
+              "VELDO-0127 catalog/fields",
+              false
+            ],
+            [
+              "VELDO-0127 catalog/grants",
+              false
+            ],
+            [
+              "VELDO-0127 catalog/integrity",
+              true
+            ],
+            [
+              "VELDO-0127 wire/normalization",
+              false
+            ],
+            [
+              "VELDO-0127 wire/resources",
+              false
+            ],
+            [
+              "VELDO-0127 wire/no-server",
+              true
+            ],
+            [
+              "VELDO-0127 wire/later-requests",
+              false
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ]
+        },
+        "failed_details": {
+          "baseline": [],
+          "noop": [],
+          "mutant": []
+        }
+      },
+      "split": {
+        "status": "passed",
+        "elapsed": 206.59603584802244,
+        "executed": 1,
+        "rejected": 1,
+        "reused": 0,
+        "invalid_results": [],
+        "surviving_workers": 0,
+        "workers": [
+          {
+            "mode": "baseline",
+            "elapsed": 74.22870890493505,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 5,
+              "scratch_removed": true
+            },
+            "error": null
+          },
+          {
+            "mode": "noop",
+            "elapsed": 74.56984221108723,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 5,
+              "scratch_removed": true
+            },
+            "error": null
+          },
+          {
+            "mode": "mutant",
+            "elapsed": 50.94465400103945,
+            "scratch_removed": null,
+            "cleanup": {
+              "units": [],
+              "directories": 4,
+              "scratch_removed": true
+            },
+            "error": null
+          }
+        ],
+        "kills": [
+          {
+            "row": "VELDO-0127 wire/resources",
+            "kill_by": "unproven"
+          }
+        ],
+        "kill_by": "unproven",
+        "observations": {
+          "baseline": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0127 revision/history",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/claude",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/codex",
+              true
+            ],
+            [
+              "VELDO-0127 dispatch/binding",
+              true
+            ],
+            [
+              "VELDO-0127 dispatch/refusal",
+              true
+            ],
+            [
+              "VELDO-0127 launch/push",
+              true
+            ],
+            [
+              "VELDO-0127 launch/unlisted",
+              true
+            ],
+            [
+              "VELDO-0127 launch/instructions",
+              true
+            ],
+            [
+              "VELDO-0127 live/claude",
+              true
+            ],
+            [
+              "VELDO-0127 live/codex",
+              true
+            ],
+            [
+              "VELDO-0127 format/fake-lines",
+              true
+            ],
+            [
+              "VELDO-0127 review/skill-commit",
+              true
+            ],
+            [
+              "VELDO-0127 review/skill-git-boundary",
+              true
+            ],
+            [
+              "VELDO-0127 review/probe-terminal",
+              true
+            ],
+            [
+              "VELDO-0127 review/slash-collision",
+              true
+            ],
+            [
+              "VELDO-0127 review/marker-debug",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-tools",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-mode",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-capture",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/fields",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/grants",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/integrity",
+              true
+            ],
+            [
+              "VELDO-0127 wire/normalization",
+              true
+            ],
+            [
+              "VELDO-0127 wire/resources",
+              true
+            ],
+            [
+              "VELDO-0127 wire/no-server",
+              true
+            ],
+            [
+              "VELDO-0127 wire/later-requests",
+              true
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ],
+          "noop": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0127 revision/history",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/claude",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/codex",
+              true
+            ],
+            [
+              "VELDO-0127 dispatch/binding",
+              true
+            ],
+            [
+              "VELDO-0127 dispatch/refusal",
+              true
+            ],
+            [
+              "VELDO-0127 launch/push",
+              true
+            ],
+            [
+              "VELDO-0127 launch/unlisted",
+              true
+            ],
+            [
+              "VELDO-0127 launch/instructions",
+              true
+            ],
+            [
+              "VELDO-0127 live/claude",
+              true
+            ],
+            [
+              "VELDO-0127 live/codex",
+              true
+            ],
+            [
+              "VELDO-0127 format/fake-lines",
+              true
+            ],
+            [
+              "VELDO-0127 review/skill-commit",
+              true
+            ],
+            [
+              "VELDO-0127 review/skill-git-boundary",
+              true
+            ],
+            [
+              "VELDO-0127 review/probe-terminal",
+              true
+            ],
+            [
+              "VELDO-0127 review/slash-collision",
+              true
+            ],
+            [
+              "VELDO-0127 review/marker-debug",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-tools",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-mode",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-capture",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/fields",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/grants",
+              true
+            ],
+            [
+              "VELDO-0127 catalog/integrity",
+              true
+            ],
+            [
+              "VELDO-0127 wire/normalization",
+              true
+            ],
+            [
+              "VELDO-0127 wire/resources",
+              true
+            ],
+            [
+              "VELDO-0127 wire/no-server",
+              true
+            ],
+            [
+              "VELDO-0127 wire/later-requests",
+              true
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ],
+          "mutant": [
+            [
+              "good spec accepted",
+              true
+            ],
+            [
+              "spec without criteria rejected",
+              true
+            ],
+            [
+              "unknown evidence kind rejected",
+              true
+            ],
+            [
+              "bad status rejected",
+              true
+            ],
+            [
+              "invented proof criterion rejected",
+              true
+            ],
+            [
+              "missing proof criterion rejected",
+              true
+            ],
+            [
+              "absent required evidence rejected",
+              true
+            ],
+            [
+              "passed-without-evidence rejected",
+              true
+            ],
+            [
+              "bad verdict value rejected",
+              true
+            ],
+            [
+              "good plan accepted",
+              true
+            ],
+            [
+              "plan dependency cycle rejected",
+              true
+            ],
+            [
+              "dangling dependency rejected",
+              true
+            ],
+            [
+              "unknown outcome ref rejected",
+              true
+            ],
+            [
+              "unknown feature ref rejected",
+              true
+            ],
+            [
+              "undeclared depends_on rejected",
+              true
+            ],
+            [
+              "ready without approval rejected",
+              true
+            ],
+            [
+              "decision without blocks rejected",
+              true
+            ],
+            [
+              "decision blocking unknown spec rejected",
+              true
+            ],
+            [
+              "duplicate work spec rejected",
+              true
+            ],
+            [
+              "bad release mode rejected",
+              true
+            ],
+            [
+              "mirror mismatch rejected",
+              true
+            ],
+            [
+              "correct mirror accepted",
+              true
+            ],
+            [
+              "spec binding to wrong plan rejected",
+              true
+            ],
+            [
+              "spec claiming missing work item rejected",
+              true
+            ],
+            [
+              "spec plan without work rejected",
+              true
+            ],
+            [
+              "correct spec binding accepted",
+              true
+            ],
+            [
+              "VELDO-0127 revision/history",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/claude",
+              true
+            ],
+            [
+              "VELDO-0127 handoff/codex",
+              false
+            ],
+            [
+              "VELDO-0127 dispatch/binding",
+              true
+            ],
+            [
+              "VELDO-0127 dispatch/refusal",
+              true
+            ],
+            [
+              "VELDO-0127 launch/push",
+              true
+            ],
+            [
+              "VELDO-0127 launch/unlisted",
+              false
+            ],
+            [
+              "VELDO-0127 launch/instructions",
+              false
+            ],
+            [
+              "VELDO-0127 live/claude",
+              true
+            ],
+            [
+              "VELDO-0127 live/codex",
+              false
+            ],
+            [
+              "VELDO-0127 format/fake-lines",
+              true
+            ],
+            [
+              "VELDO-0127 review/skill-commit",
+              false
+            ],
+            [
+              "VELDO-0127 review/skill-git-boundary",
+              true
+            ],
+            [
+              "VELDO-0127 review/probe-terminal",
+              true
+            ],
+            [
+              "VELDO-0127 review/slash-collision",
+              true
+            ],
+            [
+              "VELDO-0127 review/marker-debug",
+              true
+            ],
+            [
+              "VELDO-0127 review/codex-tools",
+              false
+            ],
+            [
+              "VELDO-0127 review/codex-mode",
+              false
+            ],
+            [
+              "VELDO-0127 review/codex-capture",
+              false
+            ],
+            [
+              "VELDO-0127 catalog/fields",
+              false
+            ],
+            [
+              "VELDO-0127 catalog/grants",
+              false
+            ],
+            [
+              "VELDO-0127 catalog/integrity",
+              true
+            ],
+            [
+              "VELDO-0127 wire/normalization",
+              false
+            ],
+            [
+              "VELDO-0127 wire/resources",
+              false
+            ],
+            [
+              "VELDO-0127 wire/no-server",
+              true
+            ],
+            [
+              "VELDO-0127 wire/later-requests",
+              false
+            ],
+            [
+              "VELDO-0172 fake/capture",
+              true
+            ]
+          ]
+        },
+        "failed_details": {
+          "baseline": [],
+          "noop": [],
+          "mutant": []
+        }
+      },
+      "green": true,
+      "same_named_kills": true,
+      "common_observations_match": {
+        "baseline": true,
+        "noop": true,
+        "mutant": true
+      },
+      "extracted_rows": {
+        "baseline": [
+          "VELDO-0127 review/init-bound"
+        ],
+        "noop": [
+          "VELDO-0127 review/init-bound"
+        ],
+        "mutant": [
+          "VELDO-0127 review/init-bound"
+        ]
+      }
+    }
+  },
+  "environment": {
+    "original": {
+      "host": "dmitry-pc2",
+      "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+      "executable": "/usr/bin/python3",
+      "commit": "369d6d04e56b6bf6a771814e61447edba803e39d",
+      "node": "v22.22.1",
+      "npm": "9.2.0",
+      "engines": {
+        "codex": {
+          "path": "/home/dmitry/.local/share/codex-versions/0.166.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+          "sha256": "b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8"
+        },
+        "claude": {
+          "path": "/home/dmitry/.local/share/claude/versions/2.1.317",
+          "sha256": "eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0"
+        }
+      },
+      "fixture_removed": true
+    },
+    "split": {
+      "host": "dmitry-pc2",
+      "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+      "executable": "/usr/bin/python3",
+      "commit": "80cbb6c7042c181eb0cdcd6ab4ee21c127e10e1f",
+      "node": "v22.22.1",
+      "npm": "9.2.0",
+      "engines": {
+        "codex": {
+          "path": "/home/dmitry/.local/share/codex-versions/0.166.0/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex",
+          "sha256": "b8a11fedf24b2dfb59a70c9e52b030f9a508dcd49cd2dd0d41956f4c785156b8"
+        },
+        "claude": {
+          "path": "/home/dmitry/.local/share/claude/versions/2.1.317",
+          "sha256": "eb224419e344575faa4a1f39b290b649425a10cd5ee2ef1d003480cd9ae57eb0"
+        }
+      },
+      "fixture_removed": true
+    }
+  },
+  "files": {
+    "README.md": "0efa96cf13f3a71db8bd556581dd1daf9014cab675ed13c8ea76b5e89b1a5fd6",
+    "controls.py": "1b8f08b35719f076db6df358c35c9f006b15137c5e5a02080c404a0729f36f89",
+    "original/controls-metadata.json": "e1d88069d19dc6cd1e9df1291f3fa42da8dbc97593ed43a4c795f734d2866d4d",
+    "original/controls-raw.json.gz": "621d44d468b3e67bdba236a1d0c63f89fb9a67c2c82532bc5f72efeb12ccf47a",
+    "original/controls-receipts.json.gz": "22f948301cddc1e61b19f0ecb721872acee589c9a2992190bd224a1e32f486e5",
+    "original.log": "6fbaa7f33a64b29dad51a7426200b02972dfcb40109cb453ac56ac4a65035dbc",
+    "split/controls-metadata.json": "7a8243e8c0fcb69c1b9d58afe05e0e77cfc80ff93060542220115032a19c6850",
+    "split/controls-raw.json.gz": "7bb707f940f0dde910ec0afa47425edd97c9a4658afb61cf1d5b4e713b7ca5f0",
+    "split/controls-receipts.json.gz": "c42603de6e80f910e3ad29f576eef0722fad9168f2e40d742bd6c3540b5cf2da",
+    "split.log": "973c8204820f45ead8ddfcca20cbbd1745f429f79d070f3db9156a5fcaf31fb0",
+    "summarize.py": "d90f9a1c5ffa357e001204bcdb078e90d7678e62085c02536b969ac849600811"
+  }
+}
