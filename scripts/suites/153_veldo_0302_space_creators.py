@@ -376,8 +376,12 @@ def _v302_creators_suite():
                  journal_signer=('authority', lambda data: 'stub:' + S.digest_of(data.decode())))
         KEEP = load('owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
         RM = load('space_remove', mods / 'control_space_remove.py')
+        # The desk's commands carry the time the owner's key took effect, read from the store: the
+        # enrollment above was admitted at the host's time, and a command signed before it is refused.
+        enrolled = max(entry['effective_at'] for entry in CM.authority_state(S, conn)['keyring']
+                       if entry.get('principal') == 'owner')
         desk = KEEP.Desk(mods, S, CM, AC, conn, ids, lambda data: 'stub:' + S.digest_of(data.decode()),
-                         KEEP.signer(key, AC.SIGNATURE_NAMESPACE), state, 1700000000.0, tag='v302_desk')
+                         KEEP.signer(key, AC.SIGNATURE_NAMESPACE), state, enrolled, tag='v302_desk')
         for actor in ('fleet', 'sandbox'):
             kept_path = scratch / ('kept-' + actor)
             git(repo, 'worktree', 'add', '-q', '--detach', str(kept_path), head)
