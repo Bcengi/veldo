@@ -250,7 +250,7 @@ def _v308_run_finished_suite():
         except OSError:
             return None
 
-    temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0308-', dir=os.environ.get('VELDO_FIXTURE_ROOT', '/var/lib/veldo'))))
+    temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0308-', dir=os.environ.get('VELDO_FIXTURE_ROOT', tempfile.gettempdir()))))
     connections = []
     row = ROWS[0]
     try:
