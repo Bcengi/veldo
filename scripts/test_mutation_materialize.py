@@ -181,7 +181,8 @@ class WorkerScratch(unittest.TestCase):
                                 resources.release.assert_not_called()
                             else:
                                 resources.release.assert_called_once_with('case')
-                                self.assertTrue(worker.outcomes[0]['cleanup']['scratch_removed'])
+                                self.assertTrue(worker.outcomes[0]['scratch_removed'])
+                                self.assertEqual(worker.outcomes[0]['cleanup'], {'units': [], 'directories': 0})
                             if outcome == 'driver_error':
                                 self.assertIn('No space left on device', worker.outcomes[0]['stderr_tail'])
                             self.assertNotIn('case', worker.active)

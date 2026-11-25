@@ -316,7 +316,8 @@ def _v219_checks():
             reap = [lambda *a, **k: {}]
             def load_fixture(path):
                 if Path(path).name == 'mutation_ownership.py':
-                    return types.SimpleNamespace(cleanup=lambda *a, **k: reap[0](*a, **k))
+                    return types.SimpleNamespace(cleanup=lambda *a, **k: reap[0](*a, **k),
+                                                 remove_tree=ownership.remove_tree)
                 return loader(path)
             error = None
             if fault == 'lifecycle':
@@ -521,7 +522,7 @@ def _v219_checks():
                 if Path(path).name == 'case_reuse.py':
                     return types.SimpleNamespace(Session=Session)
                 if Path(path).name == 'mutation_ownership.py':
-                    return types.SimpleNamespace(cleanup=lambda *a: {})
+                    return types.SimpleNamespace(cleanup=lambda *a: {}, remove_tree=ownership.remove_tree)
                 return real_load(path)
             patches = dict(inventory=lambda *a: stage_cases,read_inputs=lambda *a: stage_files,
                 git=lambda *a: 'head',snapshot=lambda *a: None,inputs_unchanged=lambda *a: True,
