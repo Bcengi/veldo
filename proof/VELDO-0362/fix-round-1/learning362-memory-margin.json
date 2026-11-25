@@ -1,0 +1,1142 @@
+{
+  "schema": "veldo.mutation-result/v1",
+  "fixture_version": 1,
+  "case": {
+    "finding": 362,
+    "name": "learning362-memory-margin",
+    "suite": "115_veldo_0219_measured_admission.py",
+    "module": "check_gate_mutations.py",
+    "old": "memory=1.15 * max(max(r['peak_anon_bytes'], r.get('peak_memory_bytes', 0)) for r in runs))",
+    "new": "memory=max(max(r['peak_anon_bytes'], r.get('peak_memory_bytes', 0)) for r in runs))",
+    "rows": [
+      "admission/learning/memory-margin"
+    ],
+    "dir": "scripts",
+    "driver": "check_teeth_mutations.py",
+    "identity": "check_teeth_mutations.py:learning362-memory-margin"
+  },
+  "baseline": {
+    "count": 71,
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0219 admission/measured-per-case",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cgroup-counters",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cgroup-removed-mid-read",
+        true
+      ],
+      [
+        "VELDO-0219 admission/own-outside-directory",
+        true
+      ],
+      [
+        "VELDO-0219 admission/ledger-line-mid-write",
+        true
+      ],
+      [
+        "VELDO-0219 admission/ledger-link-swapped-mid-resolve",
+        true
+      ],
+      [
+        "VELDO-0219 admission/bootstrap-joins-before-import",
+        true
+      ],
+      [
+        "VELDO-0219 admission/fallback-order",
+        true
+      ],
+      [
+        "VELDO-0219 admission/fits-ledger",
+        true
+      ],
+      [
+        "VELDO-0219 admission/drained-workers-readmit",
+        true
+      ],
+      [
+        "VELDO-0219 admission/coordinator-overhead-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/oversized-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cgroup-launch-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/abort-releases-every-grant",
+        true
+      ],
+      [
+        "VELDO-0219 admission/lifecycle-manager-admission",
+        true
+      ],
+      [
+        "VELDO-0219 admission/manifest-and-manager",
+        true
+      ],
+      [
+        "VELDO-0219 admission/unmeasured-inventory",
+        true
+      ],
+      [
+        "VELDO-0219 admission/same-verdicts",
+        true
+      ],
+      [
+        "VELDO-0219 admission/reserved-floor",
+        true
+      ],
+      [
+        "VELDO-0219 admission/stage-receipts-and-recording",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/baseline-outcome-name",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/noop-outcome-name",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/mutant-outcome-name",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/memory-margin",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/red-stage",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/invalid-controls",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/input-races",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/invalid-workers",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/conservative-max",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/unmeasured-default",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/foreign-corrupt",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/replace-foreign",
+        true
+      ],
+      [
+        "VELDO-0219 admission/aggregate-handoff",
+        true
+      ],
+      [
+        "VELDO-0219 admission/coordinator-overhead-measured",
+        true
+      ],
+      [
+        "VELDO-0219 admission/unmetered-fixed-cap",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cpu-per-run",
+        true
+      ],
+      [
+        "VELDO-0219 admission/blocking-resource",
+        true
+      ],
+      [
+        "VELDO-0219 admission/unit-lifecycle",
+        true
+      ],
+      [
+        "VELDO-0219 admission/lifecycle-channel-serialized",
+        true
+      ],
+      [
+        "VELDO-0219 admission/final-memory-bound",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cli-graph-without-channel",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cli-graph-with-channel",
+        true
+      ],
+      [
+        "VELDO-0219 admission/worker-before-handoff-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/lifecycle-registration-owned",
+        true
+      ],
+      [
+        "VELDO-0219 admission/qualification-capture",
+        true
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0219 admission/measured-per-case",
+      "VELDO-0219 admission/cgroup-counters",
+      "VELDO-0219 admission/cgroup-removed-mid-read",
+      "VELDO-0219 admission/own-outside-directory",
+      "VELDO-0219 admission/ledger-line-mid-write",
+      "VELDO-0219 admission/ledger-link-swapped-mid-resolve",
+      "VELDO-0219 admission/bootstrap-joins-before-import",
+      "VELDO-0219 admission/fallback-order",
+      "VELDO-0219 admission/fits-ledger",
+      "VELDO-0219 admission/drained-workers-readmit",
+      "VELDO-0219 admission/coordinator-overhead-refused",
+      "VELDO-0219 admission/oversized-refused",
+      "VELDO-0219 admission/cgroup-launch-refused",
+      "VELDO-0219 admission/abort-releases-every-grant",
+      "VELDO-0219 admission/lifecycle-manager-admission",
+      "VELDO-0219 admission/manifest-and-manager",
+      "VELDO-0219 admission/unmeasured-inventory",
+      "VELDO-0219 admission/same-verdicts",
+      "VELDO-0219 admission/reserved-floor",
+      "VELDO-0219 admission/stage-receipts-and-recording",
+      "VELDO-0219 admission/learning/baseline-outcome-name",
+      "VELDO-0219 admission/learning/noop-outcome-name",
+      "VELDO-0219 admission/learning/mutant-outcome-name",
+      "VELDO-0219 admission/learning/memory-margin",
+      "VELDO-0219 admission/learning/red-stage",
+      "VELDO-0219 admission/learning/invalid-controls",
+      "VELDO-0219 admission/learning/input-races",
+      "VELDO-0219 admission/learning/invalid-workers",
+      "VELDO-0219 admission/learning/conservative-max",
+      "VELDO-0219 admission/learning/unmeasured-default",
+      "VELDO-0219 admission/learning/foreign-corrupt",
+      "VELDO-0219 admission/learning/replace-foreign",
+      "VELDO-0219 admission/aggregate-handoff",
+      "VELDO-0219 admission/coordinator-overhead-measured",
+      "VELDO-0219 admission/unmetered-fixed-cap",
+      "VELDO-0219 admission/cpu-per-run",
+      "VELDO-0219 admission/blocking-resource",
+      "VELDO-0219 admission/unit-lifecycle",
+      "VELDO-0219 admission/lifecycle-channel-serialized",
+      "VELDO-0219 admission/final-memory-bound",
+      "VELDO-0219 admission/cli-graph-without-channel",
+      "VELDO-0219 admission/cli-graph-with-channel",
+      "VELDO-0219 admission/worker-before-handoff-refused",
+      "VELDO-0219 admission/lifecycle-registration-owned",
+      "VELDO-0219 admission/qualification-capture"
+    ],
+    "failed_rows": [],
+    "failed_details": [],
+    "targets": {
+      "admission/learning/memory-margin": [
+        true
+      ]
+    }
+  },
+  "noop": {
+    "count": 71,
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0219 admission/measured-per-case",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cgroup-counters",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cgroup-removed-mid-read",
+        true
+      ],
+      [
+        "VELDO-0219 admission/own-outside-directory",
+        true
+      ],
+      [
+        "VELDO-0219 admission/ledger-line-mid-write",
+        true
+      ],
+      [
+        "VELDO-0219 admission/ledger-link-swapped-mid-resolve",
+        true
+      ],
+      [
+        "VELDO-0219 admission/bootstrap-joins-before-import",
+        true
+      ],
+      [
+        "VELDO-0219 admission/fallback-order",
+        true
+      ],
+      [
+        "VELDO-0219 admission/fits-ledger",
+        true
+      ],
+      [
+        "VELDO-0219 admission/drained-workers-readmit",
+        true
+      ],
+      [
+        "VELDO-0219 admission/coordinator-overhead-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/oversized-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cgroup-launch-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/abort-releases-every-grant",
+        true
+      ],
+      [
+        "VELDO-0219 admission/lifecycle-manager-admission",
+        true
+      ],
+      [
+        "VELDO-0219 admission/manifest-and-manager",
+        true
+      ],
+      [
+        "VELDO-0219 admission/unmeasured-inventory",
+        true
+      ],
+      [
+        "VELDO-0219 admission/same-verdicts",
+        true
+      ],
+      [
+        "VELDO-0219 admission/reserved-floor",
+        true
+      ],
+      [
+        "VELDO-0219 admission/stage-receipts-and-recording",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/baseline-outcome-name",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/noop-outcome-name",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/mutant-outcome-name",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/memory-margin",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/red-stage",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/invalid-controls",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/input-races",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/invalid-workers",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/conservative-max",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/unmeasured-default",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/foreign-corrupt",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/replace-foreign",
+        true
+      ],
+      [
+        "VELDO-0219 admission/aggregate-handoff",
+        true
+      ],
+      [
+        "VELDO-0219 admission/coordinator-overhead-measured",
+        true
+      ],
+      [
+        "VELDO-0219 admission/unmetered-fixed-cap",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cpu-per-run",
+        true
+      ],
+      [
+        "VELDO-0219 admission/blocking-resource",
+        true
+      ],
+      [
+        "VELDO-0219 admission/unit-lifecycle",
+        true
+      ],
+      [
+        "VELDO-0219 admission/lifecycle-channel-serialized",
+        true
+      ],
+      [
+        "VELDO-0219 admission/final-memory-bound",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cli-graph-without-channel",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cli-graph-with-channel",
+        true
+      ],
+      [
+        "VELDO-0219 admission/worker-before-handoff-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/lifecycle-registration-owned",
+        true
+      ],
+      [
+        "VELDO-0219 admission/qualification-capture",
+        true
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0219 admission/measured-per-case",
+      "VELDO-0219 admission/cgroup-counters",
+      "VELDO-0219 admission/cgroup-removed-mid-read",
+      "VELDO-0219 admission/own-outside-directory",
+      "VELDO-0219 admission/ledger-line-mid-write",
+      "VELDO-0219 admission/ledger-link-swapped-mid-resolve",
+      "VELDO-0219 admission/bootstrap-joins-before-import",
+      "VELDO-0219 admission/fallback-order",
+      "VELDO-0219 admission/fits-ledger",
+      "VELDO-0219 admission/drained-workers-readmit",
+      "VELDO-0219 admission/coordinator-overhead-refused",
+      "VELDO-0219 admission/oversized-refused",
+      "VELDO-0219 admission/cgroup-launch-refused",
+      "VELDO-0219 admission/abort-releases-every-grant",
+      "VELDO-0219 admission/lifecycle-manager-admission",
+      "VELDO-0219 admission/manifest-and-manager",
+      "VELDO-0219 admission/unmeasured-inventory",
+      "VELDO-0219 admission/same-verdicts",
+      "VELDO-0219 admission/reserved-floor",
+      "VELDO-0219 admission/stage-receipts-and-recording",
+      "VELDO-0219 admission/learning/baseline-outcome-name",
+      "VELDO-0219 admission/learning/noop-outcome-name",
+      "VELDO-0219 admission/learning/mutant-outcome-name",
+      "VELDO-0219 admission/learning/memory-margin",
+      "VELDO-0219 admission/learning/red-stage",
+      "VELDO-0219 admission/learning/invalid-controls",
+      "VELDO-0219 admission/learning/input-races",
+      "VELDO-0219 admission/learning/invalid-workers",
+      "VELDO-0219 admission/learning/conservative-max",
+      "VELDO-0219 admission/learning/unmeasured-default",
+      "VELDO-0219 admission/learning/foreign-corrupt",
+      "VELDO-0219 admission/learning/replace-foreign",
+      "VELDO-0219 admission/aggregate-handoff",
+      "VELDO-0219 admission/coordinator-overhead-measured",
+      "VELDO-0219 admission/unmetered-fixed-cap",
+      "VELDO-0219 admission/cpu-per-run",
+      "VELDO-0219 admission/blocking-resource",
+      "VELDO-0219 admission/unit-lifecycle",
+      "VELDO-0219 admission/lifecycle-channel-serialized",
+      "VELDO-0219 admission/final-memory-bound",
+      "VELDO-0219 admission/cli-graph-without-channel",
+      "VELDO-0219 admission/cli-graph-with-channel",
+      "VELDO-0219 admission/worker-before-handoff-refused",
+      "VELDO-0219 admission/lifecycle-registration-owned",
+      "VELDO-0219 admission/qualification-capture"
+    ],
+    "failed_rows": [],
+    "failed_details": [],
+    "targets": {
+      "admission/learning/memory-margin": [
+        true
+      ]
+    }
+  },
+  "mutant": {
+    "count": 71,
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0219 admission/measured-per-case",
+        false
+      ],
+      [
+        "VELDO-0219 admission/cgroup-counters",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cgroup-removed-mid-read",
+        true
+      ],
+      [
+        "VELDO-0219 admission/own-outside-directory",
+        true
+      ],
+      [
+        "VELDO-0219 admission/ledger-line-mid-write",
+        true
+      ],
+      [
+        "VELDO-0219 admission/ledger-link-swapped-mid-resolve",
+        true
+      ],
+      [
+        "VELDO-0219 admission/bootstrap-joins-before-import",
+        true
+      ],
+      [
+        "VELDO-0219 admission/fallback-order",
+        true
+      ],
+      [
+        "VELDO-0219 admission/fits-ledger",
+        true
+      ],
+      [
+        "VELDO-0219 admission/drained-workers-readmit",
+        true
+      ],
+      [
+        "VELDO-0219 admission/coordinator-overhead-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/oversized-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cgroup-launch-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/abort-releases-every-grant",
+        true
+      ],
+      [
+        "VELDO-0219 admission/lifecycle-manager-admission",
+        true
+      ],
+      [
+        "VELDO-0219 admission/manifest-and-manager",
+        true
+      ],
+      [
+        "VELDO-0219 admission/unmeasured-inventory",
+        false
+      ],
+      [
+        "VELDO-0219 admission/same-verdicts",
+        true
+      ],
+      [
+        "VELDO-0219 admission/reserved-floor",
+        true
+      ],
+      [
+        "VELDO-0219 admission/stage-receipts-and-recording",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/baseline-outcome-name",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/noop-outcome-name",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/mutant-outcome-name",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/memory-margin",
+        false
+      ],
+      [
+        "VELDO-0219 admission/learning/red-stage",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/invalid-controls",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/input-races",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/invalid-workers",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/conservative-max",
+        false
+      ],
+      [
+        "VELDO-0219 admission/learning/unmeasured-default",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/foreign-corrupt",
+        true
+      ],
+      [
+        "VELDO-0219 admission/learning/replace-foreign",
+        true
+      ],
+      [
+        "VELDO-0219 admission/aggregate-handoff",
+        true
+      ],
+      [
+        "VELDO-0219 admission/coordinator-overhead-measured",
+        true
+      ],
+      [
+        "VELDO-0219 admission/unmetered-fixed-cap",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cpu-per-run",
+        false
+      ],
+      [
+        "VELDO-0219 admission/blocking-resource",
+        true
+      ],
+      [
+        "VELDO-0219 admission/unit-lifecycle",
+        true
+      ],
+      [
+        "VELDO-0219 admission/lifecycle-channel-serialized",
+        true
+      ],
+      [
+        "VELDO-0219 admission/final-memory-bound",
+        false
+      ],
+      [
+        "VELDO-0219 admission/cli-graph-without-channel",
+        true
+      ],
+      [
+        "VELDO-0219 admission/cli-graph-with-channel",
+        true
+      ],
+      [
+        "VELDO-0219 admission/worker-before-handoff-refused",
+        true
+      ],
+      [
+        "VELDO-0219 admission/lifecycle-registration-owned",
+        true
+      ],
+      [
+        "VELDO-0219 admission/qualification-capture",
+        true
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0219 admission/measured-per-case",
+      "VELDO-0219 admission/cgroup-counters",
+      "VELDO-0219 admission/cgroup-removed-mid-read",
+      "VELDO-0219 admission/own-outside-directory",
+      "VELDO-0219 admission/ledger-line-mid-write",
+      "VELDO-0219 admission/ledger-link-swapped-mid-resolve",
+      "VELDO-0219 admission/bootstrap-joins-before-import",
+      "VELDO-0219 admission/fallback-order",
+      "VELDO-0219 admission/fits-ledger",
+      "VELDO-0219 admission/drained-workers-readmit",
+      "VELDO-0219 admission/coordinator-overhead-refused",
+      "VELDO-0219 admission/oversized-refused",
+      "VELDO-0219 admission/cgroup-launch-refused",
+      "VELDO-0219 admission/abort-releases-every-grant",
+      "VELDO-0219 admission/lifecycle-manager-admission",
+      "VELDO-0219 admission/manifest-and-manager",
+      "VELDO-0219 admission/unmeasured-inventory",
+      "VELDO-0219 admission/same-verdicts",
+      "VELDO-0219 admission/reserved-floor",
+      "VELDO-0219 admission/stage-receipts-and-recording",
+      "VELDO-0219 admission/learning/baseline-outcome-name",
+      "VELDO-0219 admission/learning/noop-outcome-name",
+      "VELDO-0219 admission/learning/mutant-outcome-name",
+      "VELDO-0219 admission/learning/memory-margin",
+      "VELDO-0219 admission/learning/red-stage",
+      "VELDO-0219 admission/learning/invalid-controls",
+      "VELDO-0219 admission/learning/input-races",
+      "VELDO-0219 admission/learning/invalid-workers",
+      "VELDO-0219 admission/learning/conservative-max",
+      "VELDO-0219 admission/learning/unmeasured-default",
+      "VELDO-0219 admission/learning/foreign-corrupt",
+      "VELDO-0219 admission/learning/replace-foreign",
+      "VELDO-0219 admission/aggregate-handoff",
+      "VELDO-0219 admission/coordinator-overhead-measured",
+      "VELDO-0219 admission/unmetered-fixed-cap",
+      "VELDO-0219 admission/cpu-per-run",
+      "VELDO-0219 admission/blocking-resource",
+      "VELDO-0219 admission/unit-lifecycle",
+      "VELDO-0219 admission/lifecycle-channel-serialized",
+      "VELDO-0219 admission/final-memory-bound",
+      "VELDO-0219 admission/cli-graph-without-channel",
+      "VELDO-0219 admission/cli-graph-with-channel",
+      "VELDO-0219 admission/worker-before-handoff-refused",
+      "VELDO-0219 admission/lifecycle-registration-owned",
+      "VELDO-0219 admission/qualification-capture"
+    ],
+    "failed_rows": [
+      "VELDO-0219 admission/measured-per-case",
+      "VELDO-0219 admission/unmeasured-inventory",
+      "VELDO-0219 admission/learning/memory-margin",
+      "VELDO-0219 admission/learning/conservative-max",
+      "VELDO-0219 admission/cpu-per-run",
+      "VELDO-0219 admission/final-memory-bound"
+    ],
+    "failed_details": [],
+    "targets": {
+      "admission/learning/memory-margin": [
+        false
+      ]
+    }
+  },
+  "replacement_count": 1,
+  "old_digest": "419568c72fac78eb10e5516f2d2d831ee808a37e04d37cc62ec5efb74c58095a",
+  "new_digest": "ea16c7dec5eeea0a0f7ddbe0f5765c5f5d91c0c212cea6e7816b569da58fdd6f",
+  "kills": [
+    {
+      "row": "VELDO-0219 admission/learning/memory-margin",
+      "kill_by": "unproven"
+    }
+  ],
+  "kill_by": "unproven"
+}

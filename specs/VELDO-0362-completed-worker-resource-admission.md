@@ -18,6 +18,7 @@ footprint:
   - specs/VELDO-0362-completed-worker-resource-admission.md
   - specs/index.md
   - proof/VELDO-0362/*
+  - proof/VELDO-0219/round2/check.py
 behavior_bearing: true
 observability:
   logs: Resource store failures are diagnostic; stage errors retain their original verdict.
@@ -28,15 +29,16 @@ acceptance_criteria:
   - id: AC1
     text: >
       Every completed clean valid control or mutant contributes its authority measurement after input
-      and runtime stability checks, including partial red stages. Resources occupy a separate store
-      from elapsed estimates and reusable verdicts. Fixture coverage includes independent controls,
+      and runtime stability checks, including partial red stages. Before marking a control or mutant
+      resource-valid, the latest worker outcome must have the callback worker name. Resources occupy
+      a separate store from elapsed estimates and reusable verdicts. Fixture coverage includes independent controls,
       valid kills, failed controls, survivors, cancellation, cleanup failure, stale input and runtime races.
     falsified_by: Moving resource recording behind stage success fails learning/red-stage; accepting an unclean worker fails learning/invalid-workers.
   - id: AC2
     text: >
       On the same platform admission uses the per-case maximum CPU rate and memory across all live
-      execution keys. No peer median lowers an unmeasured case. Until all three worker modes have
-      samples the default is a floor. Existing ledger capacity, reserve, coordinator overhead and
+      execution keys, with a 1.15 multiplier on measured memory. No peer median lowers an unmeasured
+      case. Until all three worker modes have samples the default is a floor. Existing ledger capacity, reserve, coordinator overhead and
       manager admission remain in force. Fixtures cover key churn, foreign platforms, corrupt records,
       partial coverage and unmeasured outliers.
     falsified_by: Selecting only the newest key fails learning/conservative-max; using peer hints fails learning/unmeasured-default.
