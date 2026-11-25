@@ -66,7 +66,11 @@ CREATORS = {
     ('scripts/suite_equiv.py', 'main'): 'Creates a private temporary tree for this call.',
 }
 REVIEWED = {
-    ('engine/scripts/gate_schedule.py', 'Meter.finish'): 'Ends its own empty kernel cgroup directories; rmdir cannot remove ordinary files.',
+    ('engine/scripts/gate_schedule.py', 'empty_group'): (
+        "Drains and removes only kernel cgroup folders under the gate's own delegated scope: "
+        "the node-<scheduler-pid>-<name> tree Meter created, or worker-<coordinator-pid>-* trees "
+        "selected by finish_node after that mutation coordinator exits. Descendant removal uses "
+        "rmdir after wait_for_empty; it cannot remove ordinary files."),
     ('engine/scripts/mutation_ownership.py', 'WorkerMeter.close'): 'Ends its own empty kernel cgroup directories after worker exit; rmdir cannot remove ordinary files.',
     ('engine/.veldo/action_executor.py', '_cli'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
     ('engine/.veldo/authority_contract.py', 'ssh_keygen_verify'): 'Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree.',
