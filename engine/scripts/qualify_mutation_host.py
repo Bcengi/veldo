@@ -101,9 +101,13 @@ def landlock():
         allowed, denied = top / 'allowed', top / 'denied'
         allowed.mkdir()
         denied.write_text('private')
-        code = '''import importlib.util, pathlib, sys
+        code = '''import importlib.util, pathlib, subprocess, sys
 s=importlib.util.spec_from_file_location('boundary',sys.argv[1]); m=importlib.util.module_from_spec(s); s.loader.exec_module(m)
-a,d=map(pathlib.Path,sys.argv[2:]); m.landlock([(a,m.READ|m.WRITE)],profile='worker')
+a,d=map(pathlib.Path,sys.argv[2:])
+s=importlib.util.spec_from_file_location('mutation_boundary',pathlib.Path(sys.argv[1]).with_name('mutation_sandbox.py')); b=importlib.util.module_from_spec(s); s.loader.exec_module(b)
+root=pathlib.Path(sys.argv[1]).parent.parent
+m.landlock(b.worker_grants(m,root,root,a,None),profile='worker')
+subprocess.run([sys.executable,'-c','print("confined interpreter started")'],check=True)
 (a/'ok').write_text('allowed'); assert (a/'ok').read_text()=='allowed'
 try: d.read_text()
 except PermissionError: pass
@@ -134,7 +138,7 @@ def toolchain():
     reuse = load('mutation_reuse')
     paths = reuse.required_runtime(os.environ)
     tools = {}
-    for name in ('git', 'sh', 'strace', 'busctl', 'systemctl', 'node'):
+    for name in ('git', 'sh', 'strace', 'busctl', 'systemctl', 'node', 'ssh-keygen'):
         found = shutil.which(name)
         if found is None:
             raise RuntimeError('required tool absent: ' + name)

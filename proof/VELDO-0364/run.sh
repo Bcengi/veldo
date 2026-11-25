@@ -16,7 +16,7 @@ if [ "$unit_rc$census_rc$personal_rc$stale_rc" != 0000 ]; then
   tail -n 35 "$evidence/targeted.json" "$evidence/census.log" "$evidence/personal.log" "$evidence/stale.json"
   exit 1
 fi
-python3 -I -S scripts/qualify_mutation_host.py --receipt "$evidence/qualification.json" --cases proof/VELDO-0364/selection.json --batch-receipt "$evidence/batch.json" > "$evidence/batch.log" 2>&1
+/usr/bin/python3 -I -S scripts/qualify_mutation_host.py --receipt "$evidence/qualification.json" --cases proof/VELDO-0364/selection.json --batch-receipt "$evidence/batch.json" > "$evidence/batch.log" 2>&1
 batch_rc=$?
 if [ -f "$evidence/batch.json" ]; then
   python3 proof/VELDO-0364/compare.py proof/VELDO-0364/expected.json "$evidence/batch.json" > "$evidence/comparison.json"

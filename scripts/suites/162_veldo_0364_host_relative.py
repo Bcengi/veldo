@@ -48,7 +48,7 @@ def _v364_checks():
                 granted = small.acquire('mutation', aggregate, mutation=True)
             except scheduler.Refused:
                 granted = False
-                small.acquire('mutation', claim(8, 9 * 2**30, 'exclusive'), mutation=True)
+                small.acquire('mutation', dict(claim(8, 9 * 2**30, 'exclusive'), host_lock='shared'), mutation=True)
             small.handoff('mutation', node['coordinator'])
             grants = [small.acquire('worker%d' % i, claim(), mutation=True) for i in range(8)]
             worker_bad = refused(lambda: small.demand(claim(9)))
