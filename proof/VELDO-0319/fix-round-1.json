@@ -1,0 +1,442 @@
+{
+  "schema": "space-v1-fix-round-1/v1",
+  "reviewed_revision": "695ffa06e7c3acded99020e019e608c064499615",
+  "targeted_revision": "ab645ed7770893dfb33f3a03821c2521f1497dd9",
+  "stage_revision": "2fe5beae41cb69180a4be0a638c34955bcf28fe4",
+  "runtime_host": "pc2",
+  "launcher": "remote_run.sh",
+  "interpreter": "/usr/bin/python3 -I -S",
+  "serial_exclusive_runs": true,
+  "targeted_run": "rr20261125200749-2807",
+  "stage_run": "rr20261125201134-76d2",
+  "personal_setup_receipt": {
+    "path": "v1-fix1/personal-local-objects/validation-personal.json",
+    "sha256": "29461d77df79c2bcf2223345a4526deff8da987e8fb7871da093c5173b06d4c0",
+    "declared_base": "95851131e2e33964a5e9a3194062b046e5668786",
+    "run": "rr20261125201721-cb40",
+    "object_store_is_local": true
+  },
+  "targeted_log": {
+    "path": "v1-fix1/targeted-corrected.log",
+    "sha256": "859dea48e05a7d8e6c06dde2fd1bfbd510f79fb1a7592a0a5f8a3918dd87f03c"
+  },
+  "partial_suite_exit": "The selftest --suite command intentionally never returns zero. The enclosing shell reports 1 because it preserves those nonzero partial-run statuses. All four observation summaries have zero failed assertions; this is not a whole-unit or whole-gate verdict.",
+  "suites": [
+    {
+      "suite": "161_veldo_0347_space_work",
+      "passed": 54,
+      "failed": 0
+    },
+    {
+      "suite": "150_veldo_0318_unique_work",
+      "passed": 72,
+      "failed": 0
+    },
+    {
+      "suite": "150_veldo_0327_disposition",
+      "passed": 54,
+      "failed": 0
+    },
+    {
+      "suite": "159_veldo_0317_no_space",
+      "passed": 56,
+      "failed": 0
+    }
+  ],
+  "mutations": [
+    {
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 347,
+        "identity": "check_teeth_mutations.py:space347-ledger-applies-any-settled-choice-to-a-clone",
+        "module": "control_space.py",
+        "name": "space347-ledger-applies-any-settled-choice-to-a-clone",
+        "new": "        if False:  # defect: a settled Save or Discard of a clone is applied\n",
+        "old": "        if record['kind'] != 'worktree' and choice != 'keep':\n",
+        "rows": [
+          "ac3/ledger-keep-only"
+        ],
+        "siblings": true,
+        "suite": "161_veldo_0347_space_work.py"
+      },
+      "status": "passed",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "baseline_targets": {
+        "ac3/ledger-keep-only": [
+          true
+        ]
+      },
+      "noop_targets": {
+        "ac3/ledger-keep-only": [
+          true
+        ]
+      },
+      "mutant_targets": {
+        "ac3/ledger-keep-only": [
+          false
+        ]
+      },
+      "failed_rows": [
+        "VELDO-0347 ac3/ledger-keep-only"
+      ],
+      "old_digest": "fb114cb53d9fb0369a8be03aeb29d039efcd7c3afea35b453b991df424f3536c",
+      "new_digest": "080005cd09e6a8935812295d53f7ad09d9b7c75d0c4c13934373b28a66e46c81",
+      "replacement_count": 1,
+      "invalid_results": [],
+      "input_digest": "10ab376db991c02459c8c8be9a11ee141075ede574274edd916d87882e354e11",
+      "implementation_digest": "558e5998603366e0de876565d0e987ccb0c0613c4905c60f785feb799a24b379",
+      "gate_run": "1ff089a1af389496a0c3e1697e669383",
+      "receipt_sha256": "cad01938cdabbb4d38ed8102d6f118c84cdbe72894bb29ce584f81aeb31a8188",
+      "reuse_reason": "unknown_closure",
+      "kill_by": "unproven"
+    },
+    {
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 347,
+        "identity": "check_teeth_mutations.py:space347-ledger-takes-a-worktree-request-for-a-clone",
+        "module": "control_space.py",
+        "name": "space347-ledger-takes-a-worktree-request-for-a-clone",
+        "new": "                or False):  # defect: a clone may be asked about as a worktree\n",
+        "old": "                or ('clones' in proposal) != clone or (clone and tree['form'] != record['form'])):\n",
+        "rows": [
+          "ac3/request-kind"
+        ],
+        "siblings": true,
+        "suite": "161_veldo_0347_space_work.py"
+      },
+      "status": "passed",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "baseline_targets": {
+        "ac3/request-kind": [
+          true
+        ]
+      },
+      "noop_targets": {
+        "ac3/request-kind": [
+          true
+        ]
+      },
+      "mutant_targets": {
+        "ac3/request-kind": [
+          false
+        ]
+      },
+      "failed_rows": [
+        "VELDO-0347 ac3/request-kind"
+      ],
+      "old_digest": "fb114cb53d9fb0369a8be03aeb29d039efcd7c3afea35b453b991df424f3536c",
+      "new_digest": "665169fe234ae28147a23dc27e9470adaeece8ddff922062eb1822ee5c4bc7b3",
+      "replacement_count": 1,
+      "invalid_results": [],
+      "input_digest": "10ab376db991c02459c8c8be9a11ee141075ede574274edd916d87882e354e11",
+      "implementation_digest": "558e5998603366e0de876565d0e987ccb0c0613c4905c60f785feb799a24b379",
+      "gate_run": "3de40eaf5131212f49803cd954ac315d",
+      "receipt_sha256": "aac3af54156c1b34d2478d9133ce3e94782146f576e0ee11273c87c7907fcb86",
+      "reuse_reason": "unknown_closure",
+      "kill_by": "unproven"
+    },
+    {
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 347,
+        "identity": "check_teeth_mutations.py:space347-ledger-takes-a-clone-request-for-a-table-1-item",
+        "module": "control_space.py",
+        "name": "space347-ledger-takes-a-clone-request-for-a-table-1-item",
+        "new": "                 and True)  # defect: the form alone makes it a clone to ask about\n",
+        "old": "                 and self._clone_row(record))\n",
+        "rows": [
+          "ac3/table-1-keeps-its-handling"
+        ],
+        "siblings": true,
+        "suite": "161_veldo_0347_space_work.py"
+      },
+      "status": "passed",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "baseline_targets": {
+        "ac3/table-1-keeps-its-handling": [
+          true
+        ]
+      },
+      "noop_targets": {
+        "ac3/table-1-keeps-its-handling": [
+          true
+        ]
+      },
+      "mutant_targets": {
+        "ac3/table-1-keeps-its-handling": [
+          false
+        ]
+      },
+      "failed_rows": [
+        "VELDO-0347 ac3/table-1-keeps-its-handling"
+      ],
+      "old_digest": "fb114cb53d9fb0369a8be03aeb29d039efcd7c3afea35b453b991df424f3536c",
+      "new_digest": "6ed3a62aa05a6ed4230c2bdd66e04ce506a6ab0764c199a63f06e80d8e898e3c",
+      "replacement_count": 1,
+      "invalid_results": [],
+      "input_digest": "10ab376db991c02459c8c8be9a11ee141075ede574274edd916d87882e354e11",
+      "implementation_digest": "558e5998603366e0de876565d0e987ccb0c0613c4905c60f785feb799a24b379",
+      "gate_run": "47a520be63b8d700d3aa2ebc09d2c0be",
+      "receipt_sha256": "734dfb5d3962ff54ce2a8eee92f6e4983be8f29fd36122144d86cbca26c238c3",
+      "reuse_reason": "unknown_closure",
+      "kill_by": "unproven"
+    },
+    {
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 317,
+        "identity": "check_teeth_mutations.py:space317-remove-failed-worktree",
+        "module": "control_space_signal.py",
+        "name": "space317-remove-failed-worktree",
+        "new": "        if False:  # defect: no-space retained work is not protected\n",
+        "old": "        if tree == path or tree.startswith(path.rstrip('/') + '/'):\n",
+        "rows": [
+          "space318/pin/clean-stays"
+        ],
+        "siblings": true,
+        "suite": "150_veldo_0318_unique_work.py"
+      },
+      "status": "passed",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "baseline_targets": {
+        "space318/pin/clean-stays": [
+          true
+        ]
+      },
+      "noop_targets": {
+        "space318/pin/clean-stays": [
+          true
+        ]
+      },
+      "mutant_targets": {
+        "space318/pin/clean-stays": [
+          false
+        ]
+      },
+      "failed_rows": [
+        "space318/pin/clean-stays"
+      ],
+      "old_digest": "f17138720cc3cb3d429277a0492bc32db00e5d8de7ad4b3bc4bfff7553e45f68",
+      "new_digest": "837f6289fcbbb14d3d3f9b0e1f9dfbeba59dae5ebff4e1ddb2fe43c1dbbf19eb",
+      "replacement_count": 1,
+      "invalid_results": [],
+      "input_digest": "10ab376db991c02459c8c8be9a11ee141075ede574274edd916d87882e354e11",
+      "implementation_digest": "558e5998603366e0de876565d0e987ccb0c0613c4905c60f785feb799a24b379",
+      "gate_run": "aca37c42ed7b7c2a4b07a8629690bb1c",
+      "receipt_sha256": "bf67bcbb019da2daff9c21b5b2bb570a695d2c2d23c0486b84675bd309d098b6",
+      "reuse_reason": "unknown_closure",
+      "kill_by": "assertion"
+    }
+  ],
+  "mutation_scope": "Fresh selected standard-driver receipts, with explicit target rows true in baseline/no-op and false on the exact registered guard removal. unknown_closure/kill_by=unproven are retained as reported; no authenticated gate reuse is claimed.",
+  "stages": {
+    "extra": {
+      "exit": 0,
+      "command": "bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py",
+      "output_sha256": "1d901d2f0e7ff952562aeaec14f149598442447d25f1edbe4fcc6fdaec057ae4"
+    },
+    "lint": {
+      "exit": 0,
+      "command": "bash scripts/check_lint.sh",
+      "output_sha256": "6b2a7c1e9a86ef4452ec920de69da22a48b8d2452b94f99d7c5b334a2e1a8b1a"
+    },
+    "generated": {
+      "exit": 0,
+      "command": "bash scripts/check_generated.sh",
+      "output_sha256": "b95eab7017a1741732ae676d71fe025875d8d0e277b353cd9c5133a45df4ad73"
+    },
+    "docs": {
+      "exit": 0,
+      "command": "bash scripts/check_docs.sh",
+      "output_sha256": "4dd0fa5c9a95dc176421f174cfe9f9351c76743dab8a20e333b6e444b244da89"
+    },
+    "packaging": {
+      "exit": 0,
+      "command": "python3 scripts/check_install_and_run.py",
+      "output_sha256": "7f16ee1ca35ffb4664b99f0abe5c124c4c16602d963fc714e41e9b20b09b860c"
+    },
+    "security": {
+      "exit": 0,
+      "command": "python3 scripts/secret_inventory.py",
+      "output_sha256": "292f68647ad4cf66faa247def8295e361fbc5b1122568fff14fb21c13b79193f"
+    },
+    "personal_setup": {
+      "exit": 0,
+      "command": "python3 scripts/check_personal_setup.py",
+      "output_sha256": "87c655f6856ec20e0efeacd779667650fee21ca2db2dff13573e83d931cc3603"
+    },
+    "wallclock": {
+      "exit": 1,
+      "command": "python3 scripts/check_wallclock.py",
+      "output_sha256": "25af6ae58b38d35c8bdb3f2c923edb4ce2c81e80b00db8fcdf33162e02843c09"
+    }
+  },
+  "stage_receipt": {
+    "path": "v1-fix1/stages-2fe5beae4/validation-fix1.json",
+    "sha256": "971645e6acb18c35e8ab5367980f4c1307a0bf25a136c8d64b39717258be6056"
+  },
+  "registry": {
+    "mutations": 4141,
+    "stale": [],
+    "duplicate_mutations": [],
+    "manifest_suites": 287,
+    "duplicate_suites": [],
+    "missing_case_suites": [],
+    "missing_suite_files": [],
+    "unregistered_suite_files": [],
+    "generated": {
+      "requires": {
+        "exit": 0,
+        "same": true,
+        "output": "run_scope: wrote /tmp/space-fix1-stage-3kqnif0z/requires (286 suites)\n"
+      },
+      "index": {
+        "exit": 0,
+        "same": true,
+        "output": "index: 504 specification(s)\n"
+      }
+    }
+  },
+  "protected_paths_changed_from_candidate_base": [],
+  "current_suite_executable_ast_equals_targeted_revision": true,
+  "suite_difference_since_targeted_revision": "Only the suite module docstring changed; the complete executable AST is identical.",
+  "audit": {
+    "counts": {
+      "retained": 92,
+      "partial_current_coverage": 179,
+      "infrastructure": 3,
+      "retired": 2
+    },
+    "all_source_and_current_predicate_hashes_match": true,
+    "all_current_predicate_line_references_match_ast": true,
+    "limitation": "179 archived instances have only partial support in the cited current predicates. The former 274-retained claim is withdrawn. These are open evidence limitations, not new retirements or a claim of absence from every other suite."
+  },
+  "host_requirement": "GNU coreutils timeout with process-group/descendant cleanup, recorded in pc2-readiness.md. No 0329 product change or assertion exemption.",
+  "no_product_module_changes": true,
+  "no_assertion_loosened": true,
+  "status": "F1 and F2 proven; required all-green validation incomplete",
+  "wallclock_blocker": {
+    "exit": 1,
+    "wallclock_sites": 79,
+    "stale_baseline_entries": 5,
+    "protected_baseline": "scripts/suites/wallclock_baseline.json",
+    "constraint": "The requested no-protected-path hard limit prohibits baseline reconciliation. No exception or scope narrowing was applied.",
+    "diagnostics": [
+      "wallclock: wallclock_site R1 (setTimeout that rejects or fails) engine/ui/e2e/space-fixtures.ts:45 in <module>: 1 site(s), the authority allows 0: const timer = setTimeout(() => reject(new Error(`space harness did not start: ${errors}`)), 90_000)",
+      "wallclock: wallclock_site R1 (waitForTimeout) engine/ui/e2e/space.spec.ts:645 in <module>: 1 site(s), the authority allows 0: await page.waitForTimeout(150)",
+      "wallclock: wallclock_site R2 (read Date.now) engine/ui/e2e/space.spec.ts:271 in <module>: 1 site(s), the authority allows 0: await page.clock.pauseAt(new Date(Date.now() + 1000))",
+      "wallclock: wallclock_site R3 (timeout option 45_000) engine/ui/e2e/space.spec.ts:54 in <module>: 1 site(s), the authority allows 0: await expect(page.getByTestId('sign-in')).toBeVisible({ timeout: 45_000 })",
+      "wallclock: wallclock_site R3 (setTimeout 120_000) engine/ui/e2e/space.spec.ts:262 in <module>: 2 site(s), the authority allows 0: test.setTimeout(120_000)",
+      "wallclock: wallclock_site R3 (setTimeout 180_000) engine/ui/e2e/space.spec.ts:197 in <module>: 1 site(s), the authority allows 0: test.setTimeout(180_000)",
+      "wallclock: wallclock_site R3 (setTimeout 240_000) engine/ui/e2e/space.spec.ts:400 in <module>: 1 site(s), the authority allows 0: test.setTimeout(240_000)",
+      "wallclock: wallclock_site R3 (setTimeout 300_000) engine/ui/e2e/space.spec.ts:654 in <module>: 1 site(s), the authority allows 0: test.setTimeout(300_000)",
+      "wallclock: wallclock_site R2 (read time.time) engine/ui/e2e/space_harness.py:203 in SpaceUi._space_seed: 1 site(s), the authority allows 0: 'kept_branch': None, 'head': None, 'at': time.time() - 3600, 'entry': entry})",
+      "wallclock: wallclock_site R2 (read time.time) engine/ui/e2e/space_harness.py:159 in SpaceUi._space_seed: 1 site(s), the authority allows 0: branch='veldo-9144', owner_keep={'by': 'owner', 'at': time.time() - 86400, 'request': 'space-disposition-kept-1'})",
+      "wallclock: wallclock_site R2 (read time.time) engine/ui/e2e/space_harness.py:359 in SpaceUi._abandon: 1 site(s), the authority allows 0: record = dict(record, owner_keep=None, abandoned={'by': by, 'at': time.time(), 'ended_keep': record.get('owner_keep')})",
+      "wallclock: wallclock_site R2 (read time.time) engine/ui/e2e/space_harness.py:315 in SpaceUi._keep: 1 site(s), the authority allows 0: time.time(), principal=principal)",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/147_veldo_0310_landed_contained.py:1522 in _v310_suite.exercise: 1 site(s), the authority allows 0: claimed = L.outcome(held['worktree'], 'kept', {'owner_keep': {'at': time.time(), 'answer': 'keep'}}, principal='olga')",
+      "wallclock: baseline_stale R2 (no site left) scripts/suites/147_veldo_0310_landed_contained.py in _v310_suite.exercise: the baseline says 1, required 0 (0 site(s)): mark = L.outcome(held['worktree'], 'kept', {'owner_keep': {'at': time.time(), 'answer': 'keep'}}, principal='olga')",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/147_veldo_0310_landed_contained.py:1534 in _v310_suite.exercise: 1 site(s), the authority allows 0: time.time(), owner='olga', tag='v310_desk', member=member)",
+      "wallclock: baseline_stale R2 (no site left) scripts/suites/149_veldo_0312_ticket_ended.py in _v312_suite.exercise.owner_kept: the baseline says 1, required 0 (0 site(s)): marked = L.outcome(identity, 'kept', {'owner_keep': {'at': time.time(), 'answer': 'keep'}}, principal='olga')",
+      "wallclock: baseline_stale R2 (no site left) scripts/suites/149_veldo_0312_ticket_ended.py in _v312_suite.exercise: the baseline says 1, required 0 (0 site(s)): plain_keep = L.outcome(claimed_item, 'kept', {'owner_keep': {'at': time.time()}}, principal='olga')",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/149_veldo_0312_ticket_ended.py:492 in _v312_suite.exercise.signed_keep: 1 site(s), the authority allows 0: return L.disposition(packet, CM, time.time())",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0318_unique_work.py:806 in _v318_suite: 1 site(s), the authority allows 0: 'owner_abandon': {'item': item, 'at': time.time()}}, principal='owner', **given)",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0318_unique_work.py:213 in _v318_suite.authorize: 1 site(s), the authority allows 0: CM, time.time())",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0318_unique_work.py:85 in _v318_suite.member: 1 site(s), the authority allows 0: ids, time.time(), enrollee_signature=None if who == 'steward' else",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0318_unique_work.py:801 in _v318_suite: 1 site(s), the authority allows 0: item, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')['ok'])",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0318_unique_work.py:81 in _v318_suite.member: 1 site(s), the authority allows 0: request_revision=1, nonce=next_id(), expires_at=time.time() + 600,",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0318_unique_work.py:109 in _v318_suite.Transport.send: 1 site(s), the authority allows 0: return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,",
+      "wallclock: wallclock_site R3 (keyword timeout 10) scripts/suites/150_veldo_0318_unique_work.py:57 in _v318_suite.sign: 1 site(s), the authority allows 0: return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys[who]), '-n', namespace],",
+      "wallclock: wallclock_site R3 (keyword timeout 10) scripts/suites/150_veldo_0318_unique_work.py:52 in _v318_suite: 1 site(s), the authority allows 0: subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys[who])],",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0319_space_screen.py:1371 in _v319_suite.keep_world: 1 site(s), the authority allows 0: other = L.disposition({'command': made, 'signature': sign('second', S.canonical_bytes(made))}, CM, time.time())",
+      "wallclock: wallclock_site R2 (read time.monotonic) scripts/suites/150_veldo_0319_space_screen.py:1472 in _v319_suite: 1 site(s), the authority allows 0: print('VELDO-0319 suite seconds: %.3f' % (time.monotonic() - started))",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0319_space_screen.py:1035 in _v319_suite.keep_world.member: 1 site(s), the authority allows 0: request_revision=1, nonce=next_id(), expires_at=time.time() + 600,",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0319_space_screen.py:1198 in _v319_suite.keep_world.space_keep: 1 site(s), the authority allows 0: return L.disposition(packet, CM, time.time(), only='keep')",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0319_space_screen.py:1072 in _v319_suite.keep_world.Transport.send: 1 site(s), the authority allows 0: return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,",
+      "wallclock: wallclock_site R2 (read time.monotonic) scripts/suites/150_veldo_0319_space_screen.py:83 in _v319_suite: 1 site(s), the authority allows 0: started = time.monotonic()",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0319_space_screen.py:1367 in _v319_suite.keep_world: 1 site(s), the authority allows 0: taken = L.disposition({'command': made, 'signature': sign('owner', S.canonical_bytes(made))}, CM, time.time())",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0319_space_screen.py:1039 in _v319_suite.keep_world.member: 1 site(s), the authority allows 0: time.time(), enrollee_signature=None if who == 'steward' else",
+      "wallclock: wallclock_site R3 (keyword timeout 20) scripts/suites/150_veldo_0319_space_screen.py:1088 in _v319_suite.keep_world.Passkey.__init__: 1 site(s), the authority allows 0: der = subprocess.run(['openssl', 'pkey', '-in', str(self.key), '-pubout', '-outform', 'DER'],",
+      "wallclock: wallclock_site R3 (keyword timeout 20) scripts/suites/150_veldo_0319_space_screen.py:1011 in _v319_suite.keep_world.sign: 1 site(s), the authority allows 0: return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys[who]), '-n', namespace], input=message,",
+      "wallclock: wallclock_site R3 (keyword timeout 20) scripts/suites/150_veldo_0319_space_screen.py:150 in _v319_suite.exercise.sign_edge: 1 site(s), the authority allows 0: return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(private / 'edge'), '-n', AC.SIGNATURE_NAMESPACE],",
+      "wallclock: wallclock_site R3 (keyword timeout 20) scripts/suites/150_veldo_0319_space_screen.py:1104 in _v319_suite.keep_world.Passkey.assertion: 1 site(s), the authority allows 0: signature = subprocess.run(['openssl', 'dgst', '-sha256', '-sign', str(self.key)],",
+      "wallclock: wallclock_site R3 (keyword timeout 20) scripts/suites/150_veldo_0319_space_screen.py:1086 in _v319_suite.keep_world.Passkey.__init__: 1 site(s), the authority allows 0: subprocess.run(['openssl', 'genpkey', '-algorithm', 'EC', '-pkeyopt', 'ec_paramgen_curve:P-256',",
+      "wallclock: wallclock_site R3 (keyword timeout 20) scripts/suites/150_veldo_0319_space_screen.py:144 in _v319_suite.exercise: 1 site(s), the authority allows 0: subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'edge', '-f', str(private / 'edge')],",
+      "wallclock: wallclock_site R3 (keyword timeout 20) scripts/suites/150_veldo_0319_space_screen.py:1006 in _v319_suite.keep_world: 1 site(s), the authority allows 0: subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys[who])], check=True,",
+      "wallclock: wallclock_site R2 (read time.monotonic) scripts/suites/150_veldo_0319_space_ui.py:193 in _v319_space_ui: 1 site(s), the authority allows 0: print('VELDO-0319 UI suite seconds: %.3f' % (time.monotonic() - started))",
+      "wallclock: wallclock_site R2 (read time.monotonic) scripts/suites/150_veldo_0319_space_ui.py:82 in _v319_space_ui: 1 site(s), the authority allows 0: started = time.monotonic()",
+      "wallclock: wallclock_site R3 (keyword timeout 3000) scripts/suites/150_veldo_0319_space_ui.py:153 in _v319_space_ui.exercise: 1 site(s), the authority allows 0: code, out = run(['npx', 'playwright', 'test', 'e2e/space.spec.ts'], ui,",
+      "wallclock: wallclock_site R3 (keyword timeout 600) scripts/suites/150_veldo_0319_space_ui.py:145 in _v319_space_ui.exercise: 1 site(s), the authority allows 0: code, out = run(['npx', 'vitest', 'run', 'src/features/space', 'src/features/run/runs.spec.ts',",
+      "wallclock: wallclock_site R3 (keyword timeout timeout, not a named hang constant) scripts/suites/150_veldo_0319_space_ui.py:109 in _v319_space_ui.run: 1 site(s), the authority allows 0: done = subprocess.run(args, cwd=str(cwd), env=dict(environment(), **(env or {})), capture_output=True,",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0327_disposition.py:84 in _v327_suite.member: 1 site(s), the authority allows 0: ids, time.time(), enrollee_signature=None if who == 'steward' else",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0327_disposition.py:80 in _v327_suite.member: 1 site(s), the authority allows 0: request_revision=1, nonce=next_id(), expires_at=time.time() + 600,",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0327_disposition.py:108 in _v327_suite.Transport.send: 1 site(s), the authority allows 0: return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,",
+      "wallclock: wallclock_site R3 (keyword timeout 10) scripts/suites/150_veldo_0327_disposition.py:56 in _v327_suite.sign: 1 site(s), the authority allows 0: return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys[who]), '-n', namespace],",
+      "wallclock: wallclock_site R3 (keyword timeout 10) scripts/suites/150_veldo_0327_disposition.py:51 in _v327_suite: 1 site(s), the authority allows 0: subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys[who])],",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0340_review_groups.py:240 in _v340_suite.authorize: 1 site(s), the authority allows 0: CM, time.time())",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0340_review_groups.py:112 in _v340_suite.member: 1 site(s), the authority allows 0: ids, time.time(), enrollee_signature=None if who == 'steward' else",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0340_review_groups.py:108 in _v340_suite.member: 1 site(s), the authority allows 0: request_revision=1, nonce=next_id(), expires_at=time.time() + 600,",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0340_review_groups.py:136 in _v340_suite.Transport.send: 1 site(s), the authority allows 0: return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,",
+      "wallclock: wallclock_site R3 (keyword timeout 10) scripts/suites/150_veldo_0340_review_groups.py:84 in _v340_suite.sign: 1 site(s), the authority allows 0: return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys[who]), '-n', namespace],",
+      "wallclock: wallclock_site R3 (keyword timeout 10) scripts/suites/150_veldo_0340_review_groups.py:79 in _v340_suite: 1 site(s), the authority allows 0: subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys[who])],",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0342_member_picks.py:241 in _v342_suite.authorize: 1 site(s), the authority allows 0: CM, time.time())",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0342_member_picks.py:113 in _v342_suite.member: 1 site(s), the authority allows 0: ids, time.time(), enrollee_signature=None if who == 'steward' else",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0342_member_picks.py:109 in _v342_suite.member: 1 site(s), the authority allows 0: request_revision=1, nonce=next_id(), expires_at=time.time() + 600,",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0342_member_picks.py:137 in _v342_suite.Transport.send: 1 site(s), the authority allows 0: return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,",
+      "wallclock: wallclock_site R3 (keyword timeout 10) scripts/suites/150_veldo_0342_member_picks.py:85 in _v342_suite.sign: 1 site(s), the authority allows 0: return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys[who]), '-n', namespace],",
+      "wallclock: wallclock_site R3 (keyword timeout 10) scripts/suites/150_veldo_0342_member_picks.py:80 in _v342_suite: 1 site(s), the authority allows 0: subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys[who])],",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0343_discard_keeps_commits.py:213 in _v343_suite.authorize: 1 site(s), the authority allows 0: CM, time.time())",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0343_discard_keeps_commits.py:84 in _v343_suite.member: 1 site(s), the authority allows 0: ids, time.time(), enrollee_signature=None if who == 'steward' else",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0343_discard_keeps_commits.py:80 in _v343_suite.member: 1 site(s), the authority allows 0: request_revision=1, nonce=next_id(), expires_at=time.time() + 600,",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/150_veldo_0343_discard_keeps_commits.py:108 in _v343_suite.Transport.send: 1 site(s), the authority allows 0: return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,",
+      "wallclock: wallclock_site R3 (keyword timeout 10) scripts/suites/150_veldo_0343_discard_keeps_commits.py:56 in _v343_suite.sign: 1 site(s), the authority allows 0: return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys[who]), '-n', namespace],",
+      "wallclock: wallclock_site R3 (keyword timeout 10) scripts/suites/150_veldo_0343_discard_keeps_commits.py:51 in _v343_suite: 1 site(s), the authority allows 0: subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys[who])],",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/153_veldo_0302_space_creators.py:380 in _v302_creators_suite: 1 site(s), the authority allows 0: KEEP.signer(key, AC.SIGNATURE_NAMESPACE), state, time.time(), tag='v302_desk')",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/153_veldo_0302_space_creators.py:392 in _v302_creators_suite: 1 site(s), the authority allows 0: claimed = L.outcome(identity, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')",
+      "wallclock: baseline_stale R2 (no site left) scripts/suites/153_veldo_0302_space_creators.py in _v302_creators_suite: the baseline says 1, required 0 (0 site(s)): kept = L.outcome(identity, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')",
+      "wallclock: baseline_stale R2 (no site left) scripts/suites/154_veldo_0324_batch_sandbox.py in _v324_suite.owner_keep: the baseline says 1, required 0 (0 site(s)): assert L.outcome(identity, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')['ok']",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/154_veldo_0324_batch_sandbox.py:248 in _v324_suite.owner_keep: 1 site(s), the authority allows 0: claimed = L.outcome(identity, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/154_veldo_0335_released.py:392 in _v335_suite: 1 site(s), the authority allows 0: kept = ledger.disposition(dict(command=body, signature=sign(S.canonical_bytes(body))), CM, time.time())",
+      "wallclock: wallclock_site R2 (read time.monotonic) scripts/suites/156_veldo_0315_reconcile.py:665 in _v315_suite.startup: 1 site(s), the authority allows 0: deadline = time.monotonic() + 60",
+      "wallclock: wallclock_site R2 (read time.monotonic) scripts/suites/156_veldo_0315_reconcile.py:666 in _v315_suite.startup: 1 site(s), the authority allows 0: while consumer.active and time.monotonic() < deadline:",
+      "wallclock: wallclock_site R3 (select.select argument 3 0.1) scripts/suites/156_veldo_0315_reconcile.py:667 in _v315_suite.startup: 1 site(s), the authority allows 0: for fd in select.select(list(consumer.pipes()), [], [], 0.1)[0]:",
+      "wallclock: wallclock_site R3 (select.select argument 3 120) scripts/suites/157_veldo_0316_space_admission.py:540 in _v316_suite.async_admission.pump: 1 site(s), the authority allows 0: assert select.select([descriptor], [], [], 120)[0], 'worker hang'",
+      "wallclock: wallclock_site R3 (select.select argument 3 120) scripts/suites/157_veldo_0316_space_admission.py:690 in _v316_suite.concurrent: 1 site(s), the authority allows 0: assert select.select([read], [], [], 120)[0], 'concurrent admission hang'",
+      "wallclock: wallclock_site R3 (select.select argument 3 120) scripts/suites/157_veldo_0316_space_admission.py:628 in _v316_suite.worker_wait.pump: 1 site(s), the authority allows 0: ready, _, _ = select.select(list(consumer.pipes()), [], [], 120)",
+      "wallclock: wallclock_site R3 (select.select argument 3 120) scripts/suites/159_veldo_0317_no_space.py:553 in _v317_suite.worker_andon: 1 site(s), the authority allows 0: ready, _, _ = select.select([entered_r], [], [], 120)",
+      "wallclock: wallclock_site R3 (select.select argument 3 120) scripts/suites/159_veldo_0317_no_space.py:544 in _v317_suite.worker_andon.drain: 1 site(s), the authority allows 0: ready, _, _ = select.select(list(consumer.pipes()), [], [], 120)",
+      "wallclock: wallclock_site R2 (read time.time) scripts/suites/support/space_owner_keep.py:146 in Desk.open.Transport.send: 1 site(s), the authority allows 0: return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,"
+    ],
+    "all_reported_source_files_unchanged_since_reviewed_revision": true,
+    "source_files": [
+      "engine/ui/e2e/space-fixtures.ts",
+      "engine/ui/e2e/space.spec.ts",
+      "engine/ui/e2e/space_harness.py",
+      "scripts/suites/147_veldo_0310_landed_contained.py",
+      "scripts/suites/149_veldo_0312_ticket_ended.py",
+      "scripts/suites/150_veldo_0318_unique_work.py",
+      "scripts/suites/150_veldo_0319_space_screen.py",
+      "scripts/suites/150_veldo_0319_space_ui.py",
+      "scripts/suites/150_veldo_0327_disposition.py",
+      "scripts/suites/150_veldo_0340_review_groups.py",
+      "scripts/suites/150_veldo_0342_member_picks.py",
+      "scripts/suites/150_veldo_0343_discard_keeps_commits.py",
+      "scripts/suites/153_veldo_0302_space_creators.py",
+      "scripts/suites/154_veldo_0324_batch_sandbox.py",
+      "scripts/suites/154_veldo_0335_released.py",
+      "scripts/suites/156_veldo_0315_reconcile.py",
+      "scripts/suites/157_veldo_0316_space_admission.py",
+      "scripts/suites/159_veldo_0317_no_space.py",
+      "scripts/suites/support/space_owner_keep.py"
+    ]
+  }
+}
