@@ -311,7 +311,7 @@ def resource_samples(item, now):
 
 def resource_claim(runs):
     return dict(cpu=max(r['cpu_seconds'] / r['elapsed'] for r in runs),
-                memory=max(max(r['peak_anon_bytes'], r.get('peak_memory_bytes', 0)) for r in runs))
+                memory=1.15 * max(max(r['peak_anon_bytes'], r.get('peak_memory_bytes', 0)) for r in runs))
 
 
 class CaseClaims:
@@ -1495,6 +1495,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                         valid = (all(ok is True for _, ok in rows) and not any(
                             observation.get(k) for k in ('watchdog_fired', 'hung_rows', 'not_run_rows')))
                         if valid:
+                            assert workers.outcomes[-1]['name'] == name
                             workers.outcomes[-1].update(resource_valid=True,
                                 resource_execution=receipt['input_digest'])
                     except (KeyError, TypeError, ValueError):
@@ -1524,7 +1525,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 receipt['estimate_seconds'] = budget
             by_identity = {c['identity']: c for c in fresh}
 
-            def collect(identity, completed):
+            def collect(name, completed):
+                identity = name
                 # Each mutant is judged as its worker completes, so a later failure or
                 # timeout cannot discard results that were already produced.
                 case = by_identity[identity]
@@ -1579,6 +1581,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 shown += sorted(set().union(*(run.get('withheld', ()) for run in runs)))
                 if shown and hasattr(reuse, 'withhold'):
                     reuse.withhold(case, shown[0])
+                assert workers.outcomes[-1]['name'] == name
                 workers.outcomes[-1].update(resource_valid=True, resource_execution=receipt['input_digest'])
                 results[identity] = record
                 receipt['results'].append(dict(reuse.evidence(case, record, False),

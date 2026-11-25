@@ -18874,6 +18874,17 @@ def cases():
             case['companions'] = sorted(set(case.get('companions', ())) | {'timers.py'})
 
     # VELDO-0362: each resource admission guard is falsified at its assertion.
+    add(362, 'learning362-memory-margin', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "memory=1.15 * max(max(r['peak_anon_bytes'], r.get('peak_memory_bytes', 0)) for r in runs))",
+        "memory=max(max(r['peak_anon_bytes'], r.get('peak_memory_bytes', 0)) for r in runs))",
+        ['admission/learning/memory-margin'])
+    result[-1]['dir'] = 'scripts'
+    for name, indent, row in [('control', 28, 'baseline'), ('mutant', 16, 'mutant')]:
+        add(362, 'learning362-' + name + '-outcome-name', '115_veldo_0219_measured_admission.py',
+            'check_gate_mutations.py',
+            '\n' + ' ' * indent + "assert workers.outcomes[-1]['name'] == name\n",
+            '\n' + ' ' * indent + 'pass\n', ['admission/learning/' + row + '-outcome-name'])
+        result[-1]['dir'] = 'scripts'
     add(362, 'learning362-red-dropped', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
         'if (admission and group_for is not None and reuse is not None',
         "if (receipt.get('status') == 'passed' and admission and group_for is not None and reuse is not None", ['admission/learning/red-stage'])
@@ -18955,8 +18966,8 @@ def cases():
         'valid = (True and not any(', ['admission/learning/invalid-controls'])
     result[-1]['dir'] = 'scripts'
     add(362, 'learning362-control-watchdog', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
-        'if valid:\n                            workers.outcomes[-1].update',
-        'if True:\n                            workers.outcomes[-1].update', ['admission/learning/invalid-controls'])
+        "if valid:\n                            assert workers.outcomes[-1]['name'] == name",
+        "if True:\n                            assert workers.outcomes[-1]['name'] == name", ['admission/learning/invalid-controls'])
     result[-1]['dir'] = 'scripts'
     add(362, 'learning362-mutant-dropped', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
         "                workers.outcomes[-1].update(resource_valid=True, resource_execution=receipt['input_digest'])",
