@@ -1,6 +1,6 @@
 {
   "schema": "veldo.space-v1-retired-mutations/v1",
-  "reason": "Superseded old APIs; see retirement.md row mapping and current candidate cases. Distinct unmet behaviors have current API mutations.",
+  "reason": "Archived incoming registrations. The retained no-space guard is re-registered below; other historical cases retain their prior retirement mapping, which is not itself runtime proof.",
   "cases": [
     {
       "finding": 317,
@@ -33,7 +33,13 @@
       "new": "if False:",
       "rows": [
         "space317/ac3/work-retained"
-      ]
+      ],
+      "disposition": "re-registered",
+      "current_suite": "150_veldo_0318_unique_work.py",
+      "current_rows": [
+        "space318/pin/clean-stays"
+      ],
+      "reason": "Guard retained by the join; registered removal of its path check in fix round 1."
     },
     {
       "finding": 317,

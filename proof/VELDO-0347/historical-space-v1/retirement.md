@@ -23,7 +23,7 @@ Rows below preserve the required assertion through the named current row(s). Row
 | `ac3/clone-request` | ac3/unique-work-request |
 | `ac3/creators-declare-the-form` | ac3/kind-and-form |
 | `ac3/keep-first` | ac3/commit-kept |
-| `ac3/ledger-keep-only` | ac3/unique-work-request |
+| `ac3/ledger-keep-only` | ac3/ledger-keep-only: settled Save and Discard refused unchanged; worktree Discard accepted |
 | `ac3/not-shown` | SUPERSEDED: candidate 7808cb3da declares form in the signed ledger, not a second worker-manifest authority. ac3/kind-and-form; snapshot and comparison remain mandatory |
 | `ac3/renamed-back` | ac3/put-back-at-stop |
 | `ac3/table-1-clone` | ac3/table-1-keeps-its-handling |

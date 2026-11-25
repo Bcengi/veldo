@@ -1981,7 +1981,7 @@
           "label": "'%s: fixture: the clone is deferred with its request' % choice",
           "assertion": "before.get('state') == 'deferred' and (before.get('disposition') or {}).get('state') == 'requested'",
           "disposition": "retained",
-          "evidence": "ac3/unique-work-request"
+          "evidence": "ac3/ledger-keep-only"
         },
         {
           "old_row": "ac3/ledger-keep-only",
@@ -1989,7 +1989,7 @@
           "label": "\"%s: fixture: the store holds a settled answer the Ledger reads as this request's [%s]\" % (choice, effect.get('choice'))",
           "assertion": "effect.get('choice') == 'accept ' + choice",
           "disposition": "retained",
-          "evidence": "ac3/unique-work-request"
+          "evidence": "ac3/ledger-keep-only"
         },
         {
           "old_row": "ac3/ledger-keep-only",
@@ -1997,7 +1997,7 @@
           "label": "'a settled %s of a clone is refused by the Ledger: a clone is kept, nothing saves or discards one [%s]' % (choice, applied.get('reason'))",
           "assertion": "applied.get('ok') is False and applied.get('reason') == 'space_disposition_choice'",
           "disposition": "retained",
-          "evidence": "ac3/unique-work-request"
+          "evidence": "ac3/ledger-keep-only"
         },
         {
           "old_row": "ac3/ledger-keep-only",
@@ -2005,7 +2005,7 @@
           "label": "'%s: the item is as it was, deferred with its request, not due and not authorized [%s %s]' % (choice, after.get('state'), (after.get('disposition') or {}).get('state'))",
           "assertion": "after.get('state') == 'deferred' and after.get('disposition') == before.get('disposition') and (text_of(work / 'notes.txt') == 'notes nobody committed\\n') and (work / '.git').is_dir()",
           "disposition": "retained",
-          "evidence": "ac3/unique-work-request"
+          "evidence": "ac3/ledger-keep-only"
         },
         {
           "old_row": "ac3/ledger-keep-only",
@@ -2013,7 +2013,7 @@
           "label": "'what the guard is not: the same planted Discard of a worktree is taken, and the worktree is due again [%s %s %s]' % (asked, applied.get('reason'), state_of(tree))",
           "assertion": "asked == 'requested' and applied.get('ok') is True and (state_of(tree) == 'due') and (((L.item(tree) or {}).get('disposition') or {}).get('choice') == 'discard') and (text_of(tree_path / 'draft.txt') == 'a draft\\n')",
           "disposition": "retained",
-          "evidence": "ac3/unique-work-request"
+          "evidence": "ac3/ledger-keep-only"
         },
         {
           "old_row": "ac4/held-files-go",

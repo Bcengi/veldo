@@ -85,6 +85,7 @@ def _v347_space_work_suite():
     import hashlib
     import importlib.util
     import io
+    import json
     import os
     import shutil
     import subprocess
@@ -111,7 +112,7 @@ def _v347_space_work_suite():
     ROWS = ('ac1/loose-ignored-file', 'ac1/personal-rule', 'ac1/untraced-rule', 'ac1/build-output-passes',
             'ac2/unpushed-in-session-scratch', 'ac2/reset-log', 'ac2/forged-remote-ref', 'ac2/build-output',
             'ac2/unreadable', 'ac2/sandbox-scratch', 'ac2/unreachable-in-remote', 'ac2/clean-clone-reading',
-            'ac3/kind-and-form', 'ac3/commit-kept', 'ac3/unique-work-request', 'ac3/worker-snapshot',
+            'ac3/kind-and-form', 'ac3/commit-kept', 'ac3/unique-work-request', 'ac3/ledger-keep-only', 'ac3/request-kind', 'ac3/worker-snapshot',
             'ac3/compare-before-delete', 'ac3/put-back-at-stop', 'ac3/table-1-keeps-its-handling',
             'ac4/digest-at-removal', 'ac4/declared-trunk', 'ac4/no-copy-unread',
             'ac5/own-folder', 'ac5/clone-row',
@@ -826,6 +827,85 @@ def _v347_space_work_suite():
 
 
 
+        def settled(item, choice, tag):
+            """Plant in the store what a settlement of the item's request with `choice` would leave:
+            the satisfied assignment, the settlement and its effect. The settlement path offers a
+            clone Keep alone and would refuse to write these; the row asks the Ledger past it."""
+            request = (L.item(item) or {})['disposition']
+            rid = 'request:fixture-347-' + tag
+            written = {
+                (rid, 'assignment'): {'state': 'SATISFIED', 'alias': request['alias'], 'owner': 'owner',
+                                      'settlement': {'settlement_id': 'settlement:' + tag,
+                                                     'effect_id': 'effect:' + tag}},
+                ('settlement:' + tag, 'request_settlement'): {
+                    'settlement_id': 'settlement:' + tag, 'request_id': rid, 'choice': choice,
+                    'principals': ['owner']},
+                ('effect:' + tag, 'settlement_effect'): {
+                    'request_id': rid, 'settlement_id': 'settlement:' + tag, 'touchpoint': 'space_disposition',
+                    'ruling': 'approve', 'choice': choice, 'proposal': request['proposal'],
+                    'target': {'ref': item}}}
+            for (identity, kind), data in written.items():
+                conn.execute('INSERT INTO entities (id, kind, version, digest, data) VALUES (?, ?, ?, ?, ?)',
+                             (identity, kind, 1, S.digest_of({'kind': kind, 'data': data, 'version': 1}),
+                              json.dumps(data)))
+            conn.commit()
+            return rid
+
+        @row('ac3/ledger-keep-only')
+        def _ac3_ledger_keep_only():
+            ROW = 'ac3/ledger-keep-only'
+            for choice in ('discard', 'save'):
+                run = 'run-only-keep-' + choice
+                item, work = private('only-keep-' + choice, 'batch_clone', run)
+                (work / 'notes.txt').write_text('notes nobody committed\n')
+                send('run_finished', {'run': run})
+                before = L.item(item) or {}
+                check(ROW, '%s: fixture: the clone is deferred with its request' % choice,
+                      before.get('state') == 'deferred' and (before.get('disposition') or {}).get('state') == 'requested')
+                rid = settled(item, 'accept ' + choice, 'clone-' + choice)
+                effect = L.disposition_effect(item, rid)[0]
+                check(ROW, '%s: fixture: the store holds a settled answer the Ledger reads as this request\'s [%s]'
+                      % (choice, effect.get('choice')), effect.get('choice') == 'accept ' + choice)
+                applied = L.authorize_disposition(item, rid)
+                after = L.item(item) or {}
+                check(ROW, 'a settled %s of a clone is refused by the Ledger: a clone is kept, nothing saves or '
+                      'discards one [%s]' % (choice, applied.get('reason')),
+                      applied.get('ok') is False and applied.get('reason') == 'space_disposition_choice')
+                check(ROW, '%s: the item is as it was, deferred with its request, not due and not authorized [%s %s]'
+                      % (choice, after.get('state'), (after.get('disposition') or {}).get('state')),
+                      after == before and after.get('state') == 'deferred' and after.get('disposition') == before.get('disposition')
+                      and text_of(work / 'notes.txt') == 'notes nobody committed\n' and (work / '.git').is_dir())
+            tree, tree_path = worktree('only-keep-tree', 'VELDO-9490')
+            (tree_path / 'draft.txt').write_text('a draft\n')
+            send('ticket_ended', {'ticket': 'VELDO-9490'})
+            asked = ((L.item(tree) or {}).get('disposition') or {}).get('state')
+            rid = settled(tree, 'accept discard', 'tree-discard') if asked == 'requested' else None
+            applied = L.authorize_disposition(tree, rid) if rid else {}
+            check(ROW, 'what the guard is not: the same planted Discard of a worktree is taken, and the worktree '
+                  'is due again [%s %s %s]' % (asked, applied.get('reason'), state_of(tree)),
+                  asked == 'requested' and applied.get('ok') is True and state_of(tree) == 'due'
+                  and ((L.item(tree) or {}).get('disposition') or {}).get('choice') == 'discard'
+                  and text_of(tree_path / 'draft.txt') == 'a draft\n')
+
+        @row('ac3/request-kind')
+        def _ac3_request_kind():
+            ROW = 'ac3/request-kind'
+            item, work = private('ask-as-worktree', 'batch_clone', 'run-ask-as-worktree')
+            (work / 'notes.txt').write_text('notes\n')
+            L.signal('run_finished', {'run': 'run-ask-as-worktree'})
+            deferred = L.outcome(item, 'deferred', {'rule': 'unique_work', 'event': 'run_finished'})
+            before = L.item(item)
+            shaped = RM.disposition_proposal(L, item, before, [])
+            refused = L.request_disposition(item, shaped, git(work, 'rev-parse', 'HEAD'))
+            check(ROW, 'the Ledger refuses worktree terms for a deferred clone [%s]' % refused,
+                  deferred.get('ok') is True and 'worktrees' in shaped and refused.get('ok') is False
+                  and refused.get('reason') == 'space_disposition_item' and L.item(item) == before
+                  and text_of(work / 'notes.txt') == 'notes\n')
+            proposal = RM.clone_proposal(L, P, item, before)
+            accepted = L.request_disposition(item, proposal, git(work, 'rev-parse', 'HEAD'))
+            check(ROW, 'the same clone accepts its own terms', accepted.get('ok') is True
+                  and L.item(item)['disposition']['proposal'] == proposal)
+
         @row('ac3/worker-snapshot')
         def _ac3_worker_snapshot():
             ROW = 'ac3/worker-snapshot'
@@ -952,6 +1032,13 @@ def _v347_space_work_suite():
                   and 'form' not in found)
             check(ROW, 'the clone and its commit are whole, and the shared repository was not given it',
                   holds(where, lone) and git(where, 'rev-parse', 'HEAD') == lone and not holds(REPOSITORY, lone))
+
+            before = L.item(item)
+            proposal = RM.clone_proposal(L, P, item, before)
+            refused = L.request_disposition(item, proposal, git(where, 'rev-parse', 'HEAD'))
+            check(ROW, 'a table 1 item refuses clone terms even with a batch form [%s]' % refused,
+                  refused.get('ok') is False and refused.get('reason') == 'space_disposition_state'
+                  and L.item(item) == before and git(where, 'rev-parse', 'HEAD') == lone)
 
             item, where = declared_1('table-1-worker', 'worker_clone', 'VELDO-9602')
             (where / 'new-347.txt').write_text('untracked in a worker clone declared under table 1\n')

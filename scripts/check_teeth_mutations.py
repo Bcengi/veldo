@@ -17574,12 +17574,31 @@ def cases():
     # worker clone is removed without the snapshot; its files are deleted without the comparison; the
     # folder is left under its marked name at that stop. AC4: the digest recorded at the measurement
     # is used. AC5: rule 6 looks beneath the item only; an item with no form gets the clone's row.
+    add(317, 'space317-remove-failed-worktree', '150_veldo_0318_unique_work.py',
+        'control_space_signal.py',
+        "        if tree == path or tree.startswith(path.rstrip('/') + '/'):\n",
+        "        if False:  # defect: no-space retained work is not protected\n",
+        ['space318/pin/clean-stays'])
+    result[-1]['siblings'] = True
+
     space347 = '161_veldo_0347_space_work.py'
 
     def work347(name, module, old, new, rows, also=()):
         add(347, name, space347, module, old, new, rows, also)
         result[-1]['siblings'] = True
 
+    work347('space347-ledger-takes-a-worktree-request-for-a-clone', 'control_space.py',
+            "                or ('clones' in proposal) != clone or (clone and tree['form'] != record['form'])):\n",
+            '                or False):  # defect: a clone may be asked about as a worktree\n',
+            ['ac3/request-kind'])
+    work347('space347-ledger-takes-a-clone-request-for-a-table-1-item', 'control_space.py',
+            '                 and self._clone_row(record))\n',
+            '                 and True)  # defect: the form alone makes it a clone to ask about\n',
+            ['ac3/table-1-keeps-its-handling'])
+    work347('space347-ledger-applies-any-settled-choice-to-a-clone', 'control_space.py',
+            "        if record['kind'] != 'worktree' and choice != 'keep':\n",
+            '        if False:  # defect: a settled Save or Discard of a clone is applied\n',
+            ['ac3/ledger-keep-only'])
     work347('space347-ignored-left-out-of-case-3', 'control_space_probe.py',
             "    untracked.extend(name for name in ignored if name not in untracked)\n",
             "    pass  # defect: ignored paths are left out of case 3\n",

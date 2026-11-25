@@ -1,6 +1,6 @@
 {
   "schema": "veldo.space-v1-retired-mutations/v1",
-  "reason": "Superseded old APIs; see retirement.md row mapping and current candidate cases. Distinct unmet behaviors have current API mutations.",
+  "reason": "Archived incoming registrations. Per-case re-registered entries below are active again; other historical cases retain their prior retirement mapping, which is not itself runtime proof.",
   "cases": [
     {
       "finding": 347,
@@ -157,7 +157,13 @@
       "new": "                or False):  # defect: a clone may be asked about as a worktree\n",
       "rows": [
         "space347/ac3/clone-request"
-      ]
+      ],
+      "disposition": "re-registered",
+      "current_suite": "161_veldo_0347_space_work.py",
+      "current_rows": [
+        "ac3/request-kind"
+      ],
+      "reason": "Guard retained by the join; restored current assertion and exact registered mutation in fix round 1."
     },
     {
       "finding": 347,
@@ -245,7 +251,13 @@
       "new": "                 and True)  # defect: the form alone makes it a clone to ask about\n",
       "rows": [
         "space347/ac3/table-1-clone"
-      ]
+      ],
+      "disposition": "re-registered",
+      "current_suite": "161_veldo_0347_space_work.py",
+      "current_rows": [
+        "ac3/table-1-keeps-its-handling"
+      ],
+      "reason": "Guard retained by the join; restored current assertion and exact registered mutation in fix round 1."
     },
     {
       "finding": 347,
@@ -268,7 +280,13 @@
       "new": "        if False:  # defect: a settled Save or Discard of a clone is applied\n",
       "rows": [
         "space347/ac3/ledger-keep-only"
-      ]
+      ],
+      "disposition": "re-registered",
+      "current_suite": "161_veldo_0347_space_work.py",
+      "current_rows": [
+        "ac3/ledger-keep-only"
+      ],
+      "reason": "Guard retained by the join; restored current assertion and exact registered mutation in fix round 1."
     }
   ]
 }
