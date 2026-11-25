@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-reaper-exclusion
+@@ -888,7 +888,7 @@
+ 
+ def reap_children(excluded=()):
+     """Kill adopted children before waiting; repeat for descendants adopted at exit."""
+-    while children := child_pids() - set(excluded):
++    while children := child_pids():
+         for pid in children:
+             try:
+                 os.kill(pid, signal.SIGKILL)

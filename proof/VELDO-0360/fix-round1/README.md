@@ -1,0 +1,15 @@
+# Fix round 1
+
+Review F1: cancelling or killing the mutation coordinator left its sibling worker cgroups populated, while the scheduler released grants and its fallback reaper waited for live workers.
+
+The collector and exceptional exit now finish the node, empty only worker cgroups bearing that coordinator's PID inside this gate's scope, remove nested groups, and reap adopted descendants before releasing grants. The reaper signals all adopted children before waiting and repeats for newly adopted descendants. Active stage roots and pre-existing caller children are excluded during collection. Meter cleanup runs even if its final measurement raises. Cgroup cleanup uses the existing kernel exit-event helper; the removed polling sleep reduces the census by one site.
+
+Seven native controls passed in a private delegated service capped at 256 MiB. The new controls start mutation without dependencies and two workers with separate-session descendants in nested cgroups. A sibling red cancels mutation, a sibling kills its coordinator, and an injected sampling exception exercises run()'s exceptional cleanup. All five recorded PIDs are gone and every node/worker cgroup is removed. Each grant's release hook observes the processes and groups already gone. The cancellation receipt retains the original red's exit 7 and mutation's partial receipt. No rescue was needed. Successful cgroup removal also proves each group was empty.
+
+The native controls use production Meter, cgroup kill/exit events, scheduler, ledger and CLI. Only graph, commands, admission capacities and candidate-input checks are fixture boundaries. The suite uses the same commands with a simulated cgroup filesystem for its small falsifiers. `native-controls.json` and `mutants.json` bind observations to the scheduler SHA-256.
+
+All 37 registered VELDO-0360 mutants were killed at their named rows, with green no-ops: 15 existing and 22 new cleanup falsifiers. `mutants.json` names each row and exact original/mutant digest; the corresponding diffs preserve each changed guard. The direct collector, exceptional cleanup and release-order mutants are also caught with live fixture processes. Reaper ordering and exit-race controls use deterministic child events, without hangs or timed rescue.
+
+Diagnostics: scheduler suites 114, 157 and 161 report 27/27, 50/50 and 62/62 respectively. Selectors deliberately return 2 for a partial run; these logs are diagnostics, not canonical gate evidence. Lint and template synchronization passed. Census: 2843 sites, no additions. Personal setup: 0. Stale mutant scan: 0/4015. Both scheduler copies match; the unconfined declaration and verification shell are unchanged. The home path in the shard diagnostic log is redacted.
+
+Protected paths touched: `scripts/gate_schedule.py`, `engine/scripts/gate_schedule.py`, `scripts/suites/wallclock_baseline.json` (removes the obsolete sleep entry only). No live-capture-bound module changed. No canonical gate, full leg, load generator or sub-agent ran. Independent review and full-gate validation remain pending.

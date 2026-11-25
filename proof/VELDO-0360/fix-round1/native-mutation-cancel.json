@@ -1,0 +1,436 @@
+{
+  "receipt": {
+    "schema": "veldo.gate-schedule/v1",
+    "graph": "sha256:6475db868ab668e894e8fb8150cbdb380dbd658bc24b34c83ed24dafcf88ce35",
+    "stages": {
+      "worker": "not_started",
+      "red": "FAIL",
+      "tail": "not_started",
+      "load": "not_run",
+      "mutation": "cancelled",
+      "after": "not_started"
+    },
+    "nodes": {
+      "red": {
+        "start": 0.0028957100585103035,
+        "end": 0.11956506688147783,
+        "wall_seconds": 0.11666935682296753,
+        "verdict": "FAIL",
+        "returncode": 7,
+        "error": null,
+        "inputs_unchanged": true,
+        "input_snapshot": false,
+        "cpu_seconds": 0.02955,
+        "peak_anon_bytes": 8081408,
+        "metrics_source": "cgroup-v2-anon-sampled-50ms",
+        "live_descendants": false,
+        "admission_dependencies": []
+      },
+      "mutation": {
+        "start": 0.00024952786043286324,
+        "end": 0.12166796764358878,
+        "wall_seconds": 0.12141843978315592,
+        "verdict": "cancelled",
+        "returncode": -9,
+        "error": "cancelled after first failure: red; unreleased_ledger_claim",
+        "inputs_unchanged": true,
+        "input_snapshot": false,
+        "cpu_seconds": 0.05591,
+        "peak_anon_bytes": 20361216,
+        "metrics_source": "cgroup-v2-anon-sampled-50ms",
+        "live_descendants": false,
+        "admission_dependencies": []
+      },
+      "worker": {
+        "start": 0.12166796764358878,
+        "end": 0.12166796764358878,
+        "wall_seconds": 0.0,
+        "verdict": "not_started",
+        "returncode": null,
+        "error": "failed prerequisite: mutation",
+        "inputs_unchanged": true,
+        "input_snapshot": false,
+        "admission_dependencies": []
+      },
+      "tail": {
+        "start": 0.12166796764358878,
+        "end": 0.12166796764358878,
+        "wall_seconds": 0.0,
+        "verdict": "not_started",
+        "returncode": null,
+        "error": "failed prerequisite: mutation",
+        "inputs_unchanged": true,
+        "input_snapshot": false,
+        "admission_dependencies": []
+      },
+      "load": {
+        "start": 0.12166796764358878,
+        "end": 0.12166796764358878,
+        "wall_seconds": 0.0,
+        "verdict": "not_run",
+        "returncode": null,
+        "error": "a stage before the load-proof leg is red: red, tail, worker",
+        "inputs_unchanged": true,
+        "input_snapshot": false,
+        "admission_dependencies": []
+      },
+      "after": {
+        "start": 0.12166796764358878,
+        "end": 0.12166796764358878,
+        "wall_seconds": 0.0,
+        "verdict": "not_started",
+        "returncode": null,
+        "error": "failed prerequisite: mutation",
+        "inputs_unchanged": true,
+        "input_snapshot": false,
+        "admission_dependencies": []
+      }
+    },
+    "checks_run": 6,
+    "inputs_unchanged": true,
+    "original_inputs_unchanged": true,
+    "first_failure": {
+      "node": "red",
+      "start": 0.0028957100585103035,
+      "end": 0.11956506688147783,
+      "wall_seconds": 0.11666935682296753,
+      "verdict": "FAIL",
+      "returncode": 7,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.02955,
+      "peak_anon_bytes": 8081408,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "collect_all": false,
+    "error": null,
+    "wall_seconds": 0.12578737875446677,
+    "critical_path_seconds": 0.12141843978315592,
+    "critical_path_end": "worker",
+    "capacities": {
+      "cpu": 2,
+      "memory": 4294967296,
+      "manager": 2
+    },
+    "peak_granted": {
+      "cpu": 2,
+      "memory": 2147483648,
+      "manager": 0
+    },
+    "ledger": [
+      {
+        "at": 3238936.106161141,
+        "action": "grant",
+        "claimant": "mutation",
+        "resource": "cpu,memory,manager,host_lock,ports",
+        "claim": {
+          "cpu": 1,
+          "memory": 1073741824,
+          "manager": "none",
+          "ports": [],
+          "host_lock": "none"
+        },
+        "granted": {
+          "cpu": 1,
+          "memory": 1073741824,
+          "manager": 0
+        }
+      },
+      {
+        "at": 3238936.108849134,
+        "action": "grant",
+        "claimant": "red",
+        "resource": "cpu,memory,manager,host_lock,ports",
+        "claim": {
+          "cpu": 1,
+          "memory": 1073741824,
+          "manager": "none",
+          "ports": [],
+          "host_lock": "none"
+        },
+        "granted": {
+          "cpu": 2,
+          "memory": 2147483648,
+          "manager": 0
+        }
+      },
+      {
+        "at": 3238936.165598933,
+        "action": "grant",
+        "claimant": "mutation/child0",
+        "resource": "cpu,memory,manager,host_lock,ports",
+        "claim": {
+          "cpu": 0,
+          "memory": 0,
+          "manager": "none",
+          "ports": [],
+          "host_lock": "none"
+        },
+        "granted": {
+          "cpu": 2,
+          "memory": 2147483648,
+          "manager": 0
+        }
+      },
+      {
+        "at": 3238936.196346393,
+        "action": "grant",
+        "claimant": "mutation/child1",
+        "resource": "cpu,memory,manager,host_lock,ports",
+        "claim": {
+          "cpu": 0,
+          "memory": 0,
+          "manager": "none",
+          "ports": [],
+          "host_lock": "none"
+        },
+        "granted": {
+          "cpu": 2,
+          "memory": 2147483648,
+          "manager": 0
+        }
+      },
+      {
+        "at": 3238936.226697145,
+        "action": "release",
+        "claimant": "red",
+        "resource": "cpu,memory,manager,host_lock,ports",
+        "claim": null,
+        "granted": {
+          "cpu": 1,
+          "memory": 1073741824,
+          "manager": 0
+        }
+      },
+      {
+        "at": 3238936.231264266,
+        "action": "release",
+        "claimant": "mutation/child1",
+        "resource": "cpu,memory,manager,host_lock,ports",
+        "claim": null,
+        "granted": {
+          "cpu": 1,
+          "memory": 1073741824,
+          "manager": 0
+        }
+      },
+      {
+        "at": 3238936.231472101,
+        "action": "release",
+        "claimant": "mutation/child0",
+        "resource": "cpu,memory,manager,host_lock,ports",
+        "claim": null,
+        "granted": {
+          "cpu": 1,
+          "memory": 1073741824,
+          "manager": 0
+        }
+      },
+      {
+        "at": 3238936.231703424,
+        "action": "release",
+        "claimant": "mutation",
+        "resource": "cpu,memory,manager,host_lock,ports",
+        "claim": null,
+        "granted": {
+          "cpu": 0,
+          "memory": 0,
+          "manager": 0
+        }
+      }
+    ],
+    "claims": {
+      "mutation": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "red": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "worker": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "tail": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "load": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "after": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      }
+    },
+    "claim_sources": {
+      "mutation": "recorded startup estimate: tiny native fixture",
+      "red": "recorded startup estimate: tiny native fixture",
+      "worker": "recorded startup estimate: tiny native fixture",
+      "tail": "recorded startup estimate: tiny native fixture",
+      "load": "recorded startup estimate: tiny native fixture",
+      "after": "recorded startup estimate: tiny native fixture"
+    }
+  },
+  "ledger": [
+    {
+      "at": 3238936.106161141,
+      "action": "grant",
+      "claimant": "mutation",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "granted": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3238936.108849134,
+      "action": "grant",
+      "claimant": "red",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "granted": {
+        "cpu": 2,
+        "memory": 2147483648,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3238936.165598933,
+      "action": "grant",
+      "claimant": "mutation/child0",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 0,
+        "memory": 0,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "granted": {
+        "cpu": 2,
+        "memory": 2147483648,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3238936.196346393,
+      "action": "grant",
+      "claimant": "mutation/child1",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": {
+        "cpu": 0,
+        "memory": 0,
+        "manager": "none",
+        "ports": [],
+        "host_lock": "none"
+      },
+      "granted": {
+        "cpu": 2,
+        "memory": 2147483648,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3238936.226697145,
+      "action": "release",
+      "claimant": "red",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3238936.231264266,
+      "action": "release",
+      "claimant": "mutation/child1",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3238936.231472101,
+      "action": "release",
+      "claimant": "mutation/child0",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 1,
+        "memory": 1073741824,
+        "manager": 0
+      }
+    },
+    {
+      "at": 3238936.231703424,
+      "action": "release",
+      "claimant": "mutation",
+      "resource": "cpu,memory,manager,host_lock,ports",
+      "claim": null,
+      "granted": {
+        "cpu": 0,
+        "memory": 0,
+        "manager": 0
+      }
+    }
+  ],
+  "releases": [
+    {
+      "name": "mutation/child1",
+      "gone": true,
+      "removed": true
+    },
+    {
+      "name": "mutation/child0",
+      "gone": true,
+      "removed": true
+    },
+    {
+      "name": "mutation",
+      "gone": true,
+      "removed": true
+    }
+  ]
+}

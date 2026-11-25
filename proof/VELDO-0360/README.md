@@ -9,3 +9,5 @@ The scheduler suite (27 rows), shard suite (50 rows), and new fail-fast suite (3
 Protected paths touched: `scripts/gate_schedule.py`, `engine/scripts/gate_schedule.py`. Their contents match. Neither verification shell nor the unconfined declaration changed. No live-capture-bound module changed.
 
 Review status: prepared, not independently reviewed. The owner prohibited sub-agents and a full gate for this task. No approval or verdict is authored here. A fresh-context reviewer should receive the ready spec, final diff and this bundle; a full gate and commit-bound owner approval of both protected paths remain required at landing.
+
+Fix round 1 addresses review F1. See [the follow-up evidence](fix-round1/README.md) for active mutation cancellation, coordinator death, exceptional cleanup, grant ordering and the updated protected-path list.

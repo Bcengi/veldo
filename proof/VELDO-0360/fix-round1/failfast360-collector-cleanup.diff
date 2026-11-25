@@ -1,0 +1,12 @@
+--- scripts/gate_schedule.py
++++ failfast360-collector-cleanup
+@@ -779,8 +779,7 @@
+                 if code is None:
+                     continue
+                 end = time.monotonic()
+-                metrics = finish_node(name, item, scope, inherited_children |
+-                                      {other['proc'].pid for other in active.values()})
++                metrics = item['meter'].finish()
+                 tree_ok = item['inputs'].unchanged() if item['inputs'] else True
+                 if not tree_ok:
+                     failed_tree = True

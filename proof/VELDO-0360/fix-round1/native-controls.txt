@@ -1,0 +1,15 @@
+Running as unit: veldo360-fix1-control.service; invocation ID: f23294b6f6ad489bbdfd48689e2a45a4
+early exit 1
+diagnostic exit 1
+green exit 0
+green-diagnostic exit 0
+mutation-cancel exit 1
+mutation-killed exit 1
+mutation-exception exit 1
+7 native controls passed; all worker PIDs reaped, cgroups removed, grants released
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 1.732s
+CPU time consumed: 1.925s
+Memory peak: 512.0K
+Memory swap peak: 0B

@@ -18671,6 +18671,96 @@ def cases():
         '            pass\n', ['failfast/error-cleanup'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0360 review F1: worker ownership and release ordering, including exceptional exit.
+    add(360, 'failfast360-empty-wait', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "    load_module('mutation_ownership').wait_for_empty(path)\n",
+        '', ['failfast/empty-order'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-empty-nested', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "    for child in sorted(path.rglob('*'), reverse=True):\n",
+        '    for child in []:\n', ['failfast/empty-order'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-empty-files', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '        if child.is_dir():\n',
+        '        if True:\n', ['failfast/empty-order'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-empty-remove', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '    path.rmdir()\n',
+        '', ['failfast/empty-order'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-workers', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "        if name == 'mutation' and scope:\n",
+        '        if False:\n', ['failfast/cleanup-workers'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-workers-stage', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "        if name == 'mutation' and scope:\n",
+        '        if scope:\n', ['failfast/cleanup-foreign-stage'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-workers-scope', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "        if name == 'mutation' and scope:\n",
+        "        if name == 'mutation':\n", ['failfast/cleanup-absent-scope'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-workers-owner', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "            for path in group.glob('worker-%d-*' % item['proc'].pid):\n",
+        "            for path in group.glob('worker-*'):\n", ['failfast/cleanup-workers'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-workers-drain', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '                empty_group(path)\n',
+        '                pass\n', ['failfast/cleanup-workers', 'failfast/mutation-cancel/release-order'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-workers-finally', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "    try:\n        return item['meter'].finish()\n    finally:\n",
+        "    result = item['meter'].finish()\n    try:\n        return result\n    finally:\n", ['failfast/cleanup-metrics-error'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-node-reap', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '        reap_children(excluded)\n',
+        '        pass\n', ['failfast/cleanup-workers', 'failfast/mutation-cancel/release-order'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-collector-cleanup', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "                metrics = finish_node(name, item, scope, inherited_children |\n                                      {other['proc'].pid for other in active.values()})\n",
+        "                metrics = item['meter'].finish()\n", ['failfast/mutation-cancel/release-order', 'failfast/mutation-killed/release-order'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-exception-cleanup', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "                finish_node(name, item, scope, inherited_children |\n                            {other['proc'].pid for other in active.values()})\n",
+        "                item['meter'].finish()\n", ['failfast/mutation-exception/release-order'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-exception-child-release', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "                for claimant in item['children']:\n                    ledger.release(claimant)\n                ledger.release(name)\n",
+        '                ledger.release(name)\n', ['failfast/mutation-exception/release-order'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-exception-root-release', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '                    ledger.release(claimant)\n                ledger.release(name)\n            except Exception as error:\n',
+        '                    ledger.release(claimant)\n            except Exception as error:\n', ['failfast/mutation-exception/release-order'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-reaper-discovery', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "    return {int(pid) for pid in Path('/proc/self/task/%d/children' % os.getpid()).read_text().split()}\n",
+        '    return set()\n', ['failfast/mutation-cancel/cleanup'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-reaper-exclusion', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '    while children := child_pids() - set(excluded):\n',
+        '    while children := child_pids():\n', ['failfast/reaper-kill-before-wait'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-reaper-kill', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '                os.kill(pid, signal.SIGKILL)\n',
+        '                pass\n', ['failfast/reaper-kill-before-wait'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-reaper-wait', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '                os.waitpid(pid, 0)\n',
+        '                os.waitpid(pid, os.WNOHANG)\n', ['failfast/reaper-kill-before-wait'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-reaper-kill-race', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '            except ProcessLookupError:\n                pass\n',
+        '            except ProcessLookupError:\n                raise\n', ['failfast/reaper-race-kill'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-reaper-wait-race', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '            except ChildProcessError:\n                pass\n',
+        '            except ChildProcessError:\n                raise\n', ['failfast/reaper-race-waitpid'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-meter-finally', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "        try:\n            result = self.sample()\n        finally:\n            populated = 'populated 1' in (self.path / 'cgroup.events').read_text()\n            empty_group(self.path)\n",
+        "        result = self.sample()\n        populated = 'populated 1' in (self.path / 'cgroup.events').read_text()\n        empty_group(self.path)\n", ['failfast/meter-error-cleanup'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0210 AC6: a stop queued before child registration must be masked, then
     # kill the starting tree. Both controls and mutants run the complete confined suite.
     for name, old, new in (

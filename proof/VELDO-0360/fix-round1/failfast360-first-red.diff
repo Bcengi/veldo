@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-first-red
+@@ -800,7 +800,7 @@
+                               returncode=code, error=error, inputs_unchanged=tree_ok,
+                               input_snapshot=bool(item['inputs']), **metrics)
+                 results[name] = result
+-                if result['verdict'] == 'FAIL' and first_failure is None:
++                if result['verdict'] == 'FAIL':
+                     first_failure = dict(node=name, **result)
+                 if result['verdict'] == 'pass' and measurement_store is None:
+                     try:

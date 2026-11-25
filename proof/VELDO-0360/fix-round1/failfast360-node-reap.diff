@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-node-reap
+@@ -421,7 +421,7 @@
+             group = Path('/sys/fs/cgroup') / scope.lstrip('/')
+             for path in group.glob('worker-%d-*' % item['proc'].pid):
+                 empty_group(path)
+-        reap_children(excluded)
++        pass
+ 
+ 
+ def input_guard(root):

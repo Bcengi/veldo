@@ -1,0 +1,13 @@
+--- scripts/gate_schedule.py
++++ failfast360-workers-finally
+@@ -414,8 +414,9 @@
+ 
+ def finish_node(name, item, scope, excluded):
+     """A dead coordinator cannot create workers while its sibling groups are drained."""
++    result = item['meter'].finish()
+     try:
+-        return item['meter'].finish()
++        return result
+     finally:
+         if name == 'mutation' and scope:
+             group = Path('/sys/fs/cgroup') / scope.lstrip('/')

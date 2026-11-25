@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-reaper-kill
+@@ -891,7 +891,7 @@
+     while children := child_pids() - set(excluded):
+         for pid in children:
+             try:
+-                os.kill(pid, signal.SIGKILL)
++                pass
+             except ProcessLookupError:
+                 pass
+         for pid in children:

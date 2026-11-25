@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-empty-nested
+@@ -406,7 +406,7 @@
+ def empty_group(path):
+     """Kill the entire owned subtree, wait for its exit event, then remove it."""
+     load_module('mutation_ownership').wait_for_empty(path)
+-    for child in sorted(path.rglob('*'), reverse=True):
++    for child in []:
+         if child.is_dir():
+             child.rmdir()
+     path.rmdir()
