@@ -2522,8 +2522,35 @@
    "requires": [
     "160_veldo_0358_load_leg"
    ],
-   "regions": "VELDO-0358 brief D, AC12 and AC13: the load generator applies its level by construction and proves it by liveness (the load record, load_not_applied for a spinner killed midway, no generator left after a killed leg, the canary green alone and red under the load); the load-proof leg runs the proven set once and a changed suite twenty times, each suite in its own process, and a red leg is the gate's red with the mutation stage not started.",
-   "requires_note": "Only ROOT, expect and launcher_fds. The real scripts/gate_load.py as a child beside a fixture leg, and the real verify.sh, gate_legs.py and gate_load.py as a fixture authority over a fixture candidate whose suites run through the real dispatcher."
+   "regions": "VELDO-0358 AC12: real generator lifecycle, load application, affinity, canary and cleanup.",
+   "requires_note": "Only shared ROOT, expect, WAITS and launcher_fds. Real generator beside CPU-work fixtures; no graph or opened-ledger setup."
+  },
+  {
+   "name": "160_veldo_0358_load_proof",
+   "file": "160_veldo_0358_load_proof.py",
+   "requires": [
+    "160_veldo_0358_load_proof"
+   ],
+   "regions": "VELDO-0358 AC13: real load-proof leg, proven-set rules and red/green serial fixture gates.",
+   "requires_note": "Only shared ROOT, expect, WAITS and launcher_fds. Real generator and dispatcher; no generator lifecycle or graph fixture runs."
+  },
+  {
+   "name": "160_veldo_0358_load_graph",
+   "file": "160_veldo_0358_load_graph.py",
+   "requires": [
+    "160_veldo_0358_load_graph"
+   ],
+   "regions": "VELDO-0358 AC13: red/green scheduler propagation and graph dependencies.",
+   "requires_note": "Only shared ROOT, expect, WAITS and launcher_fds. Real scheduler with fixture catalog stages; no generator or opened-ledger fixture runs."
+  },
+  {
+   "name": "160_veldo_0358_opened_ledger",
+   "file": "160_veldo_0358_opened_ledger.py",
+   "requires": [
+    "160_veldo_0358_opened_ledger"
+   ],
+   "regions": "VELDO-0358 C18: authority-owned opens, forged-claim rejection and publication of unit-node parts.",
+   "requires_note": "Only shared ROOT, expect, WAITS and launcher_fds. Real confined dispatcher and load-proof fixture; no generator lifecycle or graph fixture runs."
   },
   {
    "name": "157_veldo_0359_run_query",

@@ -1,0 +1,346 @@
+{
+  "selected": 20,
+  "passed": 20,
+  "pending": [],
+  "cases": [
+    {
+      "name": "mcp159-save-without-revision",
+      "suite": "118_veldo_0159_mcp_credential_form.py",
+      "before_suite": "118_veldo_0159_mcp_credential_form.py",
+      "rows": [
+        "VELDO-0159 mcp/stale-save"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 39.611849690787494,
+        "noop": 40.88504584506154,
+        "mutant": 58.661419233772904
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "mcp159-value-kept-in-session-storage",
+      "suite": "118_veldo_0159_mcp_credential_form.py",
+      "before_suite": "118_veldo_0159_mcp_credential_form.py",
+      "rows": [
+        "VELDO-0159 cred/no-value-kept"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 35.330956215038896,
+        "noop": 36.918989377096295,
+        "mutant": 33.21813962189481
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "mcp159-set-at-browser-clock",
+      "suite": "118_veldo_0159_mcp_credential_form.py",
+      "before_suite": "118_veldo_0159_mcp_credential_form.py",
+      "rows": [
+        "VELDO-0159 cred/metadata-only"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 39.55265022115782,
+        "noop": 35.563240070827305,
+        "mutant": 39.212436847854406
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "load358-no-spinners",
+      "suite": "160_veldo_0358_load_leg.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 load/level-by-construction"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 151.52877294411883,
+        "noop": 152.20294003374875,
+        "mutant": 39.62176788272336
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "load358-affinity-dropped",
+      "suite": "160_veldo_0358_load_leg.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 load/level-by-construction"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 151.90968907019123,
+        "noop": 151.80451412219554,
+        "mutant": 38.73360499693081
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "load358-canary-read-inverted",
+      "suite": "160_veldo_0358_load_leg.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 load/level-by-construction"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 151.56596258701757,
+        "noop": 151.57070615375414,
+        "mutant": 156.18045684415847
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "load358-canary-event-wait-removed",
+      "suite": "160_veldo_0358_load_leg.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 load/level-by-construction"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 151.66187295131385,
+        "noop": 151.48888404201716,
+        "mutant": 151.64429178508
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "load358-red-is-rerun",
+      "suite": "160_veldo_0358_load_proof.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 leg/proves-and-blocks"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 6.476966174785048,
+        "noop": 5.774087803903967,
+        "mutant": 9.038031131960452
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "load358-red-not-blocking",
+      "suite": "160_veldo_0358_load_proof.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 leg/proves-and-blocks"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 9.091780968010426,
+        "noop": 8.044274726882577,
+        "mutant": 7.560272860340774
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "load358-graph-red-not-blocking",
+      "suite": "160_veldo_0358_load_graph.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 leg/graph-blocks"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 1.0318382638506591,
+        "noop": 1.0437171827070415,
+        "mutant": 1.1034697527065873
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "opened358-forged-claim-kept",
+      "suite": "160_veldo_0358_opened_ledger.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 leg/record-taken-by-the-authority"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 5.460550358053297,
+        "noop": 5.166385987307876,
+        "mutant": 5.246272101998329
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "opened358-candidate-record-read",
+      "suite": "160_veldo_0358_opened_ledger.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 leg/record-taken-by-the-authority"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 4.417431992013007,
+        "noop": 4.4194810558110476,
+        "mutant": 4.753751765936613
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "opened358-unit-not-taken",
+      "suite": "160_veldo_0358_opened_ledger.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 leg/record-taken-by-the-authority"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 5.60849666595459,
+        "noop": 4.562380872666836,
+        "mutant": 4.795994927175343
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "opened358-tree-drops-ledger",
+      "suite": "160_veldo_0358_opened_ledger.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 leg/record-taken-by-the-authority"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 5.573742603883147,
+        "noop": 4.9031608751975,
+        "mutant": 2.992952003143728
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "opened358-load-reads-unpublished",
+      "suite": "160_veldo_0358_opened_ledger.py",
+      "before_suite": "160_veldo_0358_load_leg.py",
+      "rows": [
+        "VELDO-0358 leg/record-taken-by-the-authority"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 5.300517880823463,
+        "noop": 5.731586183886975,
+        "mutant": 4.394439430907369
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "wall358-sleep-admitted",
+      "suite": "158_veldo_0358_census.py",
+      "before_suite": "158_veldo_0358_census.py",
+      "rows": [
+        "VELDO-0358 census/each-rule"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 9.26845214702189,
+        "noop": 9.598601245786995,
+        "mutant": 9.676135262008756
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "wall358-clock-admitted",
+      "suite": "158_veldo_0358_census.py",
+      "before_suite": "158_veldo_0358_census.py",
+      "rows": [
+        "VELDO-0358 census/each-rule"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 9.64574914611876,
+        "noop": 9.277927560266107,
+        "mutant": 9.245329782832414
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "wall358-timeout-admitted",
+      "suite": "158_veldo_0358_census.py",
+      "before_suite": "158_veldo_0358_census.py",
+      "rows": [
+        "VELDO-0358 census/each-rule"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 9.756557049695402,
+        "noop": 9.76999450288713,
+        "mutant": 9.599648023955524
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "wall358-duration-bound-admitted",
+      "suite": "158_veldo_0358_census.py",
+      "before_suite": "158_veldo_0358_census.py",
+      "rows": [
+        "VELDO-0358 census/each-rule"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 9.780013052280992,
+        "noop": 9.454469825141132,
+        "mutant": 9.344240692909807
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    },
+    {
+      "name": "wall358-positional-ignored",
+      "suite": "158_veldo_0358_census.py",
+      "before_suite": "158_veldo_0358_census.py",
+      "rows": [
+        "VELDO-0358 census/each-rule"
+      ],
+      "controls": "green",
+      "worker_seconds": {
+        "baseline": 9.448603409342468,
+        "noop": 9.966322891879827,
+        "mutant": 9.002355050761253
+      },
+      "input_digest": "6fca355143b15a59ccb38a309aff894501d7376c93faa92fbba493cdd0fa8cc8"
+    }
+  ],
+  "starting_commit": "40301b937",
+  "protected_paths": [],
+  "assertion_preservation": {
+    "original_rows": [
+      "leg/graph-blocks",
+      "leg/proven-and-changed-rules",
+      "leg/proves-and-blocks",
+      "leg/record-taken-by-the-authority",
+      "load/hang-constants-are-the-contract",
+      "load/level-by-construction"
+    ],
+    "new_rows": [
+      "leg/graph-blocks",
+      "leg/proven-and-changed-rules",
+      "leg/proves-and-blocks",
+      "leg/record-taken-by-the-authority",
+      "load/hang-constants-are-the-contract",
+      "load/level-by-construction"
+    ],
+    "duplicates": [],
+    "identical_assertion_expressions": true
+  },
+  "stale_scan": {
+    "cases": 3978,
+    "stale": 0,
+    "errors": []
+  },
+  "before_graph_worker_seconds": {
+    "baseline": 163.60563146602362,
+    "noop": 164.69185843970627,
+    "mutant": 162.0614754720591
+  },
+  "before_mcp_worker_seconds": {
+    "baseline": 40.56134821707383,
+    "noop": 39.36514652566984,
+    "mutant": 1844.3556167781353
+  },
+  "before_evidence": "Gate 13 unchanged suite and mutation definitions for 15 cases; fresh 40301b937 runs for five census cases and graph/MCP timing controls.",
+  "scope": "Selected single-case proof only; no full gate or independent review."
+}

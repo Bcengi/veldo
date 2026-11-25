@@ -18016,7 +18016,13 @@ def cases():
     leg358 = '160_veldo_0358_load_leg.py'
 
     def load358(name, module, old, new, rows):
-        add(358, name, leg358, module, old, new, rows)
+        suite = {
+            'load/level-by-construction': leg358,
+            'leg/proves-and-blocks': '160_veldo_0358_load_proof.py',
+            'leg/graph-blocks': '160_veldo_0358_load_graph.py',
+            'leg/record-taken-by-the-authority': '160_veldo_0358_opened_ledger.py',
+        }[rows[0]]
+        add(358, name, suite, module, old, new, rows)
         result[-1]['dir'] = 'scripts'
 
     load358('load358-no-spinners', 'gate_load.py',

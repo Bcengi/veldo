@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import type { Page, Request } from '@playwright/test'
-import { ROOT, expect, routeOf, signIn, test, type Factory } from './fixtures'
+import { ROOT, WAIT_HANG_MS, expect, routeOf, signIn, test, type Factory } from './fixtures'
 
 /**
  * VELDO-0159: the owner defines an MCP server in the UI, each save a new catalog revision through the API's catalog
@@ -119,8 +119,20 @@ function resolve(server: Server, references: Record<string, string>): Server {
   return { ...server, environment: map(server.environment), headers: map(server.headers) as Server['headers'] }
 }
 
+/** A completed HTTP response is terminal evidence: a refusal cannot later become a saved revision.
+ * Keep the ordinary hang bound for an absent response and the existing UI assertions after success. */
+async function submitSave(page: Page) {
+  const response = page.waitForResponse(
+    (r) => r.request().method() === 'POST' && new URL(r.url()).pathname.endsWith('/mcp/catalog/save'),
+    { timeout: WAIT_HANG_MS },
+  )
+  const [answer] = await Promise.all([response, page.getByTestId('server-save').click()])
+  return answer
+}
+
 async function save(page: Page, revision: number) {
-  await page.getByTestId('server-save').click()
+  const answer = await submitSave(page)
+  expect(answer.ok(), `save completed with HTTP ${answer.status()}: ${await answer.text()}`).toBe(true)
   await expect(page.getByTestId('server-saved')).toHaveText(`Saved as revision ${revision}`)
   await expect(page.getByTestId('server-form')).toHaveAttribute('data-edited-from', String(revision))
 }
@@ -249,7 +261,8 @@ test.describe('MCP server form (VELDO-0159)', () => {
     expect(other.status, JSON.stringify(other.answer)).toBe(200)
     expect(other.answer.revision).toBe(2)
     await page.getByTestId('server-label').fill('Edited from revision 1')
-    await page.getByTestId('server-save').click()
+    const answer = await submitSave(page)
+    expect(answer.status(), await answer.text()).toBe(409)
     const refusal = page.locator('.server-save [data-testid="refusal"]')
     // The store refuses the save's expected head version by name before the catalog transition runs.
     await expect(refusal).toHaveAttribute('data-refusal', /^stale_version(:|$)/)
