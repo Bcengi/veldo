@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1581 +1581 @@
+-                workers.outcomes[-1].update(resource_valid=True, resource_execution=receipt['input_digest'])
++                pass

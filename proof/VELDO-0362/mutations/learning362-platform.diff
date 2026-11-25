@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -327 +327 @@
+-                        or item.get('platform') != resource_platform()
++                        

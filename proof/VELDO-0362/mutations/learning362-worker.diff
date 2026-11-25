@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -330 +330 @@
+-                               or not r.get('worker') or r.get('mode') not in ('baseline', 'noop', 'mutant')
++                               or r.get('mode') not in ('baseline', 'noop', 'mutant')
