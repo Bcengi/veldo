@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -53 +53 @@
+-                and math.isfinite(item['seconds']) and item['seconds'] >= 0}
++                and item['seconds'] >= 0}

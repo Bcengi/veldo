@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1146 +1146 @@
+-                    pending = [(n, j) for n, j in pending if j.get('requires') not in self.blocked_groups]
++                    pending = [(n, j) for n, j in pending if True]

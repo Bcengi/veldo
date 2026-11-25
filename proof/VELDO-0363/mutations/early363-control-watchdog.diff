@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1671 +1671 @@
+-                            for k in ('watchdog_fired', 'hung_rows', 'not_run_rows'))):
++                            for k in ())):

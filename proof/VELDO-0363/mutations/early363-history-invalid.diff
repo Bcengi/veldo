@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -69 +69 @@
+-    invalid = {r['case']['identity'] for r in receipt['invalid_results'] if 'case' in r}
++    invalid = {r['case']['identity'] for r in receipt['invalid_results'] if False}

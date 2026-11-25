@@ -100,6 +100,10 @@ def _v224_stale():
                 self.jobs.update(jobs)
                 results = {}
                 for name, job in jobs.items():
+                    # Match the production dependency boundary in this serial launcher double.
+                    if job.get('requires') in self.blocked_groups:
+                        continue
+                    assert 'requires' not in job or job['requires'] in self.validated_groups
                     home = directory / str(self.invocations)
                     home.mkdir()
                     self.homes[name] = home

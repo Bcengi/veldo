@@ -1,0 +1,84 @@
+[
+  {
+    "log": "veldo-0363-suite98.log",
+    "sha256": "66e62ef9b13a0fcf725932c99e56b67a03e2f85dae41d6775c25a06218aab3ec",
+    "status": "passed_selected_diagnostic",
+    "summary": [
+      "  98_veldo_0204_mutation_receipts                 78 passed    2.25s",
+      "selftest (PARTIAL, 1 of 275 suites): 104 passed, 0 failed in 2.25s"
+    ]
+  },
+  {
+    "log": "veldo-0363-final-timing.log",
+    "sha256": "74214c2c7a018870cadbc96ccb6d98d0f8b965a67f38b9009f59bb66147af9e6",
+    "status": "passed_selected_diagnostic",
+    "summary": [
+      "  112_veldo_0215_case_deadlines                   24 passed    2.18s",
+      "  115_veldo_0219_measured_admission               46 passed   17.15s",
+      "selftest (PARTIAL, 2 of 275 suites): 96 passed, 0 failed in 19.34s"
+    ]
+  },
+  {
+    "log": "veldo-0363-final-coordinators2.log",
+    "sha256": "b1f9ff490ec6a9e96e3576e218cba2317c5b19a8168df49425ad7227e1c4edee",
+    "status": "passed_selected_diagnostic",
+    "summary": [
+      "  98_veldo_0204_mutation_receipts                 78 passed    1.76s",
+      "  100_veldo_0207_case_reuse                       97 passed    9.43s",
+      "  157_veldo_0217_declarations                     21 passed    1.38s",
+      "selftest (PARTIAL, 3 of 275 suites): 222 passed, 0 failed in 12.58s"
+    ]
+  },
+  {
+    "log": "veldo-0363-suite99.log",
+    "sha256": "4ba55fafa3ce9652bb66b35084aa37cb57fb068a810e050040dcd49eb6d52b50",
+    "status": "passed_selected_diagnostic",
+    "summary": [
+      "  99_veldo_0205_reuse                             30 passed    5.29s",
+      "selftest (PARTIAL, 1 of 275 suites): 56 passed, 0 failed in 5.29s"
+    ]
+  },
+  {
+    "log": "veldo-0363-stale-suite.log",
+    "sha256": "b8e50c02dd375edf06a1802b74c4abc862d88a2122d0fa6d5a96b02e11f4e6a2",
+    "status": "passed_selected_diagnostic",
+    "summary": [
+      "  158_veldo_0224_stale_declarations               11 passed   17.96s",
+      "selftest (PARTIAL, 1 of 275 suites): 37 passed, 0 failed in 17.97s"
+    ]
+  },
+  {
+    "log": "veldo-0363-suite159.log",
+    "sha256": "04b45e106aa4d252cc860994a2e4a23b194059d54f14ad196b8cd47538c257b7",
+    "status": "passed_selected_diagnostic",
+    "summary": [
+      "  159_veldo_0218_reuse_audit                      13 passed   35.58s",
+      "selftest (PARTIAL, 1 of 275 suites): 39 passed, 0 failed in 35.58s"
+    ]
+  },
+  {
+    "name": "census",
+    "sha256": "7981efed528b6b2039bc64af68ce666c751175779a27b42cd449e830aabca4c6",
+    "output": "wallclock: scope: no opened-files record: every file under scripts/ and proof/; 806 file(s) read, 458 with a site\nwallclock: sites: 2844 (R1 249, R2 1309, R3 1247, R4 39); by class: A 39, D1 1018, D2 87, P 204, S1 24, S2 81, S3 8, ST 136, T 1247; excepted by the authority: 35\nwallclock: baseline: 2689 entry(ies), 2809 site(s) in 455 file(s); by rule: R1 215, R2 1309, R3 1247, R4 38\nwallclock: pass (no site over its allowed count, every baseline entry at its required count)\n"
+  },
+  {
+    "name": "personal",
+    "sha256": "2b0637308fb453f11ffa6d8ab921321767710115dc6157647a5f4165cd55bc17",
+    "output": "veldo installation: none found (looked at /home/dmitry/.config/veldo/installation, the documented default under the configuration root)\npersonal setup: no installation found; ran the built-in shapes only\npersonal setup: 0 finding(s)\n"
+  },
+  {
+    "name": "suite104_native",
+    "status": "interrupted_excluded",
+    "detail": "Nested fixture gate work exceeded unit-only scope; coordinator and observed worker reaped."
+  },
+  {
+    "log": "veldo-0363-final-reuse-stale.log",
+    "sha256": "84d80499140238e16e0d9b49133cc7fd209e7ef836c26f9e6c663a1d0f075899",
+    "status": "passed_selected_diagnostic",
+    "summary": [
+      "  99_veldo_0205_reuse                             30 passed   37.65s",
+      "  158_veldo_0224_stale_declarations               11 passed   27.02s",
+      "selftest (PARTIAL, 2 of 275 suites): 67 passed, 0 failed in 64.67s"
+    ]
+  }
+]

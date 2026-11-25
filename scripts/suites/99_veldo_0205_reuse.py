@@ -296,6 +296,7 @@ def _v205_reuse():
                 self.outcomes = []
                 self.peak = 0
                 self.retargeted = {}
+                self.validated_groups, self.blocked_groups = set(), set()
             def check(self):
                 pass
             def cleanup(self, on_result=None):
@@ -331,7 +332,8 @@ def _v205_reuse():
         resources = gate.SuiteResources({'suites': [{'file': 'controlled.py'}]})
 
         def run(force=False):
-            with patch.object(gate, 'Workers', ControlledWorkers), \
+            with patch.dict(os.environ, {'VELDO_GATE_COLLECT_ALL': '1'}), \
+                 patch.object(gate, 'Workers', ControlledWorkers), \
                  patch.object(gate, 'inventory', return_value=cases), \
                  patch.object(gate, 'read_inputs', side_effect=lambda root, common: active_files[0]), \
                  patch.object(gate, 'git', return_value='head'), \

@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1729 +1729 @@
+-                        control_results.pop(group + ':' + mode, None)
++                        pass

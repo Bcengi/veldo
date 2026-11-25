@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "kind": "fake event replay; no speedup claim",
+  "groups": 734,
+  "registered": 3978,
+  "rejected": 3978,
+  "workers": 5446,
+  "first_mutant": [
+    "g499-c14",
+    "mutant",
+    4.230467246845365
+  ],
+  "own_controls_completed": [
+    4.077432262245566,
+    4.230467246845365
+  ],
+  "last_control_completed": 14047.609509305563,
+  "surviving_workers": 0,
+  "unmeasured_mutants": 445
+}

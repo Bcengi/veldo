@@ -582,8 +582,11 @@ def _v219_checks():
                 case_deadlines=lambda keys: {identity: 240 for identity in keys},
                 record_case_times=lambda root,samples,authority=False: real_record(root,samples,times,authority=authority),
                 record_case_resources=lambda cases,keys,outcomes,group,authority=False:
-                    real_resources(cases,keys,outcomes,group,times / 'resources',authority=authority))
+                    real_resources(cases,keys,outcomes,group,times / 'resources',authority=authority),
+                order_history=lambda *a: {}, record_order_history=lambda *a, **kw: None)
             with contextlib.ExitStack() as stack:
+                # This fixture deliberately collects all completed samples on red.
+                stack.enter_context(patch.dict(os.environ, {'VELDO_GATE_COLLECT_ALL': '1'}))
                 for name, value in patches.items():
                     stack.enter_context(patch.object(gate,name,value))
                 stack.enter_context(patch.object(gate.SuiteResources,'from_root',lambda *a:gate.SuiteResources(manifest)))

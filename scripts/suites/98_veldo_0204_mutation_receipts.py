@@ -416,3 +416,16 @@ os.read(int(sys.argv[5]), 1)
 
 
 _v204_mutation_receipts()
+
+
+def _v363_early():
+    import runpy
+    import types
+    gate = types.ModuleType('v363_gate')
+    gate.__file__ = str(ROOT / 'scripts/check_gate_mutations.py')
+    exec(compile(Path(gate.__file__).read_text(), gate.__file__, 'exec'), gate.__dict__)
+    support = runpy.run_path(str(ROOT / 'scripts/suites/support/v363_early.py'))
+    support['checks'](gate, expect)
+
+
+_v363_early()

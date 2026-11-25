@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1275 +1275 @@
+-                if pending and not self.active and not eligible:
++                if False:
