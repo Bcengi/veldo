@@ -681,8 +681,15 @@ def _v310_suite():
 
         def land(sid, follows=None):
             try:
-                return station.land(sid, evidence=builds[sid]['evidence'], holder='builder-a', generation=1,
-                                    follows=follows)
+                result = station.land(sid, evidence=builds[sid]['evidence'], holder='builder-a', generation=1,
+                                      follows=follows)
+                if result.get('refusal') == 'missing_evidence:gate':
+                    for ops in opened:
+                        if ops.candidate and ops.candidate.get('gate'):
+                            print('fixture gate diagnostic:', ops.candidate['gate'])
+                    for output in (base / 'observations').rglob('*.stdout'):
+                        print('fixture gate stdout:', output.read_text()[-8000:])
+                return result
             except LS.Refused as error:
                 return {'state': 'not_opened', 'refusal': error.code, 'unit': sid}
 
