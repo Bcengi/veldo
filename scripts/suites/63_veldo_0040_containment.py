@@ -1216,6 +1216,11 @@ sys.exit(payload.get('code', 0))
             # AC2: the elapsed-runtime cap ends a bounded live descendant that would outlast it
             with region('containment/runtime-cap'):
                 began, capped = started['runtime']
+                if started.get('runtime_installed') != RUNTIME_CAP * 10 ** 6:
+                    # A missing/wrong installed cap already disproves this row. Stop
+                    # the fixture on that observation, rather than waiting for the
+                    # very timer the defect omitted. Keep every assertion below.
+                    capped.stop()
                 ended = runner('runtime').wait(capped) or {}
                 stubborn = marker(capped, 'stubborn')
                 supervision = getattr(capped, 'supervision', None) or {}

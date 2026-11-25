@@ -326,6 +326,13 @@ def worker(case, mutant=None):
         exec(compile(ast.fix_missing_locations(tree), str(shared), 'exec'), ns)
         waits = ns.get('WAITS')
         if waits is not None:
+            # Match selftest's process ownership: an outer scheduler is a subreaper,
+            # but cannot wait for a whole stage to end before collecting our orphans.
+            # The keeper wakes on SIGCHLD and reaps them while this suite is running.
+            # Shared-preamble rows may have armed a watchdog; the keeper must not
+            # inherit that timer, since only its child will report further progress.
+            faulthandler.cancel_dump_traceback_later()
+            waits.keep_the_tree()
             original_wait = waits.wait
             def observed_wait(*args, **kwargs):
                 result = original_wait(*args, **kwargs)
@@ -333,6 +340,7 @@ def worker(case, mutant=None):
                     terminal_rows.add(waits.next_row(sys._getframe(1), result.name))
                 return result
             waits.wait = observed_wait
+        faulthandler.dump_traceback_later(PROCESS_HANG_SECONDS, exit=True)
         suite = ROOT / 'scripts/suites' / case['suite']
         source = suite.read_text()
         if case.get('fixture'):
@@ -349,6 +357,8 @@ def worker(case, mutant=None):
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
         ns['__suite_file__'] = str(suite)
         exec(compile(source, str(suite), 'exec'), ns)
+        if waits is not None:
+            waits.run_ended()
     faulthandler.cancel_dump_traceback_later()
     auditing[0] = False
     return {'opened_files': sorted(opened),
