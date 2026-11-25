@@ -427,3 +427,16 @@ binds its loaded mutation catalog to the real repository root so a temporary cat
 the repository's qualification fixture and missing companions fail the named row rather than crash.
 The 0168 intake message is dated after this run's membership enrollment; the shared stand-in's fixed
 date otherwise refuses it as not_member_when_sent before it can exercise question delivery.
+
+## Mutation retirement, 2026-11-24
+
+Retire `v152-intake-companions-missing`: its claim that omitting intake companion
+metadata removes dependencies ceased to hold when gatefix23/25 materialization
+began copying the complete production tree. The original single-case drive
+survives with passing controls; applying its metadata change produces identical
+module bytes for every affected materialization layout, for both no-op and
+mutant copies. This is an equivalent metadata change under the current design.
+`proof/intake-companions` and every assertion in it remain unchanged.
+`ProductionTree.test_lazy_round_trip_and_owner_path` additionally guards complete
+trees with missing companion metadata and lazy sibling round trips. Evidence and
+digests: `proof/VELDO-0123/gatefix31.json`.

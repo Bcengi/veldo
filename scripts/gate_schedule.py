@@ -195,6 +195,13 @@ class Ledger:
         if name in self.held:
             raise Refused('invalid_resource_requirement: duplicate claimant ' + name)
         c, totals = self.demand(claim), self.totals()
+        if mutation and self.mutation_root is not None and name != self.mutation_root:
+            # The coordinator cannot release its own claim until its children
+            # finish. Such an impossible child must never enter the wait queue.
+            root = self.held[self.mutation_root]
+            for resource in self.capacity:
+                if root[resource] + c[resource] > self.capacity[resource]:
+                    raise Refused('invalid_resource_requirement: worker plus coordinator exceeds ' + resource)
         for r in self.capacity:
             limit = self.capacity[r]
             # Cold nodes use all capacity, but cannot steal a pending mutation floor.

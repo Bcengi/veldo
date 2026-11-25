@@ -183,6 +183,13 @@ def _v309_suite():
         state.mkdir(exist_ok=True)
         text = gate.read_text()
         text = text.replace('set -u\n', 'set -u\necho $$ > ' + str(base / 'gate.pid') + '\n', 1)
+        if scenario == 'leftover':
+            # A terminal event on the same pipe proves whether drain sent its
+            # end line. The capture observer consumes this event before closing,
+            # so a missing end fails the row instead of hanging before it exists.
+            text = text.replace('  exec 1>&$VELDO_SPACE_STDOUT 2>&$VELDO_SPACE_STDERR\n',
+                                "  printf '%s\\n' fixture-drain-boundary\n"
+                                '  exec 1>&$VELDO_SPACE_STDOUT 2>&$VELDO_SPACE_STDERR\n')
         if scenario == 'kill-stamp':
             text = text.replace('veldo_write_stamp() {\n', 'veldo_write_stamp() {\n  kill -KILL $$\n')
         # The catalog is tiny; all gate ordering and verdict-writing code stays real.
@@ -247,6 +254,22 @@ def _v309_suite():
                         f' f=load("gate_space_fixture",{str(ROOT / "scripts/suites/153_veldo_0309_gate_space.py")!r})\n'
                         f' return f._v309_fixture({str(base)!r},{str(ROOT)!r})[0], None\n'
                         'g.wiring=wiring\n')
+        if scenario == 'leftover':
+            wrapper += (
+                'if sys.argv[1] == "capture":\n'
+                ' import os\n'
+                ' read = g.os.read\n'
+                ' received = bytearray()\n'
+                ' boundary = b"fixture-drain-boundary\\n"\n'
+                ' while boundary not in received:\n'
+                '  data = read(0, 65536)\n'
+                '  if not data: break\n'
+                '  received.extend(data)\n'
+                ' before = bytes(received).split(boundary, 1)[0]\n'
+                ' if (os.environ[g.END] + "\\n").encode() not in before:\n'
+                f'  Path({str(base / "missing-end")!r}).write_text("drain reached close without its end line")\n'
+                ' buffered = [before, b""]\n'
+                ' g.os.read = lambda fd, size: buffered.pop(0) if fd == 0 and buffered else read(fd, size)\n')
         wrapper += (f'with open({str(base / "calls")!r}, "a") as stream: stream.write(sys.argv[1]+"\\n")\n'
                     'raise SystemExit(g.main(sys.argv[1:]))\n')
         (scripts / 'gate_space.py').write_text(wrapper)
@@ -439,6 +462,8 @@ def _v309_suite():
                                    terminal=lambda: left_running(pid), sources=[ended])
                 running = pid > 0 and g.process_start(pid) is not None
                 stamp = (root / '.veldo/last_verify').exists()
+                check('exit/leftover-does-not-hold-gate', not (base / 'missing-end').exists(),
+                      'drain must send its end line before closing its output while the child holds the pipe')
                 if not session:
                     check('exit/leftover-does-not-hold-gate', done.returncode == 0 and stamp and not finished
                           and running, str((done.returncode, stamp, finished, running)) + (base / 'out').read_text())

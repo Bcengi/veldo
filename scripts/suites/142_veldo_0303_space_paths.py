@@ -684,6 +684,27 @@ def _v303_space_paths_suite():
                   answer.get('state') is None and answer.get('deferral') == 'unique_work'
                   and '.env' in str(answer.get('facts')) and PLAIN.deferred[-1].get('path') == str(secret)
                   and not any(argv[0] == 'remove' and str(secret) in argv for argv in FLEET_GIT[before:]))
+            # Work can arrive after the first probe. The standalone remover's
+            # final look must still refuse an ignored file that was absent then.
+            late = Path(PLAIN.add('late-secret'))
+            sibling = SA._sibling
+            probe = sibling('control_space_probe')
+            looked = []
+            def arrive_after_probe(path, *args, **kwargs):
+                facts = probe.unique_work(path, *args, **kwargs)
+                looked.append(facts.get('unique_work') is False)
+                (Path(path) / '.env').write_text('TOKEN=arrived-after-probe\n')
+                return facts
+            late_probe = types.SimpleNamespace(**dict(vars(probe), unique_work=arrive_after_probe))
+            SA._sibling = lambda name: late_probe if name == 'control_space_probe' else sibling(name)
+            try:
+                late_answer = SA.standalone(str(late), 'worktree', main=str(REPOSITORY))
+            finally:
+                SA._sibling = sibling
+            check(row, 'the final look names ignored work that arrived after a clean probe',
+                  looked == [True] and late_answer.get('deferral') == 'unique_work'
+                  and late_answer.get('facts', {}).get('ignored_work') == ['.env']
+                  and text_of(late / '.env') == 'TOKEN=arrived-after-probe\n' and listed(REPOSITORY, late))
 
             row = 'loss/fleet-nested-repository'
             outer = Path(PLAIN.add('outer'))

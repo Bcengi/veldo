@@ -1,0 +1,739 @@
+{
+  "base": "9b0cd5acd",
+  "scope": "Gate 15 mutation repairs; no full gate or full leg",
+  "admission": {
+    "cause": "After the last completion releases all 16 manager slots, the coordinator waits before retrying pending admission.",
+    "first_pending": "containment-receiver-runtime-cap-ignored",
+    "claim": {
+      "cpu": 1,
+      "memory": 1073741824,
+      "manager": 16
+    },
+    "coordinator": {
+      "cpu": 0.25,
+      "memory": 268435456
+    },
+    "capacity": {
+      "cpu": 20,
+      "memory": 16106127360,
+      "manager": 16
+    },
+    "leaked_grants": false,
+    "regressions": {
+      "old": {
+        "passed": 32,
+        "failed": 2
+      },
+      "fixed": {
+        "passed": 34,
+        "failed": 0
+      }
+    }
+  },
+  "missing_target": {
+    "removed_by": null,
+    "event_change": "b12d1f39d8e11a8857c706a165f88c038de810a1",
+    "cause": "The event-held leftover makes the missing-sentinel mutant wait before emitting the existing row.",
+    "fix": "Observe a terminal boundary on the same output pipe, asserting that the end marker preceded close; retain all earlier assertions."
+  },
+  "dispositions": [
+    {
+      "case": "v152-intake-companions-missing",
+      "gate15": "mutation_survived",
+      "verdict": "retired_equivalent",
+      "spec": "VELDO-0152",
+      "proof": {
+        "case": "v152-intake-companions-missing",
+        "changed_metadata_cases": 27,
+        "layouts": 1,
+        "comparisons": [
+          {
+            "case": "plain-message-not-hinted",
+            "mode": "noop",
+            "files": 352,
+            "tree_digest": "b560b68e16464117a12d81e6bf372b03d9f77189298d8f0a4107c4879ea8dc80"
+          },
+          {
+            "case": "plain-message-not-hinted",
+            "mode": "mutant",
+            "files": 352,
+            "tree_digest": "012e44ebccea0fd17b03eaf77789a71be7fe0740476c79c6145d3721e7eff2b7"
+          }
+        ],
+        "conclusion": "Complete .veldo materialization produces identical module bytes after companion/sibling metadata removal. Existing import assertions stay intact."
+      }
+    },
+    {
+      "case": "space309-copy-waits-for-end-of-file-local",
+      "gate15": "missing_target",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0309 exit/leftover-does-not-hold-gate",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "space309-copy-waits-for-end-of-file-template",
+      "gate15": "missing_target",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0309 exit/leftover-does-not-hold-gate",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "v174-mutation-siblings-missing",
+      "gate15": "mutation_survived",
+      "verdict": "retired_equivalent",
+      "spec": "VELDO-0174",
+      "proof": {
+        "case": "v174-mutation-siblings-missing",
+        "changed_metadata_cases": 6,
+        "layouts": 2,
+        "comparisons": [
+          {
+            "case": "v174-attach-outside-current-scope",
+            "mode": "noop",
+            "files": 352,
+            "tree_digest": "b560b68e16464117a12d81e6bf372b03d9f77189298d8f0a4107c4879ea8dc80"
+          },
+          {
+            "case": "v174-attach-outside-current-scope",
+            "mode": "mutant",
+            "files": 352,
+            "tree_digest": "548f435b2a9eafc6ea7459711d9bdeac4f58900d3dd7490ab106d7490f3ee910"
+          },
+          {
+            "case": "v174-offer-every-waiting-turn",
+            "mode": "noop",
+            "files": 352,
+            "tree_digest": "b560b68e16464117a12d81e6bf372b03d9f77189298d8f0a4107c4879ea8dc80"
+          },
+          {
+            "case": "v174-offer-every-waiting-turn",
+            "mode": "mutant",
+            "files": 352,
+            "tree_digest": "d6b30d6256c74646389e50a8de2b26706028bbe734153b768d2071101d6efeee"
+          }
+        ],
+        "conclusion": "Complete .veldo materialization produces identical module bytes after companion/sibling metadata removal. Existing import assertions stay intact."
+      }
+    },
+    {
+      "case": "admission219-slowest-rate",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/measured-per-case",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "admission219-fixed-sixteen",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/fits-ledger",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "admission219-optimistic-m",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/same-verdicts",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "admission219-graph-without-channel",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/cli-graph-without-channel",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "admission219-short-unit-unaccounted",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/unit-lifecycle",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "admission219-channel-ignored",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/cli-graph-with-channel",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "admission219-worker-before-handoff",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/worker-before-handoff-refused",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "admission219-unowned-lifecycle-register",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/lifecycle-registration-owned",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "admission219-swapped-link-unread",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/ledger-link-swapped-mid-resolve",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "space300-probe-reads-outside-the-boundary",
+      "gate15": "mutation_survived",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0300 work/probes-through-the-boundary",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "space303-standalone-ignored-work-not-looked-for",
+      "gate15": "mutation_survived",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0303 loss/fleet-ignored-file",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "space323-session-repository-deleted",
+      "gate15": "mutation_survived",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0323 safety/session-work-kept",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-drop-measurement",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/measured-worker",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-no-authority-guard",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/authority-recording",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-key-omits-sources",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/key-binding",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-no-prune",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/store-pruned",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-key-omits-definition",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/key-binding",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-old-stage-cap",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/combined-budget",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-serial-stage-cap",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/combined-budget",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-latest-sample",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/rolling-maximum",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-first-control",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/shared-controls",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-lost-baseline-details",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/baseline-details",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-no-ceiling",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/bounds",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-record-invalid",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/authority-recording",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-candidate-authority-not-recorded",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/candidate-authority",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-stage-drops-authority",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/authority-recording",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline215-reused-unaudited-sampled",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/reused-unaudited-no-sample",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline285-unmeasured-floor",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/unmeasured-slow-baseline",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "verdict358-hang-counts-as-kill",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0358 verdict/kill-by-evidence",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "deadline285-no-same-stage-derivation",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0215 case-deadlines/unmeasured-slow-baseline",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "verdict358-not-run-passes",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0358 verdict/kill-by-evidence",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "verdict358-measured-time-kills",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0358 verdict/slow-is-not-red",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "wait358-child-watchdog-silent",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0358 watchdog/progress-not-total",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "wait358-child-watchdog-total-time",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0358 watchdog/progress-not-total",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "host358-holders-from-table",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0358 host/holders-from-descriptor",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "timers358-profile-skips-entry",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0358 timers/table-profile",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "verdict358-unproven-lost",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0358 verdict/kill-by-evidence",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "verdict358-control-hang-accepted",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0358 verdict/kill-by-evidence",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "wait358-descriptor-ceiling",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0358 watchdog/progress-not-total",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "verdict358-qualification-stage-expiry",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/qualification-capture",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "verdict358-qualification-worker-expiry",
+      "gate15": "control_failed",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/qualification-capture",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "case": "store359-invalid-marker-launches",
+      "gate15": "mutation_survived",
+      "verdict": "rejected",
+      "kills": [
+        {
+          "row": "v359 switch/off",
+          "kill_by": "unproven"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "suite": "98_veldo_0204_mutation_receipts",
+      "passed": 46,
+      "failed": 0
+    },
+    {
+      "suite": "101_veldo_0208_landing_reuse",
+      "passed": 188,
+      "failed": 0
+    },
+    {
+      "suite": "112_veldo_0215_case_deadlines",
+      "passed": 24,
+      "failed": 0
+    },
+    {
+      "suite": "115_veldo_0219_measured_admission",
+      "passed": 34,
+      "failed": 0
+    },
+    {
+      "suite": "114_veldo_0216_concurrent_stages",
+      "passed": 27,
+      "failed": 0
+    },
+    {
+      "suite": "138_veldo_0300_space_remove",
+      "passed": 40,
+      "failed": 0
+    },
+    {
+      "suite": "142_veldo_0303_space_paths",
+      "passed": 39,
+      "failed": 0
+    },
+    {
+      "suite": "153_veldo_0309_gate_space",
+      "passed": 25,
+      "failed": 0
+    },
+    {
+      "suite": "153_veldo_0323_hook_events",
+      "passed": 41,
+      "failed": 0
+    },
+    {
+      "suite": "157_veldo_0359_run_query",
+      "passed": 8,
+      "failed": 0
+    }
+  ],
+  "batch": {
+    "registered": 200,
+    "executed": 200,
+    "rejected": 200,
+    "elapsed": 2365.8309038663283,
+    "peak_workers": 4,
+    "peak_granted": {
+      "cpu": 4.0,
+      "memory": 4294967296
+    },
+    "ledger_capacities": {
+      "cpu": 8,
+      "memory": 8589934592,
+      "manager": 16
+    },
+    "resources": {
+      "capacities": {
+        "systemd_user_manager": 16,
+        "new_project_fixture": 2,
+        "ui_browser": 4
+      },
+      "peak_slots": {
+        "systemd_user_manager": 16,
+        "new_project_fixture": 0,
+        "ui_browser": 0
+      },
+      "remaining_slots": {
+        "systemd_user_manager": 0,
+        "new_project_fixture": 0,
+        "ui_browser": 0
+      }
+    },
+    "surviving_workers": 0,
+    "worker_invocations": 318
+  },
+  "preliminary_trial": {
+    "case": "containment-stop-only-parent",
+    "outside_original_invalid_46": true,
+    "observed": "Worker remained active after containment/cooperative-stop; exclusive manager grant correctly remained held.",
+    "action": "Interrupted the trial coordinator; its finally block reaped the worker and removed its scratch.",
+    "final_sample": "200 cases from all 24 pending suites, one case per exclusive-manager suite; first Gate 15 pending case retained.",
+    "not_claimed": "No successful run of containment-stop-only-parent or all 445 pending cases is claimed."
+  },
+  "batch_selection": "200 cases from the 445 pending cases, round-robin across all 24 suites with one case per exclusive-manager suite, including the first pending case; not a claim that all 445 were run.",
+  "protected_paths": [
+    "scripts/check_gate_mutations.py",
+    "engine/scripts/check_gate_mutations.py",
+    "scripts/gate_schedule.py",
+    "engine/scripts/gate_schedule.py"
+  ],
+  "hard_limits": {
+    "personal_setup_findings": 0,
+    "stale_mutants": 0,
+    "active_inventory": 3976,
+    "wallclock": "pass; no baseline changes",
+    "gate_unconfined_sha256": "80b2fcbce692cf0d70e74bba071cd8a6ece1503a92ccfb004d91ea0fb04057ac",
+    "live_production_modules_changed": false,
+    "existing_assertions_removed": 0
+  },
+  "source_sha256": {
+    "engine/scripts/check_gate_mutations.py": "558e5998603366e0de876565d0e987ccb0c0613c4905c60f785feb799a24b379",
+    "engine/scripts/gate_schedule.py": "a5d5b14f71a8d1fcece2b64d4a35af9e275ada42825eb8fba70f51435c53ac6c",
+    "scripts/check_gate_mutations.py": "558e5998603366e0de876565d0e987ccb0c0613c4905c60f785feb799a24b379",
+    "scripts/check_teeth_mutations.py": "5462cd6ea5ca987a1817272cf7abf01167dc6f81f922041d9f3764c339341b3d",
+    "scripts/gate_schedule.py": "a5d5b14f71a8d1fcece2b64d4a35af9e275ada42825eb8fba70f51435c53ac6c",
+    "scripts/suites/115_veldo_0219_measured_admission.py": "e7a2b0d109074262781a4b16bb8aa59fcd105503ac1ccf6b52c32e7b8c0af22a",
+    "scripts/suites/138_veldo_0300_space_remove.py": "4b7498559a8197d62b9b3443224770a760da8ffdc5b64138caf342a87de1177a",
+    "scripts/suites/142_veldo_0303_space_paths.py": "9373cf0bf0fd152338754a2584a8fbd58035dcf342828faddb444c7b5dd46163",
+    "scripts/suites/153_veldo_0309_gate_space.py": "6ee1aee03ef3b4e6318d61345b62cb0211d04b0280747d07965b8c044346eb55",
+    "scripts/suites/153_veldo_0323_hook_events.py": "c3169abe64cc87c647f662c8f08f315ca684f306d328483210cc2ab8389e3bcf",
+    "scripts/suites/157_veldo_0359_run_query.py": "021bb3dfb84fd0825de4f35705c649bad375c2ce5b7a035ab68ba56c0f8030d3",
+    "specs/VELDO-0152-ticket-keys-and-new-projects-at-intake.md": "8f03089fff3b0e0833dad171395eec4ce269904a79da07aef4c817736907791e",
+    "specs/VELDO-0174-conversation-record-and-turns.md": "ba491708211e1be697988bd2a8188e5f2a6d6747c6e938472438978936eb5024",
+    "specs/VELDO-0219-mutation-workers-admitted-by-measured-cpu-and-memory.md": "6e45a1f673182aa0416d5d04dc5886c093aa7673b6a54e53d24ab07a6a7988fb"
+  },
+  "evidence": {
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/controls-head.json": "baa896843d9c37b3c070b9af10946ac389d666507c5995970f75a92910513b08",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/invalid-final.json": "79f959b9c924050f642d50f787dd75f345cdf6a0b297db2805189fe52a051115",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/batch200-bounded.json": "b6d41e125552e80f1bada6bbc728f80aa6180646c9d536941a458d310c5f0064",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/retirement-original.json": "b853e189d582bb5dfa27b08568e6444c0cc4209093695a96a7cbf4cd09793032",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/retirement-equivalence.json": "9061ef60c69d5e4ca83d5a8979c31f4cf59a284ac048ca7e755eb4cdc308038f",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/retirement_proof.py": "b9f8649efd41db8cdcd1844e660c95a0aec0ef60a2549a401e0323df09589508",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/run_cases.py": "017ab6b7a77aab7a63dde4707bdf6550ae7f56cdf5f4ae6b560599b531e8b9c3",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/suites.py": "e109b75422804d2a18d5a6a49059cb2cf7148ef32c425bac0d128c6f8831ac3f",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/suites-final.log": "93c6f6890874119854df07e8dd5efef97a474bbd59d806e03e20fe780b2da18d",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/admission-red.log": "125d7f9b92bd3e1699aa2fa94a44bf3b908deadbf8ce1b6fe05f96ae0f1317e8",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/admission-green.log": "49d8063e03bf0082dedd57b4feaca4b239136bb0f241dbce9f3c451acb1b427d",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/assertions.log": "a1e9420a04f7cf5ffe7fa6739eac9c74f7ffc77f57d574372df7050a890b59cd",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/wallclock.log": "89087a6c0340fac0dcaab79d428386571846aad9ff2de11c9e9e4ede686adad1",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/personal.log": "2b0637308fb453f11ffa6d8ab921321767710115dc6157647a5f4165cd55bc17",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/stale.log": "3e9fdae85e44df89b06e9d5494e32608d95bb0d4597bb7758f5630b7dbc6dcae",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/lint.log": "8bf351056b11ece7a197e9c0b3bc07ef8528ffe511bee8c2cc44bc18b70cd569",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/sync.log": "55c811fead040fe31a1bd0109d573c591a0ec2bee78e74a6310405fe11b57778",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/materializer.log": "8d379d39725f95239b0a97dc648a411bfb0be3005348ec44b86d6f415248bf14",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/gate15-ledger-audit.json": "97fdb62e5b4088dd1140ec1a990d768dd89e7d959c7e173c29f3b363a1480049",
+    "/home/dmitry/projects/myday/research/claude-runs/gatefix31-evidence/batch-trial.json": "d34faab97a511c05514b2df2002f9ae3b11c31cd583df544546a61bd412f9d9d"
+  },
+  "batch_non_target_waits": []
+}

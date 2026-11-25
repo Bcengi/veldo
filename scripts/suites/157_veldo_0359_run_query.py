@@ -995,6 +995,25 @@ L.main()
                 marker.symlink_to(db)
             else:
                 marker.mkdir()
+            # The later preflight also rejects an invalid switch. Prove that
+            # this first guard returns before preparing the engine workspace.
+            preparing, early_events = [], []
+            receiver = object.__new__(L.Receiver)
+            receiver.config, receiver.binding, receiver.login = config, None, False
+            receiver.emit = early_events.append
+            class WorkspacePrepared(Exception):
+                pass
+            def engine_cwd(*args):
+                preparing.append(args)
+                raise WorkspacePrepared()
+            receiver._engine_cwd = engine_cwd
+            try:
+                early_reason = receiver._prepare_query({'dispatch_id': 'invalid-early'}, {'argv': ['fixture']})
+            except WorkspacePrepared:
+                early_reason = 'workspace-prepared'
+            check('switch/off', invalid + ' refuses before engine workspace preparation',
+                  early_reason == 'invalid_input:layout:switch' and not preparing
+                  and any(e.get('metrics', {}).get('store_guard_refused_switch') == 1 for e in early_events))
             launch, pending = run_fixture('marker-' + invalid)
             read_event(launch.child, pending, {'closed'})  # the receiver's last line, whatever came before it
             refused = next((e for e in pending[1] if e.get('event') == 'refused'), {'refusal': None})

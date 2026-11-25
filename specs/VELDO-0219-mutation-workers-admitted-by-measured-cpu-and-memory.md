@@ -216,3 +216,23 @@ wording (amendment of 2026-10-28, Telegram 37458 and 37459).
 ## Amendment, 2026-10-28: the memory claim
 
 AC1's memory claim for a worker is the larger of its measured anonymous memory peak and its unit's total memory peak (page cache included), so a short-lived unit whose anonymous allocation polling missed cannot be admitted as free memory. Anonymous memory stays measured and labelled separately. Owner approval: Telegram 37458 and 37459 ("Sure").
+
+## Gate 15 admission repair, 2026-11-24
+
+Gate 15 released the last worker, `containment-runtime-cap-ignored`, with 445
+manager users pending. The next case, `containment-receiver-runtime-cap-ignored`,
+needed one CPU, 1 GiB and the exclusive 16 manager slots. All were available:
+the coordinator alone held 0.25 CPU and 256 MiB. The loop called its no-worker
+stall check before attempting admission again. It was neither an oversized claim
+nor a leaked grant. Retry admission after a completion releases resources.
+
+A separate impossible case is rejected immediately as
+`invalid_resource_requirement`: a worker plus the coordinator exceeds CPU or
+memory capacity, even though the worker alone fits. The coordinator cannot
+release that overhead while its child waits. Suite 115 adds
+`admission/drained-workers-readmit` and `admission/coordinator-overhead-refused`;
+both fail on the old code, with the other 32 rows passing, and all 34 pass after
+the repair. The first exercises the real wait method with supplied events.
+
+Scoped proof and the Gate 15 invalid-case dispositions are recorded in
+`proof/VELDO-0123/gatefix31.json`. This is not a full gate qualification.

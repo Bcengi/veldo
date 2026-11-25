@@ -962,6 +962,9 @@ def _v300_space_remove_suite():
         try:
             plain = subprocess.run(['git', '-C', str(path), 'status', '--porcelain'], stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE, timeout=120).stdout.decode()
+            # Exercise the remover's probe runner itself. Rule 5 may refuse
+            # before rule 7 calls it, so the chain alone cannot guard this path.
+            isolated_code, isolated = RM._run(['git', '-C', str(path), 'status', '--porcelain'])
             answer = through(item, keeper([]))
         finally:
             for key, value in kept_environment.items():
@@ -971,6 +974,8 @@ def _v300_space_remove_suite():
                     os.environ[key] = value
         check(ROW, 'a plain git, reading the personal global excludes file, sees a clean worktree [%r]' % plain,
               plain == '')
+        check(ROW, 'the probe runner excludes personal configuration and sees the untracked file',
+              isolated_code == 0 and isolated.strip() == '?? personal.txt')
         check(ROW, 'rule 5, read through the remover\'s runner, sees the file as untracked work and refuses [%s %s]'
               % (answer.get('rule'), (answer.get('found') or {}).get('untracked')),
               answer.get('ok') is False and answer.get('rule') == 'unique_work'

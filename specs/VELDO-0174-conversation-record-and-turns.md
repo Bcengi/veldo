@@ -260,3 +260,16 @@ identity. Those later features are not claimed as evidence for this ticket.
 starts the factory loop for the conversations receiver alone, suite 106's row loop/configured stayed true
 with no work installed. The row now also requires the enrolled repository's line among the loop's lines;
 suite 106 passes, and with the mutant applied by hand the row goes false. Footprint gains suite 106.
+
+## Mutation retirement, 2026-11-24
+
+Retire `v174-mutation-siblings-missing`: omitting the conversation/service
+`siblings` metadata no longer removes dependencies. Gatefix23/25 materialization
+copies every production module beside its complete tree regardless of that flag.
+The original single-case drive survives with passing controls; every affected
+layout produces identical module bytes with and without the metadata change, for
+both no-op and mutant copies. This is equivalent under the current design.
+`proof/mutation-dependencies` and its import assertions remain unchanged;
+`ProductionTree.test_lazy_round_trip_and_owner_path` guards the replacement
+complete-tree behavior, including absent metadata and lazy imports. Evidence and
+digests: `proof/VELDO-0123/gatefix31.json`.

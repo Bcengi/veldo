@@ -350,12 +350,22 @@ def _v219_checks():
                 def fail(name):
                     raise PermissionError('no delegation')
                 admission.meter_factory = fail
+            real_wait = gate.Workers.wait_for_progress
+            def advance(worker):
+                if fault == 'drain':
+                    # Exercise the real no-active-worker branch after the last
+                    # completion releases the resource a pending job needs.
+                    worker.events = types.SimpleNamespace(
+                        wait=lambda seconds: clock.__setitem__(0, clock[0] + .2),
+                        remove=lambda name: None, close=lambda: None)
+                    return real_wait(worker)
+                clock[0] += .2
             with patch.object(gate.subprocess, 'Popen', Child), patch.object(gate, 'load', load_fixture), \
                     patch.object(gate.os, 'killpg', lambda *a: None), \
                     patch.object(gate.Workers, 'launcher_fds', lambda self: ()), \
                     patch.object(gate.time, 'monotonic', lambda: clock[0]), \
                     patch.object(gate.Workers, 'watch_worker', lambda *a: None), \
-                    patch.object(gate.Workers, 'wait_for_progress', lambda *a: clock.__setitem__(0, clock[0] + .2)):
+                    patch.object(gate.Workers, 'wait_for_progress', advance):
                 try:
                     done = workers.run(jobs, home, ROOT)
                 except gate.Refused as exc:
@@ -375,6 +385,25 @@ def _v219_checks():
                 if cores == 40 and gib == 31:
                     fits.append(workers.peak == 80)
         row('fits-ledger', all(fits))
+        workers, ledger, done, error, admission = exercise(
+            {'first': jobs['j0'], 'pending': jobs['j0']}, cores=1, gib=1, limit=1, fault='drain')
+        row('drained-workers-readmit', error is None and set(done) == {'first', 'pending'}
+            and workers.invocations == 2 and not workers.active and not admission.held
+            and not workers.resources.held and set(ledger.held) == {'root'})
+        impossible = []
+        for resource in ('cpu', 'memory'):
+            ledger = scheduler.Ledger(dict(cpu=2, memory=2**30, manager=16))
+            ledger.event = lambda *a, **k: None
+            ledger.acquire('root', dict(cpu=.25, memory=2**28, manager='none', ports=[]), mutation=True)
+            claim = dict(cpu=.5, memory=2**28, manager='none', ports=[])
+            claim[resource] = ledger.capacity[resource]
+            try:
+                ledger.acquire('child', claim, mutation=True)
+                impossible.append(False)
+            except scheduler.Refused as refused:
+                impossible.append('invalid_resource_requirement' in str(refused)
+                                  and resource in str(refused) and set(ledger.held) == {'root'})
+        row('coordinator-overhead-refused', all(impossible))
         invalid = {'bad': dict(jobs['j0'], claim=dict(base, memory=32*2**30))}
         _, ledger, done, error, _ = exercise(invalid)
         row('oversized-refused', error == 'invalid_resource_requirement' and not done
