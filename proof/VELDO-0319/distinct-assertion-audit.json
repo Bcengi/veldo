@@ -6802,5 +6802,2075 @@
     ],
     "source_audit_revision": "22bbcf5be35fce7cf0110eb547b4dbb6966e6994",
     "suite_binding": "Each current predicate carries its owning suite SHA-256. The top-level revision identifies the historical audit, not a runtime validation of the current predicates."
+  },
+  "fix_round_2": {
+    "revision": "5bf6b6821ec7195051d12384d755f0c7304b0538",
+    "scope": "Every one of the 179 fix-round-1 partial current mappings, grouped by ticket. Only 0316, 0317, 0334 and 0347 had partial mappings; tickets 0318-0346 have none in this audit.",
+    "statuses": {
+      "restored": "the missing clause is now asserted on the current implementation",
+      "retained": "the current suite already asserts the full predicate (evidence names it)",
+      "retired": "deliberately superseded by a newer candidate implementation or the VELDO-0358 load-independence rule (evidence names it)",
+      "open": "not resolved in this round; the missing clause is named"
+    },
+    "counts": {
+      "VELDO-0316": {
+        "restored": 29,
+        "retained": 3,
+        "retired": 7
+      },
+      "VELDO-0317": {
+        "restored": 19,
+        "retired": 2,
+        "retained": 5
+      },
+      "VELDO-0334": {
+        "restored": 22,
+        "retained": 2,
+        "retired": 1
+      },
+      "VELDO-0347": {
+        "open": 76,
+        "restored": 8,
+        "retained": 2,
+        "retired": 3
+      }
+    },
+    "by_ticket": [
+      {
+        "ticket": "VELDO-0316",
+        "partials": 39,
+        "entries": [
+          {
+            "line": 203,
+            "old_row": "ac1/second-pool",
+            "status": "restored",
+            "current_rows": [
+              "ac1/second-pool"
+            ],
+            "evidence": "prepare('image-wait') raises the public code space_wait:image",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 207,
+            "old_row": "ac2/before-reservation",
+            "status": "restored",
+            "current_rows": [
+              "ac2/pre-reservation"
+            ],
+            "evidence": "each waiting pass: prepare raises space_wait:host with zero dispatch and dispatch_active rows, no worker slot and no start",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 215,
+            "old_row": "ac2/recorded-wait",
+            "status": "restored",
+            "current_rows": [
+              "ac2/stable-hold"
+            ],
+            "evidence": "free-read count and journal row count are unchanged on the second waiting pass",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 217,
+            "old_row": "ac2/recorded-wait",
+            "status": "restored",
+            "current_rows": [
+              "ac2/stable-hold"
+            ],
+            "evidence": "free-read count and journal row count are unchanged on the second waiting pass",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 237,
+            "old_row": "ac3/report-starts",
+            "status": "restored",
+            "current_rows": [
+              "ac3/started-advised"
+            ],
+            "evidence": "report mode: exactly one worker slot (subscription_reservation of type worker, the historical slots())",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 245,
+            "old_row": "ac4/contract-digest",
+            "status": "restored",
+            "current_rows": [
+              "ac4/digest"
+            ],
+            "evidence": "both a needs change and a hold-identity change alter the digest; stored digest equals the contract digest",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 248,
+            "old_row": "ac4/contract-digest",
+            "status": "restored",
+            "current_rows": [
+              "ac4/digest"
+            ],
+            "evidence": "both a needs change and a hold-identity change alter the digest; stored digest equals the contract digest",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 256,
+            "old_row": "ac2/acceptance-rechecks",
+            "status": "restored",
+            "current_rows": [
+              "accept/released-hold"
+            ],
+            "evidence": "released hold refuses acceptance with space_hold_state:released, dispatch stays prepared and no start is added",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 265,
+            "old_row": "ac2/cancel-releases",
+            "status": "restored",
+            "current_rows": [
+              "release/cancelled"
+            ],
+            "evidence": "a second cancel leaves the hold released and the next preparation carries a different hold",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 268,
+            "old_row": "ac2/cancel-releases",
+            "status": "restored",
+            "current_rows": [
+              "release/cancelled"
+            ],
+            "evidence": "a second cancel leaves the hold released and the next preparation carries a different hold",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 284,
+            "old_row": "ac4/one-run-default",
+            "status": "restored",
+            "current_rows": [
+              "ac4/five-before-measured"
+            ],
+            "evidence": "after one measured run the needs are still host=100 from source default",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 299,
+            "old_row": "ac4/project-file",
+            "status": "restored",
+            "current_rows": [
+              "ac4/declared-first"
+            ],
+            "evidence": "an explicit declared host need of 0 is carried with source declared",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 307,
+            "old_row": "ac4/off-and-legacy",
+            "status": "restored",
+            "current_rows": [
+              "disabled/no-hold"
+            ],
+            "evidence": "disabled admission performs no free-space read",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 310,
+            "old_row": "ac4/off-and-legacy",
+            "status": "restored",
+            "current_rows": [
+              "ac4/legacy"
+            ],
+            "evidence": "a legacy contract without space is stored with its own digest and accepted",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 316,
+            "old_row": "ac4/off-and-legacy",
+            "status": "restored",
+            "current_rows": [
+              "ac4/legacy"
+            ],
+            "evidence": "a legacy contract without space is stored with its own digest and accepted",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 330,
+            "old_row": "ac4/finished-measurement",
+            "status": "retained",
+            "current_rows": [
+              "release/measurements"
+            ],
+            "evidence": "exact equality used == {'host': 6}: no negative or other pool value can be stored; the candidate stores per-pool measured values only (control_space.py _per_pool), so the clamp is the absence of a negative entry",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 338,
+            "old_row": "ac1/metrics",
+            "status": "restored",
+            "current_rows": [
+              "ac1/metrics"
+            ],
+            "evidence": "status holds == {admitted: 0, waiting: 0, advised: 1} on the report fixture",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 352,
+            "old_row": "ac2/reservation-failure",
+            "status": "restored",
+            "current_rows": [
+              "release/preparation-failed"
+            ],
+            "evidence": "reserve_worker refusing capacity_exceeded: exact code, the only hold released, no worker slot; the retry is attempt 1 with an admitted hold",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 355,
+            "old_row": "ac2/reservation-failure",
+            "status": "restored",
+            "current_rows": [
+              "release/preparation-failed"
+            ],
+            "evidence": "reserve_worker refusing capacity_exceeded: exact code, the only hold released, no worker slot; the retry is attempt 1 with an admitted hold",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 368,
+            "old_row": "fix4/no-account-keeps-hold",
+            "status": "restored",
+            "current_rows": [
+              "fix4/no-account-keeps-hold"
+            ],
+            "evidence": "both codes no_account and no_account_until:1900000000 are exercised; hold, reads and journal unchanged, zero dispatch/dispatch_active rows and no worker slot",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 372,
+            "old_row": "fix4/no-account-keeps-hold",
+            "status": "restored",
+            "current_rows": [
+              "fix4/no-account-keeps-hold"
+            ],
+            "evidence": "both codes no_account and no_account_until:1900000000 are exercised; hold, reads and journal unchanged, zero dispatch/dispatch_active rows and no worker slot",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 452,
+            "old_row": "ac1/concurrent",
+            "status": "retained",
+            "current_rows": [
+              "ac1/concurrent"
+            ],
+            "evidence": "each child exit status is asserted (assert os.waitpid(pid, 0)[1] == 0 inside the row body reds the row)",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 455,
+            "old_row": "ac1/concurrent",
+            "status": "retained",
+            "current_rows": [
+              "ac1/concurrent"
+            ],
+            "evidence": "at exact capacity the two concurrent judgments answer ['admitted', 'space_wait:host'] with held == 100: two children inside the judge would both admit; the historical marker file was the fixture's own control of the same property",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 492,
+            "old_row": "ac2/worker-responsive",
+            "status": "retired",
+            "current_rows": [
+              "ac2/worker-responsive"
+            ],
+            "evidence": "the one-second duration bound is a wall-clock assertion that VELDO-0358 forbids in gates (check_wallclock R4); the current row proves non-blocking admission without a clock: the worker cannot finish before the test writes the pipe bytes after the offer returned space_pending",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 507,
+            "old_row": "ac2/completion-wakes",
+            "status": "restored",
+            "current_rows": [
+              "ac2/completion-wakes"
+            ],
+            "evidence": "worker-wait fixture: after the judged wait the hold reason records free=119, the consumer is idle and exactly one wake was sent",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 512,
+            "old_row": "ac2/recorded-wait",
+            "status": "restored",
+            "current_rows": [
+              "ac2/completion-wakes",
+              "fix3/requests-unrelated-passes"
+            ],
+            "evidence": "consumer idle, no tasks, the free-read log and journal head unchanged across three unrelated passes",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 541,
+            "old_row": "fix1/failed-judgment",
+            "status": "restored",
+            "current_rows": [
+              "fix1/failed-judgment"
+            ],
+            "evidence": "failing read: space_pending with an active worker, then space_free_unread:host with the hold still waiting and freed; the healthy rejudge admits, clears freed and wakes a third time",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 545,
+            "old_row": "fix1/failed-judgment",
+            "status": "restored",
+            "current_rows": [
+              "fix1/failed-judgment"
+            ],
+            "evidence": "failing read: space_pending with an active worker, then space_free_unread:host with the hold still waiting and freed; the healthy rejudge admits, clears freed and wakes a third time",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 549,
+            "old_row": "fix1/failed-judgment",
+            "status": "restored",
+            "current_rows": [
+              "fix1/failed-judgment"
+            ],
+            "evidence": "failing read: space_pending with an active worker, then space_free_unread:host with the hold still waiting and freed; the healthy rejudge admits, clears freed and wakes a third time",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 581,
+            "old_row": "fix2/withdrawn-restart",
+            "status": "retired",
+            "current_rows": [
+              "recovery/orphan-released",
+              "recovery/next-offer"
+            ],
+            "evidence": "the queued admission_start task, its ticket and its one-second bound belong to Service.space_holds_start, which the newer candidate removed: FactoryLoop.start now calls control_space_admission.recover synchronously (control_space_admission.py recover). The behaviour is retained: orphan released, bound/waiting/foreign holds untouched, a second recover releases nothing and writes no journal row, the report-mode advised orphan is released (recovery_report)",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 587,
+            "old_row": "fix2/withdrawn-restart",
+            "status": "retired",
+            "current_rows": [
+              "recovery/orphan-released",
+              "recovery/next-offer"
+            ],
+            "evidence": "the queued admission_start task, its ticket and its one-second bound belong to Service.space_holds_start, which the newer candidate removed: FactoryLoop.start now calls control_space_admission.recover synchronously (control_space_admission.py recover). The behaviour is retained: orphan released, bound/waiting/foreign holds untouched, a second recover releases nothing and writes no journal row, the report-mode advised orphan is released (recovery_report)",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 592,
+            "old_row": "fix2/withdrawn-restart",
+            "status": "retired",
+            "current_rows": [
+              "recovery/orphan-released",
+              "recovery/next-offer"
+            ],
+            "evidence": "the queued admission_start task, its ticket and its one-second bound belong to Service.space_holds_start, which the newer candidate removed: FactoryLoop.start now calls control_space_admission.recover synchronously (control_space_admission.py recover). The behaviour is retained: orphan released, bound/waiting/foreign holds untouched, a second recover releases nothing and writes no journal row, the report-mode advised orphan is released (recovery_report)",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 594,
+            "old_row": "fix2/withdrawn-restart",
+            "status": "retired",
+            "current_rows": [
+              "recovery/orphan-released",
+              "recovery/next-offer"
+            ],
+            "evidence": "the queued admission_start task, its ticket and its one-second bound belong to Service.space_holds_start, which the newer candidate removed: FactoryLoop.start now calls control_space_admission.recover synchronously (control_space_admission.py recover). The behaviour is retained: orphan released, bound/waiting/foreign holds untouched, a second recover releases nothing and writes no journal row, the report-mode advised orphan is released (recovery_report)",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 601,
+            "old_row": "fix2/withdrawn-restart",
+            "status": "retired",
+            "current_rows": [
+              "recovery/orphan-released",
+              "recovery/next-offer"
+            ],
+            "evidence": "the queued admission_start task, its ticket and its one-second bound belong to Service.space_holds_start, which the newer candidate removed: FactoryLoop.start now calls control_space_admission.recover synchronously (control_space_admission.py recover). The behaviour is retained: orphan released, bound/waiting/foreign holds untouched, a second recover releases nothing and writes no journal row, the report-mode advised orphan is released (recovery_report)",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 612,
+            "old_row": "fix2/withdrawn-restart",
+            "status": "retired",
+            "current_rows": [
+              "recovery/orphan-released",
+              "recovery/next-offer"
+            ],
+            "evidence": "the queued admission_start task, its ticket and its one-second bound belong to Service.space_holds_start, which the newer candidate removed: FactoryLoop.start now calls control_space_admission.recover synchronously (control_space_admission.py recover). The behaviour is retained: orphan released, bound/waiting/foreign holds untouched, a second recover releases nothing and writes no journal row, the report-mode advised orphan is released (recovery_report)",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 622,
+            "old_row": "fix2/left-backlog",
+            "status": "restored",
+            "current_rows": [
+              "fix2/left-backlog"
+            ],
+            "evidence": "left_backlog fixture: a pass that asked both units keeps both (no task), the next pass submits the leaving unit without a journal write, the worker releases it while the offered unit stays admitted, and the returning unit is judged afresh on hold + /1",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 630,
+            "old_row": "fix2/left-backlog",
+            "status": "restored",
+            "current_rows": [
+              "fix2/left-backlog"
+            ],
+            "evidence": "left_backlog fixture: a pass that asked both units keeps both (no task), the next pass submits the leaving unit without a journal write, the worker releases it while the offered unit stays admitted, and the returning unit is judged afresh on hold + /1",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 633,
+            "old_row": "fix2/left-backlog",
+            "status": "restored",
+            "current_rows": [
+              "fix2/left-backlog"
+            ],
+            "evidence": "left_backlog fixture: a pass that asked both units keeps both (no task), the next pass submits the leaving unit without a journal write, the worker releases it while the offered unit stays admitted, and the returning unit is judged afresh on hold + /1",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 637,
+            "old_row": "fix2/left-backlog",
+            "status": "restored",
+            "current_rows": [
+              "fix2/left-backlog"
+            ],
+            "evidence": "left_backlog fixture: a pass that asked both units keeps both (no task), the next pass submits the leaving unit without a journal write, the worker releases it while the offered unit stays admitted, and the returning unit is judged afresh on hold + /1",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          }
+        ]
+      },
+      {
+        "ticket": "VELDO-0317",
+        "partials": 26,
+        "entries": [
+          {
+            "line": 280,
+            "old_row": "ac1/refunded",
+            "status": "restored",
+            "current_rows": [
+              "ac1/not-charged"
+            ],
+            "evidence": "the newer candidate's finished() lists failed exited runs by contract (control_space_admission.finished docstring: including failed runs), so the literal empty history is superseded; restored the predicate's substance: the no-space end is listed with no measurement ([{}]) and the host need stays on its default",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 282,
+            "old_row": "ac1/order",
+            "status": "restored",
+            "current_rows": [
+              "ac1/numbers-before-cleanup"
+            ],
+            "evidence": "host reads 0 only while the run directory exists, so pools free=0 proves read-before-cleanup; record state exited and dispatches.active('unit','build') is None",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 285,
+            "old_row": "ac1/order",
+            "status": "restored",
+            "current_rows": [
+              "ac1/numbers-before-cleanup"
+            ],
+            "evidence": "host reads 0 only while the run directory exists, so pools free=0 proves read-before-cleanup; record state exited and dispatches.active('unit','build') is None",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 299,
+            "old_row": "ac1/behind-admission",
+            "status": "restored",
+            "current_rows": [
+              "ac1/behind-admission"
+            ],
+            "evidence": "rerun waits with one dispatch row and nothing charged, on a fresh waiting hold distinct from the released old hold; freeing by hand without a ledger write still waits; after reconcile the rerun carries that fresh hold, admitted",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 305,
+            "old_row": "ac1/behind-admission",
+            "status": "restored",
+            "current_rows": [
+              "ac1/behind-admission"
+            ],
+            "evidence": "rerun waits with one dispatch row and nothing charged, on a fresh waiting hold distinct from the released old hold; freeing by hand without a ledger write still waits; after reconcile the rerun carries that fresh hold, admitted",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 308,
+            "old_row": "ac1/behind-admission",
+            "status": "retired",
+            "current_rows": [
+              "ac1/rerun-accepted"
+            ],
+            "evidence": "attempts are now monotonically distinct (review finding 1): the floor numbers are [2, 1]; keeping attempt 1 was deliberately superseded",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 319,
+            "old_row": "ac2/repeat-once",
+            "status": "restored",
+            "current_rows": [
+              "ac2/repeated-once",
+              "ac2/repeat-red",
+              "artifact/no-verdict"
+            ],
+            "evidence": "one repeat, red second end, not completed, no retry/andon, no third run, two charged attempts; artifact publication moved to the metering seam: a retried end makes no artifact, the final red makes one (artifact/no-verdict)",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 324,
+            "old_row": "ac2/repeat-once",
+            "status": "restored",
+            "current_rows": [
+              "ac2/repeated-once",
+              "ac2/repeat-red",
+              "artifact/no-verdict"
+            ],
+            "evidence": "one repeat, red second end, not completed, no retry/andon, no third run, two charged attempts; artifact publication moved to the metering seam: a retried end makes no artifact, the final red makes one (artifact/no-verdict)",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 358,
+            "old_row": "ac3/work-retained",
+            "status": "restored",
+            "current_rows": [
+              "ac3/edit-kept"
+            ],
+            "evidence": "bytes kept; when the item is deferred its rule is unique_work (a ticket worktree may also remain present under 0336)",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 371,
+            "old_row": "ac3/next-brief",
+            "status": "restored",
+            "current_rows": [
+              "ac3/next-brief"
+            ],
+            "evidence": "payload digest equals D.digest(payload)",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 379,
+            "old_row": "ac4/two-stop",
+            "status": "restored",
+            "current_rows": [
+              "ac4/two-stop",
+              "ac4/restart-stop",
+              "ac4/owner-request",
+              "history/latest"
+            ],
+            "evidence": "two uncharged ends, durable andon with consecutive 2, latest is the newest, one owner request and no third run, exactly two dispatch rows",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 382,
+            "old_row": "ac4/two-stop",
+            "status": "restored",
+            "current_rows": [
+              "ac4/two-stop",
+              "ac4/restart-stop",
+              "ac4/owner-request",
+              "history/latest"
+            ],
+            "evidence": "two uncharged ends, durable andon with consecutive 2, latest is the newest, one owner request and no third run, exactly two dispatch rows",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 414,
+            "old_row": "ac4/two-stop",
+            "status": "restored",
+            "current_rows": [
+              "ac4/two-stop",
+              "ac4/restart-stop",
+              "ac4/owner-request",
+              "history/latest"
+            ],
+            "evidence": "two uncharged ends, durable andon with consecutive 2, latest is the newest, one owner request and no third run, exactly two dispatch rows",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 415,
+            "old_row": "ac4/off-loop",
+            "status": "retained",
+            "current_rows": [
+              "ac4/off-loop",
+              "fix2/andon-redelivery"
+            ],
+            "evidence": "delivery runs in another pid before completion; with the first delivery failing and the second succeeding there are exactly two wakes and one request",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 421,
+            "old_row": "ac4/two-stop",
+            "status": "restored",
+            "current_rows": [
+              "ac4/two-stop",
+              "ac4/restart-stop",
+              "ac4/owner-request",
+              "history/latest"
+            ],
+            "evidence": "two uncharged ends, durable andon with consecutive 2, latest is the newest, one owner request and no third run, exactly two dispatch rows",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 423,
+            "old_row": "ac4/two-stop",
+            "status": "retired",
+            "current_rows": [
+              "ac4/later-dispatch-open"
+            ],
+            "evidence": "review finding 2 deliberately changed the andon to stop repeats and refuse no dispatch; the environment_failure:no_space:andon refusal of a direct prepare was superseded and the opposite is asserted",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 453,
+            "old_row": "fix1/rerun-before-release",
+            "status": "restored",
+            "current_rows": [
+              "ac1/behind-admission"
+            ],
+            "evidence": "see 299: fresh waiting hold != old hold, old hold released, one dispatch row, rerun binds the fresh hold admitted; attempt number clause retired as for 308",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 459,
+            "old_row": "fix1/rerun-before-release",
+            "status": "restored",
+            "current_rows": [
+              "ac1/behind-admission"
+            ],
+            "evidence": "see 299: fresh waiting hold != old hold, old hold released, one dispatch row, rerun binds the fresh hold admitted; attempt number clause retired as for 308",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 460,
+            "old_row": "fix1/rerun-before-release",
+            "status": "restored",
+            "current_rows": [
+              "ac1/behind-admission"
+            ],
+            "evidence": "see 299: fresh waiting hold != old hold, old hold released, one dispatch row, rerun binds the fresh hold admitted; attempt number clause retired as for 308",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 465,
+            "old_row": "fix1/rerun-before-release",
+            "status": "restored",
+            "current_rows": [
+              "ac1/behind-admission"
+            ],
+            "evidence": "see 299: fresh waiting hold != old hold, old hold released, one dispatch row, rerun binds the fresh hold admitted; attempt number clause retired as for 308",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 482,
+            "old_row": "fix1/spent-answer",
+            "status": "retained",
+            "current_rows": [
+              "fix1/spent-answer"
+            ],
+            "evidence": "157 worker_wait: after taken() the answer cache is empty and a new prepare submits exactly [('admission', 'repository', 'unit', 'build', 2)] and raises space_pending",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 542,
+            "old_row": "fix2/andon-redelivery",
+            "status": "retained",
+            "current_rows": [
+              "fix2/andon-redelivery"
+            ],
+            "evidence": "one request, two wakes, no extra starts and every rerun returns None (stopped)",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 544,
+            "old_row": "fix2/andon-redelivery",
+            "status": "retained",
+            "current_rows": [
+              "fix2/andon-redelivery"
+            ],
+            "evidence": "one request, two wakes, no extra starts and every rerun returns None (stopped)",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 560,
+            "old_row": "fix3/brief-ends",
+            "status": "restored",
+            "current_rows": [
+              "ac1/rerun-accepted",
+              "ac3/brief-live-only"
+            ],
+            "evidence": "after the successful rerun the unfinished file is unchanged; the brief stops naming the worktree once it is no live item",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 563,
+            "old_row": "fix3/brief-ends",
+            "status": "restored",
+            "current_rows": [
+              "ac1/rerun-accepted",
+              "ac3/brief-live-only"
+            ],
+            "evidence": "after the successful rerun the unfinished file is unchanged; the brief stops naming the worktree once it is no live item",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          },
+          {
+            "line": 565,
+            "old_row": "fix3/bounded-scan",
+            "status": "retained",
+            "current_rows": [
+              "history/bounded-read",
+              "history/unit-scoped"
+            ],
+            "evidence": "EXPLAIN plans are key-range SEARCHes with no SCAN; near-prefix units 'uni' and 'unit2' do not count toward 'unit'",
+            "current_suite": "scripts/suites/159_veldo_0317_no_space.py",
+            "current_suite_sha256": "3b2b902b666146a9b8c4b47ec2a3a40b592f6ce0c9a150c036c5512ff1001ddb"
+          }
+        ]
+      },
+      {
+        "ticket": "VELDO-0334",
+        "partials": 25,
+        "entries": [
+          {
+            "line": 261,
+            "old_row": "ac1/one-signal",
+            "status": "restored",
+            "current_rows": [
+              "ac1/one-signal"
+            ],
+            "evidence": "timer set to 0 and due(0) asserted; every report equals the first and names its source",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 264,
+            "old_row": "ac1/one-signal",
+            "status": "restored",
+            "current_rows": [
+              "ac1/one-signal"
+            ],
+            "evidence": "timer set to 0 and due(0) asserted; every report equals the first and names its source",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 274,
+            "old_row": "ac2/manual-free-timer",
+            "status": "restored",
+            "current_rows": [
+              "ac2/timer-still-waits"
+            ],
+            "evidence": "after freeing by hand the report equals the first and no read or watermark change",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 278,
+            "old_row": "ac2/public-admit",
+            "status": "restored",
+            "current_rows": [
+              "ac2/no-read-write"
+            ],
+            "evidence": "public ADM.admit answers waiting with the recorded numbers and reads nothing",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 292,
+            "old_row": "ac3/outcome",
+            "status": "restored",
+            "current_rows": [
+              "ac3/removal-wakes",
+              "ac3/release-wakes",
+              "ac3/reconcile-wakes"
+            ],
+            "evidence": "after clearing wakes a further space_pass adds no wake and no signal call, and freed stays cleared",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 292,
+            "old_row": "ac3/release",
+            "status": "restored",
+            "current_rows": [
+              "ac3/removal-wakes",
+              "ac3/release-wakes",
+              "ac3/reconcile-wakes"
+            ],
+            "evidence": "after clearing wakes a further space_pass adds no wake and no signal call, and freed stays cleared",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 292,
+            "old_row": "ac3/reconcile",
+            "status": "restored",
+            "current_rows": [
+              "ac3/removal-wakes",
+              "ac3/release-wakes",
+              "ac3/reconcile-wakes"
+            ],
+            "evidence": "after clearing wakes a further space_pass adds no wake and no signal call, and freed stays cleared",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 295,
+            "old_row": "ac3/outcome",
+            "status": "restored",
+            "current_rows": [
+              "ac3/removal-wakes",
+              "ac3/release-wakes",
+              "ac3/reconcile-wakes"
+            ],
+            "evidence": "after clearing wakes a further space_pass adds no wake and no signal call, and freed stays cleared",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 295,
+            "old_row": "ac3/release",
+            "status": "restored",
+            "current_rows": [
+              "ac3/removal-wakes",
+              "ac3/release-wakes",
+              "ac3/reconcile-wakes"
+            ],
+            "evidence": "after clearing wakes a further space_pass adds no wake and no signal call, and freed stays cleared",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 295,
+            "old_row": "ac3/reconcile",
+            "status": "restored",
+            "current_rows": [
+              "ac3/removal-wakes",
+              "ac3/release-wakes",
+              "ac3/reconcile-wakes"
+            ],
+            "evidence": "after clearing wakes a further space_pass adds no wake and no signal call, and freed stays cleared",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 307,
+            "old_row": "ac3/pool-isolation",
+            "status": "retained",
+            "current_rows": [
+              "ac3/pool-only"
+            ],
+            "evidence": "other-pool freed == (kind == 'reconcile'): release and removal leave the other pool clear",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 313,
+            "old_row": "ac3/refusal-atomic",
+            "status": "restored",
+            "current_rows": [
+              "race/refusal-atomic"
+            ],
+            "evidence": "a refused reconcile writes no journal row and no mark",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 327,
+            "old_row": "ac3/waiting-set-race",
+            "status": "restored",
+            "current_rows": [
+              "race/reconcile-resent"
+            ],
+            "evidence": "the newly arrived waiter 'new' is marked; the committed transition holds two hold rows and the reconcile row",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 330,
+            "old_row": "ac3/waiting-set-race",
+            "status": "restored",
+            "current_rows": [
+              "race/reconcile-resent"
+            ],
+            "evidence": "the newly arrived waiter 'new' is marked; the committed transition holds two hold rows and the reconcile row",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 356,
+            "old_row": "ac3/free-during-judgment",
+            "status": "retired",
+            "current_rows": [
+              "race/freeing-during-judgment"
+            ],
+            "evidence": "the newer candidate judges with a versioned compare-and-set (ADMIT carries expected_version, control_space.py command fields): freeing during judgment now refuses the stale admit and preserves the mark; the later judgment admits and clears (157 ac3/completion-race)",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 376,
+            "old_row": "ac1/signal-can-admit",
+            "status": "retained",
+            "current_rows": [
+              "ac1/pool-only"
+            ],
+            "evidence": "the other item stays due; due replaces the incoming present representation",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 402,
+            "old_row": "ac3/stopped-clock",
+            "status": "restored",
+            "current_rows": [
+              "ac3/worker-wakes"
+            ],
+            "evidence": "clock stopped at f.now; the worker answer is ok, the removed item is removed, exactly one offered start which is the newest started dispatch",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 408,
+            "old_row": "ac3/stopped-clock",
+            "status": "restored",
+            "current_rows": [
+              "ac3/worker-wakes"
+            ],
+            "evidence": "clock stopped at f.now; the worker answer is ok, the removed item is removed, exactly one offered start which is the newest started dispatch",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 412,
+            "old_row": "ac3/stopped-clock",
+            "status": "restored",
+            "current_rows": [
+              "ac3/worker-wakes"
+            ],
+            "evidence": "clock stopped at f.now; the worker answer is ok, the removed item is removed, exactly one offered start which is the newest started dispatch",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 450,
+            "old_row": "fix1/report-refused-signal",
+            "status": "restored",
+            "current_rows": [
+              "report/signal-refused-advised"
+            ],
+            "evidence": "one hold identity throughout and one signal call",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 476,
+            "old_row": "fix2/waiting-release-no-mark",
+            "status": "restored",
+            "current_rows": [
+              "fix2/waiting-release-no-mark"
+            ],
+            "evidence": "neither waiter is marked; the transition keys are exactly the released hold and one journal row was written",
+            "current_suite": "scripts/suites/158_veldo_0334_space_freed.py",
+            "current_suite_sha256": "02eb9aa1e5051a7d87b2122419793c30a0f6262b635be8dc6751568587c3c04e"
+          },
+          {
+            "line": 512,
+            "old_row": "fix3/requests-unrelated-passes",
+            "status": "restored",
+            "current_rows": [
+              "fix3/requests-unrelated-passes"
+            ],
+            "evidence": "157 worker_wait: each unrelated pass answers space_wait:host with no task, an idle consumer, one wake, unchanged free reads and journal head",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 514,
+            "old_row": "fix3/requests-unrelated-passes",
+            "status": "restored",
+            "current_rows": [
+              "fix3/requests-unrelated-passes"
+            ],
+            "evidence": "157 worker_wait: each unrelated pass answers space_wait:host with no task, an idle consumer, one wake, unchanged free reads and journal head",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 534,
+            "old_row": "fix4/failed-read-rejudges",
+            "status": "restored",
+            "current_rows": [
+              "fix1/failed-judgment"
+            ],
+            "evidence": "157 worker_wait: failed read keeps the hold waiting with freed persisted; the rejudge reads again and admits",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          },
+          {
+            "line": 544,
+            "old_row": "fix4/failed-read-rejudges",
+            "status": "restored",
+            "current_rows": [
+              "fix1/failed-judgment"
+            ],
+            "evidence": "157 worker_wait: failed read keeps the hold waiting with freed persisted; the rejudge reads again and admits",
+            "current_suite": "scripts/suites/157_veldo_0316_space_admission.py",
+            "current_suite_sha256": "7d6e6042d4bbeb1ecb296f60b9439b4496cfa4f2b7ac81115f9361da11920364"
+          }
+        ]
+      },
+      {
+        "ticket": "VELDO-0347",
+        "partials": 89,
+        "entries": [
+          {
+            "line": 460,
+            "old_row": "ac1/loose-ignored-file",
+            "status": "open",
+            "current_rows": [
+              "ac1/loose-ignored-file"
+            ],
+            "evidence": "not resolved in fix round 2: Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 464,
+            "old_row": "ac1/loose-ignored-file",
+            "status": "restored",
+            "current_rows": [
+              "ac1/loose-ignored-file"
+            ],
+            "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 491,
+            "old_row": "ac1/personal-rule",
+            "status": "restored",
+            "current_rows": [
+              "ac1/personal-rule"
+            ],
+            "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 494,
+            "old_row": "ac1/personal-rule",
+            "status": "open",
+            "current_rows": [
+              "ac1/personal-rule"
+            ],
+            "evidence": "not resolved in fix round 2: Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 516,
+            "old_row": "ac1/untraced-rule",
+            "status": "open",
+            "current_rows": [
+              "ac1/untraced-rule"
+            ],
+            "evidence": "not resolved in fix round 2: Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 520,
+            "old_row": "ac1/untraced-rule",
+            "status": "open",
+            "current_rows": [
+              "ac1/untraced-rule"
+            ],
+            "evidence": "not resolved in fix round 2: Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 524,
+            "old_row": "ac1/untraced-rule",
+            "status": "open",
+            "current_rows": [
+              "ac1/untraced-rule"
+            ],
+            "evidence": "not resolved in fix round 2: Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 544,
+            "old_row": "ac1/build-output-is-not-work",
+            "status": "open",
+            "current_rows": [
+              "ac1/build-output-is-not-work"
+            ],
+            "evidence": "not resolved in fix round 2: Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 547,
+            "old_row": "ac1/build-output-is-not-work",
+            "status": "open",
+            "current_rows": [
+              "ac1/build-output-is-not-work"
+            ],
+            "evidence": "not resolved in fix round 2: Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 550,
+            "old_row": "ac1/build-output-is-not-work",
+            "status": "open",
+            "current_rows": [
+              "ac1/build-output-is-not-work"
+            ],
+            "evidence": "not resolved in fix round 2: Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 555,
+            "old_row": "ac1/build-output-is-not-work",
+            "status": "retained",
+            "current_rows": [
+              "ac1/build-output-passes"
+            ],
+            "evidence": "removed outcome and the path absent: removal is only possible through the remover",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 564,
+            "old_row": "ac2/clean-clone-goes",
+            "status": "open",
+            "current_rows": [
+              "ac2/clean-clone-goes"
+            ],
+            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 568,
+            "old_row": "ac2/clean-clone-goes",
+            "status": "open",
+            "current_rows": [
+              "ac2/clean-clone-goes"
+            ],
+            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 579,
+            "old_row": "ac2/unpushed-commit",
+            "status": "open",
+            "current_rows": [
+              "ac2/unpushed-commit"
+            ],
+            "evidence": "not resolved in fix round 2: Current row checks unrecorded child retention, not the exact reason and commit list.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 584,
+            "old_row": "ac2/unpushed-commit",
+            "status": "open",
+            "current_rows": [
+              "ac2/unpushed-commit"
+            ],
+            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks retained commit/folder; historical exact file bytes and remover-call list are not all asserted.",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 590,
+            "old_row": "ac2/unpushed-commit",
+            "status": "open",
+            "current_rows": [
+              "ac2/unpushed-commit"
+            ],
+            "evidence": "not resolved in fix round 2: Current remote holding and clone removal are checked; exact remote main ref equality is not asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 600,
+            "old_row": "ac2/log-only-commit",
+            "status": "open",
+            "current_rows": [
+              "ac2/log-only-commit"
+            ],
+            "evidence": "not resolved in fix round 2: Current reflog-only fixture checks log, branches and remote absence; historical status, HEAD and all-ref equalities are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 604,
+            "old_row": "ac2/log-only-commit",
+            "status": "open",
+            "current_rows": [
+              "ac2/log-only-commit"
+            ],
+            "evidence": "not resolved in fix round 2: Current row checks unrecorded child retention, not the exact reason and commit list.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 608,
+            "old_row": "ac2/log-only-commit",
+            "status": "open",
+            "current_rows": [
+              "ac2/log-only-commit"
+            ],
+            "evidence": "not resolved in fix round 2: Current row checks retained commit/folder; historical exact file bytes and remover-call list are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 621,
+            "old_row": "ac2/hand-written-ref",
+            "status": "open",
+            "current_rows": [
+              "ac2/hand-written-ref"
+            ],
+            "evidence": "not resolved in fix round 2: Current row checks unrecorded child retention, not the exact reason and commit list.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 632,
+            "old_row": "ac2/work-tree-and-stash",
+            "status": "open",
+            "current_rows": [
+              "ac2/work-tree-and-stash"
+            ],
+            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 636,
+            "old_row": "ac2/work-tree-and-stash",
+            "status": "open",
+            "current_rows": [
+              "ac2/work-tree-and-stash"
+            ],
+            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 640,
+            "old_row": "ac2/work-tree-and-stash",
+            "status": "open",
+            "current_rows": [
+              "ac2/work-tree-and-stash"
+            ],
+            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 646,
+            "old_row": "ac2/work-tree-and-stash",
+            "status": "open",
+            "current_rows": [
+              "ac2/work-tree-and-stash"
+            ],
+            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 650,
+            "old_row": "ac2/work-tree-and-stash",
+            "status": "open",
+            "current_rows": [
+              "ac2/work-tree-and-stash"
+            ],
+            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 656,
+            "old_row": "ac2/work-tree-and-stash",
+            "status": "open",
+            "current_rows": [
+              "ac2/work-tree-and-stash"
+            ],
+            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields.",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 666,
+            "old_row": "ac2/unreadable-holds",
+            "status": "retired",
+            "current_rows": [
+              "ac2/unreadable",
+              "ac2/clean-clone-reading"
+            ],
+            "evidence": "the incoming per-path state label 'unread' is superseded by the spec's AC2 (specs/VELDO-0347, AC2: a repository that cannot be read, or whose local remote cannot be read, holds the item as unrecorded); holding, bytes and the never-handed invariant are asserted, and the clean-clone control is ac2/clean-clone-reading",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 675,
+            "old_row": "ac2/unreadable-holds",
+            "status": "retired",
+            "current_rows": [
+              "ac2/unreadable",
+              "ac2/clean-clone-reading"
+            ],
+            "evidence": "the incoming per-path state label 'unread' is superseded by the spec's AC2 (specs/VELDO-0347, AC2: a repository that cannot be read, or whose local remote cannot be read, holds the item as unrecorded); holding, bytes and the never-handed invariant are asserted, and the clean-clone control is ac2/clean-clone-reading",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 678,
+            "old_row": "ac2/unreadable-holds",
+            "status": "retired",
+            "current_rows": [
+              "ac2/unreadable",
+              "ac2/clean-clone-reading"
+            ],
+            "evidence": "the incoming per-path state label 'unread' is superseded by the spec's AC2 (specs/VELDO-0347, AC2: a repository that cannot be read, or whose local remote cannot be read, holds the item as unrecorded); holding, bytes and the never-handed invariant are asserted, and the clean-clone control is ac2/clean-clone-reading",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 690,
+            "old_row": "ac2/unreadable-holds",
+            "status": "open",
+            "current_rows": [
+              "ac2/unreadable-holds"
+            ],
+            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields.",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 704,
+            "old_row": "ac2/build-output",
+            "status": "open",
+            "current_rows": [
+              "ac2/build-output"
+            ],
+            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields.",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 726,
+            "old_row": "ac2/last-look",
+            "status": "open",
+            "current_rows": [
+              "ac2/last-look"
+            ],
+            "evidence": "not resolved in fix round 2: Mapped current rows do not reproduce the late nested-clone commit after rule 6 and marked-path restoration together.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 728,
+            "old_row": "ac2/last-look",
+            "status": "open",
+            "current_rows": [
+              "ac2/last-look"
+            ],
+            "evidence": "not resolved in fix round 2: Mapped current rows do not reproduce the late nested-clone commit after rule 6 and marked-path restoration together.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 740,
+            "old_row": "ac3/creators-declare-the-form",
+            "status": "open",
+            "current_rows": [
+              "ac3/creators-declare-the-form"
+            ],
+            "evidence": "not resolved in fix round 2: Creator wiring is checked by literal source anchors, not the historical one-call AST cardinality assertion.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 762,
+            "old_row": "ac3/keep-first",
+            "status": "open",
+            "current_rows": [
+              "ac3/keep-first"
+            ],
+            "evidence": "not resolved in fix round 2: Current batch commit is retained on a ref; all three clone forms, method names and exact git-show content are not asserted here.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 766,
+            "old_row": "ac3/keep-first",
+            "status": "open",
+            "current_rows": [
+              "ac3/keep-first"
+            ],
+            "evidence": "not resolved in fix round 2: Current batch commit is retained on a ref; all three clone forms, method names and exact git-show content are not asserted here.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 781,
+            "old_row": "ac3/clone-request",
+            "status": "open",
+            "current_rows": [
+              "ac3/clone-request"
+            ],
+            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields.",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 784,
+            "old_row": "ac3/clone-request",
+            "status": "open",
+            "current_rows": [
+              "ac3/clone-request"
+            ],
+            "evidence": "not resolved in fix round 2: Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 788,
+            "old_row": "ac3/clone-request",
+            "status": "open",
+            "current_rows": [
+              "ac3/clone-request"
+            ],
+            "evidence": "not resolved in fix round 2: Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 794,
+            "old_row": "ac3/clone-request",
+            "status": "open",
+            "current_rows": [
+              "ac3/clone-request"
+            ],
+            "evidence": "not resolved in fix round 2: Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 801,
+            "old_row": "ac3/clone-request",
+            "status": "restored",
+            "current_rows": [
+              "ac3/unique-work-request"
+            ],
+            "evidence": "a later run_finished leaves the disposition equal, no history, the item deferred and the clone whole",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 808,
+            "old_row": "ac3/clone-request",
+            "status": "retained",
+            "current_rows": [
+              "ac3/request-kind"
+            ],
+            "evidence": "terms naming a clone as a worktree are refused (fix round 1 F2 restoration and tooth)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 840,
+            "old_row": "ac3/worker-clone-saved",
+            "status": "open",
+            "current_rows": [
+              "ac3/worker-clone-saved"
+            ],
+            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 844,
+            "old_row": "ac3/worker-clone-saved",
+            "status": "open",
+            "current_rows": [
+              "ac3/worker-clone-saved"
+            ],
+            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 846,
+            "old_row": "ac3/worker-clone-saved",
+            "status": "open",
+            "current_rows": [
+              "ac3/worker-clone-saved"
+            ],
+            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 852,
+            "old_row": "ac3/worker-clone-saved",
+            "status": "open",
+            "current_rows": [
+              "ac3/worker-clone-saved"
+            ],
+            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 855,
+            "old_row": "ac3/worker-clone-saved",
+            "status": "open",
+            "current_rows": [
+              "ac3/worker-clone-saved"
+            ],
+            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 886,
+            "old_row": "ac3/changed-after-snapshot",
+            "status": "open",
+            "current_rows": [
+              "ac3/changed-after-snapshot"
+            ],
+            "evidence": "not resolved in fix round 2: Current comparison stops deletion and preserves bytes at locator or snapshot; historical exact single rewrite, locator-only and first snapshot predicates are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 890,
+            "old_row": "ac3/changed-after-snapshot",
+            "status": "open",
+            "current_rows": [
+              "ac3/changed-after-snapshot"
+            ],
+            "evidence": "not resolved in fix round 2: Current comparison stops deletion and preserves bytes at locator or snapshot; historical exact single rewrite, locator-only and first snapshot predicates are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 892,
+            "old_row": "ac3/changed-after-snapshot",
+            "status": "open",
+            "current_rows": [
+              "ac3/changed-after-snapshot"
+            ],
+            "evidence": "not resolved in fix round 2: Current comparison stops deletion and preserves bytes at locator or snapshot; historical exact single rewrite, locator-only and first snapshot predicates are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 900,
+            "old_row": "ac3/renamed-back",
+            "status": "open",
+            "current_rows": [
+              "ac3/renamed-back"
+            ],
+            "evidence": "not resolved in fix round 2: Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 902,
+            "old_row": "ac3/renamed-back",
+            "status": "open",
+            "current_rows": [
+              "ac3/renamed-back"
+            ],
+            "evidence": "not resolved in fix round 2: Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 906,
+            "old_row": "ac3/renamed-back",
+            "status": "open",
+            "current_rows": [
+              "ac3/renamed-back"
+            ],
+            "evidence": "not resolved in fix round 2: Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 910,
+            "old_row": "ac3/renamed-back",
+            "status": "open",
+            "current_rows": [
+              "ac3/renamed-back"
+            ],
+            "evidence": "not resolved in fix round 2: Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 952,
+            "old_row": "ac3/table-1-clone",
+            "status": "open",
+            "current_rows": [
+              "ac3/table-1-clone"
+            ],
+            "evidence": "not resolved in fix round 2: Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 959,
+            "old_row": "ac3/table-1-clone",
+            "status": "restored",
+            "current_rows": [
+              "ac3/table-1-keeps-its-handling"
+            ],
+            "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 963,
+            "old_row": "ac3/table-1-clone",
+            "status": "open",
+            "current_rows": [
+              "ac3/table-1-clone"
+            ],
+            "evidence": "not resolved in fix round 2: Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 967,
+            "old_row": "ac3/table-1-clone",
+            "status": "open",
+            "current_rows": [
+              "ac3/table-1-clone"
+            ],
+            "evidence": "not resolved in fix round 2: Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 976,
+            "old_row": "ac3/table-1-clone",
+            "status": "open",
+            "current_rows": [
+              "ac3/table-1-clone"
+            ],
+            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields.",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 981,
+            "old_row": "ac3/table-1-clone",
+            "status": "open",
+            "current_rows": [
+              "ac3/table-1-clone"
+            ],
+            "evidence": "not resolved in fix round 2: Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 988,
+            "old_row": "ac3/table-1-clone",
+            "status": "open",
+            "current_rows": [
+              "ac3/table-1-clone"
+            ],
+            "evidence": "not resolved in fix round 2: Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 997,
+            "old_row": "ac3/table-2-clone",
+            "status": "open",
+            "current_rows": [
+              "ac3/table-2-clone"
+            ],
+            "evidence": "not resolved in fix round 2: Current form/request rows cover table 2 and clone identity; old paired fixture and exact decision-request result/file clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1002,
+            "old_row": "ac3/table-2-clone",
+            "status": "restored",
+            "current_rows": [
+              "ac3/table-2-clone"
+            ],
+            "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 1006,
+            "old_row": "ac3/table-2-clone",
+            "status": "open",
+            "current_rows": [
+              "ac3/table-2-clone"
+            ],
+            "evidence": "not resolved in fix round 2: Current form/request rows cover table 2 and clone identity; old paired fixture and exact decision-request result/file clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1013,
+            "old_row": "ac3/table-2-clone",
+            "status": "open",
+            "current_rows": [
+              "ac3/table-2-clone"
+            ],
+            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1133,
+            "old_row": "ac4/held-files-go",
+            "status": "open",
+            "current_rows": [
+              "ac4/held-files-go"
+            ],
+            "evidence": "not resolved in fix round 2: Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1154,
+            "old_row": "ac4/held-files-go",
+            "status": "open",
+            "current_rows": [
+              "ac4/held-files-go"
+            ],
+            "evidence": "not resolved in fix round 2: Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1157,
+            "old_row": "ac4/held-files-go",
+            "status": "open",
+            "current_rows": [
+              "ac4/held-files-go"
+            ],
+            "evidence": "not resolved in fix round 2: Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1159,
+            "old_row": "ac4/held-files-go",
+            "status": "open",
+            "current_rows": [
+              "ac4/held-files-go"
+            ],
+            "evidence": "not resolved in fix round 2: Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1161,
+            "old_row": "ac4/held-files-go",
+            "status": "open",
+            "current_rows": [
+              "ac4/held-files-go"
+            ],
+            "evidence": "not resolved in fix round 2: Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1173,
+            "old_row": "ac4/changed-after-measure",
+            "status": "open",
+            "current_rows": [
+              "ac4/changed-after-measure"
+            ],
+            "evidence": "not resolved in fix round 2: Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1181,
+            "old_row": "ac4/changed-after-measure",
+            "status": "open",
+            "current_rows": [
+              "ac4/changed-after-measure"
+            ],
+            "evidence": "not resolved in fix round 2: Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1187,
+            "old_row": "ac4/changed-after-measure",
+            "status": "open",
+            "current_rows": [
+              "ac4/changed-after-measure"
+            ],
+            "evidence": "not resolved in fix round 2: Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1205,
+            "old_row": "ac4/changed-after-measure",
+            "status": "open",
+            "current_rows": [
+              "ac4/changed-after-measure"
+            ],
+            "evidence": "not resolved in fix round 2: Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1225,
+            "old_row": "ac4/unreadable-is-no-copy",
+            "status": "open",
+            "current_rows": [
+              "ac4/unreadable-is-no-copy"
+            ],
+            "evidence": "not resolved in fix round 2: Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1230,
+            "old_row": "ac4/unreadable-is-no-copy",
+            "status": "open",
+            "current_rows": [
+              "ac4/unreadable-is-no-copy"
+            ],
+            "evidence": "not resolved in fix round 2: Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1235,
+            "old_row": "ac4/unreadable-is-no-copy",
+            "status": "open",
+            "current_rows": [
+              "ac4/unreadable-is-no-copy"
+            ],
+            "evidence": "not resolved in fix round 2: Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1240,
+            "old_row": "ac4/unreadable-is-no-copy",
+            "status": "open",
+            "current_rows": [
+              "ac4/unreadable-is-no-copy"
+            ],
+            "evidence": "not resolved in fix round 2: Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1259,
+            "old_row": "ac5/own-folder-holds",
+            "status": "restored",
+            "current_rows": [
+              "ac5/own-folder-holds"
+            ],
+            "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 1261,
+            "old_row": "ac5/own-folder-holds",
+            "status": "open",
+            "current_rows": [
+              "ac5/own-folder-holds"
+            ],
+            "evidence": "not resolved in fix round 2: Current own-folder row checks unrecorded retention and HEAD; exact reason, .git and is_repository truth-table clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1265,
+            "old_row": "ac5/own-folder-holds",
+            "status": "open",
+            "current_rows": [
+              "ac5/own-folder-holds"
+            ],
+            "evidence": "not resolved in fix round 2: Current own-folder row checks unrecorded retention and HEAD; exact reason, .git and is_repository truth-table clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1270,
+            "old_row": "ac5/own-folder-holds",
+            "status": "restored",
+            "current_rows": [
+              "ac5/own-folder-holds"
+            ],
+            "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 1276,
+            "old_row": "ac5/own-folder-holds",
+            "status": "restored",
+            "current_rows": [
+              "ac5/own-folder-holds"
+            ],
+            "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+          },
+          {
+            "line": 1278,
+            "old_row": "ac5/own-folder-holds",
+            "status": "open",
+            "current_rows": [
+              "ac5/own-folder-holds"
+            ],
+            "evidence": "not resolved in fix round 2: Current own-folder row checks unrecorded retention and HEAD; exact reason, .git and is_repository truth-table clauses are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1285,
+            "old_row": "ac5/registry-row",
+            "status": "open",
+            "current_rows": [
+              "ac5/registry-row"
+            ],
+            "evidence": "not resolved in fix round 2: Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1288,
+            "old_row": "ac5/registry-row",
+            "status": "open",
+            "current_rows": [
+              "ac5/registry-row"
+            ],
+            "evidence": "not resolved in fix round 2: Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1299,
+            "old_row": "ac5/registry-row",
+            "status": "open",
+            "current_rows": [
+              "ac5/registry-row"
+            ],
+            "evidence": "not resolved in fix round 2: Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1305,
+            "old_row": "ac5/registry-row",
+            "status": "open",
+            "current_rows": [
+              "ac5/registry-row"
+            ],
+            "evidence": "not resolved in fix round 2: Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          },
+          {
+            "line": 1322,
+            "old_row": "ac5/no-form",
+            "status": "open",
+            "current_rows": [
+              "ac5/no-form"
+            ],
+            "evidence": "not resolved in fix round 2: Current no-form fixture checks present folders and child state; exact empty outcome/no-remover and child file predicates are not all asserted.",
+            "current_suite": null,
+            "current_suite_sha256": null
+          }
+        ]
+      }
+    ]
   }
 }
