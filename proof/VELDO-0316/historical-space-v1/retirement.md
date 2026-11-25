@@ -21,7 +21,7 @@ Rows below preserve the required assertion through the named current row(s). Row
 | `ac2/racing-prepare` | ac2/racing-prepare |
 | `ac2/recorded-wait` | ac2/stable-hold |
 | `ac2/reservation-failure` | release/preparation-failed |
-| `ac2/service-wiring` | ac2/worker-responsive |
+| `ac2/service-wiring` | ac2/service-wiring |
 | `ac2/worker-responsive` | ac2/worker-responsive |
 | `ac3/report-starts` | ac3/started-advised |
 | `ac4/contract-digest` | ac4/digest |

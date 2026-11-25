@@ -519,6 +519,14 @@ def _v316_suite():
                 check('fix1/failed-judgment', offer() == 'space_pending')
                 pump()
                 check('fix1/failed-judgment', isinstance(offer(), dict))
+                receiver = f.root / 'receiver.json'
+                receiver.write_text(json.dumps({'workspace': str(f.repo), 'state_root': str(f.state), 'adapters': {}}))
+                service.domain, service.principal, service.sign, service.generation = 'domain', 'runner', f.sign, 1
+                service.conn = f.conn
+                actual_loop = types.SimpleNamespace(service=service, wake=lambda *args: wakes.append(args))
+                actual_line = SV.Line(actual_loop, 'repository', {}, str(receiver))
+                check('ac2/service-wiring', actual_line.runner.admission.__self__ is actual_line.space_requests
+                      and actual_line.space_requests.service.space is f.space)
             finally:
                 consumer.stop()
                 os.close(read)
