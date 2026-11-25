@@ -50,6 +50,7 @@ def _v334_suite():
         'race/removal-resent',
         'race/reconcile-resent',
         'race/own-version-refused',
+        'race/refusal-atomic',
         'race/resend-bounded',
         'report/signal-refused-advised',
         'act/signal-refused-waits',
@@ -256,6 +257,7 @@ def _v334_suite():
 
         def pass_from(f, source):
             f.loop.wake(source)
+            assert f.loop.due(0)
             with patch.object(SV.time, 'time', return_value=f.now):
                 return f.loop.run()
 
@@ -270,7 +272,13 @@ def _v334_suite():
             try:
                 identity = waiting(f)
                 before = (len(f.reads), f.service.watermark())
-                reports = [pass_from(f, source) for source in ('run_end', 'account_reset', 'working_tree')]
+                reports = []
+                first = None
+                for source in ('run_end', 'account_reset', 'working_tree'):
+                    report = pass_from(f, source)
+                    reports.append(report)
+                    first = first or report['waiting']
+                    check('ac1/one-signal', report['waiting'] == first and source in report['sources'])
                 check('ac1/one-signal', f.signals == [('admission_requested', {'pool': 'host'})]
                       and f.ledger.hold(identity)['retry_asked'] and all(r['waiting'] for r in reports))
                 check('ac2/no-read-write', before == (len(f.reads), f.service.watermark()))
@@ -279,7 +287,11 @@ def _v334_suite():
                 report = pass_from(f, 'account_reset')
                 check('ac2/timer-still-waits', bool(report['waiting']) and not report['offered']
                       and f.ledger.hold(identity)['state'] == 'waiting'
-                      and report['waiting'][0]['space'] == numbers)
+                      and report['waiting'][0]['space'] == numbers and report['waiting'] == first
+                      and before == (len(f.reads), f.service.watermark()))
+                direct = ADM.admit(f.ledger, identity, f.space['free'])
+                check('ac2/no-read-write', direct['answer'] == 'waiting' and direct['reason'] == numbers
+                      and before == (len(f.reads), f.service.watermark()))
             finally:
                 f.close()
         run('ac1/one-signal', repeated)
@@ -316,16 +328,22 @@ def _v334_suite():
                 assert result['ok'], result
                 check('ac3/pool-only', f.ledger.hold('other-pool')['freed'] == (kind == 'reconcile'))
                 marked = f.ledger.hold(identity)['freed']
+                calls = len(f.signals)
                 f.service.space_pass()
                 wakes = list(f.loop.wakes)
                 f.service.space_pass()
-                check('ac3/' + kind + '-wakes', f.loop.wakes == wakes)
+                check('ac3/' + kind + '-wakes', f.loop.wakes == wakes and len(f.signals) == calls)
                 with patch.object(SV.time, 'time', return_value=f.now):
                     report = f.loop.run()
                 check('ac3/' + kind + '-wakes', marked and any(w['source'] == 'space' for w in wakes)
                       and report is not None and bool(report['offered']) and not report['waiting']
                       and f.ledger.hold(identity)['state'] == 'admitted' and f.now == 1000)
                 check('ac2/clear-after-judgment', not f.ledger.hold(identity)['freed'])
+                f.loop.wakes.clear()
+                calls = len(f.signals)
+                f.service.space_pass()
+                check('ac3/' + kind + '-wakes', not f.loop.wakes and len(f.signals) == calls
+                      and not f.ledger.hold(identity)['freed'])
                 transitions = [json.loads(raw) for (raw,) in f.conn.execute('SELECT transition FROM journal ORDER BY seq')]
                 states = [t['space:hold:' + identity]['data'] for t in transitions if 'space:hold:' + identity in t]
                 check('ac3/journal-marks', any(h['freed'] for h in states) and not states[-1]['freed']
@@ -341,8 +359,12 @@ def _v334_suite():
                 for identity, needs in (('host-wait', {'host': 10}), ('image-wait', {'image': 10}),
                                         ('not-counted', {'host': 10}), ('partial', {'host': 10, 'image': 20})):
                     assert f.ledger.place_hold(identity, needs, {k: 'default' for k in needs}, scope=f.scope)['ok']
+                before = f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
                 assert f.ledger.release('not-counted')['ok']
-                check('fix2/waiting-release-no-mark', not f.ledger.hold('host-wait')['freed'])
+                transition = json.loads(f.conn.execute('SELECT transition FROM journal ORDER BY seq DESC LIMIT 1').fetchone()[0])
+                check('fix2/waiting-release-no-mark', not f.ledger.hold('host-wait')['freed']
+                      and not f.ledger.hold('image-wait')['freed'] and list(transition) == [SP.hold_id('not-counted')]
+                      and f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0] == before + 1)
                 assert f.ledger.admit('partial', 'admitted', used={'host': 10, 'image': 5})['ok']
                 assert f.ledger.release('partial')['ok']
                 check('fix2/release-marks-per-pool', not f.ledger.hold('host-wait')['freed']
@@ -423,6 +445,10 @@ def _v334_suite():
                     ended = f.ledger.hold('new')['freed']
                 if not result['ok']:
                     print('space334 detail', kind, result)
+                if kind == 'reconcile':
+                    transition = json.loads(f.conn.execute('SELECT transition FROM journal ORDER BY seq DESC LIMIT 1').fetchone()[0])
+                    check('race/reconcile-resent', sum(v['kind'] == SP.HOLD_KIND for v in transition.values()) == 2
+                          and any(v['kind'] == SP.RECONCILE_KIND for v in transition.values()))
                 check('race/' + kind + '-resent', result['ok'] and ended and len(sent) == 2
                       and f.ledger.hold(identity)['freed'] and f.ledger.observations[-1].get('attempts') == 2
                       and f.ledger.observations[-1]['outcome'] == 'accepted')
@@ -449,6 +475,18 @@ def _v334_suite():
             finally:
                 f.close()
         run('race/own-version-refused', own_version)
+
+        def refusal_atomic():
+            f = wired('refusal-atomic')
+            try:
+                identity = waiting(f)
+                before = f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+                refusal = f.ledger.release(identity, expected_version=0)
+                check('race/refusal-atomic', not refusal['ok'] and not f.ledger.hold(identity)['freed']
+                      and f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0] == before)
+            finally:
+                f.close()
+        run('race/refusal-atomic', refusal_atomic)
 
         def bounded():
             f = wired('bounded')

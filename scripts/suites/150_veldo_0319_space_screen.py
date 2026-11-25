@@ -142,13 +142,13 @@ def _v319_suite():
         private = base / 'private'
         private.mkdir(mode=0o700)
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-C', 'edge', '-f', str(private / 'edge')],
-                       check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
         edge_public = ' '.join((private / 'edge.pub').read_text().split()[:2])
 
         def sign_edge(message):
             quiet = {k: v for k, v in os.environ.items() if k not in ('SSH_AUTH_SOCK', 'SSH_AGENT_PID')}
             return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(private / 'edge'), '-n', AC.SIGNATURE_NAMESPACE],
-                                  input=message, capture_output=True, check=True, timeout=20, env=quiet).stdout.decode()
+                                  input=message, capture_output=True, check=True, timeout=WAITS.WAIT_HANG_SECONDS, env=quiet).stdout.decode()
 
         def sign(message):
             return 'stub:' + S.digest_of(message.decode('utf-8'))
@@ -1004,12 +1004,12 @@ def _v319_suite():
         for who in ('steward', 'owner', 'second', 'plain', 'requester', 'api-edge'):
             keys[who] = base / ('key-' + who)
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys[who])], check=True,
-                           capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                           capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
             public[who] = ' '.join(keys[who].with_suffix('.pub').read_text().split()[:2])
 
         def sign(who, message, namespace='veldo-command'):
             return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys[who]), '-n', namespace], input=message,
-                                  capture_output=True, check=True, timeout=20, env=quiet).stdout.decode()
+                                  capture_output=True, check=True, timeout=WAITS.WAIT_HANG_SECONDS, env=quiet).stdout.decode()
 
         def journal_sign(message):
             return sign('steward', message, 'veldo-journal')

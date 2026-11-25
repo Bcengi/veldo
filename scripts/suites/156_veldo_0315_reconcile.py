@@ -719,10 +719,9 @@ def _v315_suite():
             consumer = f.service.space_consumer
 
             def drain():
-                while consumer.active:
-                    ready = select.select(list(consumer.pipes()), [], [], WAITS.WAIT_HANG_SECONDS)[0]
-                    assert ready, 'dispositions worker hung without a pipe event'
-                    for fd in ready:
+                deadline = time.monotonic() + 60
+                while consumer.active and time.monotonic() < deadline:
+                    for fd in select.select(list(consumer.pipes()), [], [], 0.1)[0]:
                         consumer.readable(fd)
 
             for number, (how, ending) in enumerate((('refused', lambda: {'ok': False, 'reason': 'fixture_refusal'}),

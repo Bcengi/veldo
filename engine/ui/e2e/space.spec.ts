@@ -195,7 +195,6 @@ test('ac2/pending-removed: every due and deferred item with its reason, retry an
 })
 
 test('ac3/owner-commands: Reconcile and Abandon are signed commands; a member who is not the owner is refused each', async ({ browser, factory }) => {
-  test.setTimeout(180_000)
   const ids = await factory.ids()
   const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
   const watch = await guard(page)
@@ -260,7 +259,6 @@ test('ac3/answer-path: an open request links to the decision it is answered thro
 })
 
 test('ac4/live-no-clock: with the clock stopped, a hold and a removal reach the screen from the record stream', async ({ browser, factory }) => {
-  test.setTimeout(120_000)
   const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
   const frozenAt = new Date((await factory.now()) * 1000)
   await page.clock.install({ time: frozenAt })
@@ -366,7 +364,6 @@ function posts(page: Page, domain: string) {
 }
 
 test('ac5/keep-applied: a Keep answered on the Decisions screen is signed by the passkey and applied with no second press', async ({ browser, keeps }) => {
-  test.setTimeout(120_000)
   const ids = await keeps.ids()
   const item = ids['keep-answer']!
   const page = await pageAs(browser, keeps, 'owner', { width: 1280, height: 860 })
@@ -399,7 +396,6 @@ test('ac5/keep-applied: a Keep answered on the Decisions screen is signed by the
 })
 
 test('ac7/sign-keep: a Keep that settled with no packet is listed as answered and not signed, and Sign Keep applies it', async ({ browser, keeps }) => {
-  test.setTimeout(240_000)
   const ids = await keeps.ids()
   const item = ids['keep-unsigned']!
   const failures: string[] = []
@@ -644,8 +640,8 @@ async function shoot(page: Page, name: string) {
   const was = (await page.evaluate(() => document.documentElement.getAttribute('data-theme'))) ?? 'light'
   for (const theme of ['light', 'dark']) {
     await put(theme)
-    await page.waitForTimeout(150)
-    await page.screenshot({ path: path.join(SCREENS_DIR, `${name}-${theme}.png`), fullPage: true })
+    await page.evaluate(() => document.fonts.ready)
+    await page.screenshot({ path: path.join(SCREENS_DIR, `${name}-${theme}.png`), fullPage: true, animations: 'disabled' })
   }
   await put(was)
 }
@@ -653,7 +649,6 @@ async function shoot(page: Page, name: string) {
 for (const viewport of WIDTHS) {
   const phone = viewport.width < 768
   test(`ui/states-${viewport.width}: the Space screen's states and the runs list at ${viewport.width}px`, async ({ browser, factory, bare }) => {
-    test.setTimeout(300_000)
     const failures: string[] = []
     const seeded = await pageAs(browser, factory, 'owner', viewport)
     const empty = await pageAs(browser, bare, 'owner', viewport)

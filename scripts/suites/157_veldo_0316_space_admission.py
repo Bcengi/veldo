@@ -234,6 +234,14 @@ def _v316_suite():
                         check('ac1/numbers', answer == dict(pool='host', need=100, free=149, held=30, floor=20))
                 f.free.update(host=1000, image=34)
                 check('ac1/second-pool', ADM.judge(f.ledger, 'own', f.space['free'])['pool'] == 'image')
+                try:
+                    f.prepare('image-wait')
+                    check('ac1/second-pool', False)
+                except Exception as error:
+                    check('ac1/second-pool', getattr(error, 'code', None) == 'space_wait:image')
+                for identity in list(f.ledger.holds()):
+                    if identity not in ('other', 'own'):
+                        assert f.ledger.release(identity)['ok']
                 f.free['image'] = 35
                 check('ac1/second-pool', ADM.judge(f.ledger, 'own', f.space['free']) is None)
                 check('ac1/metrics', ADM.status(f.ledger, f.space['free']) == {
@@ -257,6 +265,8 @@ def _v316_suite():
         def waiting():
             f = Fixture('waiting')
             try:
+                reads = []
+                f.space['free'] = lambda pool: reads.append(pool['name']) or f.free[pool['name']]
                 f.free['host'] = 110
                 f.decision('build', 'unit')
                 before = f.tables()
@@ -264,7 +274,7 @@ def _v316_suite():
                 line.repository, line.workspace, line.gate, line.runner = 'repository', str(f.repo), f.gate, f.runner
                 line.service, line.hosts = types.SimpleNamespace(space=f.space), {}
                 role = dict(identity='builder', adapter='fixture', payload={}, configuration={}, seconds=10000)
-                for _ in range(2):
+                for attempt in range(2):
                     report = {'offered': [], 'refused': [], 'waiting': []}
                     with patch.object(L.CFG, 'bind', side_effect=lambda *args: args[-1]):
                         SV.Line.offer(line, report, 'unit', 'build', role, revision='HEAD')
@@ -272,6 +282,16 @@ def _v316_suite():
                           and not report['offered'] and not report['refused'])
                     check('ac2/waiting-pass', len(report['waiting']) == 1 and
                           report['waiting'][0].get('space') == dict(pool='host', need=100, free=110, held=0, floor=20))
+                    if attempt == 0:
+                        journal = f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+                        read_count = len(reads)
+                    check('ac2/stable-hold', len(reads) == read_count
+                          and f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0] == journal)
+                    try:
+                        f.prepare()
+                        check('ac2/pre-reservation', False)
+                    except Exception as error:
+                        check('ac2/pre-reservation', getattr(error, 'code', None) == 'space_wait:host')
                 check('ac2/stable-hold', len(f.ledger.holds()) == 1 and
                       all('deadline' not in hold and hold['state'] == 'waiting' for hold in f.ledger.holds().values()))
             finally:
@@ -290,6 +310,9 @@ def _v316_suite():
                       and hold['state'] == 'advised' and hold['source'] == {'host': 'default', 'image': 'default'}
                       and hold['reason'] == dict(pool='host', need=100, free=110, held=0, floor=20))
                 check('ac3/advised-counts', ADM.held(f.ledger, 'host') == 100)
+                check('ac3/started-advised', f.tables()['subscription_reservation'] == 1)
+                check('ac1/metrics', ADM.status(f.ledger, f.space['free'])['holds'] ==
+                      dict(admitted=0, waiting=0, advised=1))
             finally:
                 f.close()
         run('ac3/started-advised', report)
@@ -302,6 +325,9 @@ def _v316_suite():
                 for number, size in enumerate((10, 11, 12, 13, 14, 900, 15)):
                     contract = f.prepare('past-' + str(number))
                     f.finish(contract, {'host': size, 'image': 2})
+                    if number == 0:
+                        values, sources = ADM.needs(f.ledger, f.dispatches, 'project', 'build', {})
+                        check('ac4/five-before-measured', values['host'] == 100 and sources['host'] == 'default')
                     if number in (0, 3):
                         f.free['host'] = 110
                         code = None
@@ -332,11 +358,18 @@ def _v316_suite():
                 hold = f.ledger.hold(contract['space']['hold'])
                 check('ac4/declared-first', hold['needs'] == {'host': 7, 'image': 2}
                       and hold['source'] == {'host': 'declared', 'image': 'measured'})
+                (f.repo / '.veldo' / 'space.yaml').write_text(YAML.dump({'needs': {'build': {'host': 0}}}))
+                zero = f.prepare('declared-zero')
+                check('ac4/declared-first', zero['space']['needs']['host'] == 0
+                      and f.ledger.hold(zero['space']['hold'])['source']['host'] == 'declared')
                 record = f.dispatches.record(contract['dispatch_id'])
                 changed = copy.deepcopy(contract)
                 changed['space']['needs']['host'] += 1
                 check('ac4/digest', record['contract_digest'] == D.digest(contract)
                       and D.digest(changed) != record['contract_digest'] and 'space' in D.CONTRACT_FIELDS)
+                changed = copy.deepcopy(contract)
+                changed['space']['hold'] += '-other'
+                check('ac4/digest', D.digest(changed) != record['contract_digest'])
                 legacy = copy.deepcopy(contract)
                 legacy.pop('space')
                 check('ac4/legacy', D.contract_problems(legacy) == [])
@@ -346,7 +379,7 @@ def _v316_suite():
                     check('accept/released-hold', False)
                 except Exception as error:
                     check('accept/released-hold', getattr(error, 'code', '') == 'space_hold_state:released'
-                          and f.dispatches.record(contract['dispatch_id'])['state'] == 'prepared')
+                          and f.dispatches.record(contract['dispatch_id'])['state'] == 'prepared' and not f.started)
             finally:
                 f.close()
         run('ac4/five-before-measured', history)
@@ -420,17 +453,49 @@ def _v316_suite():
                 contract = f.prepare('unit')
                 check('recovery/next-offer', contract['space']['hold'] == orphan + '/1'
                       and f.ledger.hold(orphan + '/1')['state'] == 'admitted'
-                      and f.dispatches.record(contract['dispatch_id'])['state'] == 'prepared')
+                      and f.dispatches.record(contract['dispatch_id'])['state'] == 'prepared' and not f.started)
             finally:
                 f.close()
         run('recovery/orphan-released', recovery)
+
+        def recovery_report():
+            f = Fixture('recovery-report', 'report')
+            try:
+                f.free['host'] = 119
+                held = ADM.prepare(f.space, f.dispatches, 'orphan', 'build', 'project', str(f.repo))['hold']
+                assert f.ledger.hold(held)['state'] == 'advised'
+                assert f.ledger.place_hold('foreign', {'host': 5}, {'host': 'default'}, scope=f.scope)['ok']
+                assert f.ledger.admit('foreign', 'admitted')['ok']
+                result = ADM.recover(f.space, f.dispatches)
+                check('recovery/orphan-released', result == [dict(hold=held, state='advised', released=True, refusal=None)]
+                      and f.ledger.hold(held)['state'] == 'released'
+                      and f.ledger.hold('foreign')['state'] == 'admitted')
+                head = f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
+                check('recovery/orphan-released', ADM.recover(f.space, f.dispatches) == []
+                      and f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0] == head)
+            finally:
+                f.close()
+        run('recovery/orphan-released', recovery_report)
 
         def disabled_and_failure():
             f = Fixture('disabled')
             try:
                 f.config['enabled'] = False
                 f.free['host'] = 0
+                reads = []
+                f.space['free'] = lambda pool: reads.append(pool['name']) or f.free[pool['name']]
                 contract = f.prepare()
+                check('disabled/no-hold', not reads)
+                legacy = copy.deepcopy(contract)
+                legacy.pop('space')
+                record = f.dispatches.record(contract['dispatch_id'])
+                record.update(contract=legacy, contract_digest=D.digest(legacy))
+                f.put(D.record_id(contract['dispatch_id']), D.RECORD_KIND, record)
+                f.dispatches.accept(contract['dispatch_id'], D.digest(legacy),
+                    dict(platform='linux', host='fixture', boot_id='fixture', pid=1, start='fixture', principal='runner'), now=f.now)
+                accepted = f.dispatches.record(contract['dispatch_id'])
+                check('ac4/legacy', not D.contract_problems(legacy) and accepted['state'] == 'accepted'
+                      and accepted['contract_digest'] == D.digest(legacy))
                 check('disabled/no-hold', contract['space'] is None and not f.ledger.holds())
                 f.config['enabled'] = True
                 f.free['host'] = 1000
@@ -444,6 +509,24 @@ def _v316_suite():
             finally:
                 f.close()
         run('release/preparation-failed', disabled_and_failure)
+
+        def capacity_failure():
+            f = Fixture('capacity-failure')
+            try:
+                with patch.object(f.reservations, 'reserve_worker', side_effect=D.Refused('capacity_exceeded')):
+                    try:
+                        f.prepare()
+                        check('release/preparation-failed', False)
+                    except Exception as error:
+                        check('release/preparation-failed', getattr(error, 'code', None) == 'capacity_exceeded'
+                              and [h['state'] for h in f.ledger.holds().values()] == ['released']
+                              and f.tables()['subscription_reservation'] == 0)
+                contract = f.prepare()
+                check('release/preparation-failed', contract['attempt'] == 1
+                      and f.ledger.hold(contract['space']['hold'])['state'] == 'admitted')
+            finally:
+                f.close()
+        run('release/preparation-failed', capacity_failure)
 
         def receiver_measurements():
             f = Fixture('measurements')
@@ -475,6 +558,10 @@ def _v316_suite():
                 cancelled = f.prepare('cancelled')
                 f.runner.cancel_prepared(cancelled, 'fixture_cancel')
                 check('release/cancelled', f.ledger.hold(cancelled['space']['hold'])['state'] == 'released')
+                f.runner.cancel_prepared(cancelled, 'fixture_cancel')
+                again = f.prepare('cancelled')
+                check('release/cancelled', f.ledger.hold(cancelled['space']['hold'])['state'] == 'released'
+                      and again['space']['hold'] != cancelled['space']['hold'])
             finally:
                 f.close()
         run('release/measurements', receiver_measurements)
@@ -498,7 +585,8 @@ def _v316_suite():
                             check('fix4/no-account-keeps-hold', f.ledger.holds() == holds and len(holds) == 1
                                   and next(iter(holds.values()))['state'] == 'admitted'
                                   and len(reads) == count
-                                  and f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == head)
+                                  and f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == head
+                                  and all(count == 0 for count in f.tables().values()))
                     bound = f.prepare()
                     check('fix4/no-account-keeps-hold', bound['space']['hold'] in holds)
                 finally:
@@ -613,7 +701,13 @@ def _v316_suite():
             f = Fixture('worker-wait')
             consumer = load('control_space_consumer').Consumer(f.ledger)
             try:
-                f.free['host'] = 0
+                f.free['host'] = 119
+                reads = f.root / 'free-reads'
+                def free(pool):
+                    with reads.open('a') as stream:
+                        stream.write(pool['name'] + '\n')
+                    return f.free[pool['name']]
+                f.space['free'] = free
                 wakes = []
                 service = types.SimpleNamespace(space=f.space, space_consumer=consumer)
                 requests = ADM.Requests(service, types.SimpleNamespace(wake=lambda *args: wakes.append(args)), f.dispatches)
@@ -632,20 +726,47 @@ def _v316_suite():
                 assert offer() == 'space_pending'
                 pump()
                 assert offer() == 'space_wait:host'
+                held = next(iter(f.ledger.holds()))
+                check('ac2/completion-wakes', consumer.active is None
+                      and f.ledger.hold(held)['reason']['free'] == 119 and len(wakes) == 1)
+                nreads = reads.read_text()
                 head = f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0]
                 f.free['host'] = 1000
                 for _ in range(3):
                     requests.passed()
                     check('fix3/requests-unrelated-passes', offer() == 'space_wait:host'
-                          and not consumer.tasks and len(wakes) == 1
+                          and consumer.active is None and not consumer.tasks and len(wakes) == 1
+                          and reads.read_text() == nreads
                           and f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == head)
                 assert f.ledger.reconcile('console', [], [], {key: 0 for key in SP.RECONCILE_COUNTS})['ok']
-                check('ac3/completion-race', offer() == 'space_pending')
+                f.space['free'] = lambda pool: -1
+                check('fix1/failed-judgment', offer() == 'space_pending' and consumer.active is not None)
+                pump()
+                check('fix1/failed-judgment', offer() == 'space_free_unread:host'
+                      and consumer.active is None and f.ledger.hold(held)['state'] == 'waiting'
+                      and f.ledger.hold(held)['freed'])
+                f.space['free'] = free
+                check('ac3/completion-race', offer() == 'space_pending' and consumer.active is not None)
                 pump()
                 bound = offer()
-                check('ac3/completion-race', isinstance(bound, dict) and len(wakes) == 2)
+                check('ac3/completion-race', isinstance(bound, dict) and len(wakes) == 3
+                      and reads.read_text() != nreads and f.ledger.hold(held)['state'] == 'admitted'
+                      and not f.ledger.hold(held)['freed'])
                 requests.taken(bound)
                 check('fix1/spent-answer', not requests.answers)
+                submitted = []
+                submit = consumer.submit
+                def observe(key, *args, **kwargs):
+                    submitted.append(key)
+                    return submit(key, *args, **kwargs)
+                with patch.object(consumer, 'submit', observe):
+                    try:
+                        requests.prepare(f.space, f.dispatches, 'unit', 'build', 'project', str(f.repo))
+                        check('fix1/spent-answer', False)
+                    except Exception as error:
+                        check('fix1/spent-answer', getattr(error, 'code', None) == 'space_pending'
+                              and submitted == [('admission', 'repository', 'unit', 'build', 2)])
+                pump()
             finally:
                 consumer.stop()
                 f.close()

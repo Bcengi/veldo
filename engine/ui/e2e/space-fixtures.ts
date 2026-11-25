@@ -1,3 +1,5 @@
+import { once } from 'node:events'
+import { createInterface } from 'node:readline'
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
@@ -41,19 +43,25 @@ async function start(seed: '1' | '0' | 'keep') {
   const child = spawn('python3', args, { stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, VELDO_SPACE_SEED: seed } })
   let errors = ''
   child.stderr.on('data', (chunk) => (errors += String(chunk)))
-  const ready = await new Promise<{ origin: string; control: string; domain: string }>((resolve, reject) => {
-    let out = ''
-    const timer = setTimeout(() => reject(new Error(`space harness did not start: ${errors}`)), WAIT_HANG_MS)
-    child.stdout.on('data', (chunk) => {
-      out += String(chunk)
-      const line = out.split('\n')[0]
-      if (out.includes('\n') && line) {
-        clearTimeout(timer)
-        resolve(JSON.parse(line))
-      }
-    })
-    child.on('exit', (code) => reject(new Error(`space harness exited ${code}: ${errors}`)))
-  })
+  const bound = AbortSignal.timeout(WAIT_HANG_MS)
+  const decided = new AbortController()
+  const signal = AbortSignal.any([bound, decided.signal])
+  const lines = createInterface({ input: child.stdout })
+  let first: { line: string } | { code: number | null }
+  try {
+    first = await Promise.race([
+      once(lines, 'line', { signal }).then(([line]) => ({ line: String(line) })),
+      once(child, 'exit', { signal }).then(([code]) => ({ code: code as number | null })),
+    ])
+  } catch (error) {
+    child.kill('SIGKILL')
+    if (!bound.aborted) throw error
+    throw new Error(`hung: space harness printed no ready line and did not exit: ${errors}`)
+  } finally {
+    decided.abort()
+  }
+  if (!('line' in first)) throw new Error(`space harness exited ${first.code} before readiness: ${errors}`)
+  const ready = JSON.parse(first.line) as { origin: string; control: string; domain: string }
   const control = async <T,>(route: string, body: Record<string, unknown> = {}) => {
     const response = await fetch(ready.control + route, { method: 'POST', body: JSON.stringify(body) })
     const value = (await response.json()) as T & { error?: string }
