@@ -1033,6 +1033,7 @@ def _v347_space_work_suite():
             check(ROW, 'the clone and its commit are whole, and the shared repository was not given it',
                   holds(where, lone) and git(where, 'rev-parse', 'HEAD') == lone and not holds(REPOSITORY, lone))
 
+            (where / 'notes.txt').write_text('table 1 work\n')
             before = L.item(item)
             proposal = RM.clone_proposal(L, P, item, before)
             refused = L.request_disposition(item, proposal, git(where, 'rev-parse', 'HEAD'))
