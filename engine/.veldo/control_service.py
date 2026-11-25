@@ -1704,6 +1704,10 @@ class Service:
 
     @space.setter
     def space(self, wired):
+        # Replacing the wiring also retires the worker that owns the old ledger.
+        # Complete its pending answers before dropping the only handle that can reap it.
+        if getattr(self, 'space_consumer', None) is not None:
+            self.space_stop()
         # Wiring a ledger in marks where its reading starts: what the journal held before is not sent to it.
         # With no store, or inside a transaction (whose records are not committed), the first pass marks it.
         if wired is not None and self.space_seen is None and self.conn is not None and not self.conn.in_transaction:
