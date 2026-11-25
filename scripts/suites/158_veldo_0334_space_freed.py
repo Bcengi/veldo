@@ -483,7 +483,7 @@ def _v334_suite():
             try:
                 identity = waiting(f)
                 before = f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]
-                refusal = f.ledger.release(identity, expected_version=0)
+                refusal = f.ledger.reconcile('not-a-source', [], [], {})
                 check('race/refusal-atomic', not refusal['ok'] and not f.ledger.hold(identity)['freed']
                       and f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0] == before)
             finally:
