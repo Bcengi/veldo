@@ -17,8 +17,9 @@ VELDO-0031 claim transition, VELDO-0042 clones with their teardown, the owner's 
 read, and it starts cooperative and signal-ignoring descendants; it qualifies no live engine. The
 shipped timings (ten-second heartbeat, thirty-second window, ten and five seconds of stop graces) are
 asserted exactly as the profile's defaults and as a real receiver reports them; the timed rows drive
-the same code with shorter configured values, record every monotonic time and assert the configured
-values were the ones used.
+the same code with supplied clocks and event notifications, record every logical time and assert the
+configured values were the ones used. Real processes remain held until the fixture observes and releases
+them; scheduler delays cannot advance these clocks.
 """
 
 
@@ -28,7 +29,7 @@ def _v41_suite():
     import json
     import os
     from pathlib import Path
-    import select
+    import selectors
     import shutil
     import signal
     import subprocess
@@ -47,7 +48,7 @@ def _v41_suite():
         'control_reservations.py': ROOT / ".veldo" / "control_reservations.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
-    # The declared measurement tolerance of every timed observation (a late wake of a loaded host).
+    # The original timing tolerance, retained exactly on supplied-clock observations.
     TOL = 0.35
     SHIPPED = {'heartbeat_seconds': 10, 'heartbeat_window_seconds': 30, 'stop_grace_seconds': 10,
                'kill_grace_seconds': 5}
@@ -65,7 +66,7 @@ def _v41_suite():
     now_m = time.monotonic
 
     def systemctl(*args):
-        return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True, timeout=20,
+        return subprocess.run(['systemctl', '--user', *args], capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS,
                               env=tools, stdin=subprocess.DEVNULL)
 
     def show(unit, *names):
@@ -80,6 +81,10 @@ def _v41_suite():
             shutil.copyfile(source, mods / source.name)
         for name, source in PRODUCTION.items():
             shutil.copyfile(source, mods / name)
+        CLOCK = load('v41_clock', ROOT / 'scripts/fixtures/heartbeat_clock.py')
+        CLOCK.install(mods)
+        clocks = base / 'clocks'
+        clocks.mkdir()
         S = load('v41_store', mods / 'control_store.py')
         L = load('v41_launch', mods / 'control_launch.py')
         C = load('v41_containment', mods / 'control_containment.py')
@@ -98,7 +103,7 @@ def _v41_suite():
         private = state / 'keys'
         private.mkdir(parents=True, mode=0o700)
         subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(private / 'journal')],
-                       check=True, capture_output=True, timeout=20, stdin=subprocess.DEVNULL)
+                       check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
 
         def sign(data):
             return SIG.sign_bytes(private / 'journal', data, 'veldo-journal')
@@ -168,25 +173,29 @@ def _v41_suite():
                          capture_output=True, identity=('Fixture', 'fixture@example.invalid'), stdin=subprocess.DEVNULL)
 
         # The fixture engine and its descendants. Each process writes <tag>.<name> with its pid, start
-        # time and cgroup, and logs each SIGTERM it takes (and, when stubborn, a beat every 50 ms) as
+        # time and cgroup, and logs each SIGTERM it takes (and, when stubborn, a beat on the fixture observation event) as
         # monotonic times, the clock the receiver times its heartbeat and its stop on.
         markers = base / 'markers'
         markers.mkdir()
-        common = '''import json, os, signal, sys, time
+        common = '''import json, os, signal, sys
 from pathlib import Path
+sys.path.insert(0, MODS)
+from heartbeat_clock import Clock
+fixture_clock = Clock(os.environ['V41_CLOCK'])
+now = fixture_clock.monotonic
 def facts(role):
     stat = Path('/proc/self/stat').read_text()
     return {'role': role, 'pid': os.getpid(), 'start': stat[stat.rindex(')') + 2:].split()[19],
             'cgroup': next(l[3:] for l in Path('/proc/self/cgroup').read_text().splitlines() if l.startswith('0::')),
-            'monotonic': time.monotonic()}
+            'monotonic': now()}
 def mark(markers, tag, name, data):
     temporary = Path(markers) / ('%s.%s.%d.tmp' % (tag, name, os.getpid()))
     temporary.write_text(json.dumps(data))
     os.replace(temporary, Path(markers) / ('%s.%s' % (tag, name)))
 def log(markers, tag, name, what):
     with open(Path(markers) / ('%s.%s.%s' % (tag, name, what)), 'a') as handle:
-        handle.write('%r\\n' % time.monotonic())
-'''
+        handle.write('%r\\n' % now())
+'''.replace('MODS', repr(str(mods)))
         child = base / 'child41.py'
         child.write_text(common + '''markers, tag, name, kind, hold = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], float(sys.argv[5])
 def on_term(signum, frame):
@@ -196,16 +205,17 @@ def on_term(signum, frame):
 signal.signal(signal.SIGTERM, on_term)
 mark(markers, tag, name, facts(name))
 if kind == 'model':
-    # The model: it answers after `hold` seconds.
-    time.sleep(hold)
+    # The model returns only after the fixture has observed its blocked call.
+    with open(Path(os.environ['V41_CLOCK']) / 'model-release', 'rb', buffering=0) as latch:
+        latch.read(1)
     sys.stdout.write('answer')
     sys.stdout.flush()
     sys.exit(0)
-end = time.monotonic() + hold
-while time.monotonic() < end:
-    if kind == 'stubborn':
-        log(markers, tag, name, 'beat')
-    time.sleep(0.05)
+signal.signal(signal.SIGUSR2, lambda *_: log(markers, tag, name, 'beat'))
+if kind == 'stubborn':
+    log(markers, tag, name, 'beat')
+while True:
+    signal.pause()
 ''')
         engine = base / 'engine41.py'
         engine.write_text(common + '''import subprocess
@@ -225,28 +235,28 @@ own = facts('worker')
 own['cwd'] = os.getcwd()
 mark(markers, tag, 'worker', own)
 if payload.get('block'):
-    # THE MODEL CALL: one blocking read of a child that answers after `block` seconds.
-    model = subprocess.Popen([sys.executable, '-B', child, markers, tag, 'model', 'model', str(payload['block'])],
+    # THE MODEL CALL: one blocking read, released after the fixture observes the heartbeats.
+    model = subprocess.Popen([sys.executable, '-B', child, markers, tag, 'model', 'model', '0'],
                              stdin=subprocess.DEVNULL, stdout=subprocess.PIPE)
-    mark(markers, tag, 'call', {'started': time.monotonic(), 'pid': model.pid})
+    mark(markers, tag, 'call', {'started': now(), 'pid': model.pid})
     answer = model.stdout.read()
     model.wait()
-    mark(markers, tag, 'answer', {'returned': time.monotonic(), 'bytes': len(answer)})
-end = time.monotonic() + payload.get('hold', 0)
-while time.monotonic() < end and not (payload.get('release') and Path(payload['release']).exists()):
-    time.sleep(0.02)
+    mark(markers, tag, 'answer', {'returned': now(), 'bytes': len(answer)})
+if payload.get('release'):
+    with open(payload['release'], 'rb', buffering=0) as latch:
+        latch.read(1)
 if payload.get('signal_group'):
-    # The engine signals its own process group, as an engine ending its own children does, and lives on.
-    mark(markers, tag, 'signalled', {'at': time.monotonic(), 'pgrp': os.getpgrp()})
+    mark(markers, tag, 'signalled', {'at': now(), 'pgrp': os.getpgrp()})
     os.killpg(0, signal.SIGTERM)
-    time.sleep(payload['signal_group'])
-mark(markers, tag, 'exit', {'at': time.monotonic()})
+    with open(Path(os.environ['V41_CLOCK']) / 'signal-release', 'rb', buffering=0) as latch:
+        latch.read(1)
+mark(markers, tag, 'exit', {'at': now()})
 sys.exit(payload.get('code', 0))
 ''')
 
         def profile(**changes):
             value = {'kind': 'linux-systemd', 'slice': slice_name, 'lock': str(base / 'slice.lock'), 'concurrency': 16,
-                     'runtime_seconds': 120, 'memory_bytes': 256 << 20, 'cpu_percent': 200, 'file_bytes': 8 << 20,
+                     'runtime_seconds': WAITS.PROCESS_HANG_SECONDS, 'memory_bytes': 256 << 20, 'cpu_percent': 200, 'file_bytes': 8 << 20,
                      'tasks_max': 128, 'stop_grace_seconds': 0.5, 'kill_grace_seconds': 0.5}
             value.update(changes)
             return {k: v for k, v in value.items() if v is not None}
@@ -265,13 +275,13 @@ sys.exit(payload.get('code', 0))
                                                          enrollment_signers=str(receiver_enrollment_signers))))
             receiver_host_trust.chmod(0o600)
             path.write_text(json.dumps({'host_trust': str(receiver_host_trust), 'store': str(db), 'runs': str(base / 'runs'), 'journal_key': str(private / 'journal'),
-                                        'principal': 'launch-receiver', 'workspace': str(base), 'domain': DOMAIN,
+                                        'fixture_clocks': str(clocks), 'principal': 'launch-receiver', 'workspace': str(base), 'domain': DOMAIN,
                                         'repository': REPOSITORY, 'authority_generation': 1,
                                         'adapters': adapter_table or adapters, 'profile': prof}))
             configs[name] = path
             return path
 
-        # The configured values the timed rows drive, each different from the shipped default.
+        # Supplied-clock intervals, each different from the shipped default.
         FAST = profile(heartbeat_seconds=0.25, heartbeat_window_seconds=1.0, stop_grace_seconds=0.4, kill_grace_seconds=0.4)
         SHIPPED_PROFILE = profile(stop_grace_seconds=None, kill_grace_seconds=None)
         ESCALATE = profile(stop_grace_seconds=1.0, kill_grace_seconds=0.5)
@@ -284,10 +294,23 @@ sys.exit(payload.get('code', 0))
         dispatches = D.Dispatches(S, writer, domain=DOMAIN, repository=REPOSITORY, principal='runner',
                                   signer='runner', sign=sign)
         launches, runners = [], {}
+        latch_fds = []
+        clock_fds = {}
 
         def receive_with(path):
             def receive(contract):
-                launch = L.invoke(path, contract, dispatches, accept_seconds=20)
+                directory = clocks / contract['dispatch_id'].rsplit('/', 1)[-1]
+                directory.mkdir()
+                CLOCK.write(directory / 'now', 100.0)
+                clock_fds[directory.name] = {}
+                for name in ('sender', 'receiver-tick', 'model-release', 'signal-release'):
+                    os.mkfifo(directory / name, 0o600)
+                    fd = os.open(directory / name, os.O_RDWR | os.O_NONBLOCK)
+                    latch_fds.append(fd)
+                    clock_fds[directory.name][name] = fd
+                environment = dict(tools, VELDO_CONTROL_TEST_HARNESS='1')
+                launch = L.invoke(path, contract, dispatches, accept_seconds=WAITS.WAIT_HANG_SECONDS,
+                                  environment=environment)
                 launches.append(launch)
                 return launch
             return receive
@@ -304,10 +327,14 @@ sys.exit(payload.get('code', 0))
 
         releases = []
 
-        def job(deadline=60, **payload):
+        def job(deadline=WAITS.PROCESS_HANG_SECONDS, **payload):
+            if payload.get('hold') and not payload.get('release'):
+                payload['release'] = os.urandom(8).hex()
             if payload.get('release'):
                 payload['release'] = str(base / ('release-' + payload['release']))
                 releases.append(Path(payload['release']))
+                os.mkfifo(payload['release'], 0o600)
+                latch_fds.append(os.open(payload['release'], os.O_RDWR | os.O_NONBLOCK))
             return dict(holder=HOLDER, source=str(src), revision='HEAD', payload=payload, adapter='engine',
                         configuration={'tools': ['Read', 'Bash'], 'model': 'configured-model'},
                         deadline=time.time() + deadline)
@@ -323,14 +350,82 @@ sys.exit(payload.get('code', 0))
         def tag(launch):
             return launch.dispatch_id.rsplit('/', 1)[-1]
 
-        def marker(launch, name, timeout=10.0):
+        def marker(launch, name):
             path = markers / ('%s.%s' % (tag(launch), name))
-            if getattr(launch, 'result', None) != 'accepted':
-                timeout = 0.05  # nothing of a launch that was not accepted is waited for
-            end = time.time() + timeout
-            while not path.exists() and time.time() < end:
-                time.sleep(0.02)
+            if path.exists():
+                return json.loads(path.read_text())
+            WAITS.wait('heartbeat fixture marker ' + name, path.exists,
+                       lambda: launch.child is None or launch.child.poll() is not None,
+                       [WAITS.PathAppears(path), *exit_sources(launch.child)])
             return json.loads(path.read_text()) if path.exists() else {}
+
+        def exit_sources(process, reaped=False):
+            if process is None:
+                return []
+            try:
+                source = WAITS.Pidfd(process)
+                if reaped:
+                    # POLLIN reports exit; POLLHUP reports the keeper's reap.
+                    source.events = __import__('select').POLLHUP
+                return [source]
+            except ProcessLookupError:
+                return []
+
+        def clock(launch):
+            return CLOCK.Clock(clocks / tag(launch))
+
+        def snapshot(launch):
+            path = clocks / tag(launch) / 'receiver'
+            return CLOCK.read(path) if path.exists() else {}
+
+        def await_state(launch, name, predicate, ended=False):
+            path = clocks / tag(launch) / name
+            sender = (snapshot(launch).get('heartbeat') or {}).get('pid') if name == 'sender-waiting' else None
+            WAITS.wait('heartbeat fixture ' + name,
+                       lambda: path.exists() and predicate(CLOCK.read(path)),
+                       lambda: launch.child.poll() is not None or (sender is not None and
+                               (proc_start(sender) is None or snapshot(launch).get('heartbeat', {}).get('channel_open') is False)),
+                       [WAITS.PathAppears(path), WAITS.PathAppears(clocks / tag(launch) / 'receiver'),
+                        *exit_sources(launch.child), *exit_sources(sender)])
+            assert (ended and launch.child.poll() is not None) or (path.exists() and predicate(CLOCK.read(path))), (name, snapshot(launch))
+            return CLOCK.read(path)
+
+        def pulse(launch, advance=0):
+            directory = clocks / tag(launch)
+            before = clock(launch).monotonic()
+            # Observe the sender's real poll boundary before advancing its clock.
+            state = await_state(launch, 'sender-waiting', lambda state: state['now'] == before)
+            assert state['timeout'] is not None, 'heartbeat waits for engine exit'
+            assert state['timeout'] <= 250 if getattr(launch, 'heartbeat', {}).get('interval_seconds') == .25 else True
+            if advance:
+                CLOCK.write(directory / 'now', before + advance)
+                os.write(clock_fds[tag(launch)]['sender'], b't')
+                await_state(launch, 'sender-waiting', lambda state: state['now'] == before + advance)
+            os.write(clock_fds[tag(launch)]['receiver-tick'], b't')
+            return await_state(launch, 'receiver',
+                               lambda state: state['heartbeat'].get('last') == before + advance)
+
+        def tick(launch, advance):
+            CLOCK.write(clocks / tag(launch) / 'now', clock(launch).monotonic() + advance)
+            os.write(clock_fds[tag(launch)]['receiver-tick'], b't')
+            return await_state(launch, 'receiver', lambda state: state['now'] == clock(launch).monotonic(), ended=True)
+
+        def finish_stop(launch):
+            # Cleanup follows the product's reported schedule, including a mutant
+            # that installed the wrong graces. Timing assertions still judge the
+            # original configured values; no duration rescues an omitted stop.
+            await_state(launch, 'receiver', lambda state: bool(state.get('steps')), ended=True)
+            for _ in range(3):
+                state = snapshot(launch)
+                steps = state.get('steps') or []
+                if launch.child.poll() is not None or (steps and steps[-1]['step'] == 'kill'):
+                    return
+                assert steps and state.get('due') is not None, state
+                tick(launch, max(0, state['due'] - clock(launch).monotonic()))
+            assert snapshot(launch)['steps'][-1]['step'] == 'kill', snapshot(launch)
+
+        def unlatch(launch, name):
+            os.write(clock_fds[tag(launch)][name], b'g')
 
         def times(launch, name, what):
             path = markers / ('%s.%s.%s' % (tag(launch), name, what))
@@ -405,7 +500,7 @@ sys.exit(payload.get('code', 0))
             service = retirements(name)
             return service.pending() if service is not None else {}
 
-        def deaths(facts_list, seconds=20.0):
+        def deaths(facts_list, supplied=None):
             """Watch processes end through pidfds opened while they run: {pid: [monotonic, wall]}."""
             fds, seen = {}, {}
             for facts in facts_list:
@@ -417,28 +512,28 @@ sys.exit(payload.get('code', 0))
                         os.close(fd)
 
             def run():
-                poller = select.poll()
+                poller = selectors.PollSelector()
                 for fd in fds:
-                    poller.register(fd, select.POLLIN)
-                end, left = now_m() + seconds, set(fds)
-                while left and now_m() < end:
-                    for fd, _ in poller.poll(100):
+                    poller.register(fd, selectors.EVENT_READ)
+                left = set(fds)
+                while left:
+                    ready = poller.select(WAITS.WAIT_HANG_SECONDS)
+                    if not ready:
+                        raise TimeoutError('heartbeat fixture death observation hung')
+                    for key, _ in ready:
+                        fd = key.fd
                         seen[fds[fd]] = [now_m(), time.time()]
+                        if supplied:
+                            seen[fds[fd]][0] = supplied()
+                        CLOCK.write(markers / ('%d.death' % fds[fd]), seen[fds[fd]])
                         poller.unregister(fd)
                         left.discard(fd)
                 for fd in fds:
                     os.close(fd)
+                poller.close()
             thread = threading.Thread(target=run, daemon=True)
             thread.start()
             return seen, thread
-
-        def wait_for(predicate, seconds=10.0):
-            end = time.time() + seconds
-            while time.time() < end:
-                if predicate():
-                    return True
-                time.sleep(0.02)
-            return bool(predicate())
 
         def within(value, low, high):
             return isinstance(value, (int, float)) and low <= value <= high
@@ -461,6 +556,7 @@ sys.exit(payload.get('code', 0))
                 yield
             except Exception as error:  # noqa: BLE001 - a raise reds its rows, never skips them
                 raised.append((labels[0], repr(error)))
+                print('heartbeat fixture region ' + labels[0] + ': ' + repr(error), file=sys.stderr)
                 for label in labels:
                     if label not in emitted:
                         check(label, False)
@@ -474,11 +570,11 @@ sys.exit(payload.get('code', 0))
                                                                  ('shipped', 'VELDO-9503'), ('orphan', 'VELDO-9508'),
                                                                  ('signal', 'VELDO-9511'))}
                 claims = {name: claim_version(unit) for name, unit in units.items()}
-                started['blocked'] = runner('fast').submit(units['blocked'], 'build', **job(block=2.0))
+                started['blocked'] = runner('fast').submit(units['blocked'], 'build', **job(block=2))
                 started['missing'] = runner('fast').submit(units['missing'], 'build', **job(block=8))
                 started['shipped'] = runner('shipped').submit(units['shipped'], 'build', **job(block=1.5))
                 started['orphan'] = runner('main').submit(units['orphan'], 'build', **job(hold=30))
-                # Waits for its release, then signals its own process group and runs two seconds more.
+                # Released to signal its group, then held until the subsequent heartbeats are observed.
                 started['signal'] = runner('fast').submit(units['signal'], 'build', **job(
                     hold=30, release='signal', signal_group=2.0, on_term='ignore'))
 
@@ -486,7 +582,12 @@ sys.exit(payload.get('code', 0))
             # each one renews the claim.
             with region('heartbeat/blocked-call-liveness'):
                 blocked = started['blocked']
-                call, answer = marker(blocked, 'call'), marker(blocked, 'answer', timeout=15)
+                call = marker(blocked, 'call')
+                pulse(blocked)
+                for _ in range(8):
+                    pulse(blocked, .25)
+                unlatch(blocked, 'model-release')
+                answer = marker(blocked, 'answer')
                 ended = runner('fast').wait(blocked) or {}
                 supervision = getattr(blocked, 'supervision', None) or {}
                 beat = supervision.get('heartbeat') or {}
@@ -523,11 +624,21 @@ sys.exit(payload.get('code', 0))
                 missing = started['missing']
                 worker = marker(missing, 'worker')
                 cgroup = (getattr(missing, 'group', None) or {}).get('cgroup')
-                renewed_three = wait_for(lambda: len(heartbeats(missing.dispatch_id)) >= 3, 10)
+                pulse(missing)
+                pulse(missing, .25)
+                pulse(missing, .25)
+                renewed_three = len(heartbeats(missing.dispatch_id)) >= 3
                 beaters = procs(str(cgroup) + '/' + GROUP) if cgroup else []
-                stopped_at = now_m()
+                stopped_at = clock(missing).monotonic()
                 for pid in beaters:
                     os.kill(pid, signal.SIGSTOP)  # the wrapper's heartbeat stops answering
+                prior = tick(missing, .75)
+                assert prior.get('cause') is None, prior
+                expired = tick(missing, .25)
+                assert expired.get('cause') == 'heartbeat_missing', expired
+                WAITS.wait('missing heartbeat worker terminated', lambda: bool(times(missing, 'worker', 'term')),
+                           lambda: not living(worker), [WAITS.PathAppears(markers / '.fixture-events')])
+                finish_stop(missing)
                 ended = runner('fast').wait(missing) or {}
                 supervision = getattr(missing, 'supervision', None) or {}
                 beat = supervision.get('heartbeat') or {}
@@ -559,7 +670,9 @@ sys.exit(payload.get('code', 0))
                 signalled = started['signal']
                 worker = marker(signalled, 'worker')
                 cgroup = (getattr(signalled, 'group', None) or {}).get('cgroup')
-                beating = wait_for(lambda: len(heartbeats(signalled.dispatch_id)) >= 2, 10)
+                pulse(signalled)
+                pulse(signalled, .25)
+                beating = len(heartbeats(signalled.dispatch_id)) >= 2
                 beaters = procs(str(cgroup) + '/' + GROUP) if cgroup else []
                 held = {pid: links(pid) for pid in beaters}
                 channels = sorted({link for found in held.values() for link in found if link.startswith('pipe:')})
@@ -584,6 +697,9 @@ sys.exit(payload.get('code', 0))
                 before = procs(str(cgroup) + '/' + GROUP) if cgroup else []
                 release(signalled)
                 sent = marker(signalled, 'signalled')
+                for _ in range(7):
+                    pulse(signalled, .25)
+                unlatch(signalled, 'signal-release')
                 ended = runner('fast').wait(signalled) or {}
                 supervision = getattr(signalled, 'supervision', None) or {}
                 beat = supervision.get('heartbeat') or {}
@@ -610,6 +726,9 @@ sys.exit(payload.get('code', 0))
             # AC1 and AC2: the shipped values exactly, and the timed rows used their configured ones.
             with region('heartbeat/shipped-defaults'):
                 shipped = started['shipped']
+                marker(shipped, 'model')
+                pulse(shipped)
+                unlatch(shipped, 'model-release')
                 ended = runner('shipped').wait(shipped) or {}
                 supervision = getattr(shipped, 'supervision', None) or {}
                 beat = supervision.get('heartbeat') or {}
@@ -642,12 +761,30 @@ sys.exit(payload.get('code', 0))
                 target = runner('escalate').submit(unit, 'build', **job(
                     descendants=[['coop', 'coop', 30], ['stubborn', 'stubborn', 30]], hold=30, on_term='ignore'))
                 worker, coop, stubborn = marker(target, 'worker'), marker(target, 'coop'), marker(target, 'stubborn')
-                seen, watcher = deaths([worker, coop, stubborn])
-                wait_for(lambda: len(times(target, 'stubborn', 'beat')) >= 3, 5)
-                asked_at = now_m()
+                seen, watcher = deaths([worker, coop, stubborn], supplied=clock(target).monotonic)
+                pulse(target)
+                asked_at = clock(target).monotonic()
                 asked = getattr(target, 'stop', lambda: False)()
+                await_state(target, 'receiver', lambda state: state.get('cause') == 'requested')
+                WAITS.wait('cooperative signal observed', lambda: len(times(target, 'worker', 'term')) >= 1,
+                           lambda: not living(worker), [WAITS.PathAppears(markers / (tag(target) + '.worker.term'))])
+                terminated = tick(target, 1.0)
+                assert [step['step'] for step in terminated['steps']] == ['cooperative', 'terminate'], terminated
+                assert (clocks / tag(target) / 'group-terminated').exists(), terminated
+                WAITS.wait('group termination observed', lambda: len(times(target, 'worker', 'term')) >= 2
+                           and bool(times(target, 'coop', 'term')) and bool(times(target, 'stubborn', 'term')),
+                           lambda: not living(worker), [WAITS.PathAppears(markers / '.fixture-events')])
+                WAITS.wait('cooperative descendant reaped', lambda: coop.get('pid') in seen,
+                           None, [WAITS.PathAppears(markers / ('%d.death' % coop['pid']))])
+                tick(target, .4)
+                os.kill(stubborn['pid'], signal.SIGUSR2)
+                WAITS.wait('stubborn descendant still alive',
+                           lambda: times(target, 'stubborn', 'beat')[-1] == clock(target).monotonic(),
+                           lambda: not living(stubborn), [WAITS.PathAppears(markers / '.fixture-events')])
+                tick(target, .1)
+                watcher.join(timeout=WAITS.WAIT_HANG_SECONDS)
+                assert not watcher.is_alive(), 'death watcher hung'
                 ended = runner('escalate').wait(target) or {}
-                watcher.join(timeout=10)
                 supervision = getattr(target, 'supervision', None) or {}
                 at = {s.get('step'): s.get('monotonic') for s in supervision.get('steps') or []}
                 w_terms, c_terms = times(target, 'worker', 'term'), times(target, 'coop', 'term')
@@ -701,11 +838,13 @@ sys.exit(payload.get('code', 0))
                         return receive_with(configs['linger'])(contract)
                     scope = C.unit_name(contract['dispatch_id'])
                     made.append(scope)
+                    ready = base / ('planted-' + scope)
                     holder = subprocess.Popen(['systemd-run', '--user', '--scope', '--quiet', '--unit=' + scope,
-                                               '--slice=' + slice_name, '--', 'sleep', '30'], env=tools,
-                                              stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                               '--slice=' + slice_name, '--', sys.executable, '-c', 'import sys; from pathlib import Path; Path(sys.argv[1]).write_text("ready"); sys.stdin.buffer.read(1)', str(ready)], env=tools,
+                                              stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
                                               stderr=subprocess.DEVNULL, start_new_session=True)
-                    wait_for(lambda: (C.cgroup_of(holder.pid) or '').endswith(scope), 10)
+                    WAITS.wait('planted group ready', ready.exists, lambda: holder.poll() is not None,
+                               [WAITS.PathAppears(ready), *exit_sources(holder)])
                     planted.update(holder=holder, facts={'pid': holder.pid, 'start': proc_start(holder.pid)},
                                    group={'unit': scope, 'slice': slice_name, 'cgroup': C.cgroup_of(holder.pid)})
                     launch = L.invoke(base / 'receiver-absent.json', contract, dispatches, accept_seconds=20)
@@ -727,20 +866,24 @@ sys.exit(payload.get('code', 0))
                                      'events': len(events('linger', planted_id))}
                 worker, stubborn = marker(lingering, 'worker'), marker(lingering, 'stubborn')
                 seen, watcher = deaths([worker, stubborn, planted.get('facts') or {'pid': None}])
-                wait_for(lambda: len(times(lingering, 'stubborn', 'beat')) >= 3, 5)
+                pulse(lingering)
                 asked = getattr(lingering, 'stop', lambda: False)()
                 # The worker ends on the cooperative stop; its signal-ignoring descendant lives on until the kill.
-                wait_for(lambda: worker.get('pid') in seen, 5)
+                WAITS.wait('lingering worker ended', lambda: worker.get('pid') in seen, None,
+                           [WAITS.PathAppears(markers / ('%d.death' % worker['pid']))])
                 # The process left in the planted group ends; the runner is not told.
                 cgroup = (planted.get('group') or {}).get('cgroup')
                 with contextlib.suppress(OSError):
                     (group_path(cgroup) / 'cgroup.kill').write_text('1')
                 with contextlib.suppress(Exception):
-                    planted['holder'].wait(timeout=10)
-                wait_for(lambda: not group_path(cgroup).exists(), 10)
+                    planted['holder'].wait(timeout=WAITS.WAIT_HANG_SECONDS)
+                WAITS.wait('planted group removed', lambda: not group_path(cgroup).exists(), None,
+                           [WAITS.CgroupEmpty(group_path(cgroup)), WAITS.PathAppears(group_path(cgroup))])
+                finish_stop(lingering)
                 mark = len(lingerer.observations)
+                watcher.join(timeout=WAITS.WAIT_HANG_SECONDS)
+                assert not watcher.is_alive(), 'death watcher hung'
                 ended = lingerer.wait(lingering) or {}
-                watcher.join(timeout=10)
                 during_wait = [(e['dispatch_id'], e['outcome'], e.get('basis')) for e in lingerer.observations[mark:]
                                if e.get('operation') == 'retire']
                 retirement = slot(lingering.dispatch_id).get('retirement') or {}
@@ -868,6 +1011,7 @@ sys.exit(payload.get('code', 0))
                 consumer = cloned.submit(consumer_unit, 'build', **job(hold=30, release='consumer'))
                 owner_worker, consumer_worker = marker(owner, 'worker'), marker(consumer, 'worker')
                 # The owner ends while its consumer still runs in the clone: its retirement is refused.
+                release(owner)
                 ended = cloned.wait(owner) or {}
                 first = events('clone', owner.dispatch_id)
                 held = slot(owner.dispatch_id).get('retired')
@@ -924,13 +1068,15 @@ sys.exit(payload.get('code', 0))
                 worker = marker(orphan, 'worker')
                 cgroup = (getattr(orphan, 'group', None) or {}).get('cgroup')
                 orphan.child.kill()  # the receiver ends without recording how the dispatch ended
-                orphan.child.wait(timeout=10)
-                ended = runner('main').wait(orphan, timeout=5) or {}
+                orphan.child.wait(timeout=WAITS.WAIT_HANG_SECONDS)
+                ended = runner('main').wait(orphan, timeout=WAITS.WAIT_HANG_SECONDS) or {}
                 first = events('main', orphan.dispatch_id)
                 alive_then = living(worker)
                 with contextlib.suppress(OSError):
                     (group_path(cgroup) / 'cgroup.kill').write_text('1')
-                wait_for(lambda: not living(worker) and not group_path(cgroup).exists(), 10)
+                WAITS.wait('orphan group removed', lambda: not living(worker) and not group_path(cgroup).exists(), None,
+                           [WAITS.CgroupEmpty(group_path(cgroup)), WAITS.PathAppears(group_path(cgroup)),
+                            *exit_sources(worker['pid'], reaped=True)])
                 # The next two preparations each sweep: the first finds the termination and group completed and
                 # tries again; the second finds nothing changed and tries nothing.
                 mark = len(runner('main').observations)
@@ -983,7 +1129,7 @@ sys.exit(payload.get('code', 0))
                 with contextlib.suppress(Exception):
                     if launch.child.poll() is None:
                         launch.child.kill()
-                    launch.child.wait(timeout=10)
+                    launch.child.wait(timeout=WAITS.WAIT_HANG_SECONDS)
                     launch.child.stdout.close()
                     launch.child.stdin.close()
             with contextlib.suppress(Exception):
@@ -1003,6 +1149,8 @@ sys.exit(payload.get('code', 0))
                     facts = json.loads(leftover.read_text())
                     if living(facts):
                         os.kill(facts['pid'], signal.SIGKILL)
+            for fd in latch_fds:
+                os.close(fd)
             writer.close()
             reader.close()
         for first_label in regions:
