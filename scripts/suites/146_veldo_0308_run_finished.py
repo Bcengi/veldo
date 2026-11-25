@@ -250,7 +250,8 @@ def _v308_run_finished_suite():
         except OSError:
             return None
 
-    temp = Path(os.path.realpath(tempfile.mkdtemp(prefix='veldo-0308-', dir=os.environ.get('VELDO_FIXTURE_ROOT', tempfile.gettempdir()))))
+    allocation = load('v308_gate_fixtures', ROOT / 'scripts' / 'gate_fixtures.py').directory(prefix='r308')
+    temp = allocation.__enter__()
     connections = []
     row = ROWS[0]
     try:
@@ -2232,7 +2233,7 @@ def _v308_run_finished_suite():
                 connection.close()
             except Exception:  # noqa: BLE001 - closing a fixture connection never reds a row
                 pass
-        shutil.rmtree(temp, ignore_errors=True)
+        allocation.__exit__(None, None, None)
 
     for row, values in rows.items():
         failed = [label for label, ok in values if not ok]
