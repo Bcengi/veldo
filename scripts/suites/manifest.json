@@ -1243,7 +1243,10 @@
    "requires": [
     "86_veldo_0127_init_bound"
    ],
-   "requires_note": "The no-init fault through the same real Runner and fake engine; unchanged timing assertion and bounds."
+   "requires_note": "The no-init fault through the same real Runner and fake engine; unchanged timing assertion and bounds.",
+   "resources": {
+    "systemd_user_manager": 1
+   }
   },
   {
    "name": "83_veldo_0166_usage_windows",
@@ -1563,7 +1566,10 @@
    "requires": [
     "110_veldo_0143_corrections"
    ],
-   "requires_note": "Three correction rows, using the same real common new-project fixture and local correction helpers."
+   "requires_note": "Three correction rows, using the same real common new-project fixture and local correction helpers.",
+   "resources": {
+    "new_project_fixture": 1
+   }
   },
   {
    "name": "111_veldo_0214_first_use_budget",
