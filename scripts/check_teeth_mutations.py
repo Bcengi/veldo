@@ -18673,7 +18673,8 @@ def cases():
                                                   '121_veldo_0131_factory_progress.py': ['browser/hang-by-progress']},
      '110_veldo_0143_new_project.py': {'110_veldo_0143_corrections.py': ['proposal/correction-bound',
                                                                          'proposal/correction-negated',
-                                                                         'proposal/correction-phrasings']},
+                                                                         'proposal/correction-phrasings',
+                                                                         'proposal/correction-told']},
      '86_veldo_0127_agent_configuration.py': {'86_veldo_0127_init_bound.py': ['review/init-bound']},
      '78_veldo_0160_account_pool.py': {'78_veldo_0160_account_assets.py': ['install/assets']}}
     for case in result:
