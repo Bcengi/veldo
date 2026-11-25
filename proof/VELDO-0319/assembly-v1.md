@@ -28,3 +28,5 @@ assertion retirement audit and hard-limit checks are pending. This is not a gree
 ## Static checkpoint and pending runtime evidence
 
 `assembly-static.json` binds the joined production revision, three merge commits, static observations and exact 48-suite/six-mandatory-teeth pending set. It is explicitly neither a gate nor a landing receipt. Gate 18 completion is still absent; no Space suite or teeth job has run. The source tips are contained in the assembly, while gated landing under owner order 43607 remains pending.
+
+Assembly handoff: stopped within the requested 200-turn limit with Gate 18 still running. The local waiting runner was stopped before any runtime suite or teeth job began. All runtime validation remains outstanding. Static success is not approval to land this unvalidated tree.

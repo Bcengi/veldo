@@ -110,5 +110,13 @@
   },
   "gate_receipt": false,
   "landing_receipt": false,
-  "gate_unconfined": "PROPOSAL only: proof/VELDO-0319/gate-unconfined-entry.md"
+  "gate_unconfined": "PROPOSAL only: proof/VELDO-0319/gate-unconfined-entry.md",
+  "stop": {
+    "at": "2026-11-25T12:16:47.026160+00:00",
+    "reason": "Stopped to remain within the requested 200-turn limit while Gate 18 was still running",
+    "gate18_completion_marker_present": false,
+    "local_waiting_runner_stopped": true,
+    "runtime_suites_started": 0,
+    "teeth_jobs_started": 0
+  }
 }
