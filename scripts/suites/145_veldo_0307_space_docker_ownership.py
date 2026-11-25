@@ -128,6 +128,7 @@ def _v307_space_docker_ownership_suite():
     PRODUCTION = {
         'control_space_docker.py': ROOT / ".veldo" / "control_space_docker.py",
         'control_space_reconcile.py': ROOT / ".veldo" / "control_space_reconcile.py",
+        'control_space_install.py': ROOT / ".veldo" / "control_space_install.py",
         'control_space.py': ROOT / ".veldo" / "control_space.py",
         'control_space_probe.py': ROOT / ".veldo" / "control_space_probe.py",
         'control_space_signal.py': ROOT / ".veldo" / "control_space_signal.py",
@@ -1294,14 +1295,14 @@ def _v307_space_docker_ownership_suite():
         ROW = 'ownership/removes-nothing'
         check(ROW, 'the adapter gave the engine only ls and inspect [%s]' % sorted({entry[1:] for entry in LOG}),
               {entry[2] for entry in LOG} == {'ls', 'inspect'})
-        for name in ('control_space_docker.py', 'control_space_reconcile.py'):
+        for name in ('control_space_docker.py', 'control_space_reconcile.py', 'control_space_install.py'):
             source = ast.parse(Path(PRODUCTION[name]).read_text())
             words = {node.value for node in ast.walk(source)
                      if isinstance(node, ast.Constant) and isinstance(node.value, str) and len(node.value) < 20}
             called = {node.func.attr for node in ast.walk(source)
                       if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)}
-            if name == 'control_space_reconcile.py':
-                # VELDO-0329 put the hook installer in this file. Its _put writes a file beside its
+            if name == 'control_space_install.py':
+                # The candidate extracted the hook installer into control_space_install.py. Its _put writes a file beside its
                 # target under a name it draws itself, creates it exclusively, and takes that one
                 # file away again when it was not moved into place. That one call, in that function,
                 # on that name, is the only delete this row lets pass: every delete call in the
@@ -1318,7 +1319,7 @@ def _v307_space_docker_ownership_suite():
                 own = ("temporary = os.path.join(folder, '.' + name + '.veldo-' + os.urandom(6).hex())" in put
                        and 'os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 384)' in put
                        and put.count('temporary = ') == 2 and 'temporary = None' in put)
-                check(ROW, 'the one delete call of control_space_reconcile.py is the hook installer taking away '
+                check(ROW, 'the one delete call of control_space_install.py is the hook installer taking away '
                       'the file it created itself, exclusively, under a name it drew [%s %s]' % (deletes, own),
                       deletes == [('_put', 'os.unlink(temporary)')] and len(everywhere) == 1 and own)
                 called -= {'unlink'} if deletes == [('_put', 'os.unlink(temporary)')] and len(everywhere) == 1 and own else set()
@@ -1334,6 +1335,10 @@ def _v307_space_docker_ownership_suite():
         # two use exactly these names, none of which starts a process or reads the wall clock, and
         # shutil is not imported.
         source = ast.parse(Path(PRODUCTION['control_space_reconcile.py']).read_text())
+        check(ROW, 'the reconciler itself names no process, clock or deletion module',
+              not any(isinstance(node, ast.Name) and node.id in ('subprocess', 'time', 'shutil')
+                      for node in ast.walk(source)))
+        source = ast.parse(Path(PRODUCTION['control_space_install.py']).read_text())
         used = {}
         for owner in ast.walk(source):
             if isinstance(owner, ast.FunctionDef):
@@ -1350,7 +1355,7 @@ def _v307_space_docker_ownership_suite():
         inside = [node for owner in source.body if isinstance(owner, ast.FunctionDef)
                   and owner.name in ('_owner_git', '_settings_lock') for node in ast.walk(owner)
                   if isinstance(node, ast.Name) and node.id in ('subprocess', 'time', 'shutil')]
-        check(ROW, 'the reconciler runs no process and reads no clock [%s]' % sorted(used.items()),
+        check(ROW, 'the installer uses only the declared process constants and settings-lock clock [%s]' % sorted(used.items()),
               'shutil' not in {alias.name for node in ast.walk(source) if isinstance(node, ast.Import)
                                for alias in node.names}
               and not any(isinstance(node, ast.ImportFrom) and node.module in ('subprocess', 'time', 'shutil')
