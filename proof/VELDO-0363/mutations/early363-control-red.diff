@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1670 +1670 @@
+-                    if (not all(ok is True for _, ok in rows) or any(observation.get(k)
++                    if (False or any(observation.get(k)

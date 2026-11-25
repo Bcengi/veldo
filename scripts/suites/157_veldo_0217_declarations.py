@@ -423,6 +423,7 @@ def _v217_declarations():
                     self.invocations = 0; self.driver_spans = {}; self.resources = None
                     self.parallel = 1; self.active = {}; self.outcomes = []; self.peak = 0
                     self.retargeted = {}; self.peak_memory = 0
+                    self.validated_groups, self.blocked_groups = set(), set()
 
                 def check(self): pass
 

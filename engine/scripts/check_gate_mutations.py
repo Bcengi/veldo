@@ -39,6 +39,51 @@ WAIT_HANG_SECONDS = 600
 PROCESS_HANG_SECONDS = 3600
 CASE_TIMES = Path.home() / '.cache' / 'veldo' / 'mutation-case-seconds'
 RESOURCE_TIMES = CASE_TIMES / 'resources'
+ORDER_HISTORY = CASE_TIMES / 'ordering' / 'schedule.json'
+
+
+def order_history(path=ORDER_HISTORY):
+    """Disposable ordering hints, never admission or verdict authority."""
+    try:
+        values = json.loads(Path(path).read_text())
+        return {identity: item for identity, item in values.items()
+                if isinstance(item, dict)
+                and type(item.get('failed')) is bool
+                and type(item.get('seconds')) in (int, float)
+                and math.isfinite(item['seconds']) and item['seconds'] >= 0}
+    except (OSError, ValueError, TypeError, AttributeError):
+        return {}
+
+
+def job_order(item):
+    job = item[1]
+    return (not job.get('last_failed', False), -job.get('priority_seconds', job.get('budget_seconds', 0)),
+            job.get('mode') != 'mutant')
+
+
+def record_order_history(receipt, cases, group_for, *, authority=False, path=ORDER_HISTORY):
+    if not authority or group_for is None:
+        return
+    values = order_history(path)
+    outcomes = {o['name']: o for o in receipt['worker_outcomes']}
+    invalid = {r['case']['identity'] for r in receipt['invalid_results'] if 'case' in r}
+    for case in cases:
+        identity = case['identity']
+        own = [outcomes[n] for n in (identity, group_for(case) + ':baseline', group_for(case) + ':noop')
+               if n in outcomes]
+        prior = values.get(identity, dict(failed=False, seconds=0))
+        failed = identity in invalid or any(o.get('error') not in (None, 'worker_cancelled') for o in own)
+        passed = any(r['case']['identity'] == identity for r in receipt['results'])
+        values[identity] = dict(failed=failed or (prior['failed'] and not passed),
+            seconds=max([prior['seconds'], *(o['elapsed'] for o in own)]))
+    try:
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        fd, pending = tempfile.mkstemp(prefix='.schedule-', dir=Path(path).parent)
+        with os.fdopen(fd, 'w') as handle:
+            json.dump(values, handle, sort_keys=True)
+        os.replace(pending, path)
+    except OSError as error:
+        receipt['order_history_error'] = str(error)
 
 def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
     """The CPUs a cgroup v2 quota allows this process: the smallest cpu.max quota on the process's
@@ -846,6 +891,8 @@ class Workers:
         self.leg = None
         self.legs = {}
         self.budgets = {}
+        self.validated_groups = set()
+        self.blocked_groups = set()
 
     boundary = None
 
@@ -1074,7 +1121,7 @@ class Workers:
             self.resources = SuiteResources.from_root(root)
         jobs = {name: dict(job) for name, job in jobs.items()}
         self.jobs.update(jobs)
-        pending = sorted(jobs.items(), key=lambda item: -item[1].get('budget_seconds', 0))
+        pending = sorted(jobs.items(), key=job_order)
         # Validate every job before launching any, including ones behind blocked jobs.
         for _name, job in pending:
             self.resources.demand(job)
@@ -1096,13 +1143,16 @@ class Workers:
                     if on_result is not None:
                         on_result(name, superseded)
                 while pending and len(self.active) < self.parallel:
-                    index = self.resources.select(pending)
+                    pending = [(n, j) for n, j in pending if j.get('requires') not in self.blocked_groups]
+                    eligible = sorted(((n, j) for n, j in pending
+                        if 'requires' not in j or j['requires'] in self.validated_groups), key=job_order)
+                    index = self.resources.select(eligible)
                     if index is None:
                         break
-                    name, job = pending[index]
+                    name, job = eligible[index]
                     if self.admission and not self.admission.acquire(name, job, self.resources):
                         break
-                    pending.pop(index)
+                    pending.remove((name, job))
                     self.budgets[name] = job.get('budget_seconds', WORKER_BUDGET)
                     home = directory / str(self.invocations)
                     home.mkdir()
@@ -1222,6 +1272,8 @@ class Workers:
                 # Retry pending work before deciding that nobody can free capacity.
                 if pending and len(self.active) < active_before_reap:
                     continue
+                if pending and not self.active and not eligible:
+                    raise Refused('incomplete_inventory', 'pending workers have no validated controls or capacity')
                 if self.active or pending:
                     self.wait_for_progress()
             self.check()
@@ -1328,6 +1380,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     cases, reuse = [], None
     fresh, time_keys, group_for = [], {}, None
     audits, audit_keys = {}, {}
+    collect_all = os.environ.get('VELDO_GATE_COLLECT_ALL') == '1'
+    receipt['collect_all'] = collect_all
     audit_module = AUDIT or _load_audit(ROOT / 'scripts/mutation_reuse.py')
     receipt['audit'] = dict(population=[], entries=[], audited=0, matched=0, mismatched=0,
                             worker_seconds=0.0, suites={})
@@ -1485,6 +1539,18 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             members = collections.defaultdict(list)
             for case in fresh:
                 members[group_for(case)].append(case)
+            history = order_history(CASE_TIMES / 'ordering' / 'schedule.json')
+            for case in fresh:
+                identity = case['identity']
+                hint = history.get(identity, {})
+                mutant_jobs[identity].update(requires=group_for(case),
+                    last_failed=hint.get('failed', False),
+                    priority_seconds=hint.get('seconds', deadlines[identity] or 0))
+            for group, own in members.items():
+                priority = dict(last_failed=any(mutant_jobs[c['identity']]['last_failed'] for c in own),
+                    priority_seconds=max(mutant_jobs[c['identity']]['priority_seconds'] for c in own))
+                for mode in ('baseline', 'noop'):
+                    controls[group + ':' + mode].update(priority)
 
             def measured_baseline(name, completed):
                 if not completed.get('declaration_stale'):
@@ -1509,13 +1575,10 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 for case in own:
                     deadlines[case['identity']] = seconds
                     mutant_jobs[case['identity']]['budget_seconds'] = seconds
+                    workers.retarget(case['identity'], seconds)
                 workers.retarget(group + ':noop', max(deadlines[c['identity']] for c in members[group]))
 
-            control_results = workers.run(controls, directory, frozen, on_result=measured_baseline)
-            rerun = {job['case']['identity'] for name, job in controls.items()
-                     if control_results[name].get('declaration_stale')}
-            for identity in rerun:
-                mutant_jobs.pop(identity, None)
+            control_results, rerun = {}, set()
             if unmeasured.intersection(c['identity'] for c in fresh):
                 # Refresh the remaining-work estimate, for reporting only.
                 budget = min(budget, time.monotonic() - started + budget_for(
@@ -1571,6 +1634,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 except (Refused, KeyError, TypeError) as error:
                     receipt['invalid_results'].append(dict(case=case, error=getattr(error, 'code', 'driver_error'),
                                                            detail=str(error)))
+                    if not collect_all:
+                        raise Refused(getattr(error, 'code', 'driver_error'), str(error)) from error
                     return
                 # VELDO-0217 AC4: the baseline, no-op and mutant traces of a run that would publish
                 # are checked again; a non-file input in any of them keeps the case fresh, unpublished,
@@ -1588,7 +1653,58 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                                                **(dict(audited=True, reuse_key=audit_keys[identity])
                                                   if identity in audits else {})))
 
-            workers.run(mutant_jobs, directory, frozen, on_result=collect)
+            def completed_job(name, completed):
+                if name in by_identity:
+                    collect(name, completed)
+                    return
+                control_results[name] = completed
+                group, _, mode = name.rpartition(':')
+                if completed.get('declaration_stale'):
+                    rerun.update(c['identity'] for c in members[group])
+                    workers.blocked_groups.add(group)
+                    return
+                measured_baseline(name, completed)
+                try:
+                    observation = completed['result']['observation']
+                    rows = observations(observation)
+                    if (not all(ok is True for _, ok in rows) or any(observation.get(k)
+                            for k in ('watchdog_fired', 'hung_rows', 'not_run_rows'))):
+                        raise Refused('control_failed', name + ': invalid control observation: '
+                                      + json.dumps(observation, sort_keys=True))
+                    pair = [control_results.get(group + ':' + m) for m in ('baseline', 'noop')]
+                    if all(pair) and group not in workers.blocked_groups:
+                        if observations(pair[0]['result']['observation']) != observations(pair[1]['result']['observation']):
+                            raise Refused('control_failed', group + ': baseline/no-op disagreement')
+                        for case in members[group]:
+                            for label in case['rows']:
+                                if [ok for n, ok in rows if n.split()[-1] == label] != [True]:
+                                    raise Refused('missing_target', group + ': ' + label)
+                        workers.validated_groups.add(group)
+                except (Refused, KeyError, TypeError, ValueError) as error:
+                    workers.blocked_groups.add(group)
+                    code = getattr(error, 'code', 'driver_error')
+                    for case in members[group]:
+                        identity = case['identity']
+                        if identity in audits and not any(e['identity'] == identity for e in receipt['audit']['entries']):
+                            # An invalid audited control revokes reuse immediately. Keep only
+                            # observations actually received; no mutant ran for this group.
+                            observed = {m: control_results[group + ':' + m]['result'].get('observation')
+                                        for m in ('baseline', 'noop') if group + ':' + m in control_results}
+                            differences = {m: dict(reused=audits[identity][m], fresh=value, verdict=True)
+                                           for m, value in observed.items() if audits[identity][m] != value}
+                            partial = dict(case=case, **observed)
+                            receipt['audit']['entries'].append(dict(identity=identity, key=audit_keys[identity],
+                                result_digest=reuse.authenticated_digests[identity], fresh_record=partial,
+                                fresh_digest=audit_module.R.E.digest(partial), differences=differences,
+                                matched=False, incomplete=True, error=code))
+                            reuse.store.invalidate(audit_keys[identity])
+                            reuse.mark_stale(case, 'invalid_audit_control: ' + str(error))
+                    receipt['invalid_results'].extend(dict(case=c, error=code, detail=str(error))
+                                                       for c in members[group])
+                    if not collect_all:
+                        raise Refused(code, str(error)) from error
+
+            workers.run({**controls, **mutant_jobs}, directory, frozen, on_result=completed_job)
             if rerun:
                 # Every stale attempt loses all three observations. Its own controls and mutant
                 # run in the full frozen input tree, with ordinary fresh worker confinement.
@@ -1596,14 +1712,25 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 rerun_controls = control_jobs(again, group_for, {}, planned, claims)
                 rerun_mutants = {c['identity']: {'case': c, 'mode': 'mutant',
                     'budget_seconds': planned[c['identity']],
+                    'requires': group_for(c),
+                    'last_failed': mutant_jobs[c['identity']]['last_failed'],
+                    'priority_seconds': mutant_jobs[c['identity']]['priority_seconds'],
                     **({'claim': claims[c['identity']]} if claims is not None else {})} for c in again}
                 # A stale snapshot is not a timing sample for its full-tree replacement.
                 budget = max(budget, time.monotonic() - started + budget_for(
                     len(again), workers.parallel, [rerun_controls.values(), rerun_mutants.values()],
                     workers.resources, floor=admission.floor if admission else None))
                 receipt['estimate_seconds'] = budget
-                control_results.update(workers.run(rerun_controls, directory, frozen, on_result=measured_baseline))
-                workers.run(rerun_mutants, directory, frozen, on_result=collect)
+                for c in again:
+                    group = group_for(c)
+                    workers.blocked_groups.discard(group)
+                    workers.validated_groups.discard(group)
+                    for mode in ('baseline', 'noop'):
+                        control_results.pop(group + ':' + mode, None)
+                        rerun_controls[group + ':' + mode].update(
+                            last_failed=mutant_jobs[c['identity']]['last_failed'],
+                            priority_seconds=mutant_jobs[c['identity']]['priority_seconds'])
+                workers.run({**rerun_controls, **rerun_mutants}, directory, frozen, on_result=completed_job)
             if receipt['invalid_results']:
                 first = receipt['invalid_results'][0]
                 raise Refused(first['error'], first['detail'])
@@ -1716,6 +1843,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         receipt['parallel_workers'] = workers.parallel
         receipt['worker_invocations'] = workers.invocations
         receipt['elapsed'] = time.monotonic() - started
+        record_order_history(receipt, fresh, group_for, authority=measure,
+                             path=CASE_TIMES / 'ordering' / 'schedule.json')
     return receipt
 
 

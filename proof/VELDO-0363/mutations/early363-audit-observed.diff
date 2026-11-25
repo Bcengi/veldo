@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1692 +1692 @@
+-                                        for m in ('baseline', 'noop') if group + ':' + m in control_results}
++                                        for m in ('baseline', 'noop') if False}
