@@ -93,6 +93,8 @@ def _v204_mutation_receipts():
                 raise RuntimeError('planted unit still active')
             return dict(units=[], directories=0)
         real_load = gate.load
+        # Only ledger cleanup is controlled; private scratch uses the real remover.
+        remove_tree = real_load(ROOT / 'scripts/mutation_ownership.py').remove_tree
         with tempfile.TemporaryDirectory(prefix='v204-receipts-') as directory:
             root = Path(directory)
             def snapshot(_root, _common, frozen, *_args):
@@ -112,7 +114,8 @@ def _v204_mutation_receipts():
                     # so every one is a fresh miss and no cache is opened. The real launcher names
                     # the marker each worker is handed (VELDO-0210 AC7).
                     'load': lambda path: (real_load(path) if Path(path).name in ('case_reuse.py', 'agent_sandbox.py') else
-                                          types.SimpleNamespace(cleanup=cleanup, mutate=teeth.mutate)),
+                                          types.SimpleNamespace(cleanup=cleanup, mutate=teeth.mutate,
+                                              remove_tree=remove_tree)),
                 }
                 for key, value in overrides.items():
                     stack.enter_context(patch.object(gate, key, value))

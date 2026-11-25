@@ -31,6 +31,7 @@ def _v215_case_deadlines():
         spec.loader.exec_module(gate)
         # A mutant is loaded from a scratch path; its authority still has the real helpers.
         gate.ROOT = ROOT
+        remove_tree = gate.load(ROOT / 'scripts/mutation_ownership.py').remove_tree
         case = dict(identity='check_teeth_mutations.py:sample', name='sample', finding=215,
                     driver=gate.DRIVERS[0], suite='sample.py', module='sample.py',
                     rows=['target'], old='before', new='after')
@@ -191,7 +192,8 @@ def _v215_case_deadlines():
                 if Path(p).name == 'case_reuse.py':
                     return types.SimpleNamespace(Session=Session)
                 if Path(p).name == 'mutation_ownership.py':
-                    return types.SimpleNamespace(cleanup=lambda home, ledger: cleaned.append(str(home)))
+                    return types.SimpleNamespace(cleanup=lambda home, ledger: cleaned.append(str(home)),
+                                                 remove_tree=remove_tree)
                 return real_load(p)
             real_deadlines, real_record = gate.case_deadlines, gate.record_case_times
             with contextlib.ExitStack() as stack:
@@ -368,7 +370,7 @@ def _v215_case_deadlines():
             return real_popen([sys.executable, '-X', 'faulthandler', str(blocked_script)], **kwargs)
         def loader(p):
             if Path(p).name == 'mutation_ownership.py':
-                return types.SimpleNamespace(cleanup=lambda *a: {})
+                return types.SimpleNamespace(cleanup=lambda *a: {}, remove_tree=remove_tree)
             return real_load(p)
         error = None
         with patch.object(gate.subprocess, 'Popen', launch), patch.object(gate, 'load', loader), \
