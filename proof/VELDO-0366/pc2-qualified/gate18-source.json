@@ -1,0 +1,23 @@
+{
+  "gate": 18,
+  "commit": "95851131e2e33964a5e9a3194062b046e5668786",
+  "source": "/home/dmitry/projects/myday/research/gate-stamps/cand-1122-95851131e-verify.log",
+  "log_snapshot_sha256": "f513d1493795c2fe7435210bf494525543756ba9c5401de0baa9b000d4b419f4",
+  "log_snapshot_bytes": 7663348,
+  "status": "running; selected completed worker outputs only",
+  "selected_workers": 136,
+  "available_workers": 134,
+  "missing": [
+    [
+      "check_review_mutations.py:14",
+      "grant count",
+      0
+    ],
+    [
+      "check_review_mutations.py:17",
+      "grant count",
+      0
+    ]
+  ],
+  "grant_index_basis": "zero-based coordinator launch order; matched case identity or suite/module control group; mutation digests independently checked by comparison"
+}

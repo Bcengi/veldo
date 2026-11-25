@@ -1,0 +1,34 @@
+{
+  "case": {
+    "driver": "check_teeth_mutations.py",
+    "finding": 27,
+    "identity": "check_teeth_mutations.py:signing-truncated-clock",
+    "module": "control_keys.py",
+    "name": "signing-truncated-clock",
+    "new": "    at, kid = int(time.time()), params['key_id']",
+    "old": "    at, kid = time.time(), params['key_id']",
+    "rows": [
+      "signing/transition-clock"
+    ],
+    "suite": "56_veldo_0027_signing.py"
+  },
+  "pc2_commit": "925f162e81ae647c74d5e10b020778b655b8d60b",
+  "gate18_commit": "95851131e2e33964a5e9a3194062b046e5668786",
+  "differences": [
+    {
+      "mode": "mutant",
+      "gate18": [
+        "VELDO-0027 signing/rotation-race",
+        true
+      ],
+      "pc2": [
+        "VELDO-0027 signing/rotation-race",
+        false
+      ]
+    }
+  ],
+  "source_sha256": {
+    "pc2": "b51f9ce40bf1ec18304abb96eb956dbdb66640e379eda79d1d8a75c3a0b654a1",
+    "gate18": "1533419561e2b9727aef533796d2793b11aa2b73d53faafaf34fcd84adaa2d8a"
+  }
+}

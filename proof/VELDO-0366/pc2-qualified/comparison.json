@@ -1,0 +1,1742 @@
+{
+  "gate15": {
+    "passed": true,
+    "checks": {
+      "complete": true,
+      "fresh": true,
+      "clean": true,
+      "validated": true,
+      "verdicts": true
+    },
+    "cases": 100,
+    "elapsed": 283.2226897480432,
+    "workers": 136,
+    "peak_workers": 7,
+    "ledger": {
+      "capacity": {
+        "cpu": 8.0,
+        "manager": 16,
+        "memory": 16106127360
+      },
+      "floor": {
+        "cpu": 8.0,
+        "memory": 9663676416
+      },
+      "held": {},
+      "peak": {
+        "cpu": 7.25,
+        "manager": 0,
+        "memory": 7784628224
+      }
+    },
+    "input_digest": "dea07d8ce2ed32355f9bef2e94c246c0785259ee920ff75a605adcd263f1be96",
+    "implementation_digest": "3b9763a2465cf3b2d6e88bd5681c01dae0fc520aa68f09508338127cc958c221"
+  },
+  "gate18": {
+    "compared": 98,
+    "pending": [
+      "14",
+      "17"
+    ]
+  },
+  "cases": [
+    {
+      "name": "command-only",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-schema",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-workspace",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-domain_uuid",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-store_uuid",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-command",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-repository_uuid",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-repository_root_commit",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-clone_uuid",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-binding_digest",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-authority_generation",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "unsigned-request-field",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signed-nonrequest-field",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "dead-socket-success",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-folded-block",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-recursive-pair",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-duplicate-key",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-tab-edit",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "omit-oracle-observation",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "oracle-runtime-error",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "delegate-oracle-to-reader",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "absence-counts-as-agreement",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "delegate-oracle-to-front-matter",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "broken-dependency-counts-as-absence",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reader-strip-quoted-hash",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reader-coerce-leading-zero",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reader-overwrite-duplicate",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reader-accept-unclosed-flow",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reader-unavailable-counts-as-compared",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reader-omit-from-required-domain",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-prelock-clock",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-truncated-clock",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": false,
+        "differing_modes": [
+          "mutant"
+        ]
+      }
+    },
+    {
+      "name": "signing-remove-channel-restriction",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-permit-foreign-channel",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-request-channel",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "policy-strip-quoted-hash",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "policy-coerce-leading-zero",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "policy-shape-becomes-absent",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "policy-syntax-becomes-absent",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "policy-absent-oracle-qualifies",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "policy-omit-required-result",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-request-key-channel",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-request-key",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-ignore-key-crosscheck",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-text-without-identity",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-text-substitutes-identity",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-branch-preflight-bypass",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-branch-projection-authority",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-ignore-personal-content",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-ignore-personal-ruling",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-bind-only-original-fields",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-default-missing-personal-fields",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-ignore-selected-key-binding",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-retired-key-inherits-grant",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-leak-source-before-auth",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-leak-revision-before-auth",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-ignore-envelope-problems",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-ignore-envelope-expiry",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-copy-envelope-coordinates",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "signing-ignore-coordinate-problems",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-final-reuses-partial",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-report-before-enforcement",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-final-forgets-reservation",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-report-error-keeps-worker",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-active-ignores-wall-cap",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-active-skips-project-cap",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-extra-slot",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-check-outside-transaction",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-follow-on-after-launch",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-retry-after-launch",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-ignore-capacity-and-count",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-ignore-ceiling",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-ignore-collections",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-project-only",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-checkout-bytes",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-ignore-wall-time",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-head-bytes",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-ignore-window",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-duplicate-settlement",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-double-reported-usage",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-timeout-frees-exposure",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-cancel-frees-exposure",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-parent-exit-releases-slot",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "reservation-ignore-cleanup",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-working-status",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-wrong-watermark",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-unguarded-connection",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-deferred-transaction",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-allow-path-ancestors",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-check-only-direct-parent",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-skip-empty-commit-validation",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "snapshot-accept-noncommit-id",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "claims-ownership-without-unit",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "claims-ownership-without-backlog",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "claims-ignore-use-generation",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "claims-ignore-use-holder",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "claims-uncertainty-as-contention",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "claims-detector-as-owned",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "compared completed workers",
+        "mutation_identity": true,
+        "controls_green": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_modes": []
+      }
+    },
+    {
+      "name": "14",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "pending gate worker",
+        "missing": [
+          "check_review_mutations.py:14"
+        ]
+      }
+    },
+    {
+      "name": "17",
+      "gate15": {
+        "exact_verdict": true,
+        "named_verdict": true,
+        "full_observations": true,
+        "differing_fields": []
+      },
+      "gate18": {
+        "status": "pending gate worker",
+        "missing": [
+          "check_review_mutations.py:17"
+        ]
+      }
+    }
+  ]
+}

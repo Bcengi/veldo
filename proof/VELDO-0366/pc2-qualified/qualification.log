@@ -1,0 +1,20 @@
+remote_run[pc2 925f162e81ae 11:13:30]: selected node pc2 (dmitry-pc2); mode=exclusive, slots=3
+remote_run[pc2 925f162e81ae 11:13:30]: note: 1 uncommitted change(s) in the worktree are NOT shipped; the node runs 925f162e81ae as committed
+remote_run[pc2 925f162e81ae 11:13:31]: bundle 72K (173 base commit(s) on the node)
+remote_run[pc2 925f162e81ae 11:13:32]: run rr20261125111330-b172 started on dmitry-pc2 (VELDO-0366: record phase 2 fix round 1 evidence); node log ~/remote-run/runs/rr20261125111330-b172/log
+[remote_run pc2 11:13:32] run rr20261125111330-b172 selected node pc2 (Linux-x86_64)
+[remote_run pc2 11:13:32] Python: the node's /usr/bin/python3 3.14.4 (no pin; uv's builds of 3.12 lack os.pidfd_open)
+[remote_run pc2 11:13:33] setup 1s; 925f162e81ae647c74d5e10b020778b655b8d60b in /home/dmitry/remote-run/runs/rr20261125111330-b172/work; python 3.14.4, node 22.22.0
+[remote_run pc2 11:13:33] command: /usr/bin/python3 -I -S scripts/qualify_mutation_host.py --receipt pc2-readiness-qualification.json 
+[remote_run pc2 11:13:33] user manager /user.slice/user-1000.slice/user@1000.service; run scope remote-run-rr20261125111330-b172.scope; bus filtered to org.freedesktop.systemd1
+qualification delegation: passed
+qualification landlock: passed
+qualification namespaces: passed
+qualification ptrace: passed
+qualification pidfds: passed
+qualification toolchain: passed
+[remote_run pc2 11:13:34] command exit 0 after 1s
+[remote_run pc2 11:13:35] run ended rc=0
+  fetch: OK pc2-readiness-qualification.json 14552
+remote_run[pc2 925f162e81ae 11:13:38]: fetched into /home/dmitry/projects/veldo-worktrees/speed-pc2/proof/VELDO-0366/pc2-qualified
+remote_run[pc2 925f162e81ae 11:13:38]: rc=0 in 8s (run rr20261125111330-b172)

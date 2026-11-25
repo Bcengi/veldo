@@ -1,0 +1,227 @@
+{
+  "aggregate_claim": {
+    "cpu": 8.0,
+    "host_lock": "shared",
+    "manager": "exclusive",
+    "memory": 9663676416,
+    "ports": []
+  },
+  "authority": {
+    "agent_sandbox.py": "9bebf4024b12c63bfdbcff0e5354e6a3b84076b1ccfe33f1342228c955bd76da",
+    "case_inputs.py": "70f40b2a17536d1754b80b2ca24e8f85c803a3328a33ed433c2725d3382ac345",
+    "case_reuse.py": "83a817a32352a8e571921859cea301802d426b65e0e71d1979472fe54aa25c36",
+    "case_trace.py": "5a4dc8636b2e8b716df841389837d996f975cc29df15e9f36ce87e3d30b6fa14",
+    "check_first_use.py": "26e84d9d8a89efc1fcbf8d10b3479b7d19ab1b7340fe141922278bd78d6eb957",
+    "check_gate_mutations.py": "3b9763a2465cf3b2d6e88bd5681c01dae0fc520aa68f09508338127cc958c221",
+    "check_git_boundary.py": "1858e13d524303fc5ded44b29e5f2c2c888a03d5dba5603c95f5fbe15584c93a",
+    "check_install_and_run.py": "c94a42e7c31cf1db412670dfab76f714b30acc9dd69918bc8e137b3246525015",
+    "check_pack_drift.py": "8ceebe2a208148e59ac735c840fab99b0fae23d7408adfe0adfbc6be41f9f72c",
+    "check_parser_boundary.py": "58806338267b7853cc4b74f89d0d4f71e319cadcd87ebc72085af9b0ee4dd207",
+    "check_personal_setup.py": "78653ae8740449cf9ca3713b8e8778de381c20f9b7b285d5647e6979d0a253a3",
+    "check_review_mutations.py": "35814575f7e922a0cb6eb22c6da8affcfe6d1b74dee523013fba2737d80af823",
+    "check_runner_catalog.py": "8cee8f056e260a0f10f38541f3d4d96f8fa6c1e72199ac4ac642589b706815f4",
+    "check_space_boundary.py": "e758fa9f739cb49735fd8f3f90efb14c422a488831e16deaa2ff55c494821271",
+    "check_teeth_mutations.py": "df8cb1d5009daaad2f93c65b022e0ea546ea1c4a22d73ad891744d760d220b9b",
+    "check_wallclock.py": "ee6e4d7ac39c5dd1356e13a0047424395f1817c337cd839ae986d2b54060e03d",
+    "check_writer_boundary.py": "ff0eb4a2e3ffac6a80ef557a4a04a64f9781d19d5ae0a2d60a4d7ffdbeb3b9ba",
+    "drive.py": "024888684db0a95b29ed78b7ac011a562d4e714e5cac45a75510298bd55ffbd5",
+    "engine_census.py": "a3aaecd575e3e7efffe16e8879a69ea5b8736cd36ae96cac124d53fd7aed154d",
+    "gate_candidate.py": "8a861371ed8a834e1cb7adaea886d939a1e9ad5bdc8b11b0f8de8cd001113e01",
+    "gate_fixtures.py": "fb09ecc6676d1686b07f9a3fabf67e7ab3c2c9b54d7036124bd3807ea1f53334",
+    "gate_host.py": "290d61883297d190be9fb3b21b8192872e02633e74b0340505c87a5ca9a5f599",
+    "gate_legs.py": "cd19dd77013cb02bd1c8016d9b7576abb4a93d6e18d51d01cdf79246c70ca29c",
+    "gate_load.py": "5432e7ed53af35991797dd3d0ee23dfab1e2fcebe2097996cbb3a2e28e59786f",
+    "gate_reuse.py": "e7956d960ab522ae06ca6c1723c6a2354a7049ee8628e2c27b3e86366c7b5328",
+    "gate_schedule.py": "64db9264e5602514b72d08696e1e0cc1e308197fb4855d0b766b4ca0b803a66d",
+    "gate_space.py": "8ac5573f52b2b7f80f0d507235ecfea2f29970b9039c1795999ee40db2bedcb5",
+    "migrate_to_veldo.py": "2f7441949f4266ee070298e19b1bb72c92cef6d193f4d7a4c45bc6404df97234",
+    "mutation_observer.py": "a274ce6107df8f2206025b6465dc1ef6624b8f7ab0bc7aa812fedf7142ce9483",
+    "mutation_ownership.py": "d9caab9133a315048c3da0e6fdc3a841b181a8d9c6b7613eac65d52c153ecc50",
+    "mutation_reuse.py": "47c16b785b77f22e1dd3fb8c6f03994166d378698e39f36de3adf754a979b772",
+    "mutation_sandbox.py": "26df41ada9dfa081f294596a319f08690133a9342d71327bd8fc377d3700a05c",
+    "mutation_shards.py": "b79fcff494e8265f1a95d76a6a7c0f5073fe91807cc4e04e7636bc2e0b468524",
+    "mutation_transport.py": "2bcc70fd0783508a152c8f89f2e8c658470dd5dd8eb17fb5f96b28d5137fbe25",
+    "parser_corpus_audit.py": "3178cde19c5e9e636d123d0f2f8166f8b4c0817d47de37d50759ee8f5d440af8",
+    "propose_case_inputs.py": "6bb6d658508d412f07787f9376ea2595a4f40397eb10a55ac1117dab7459d849",
+    "publish.py": "23c37b5e69a174d40561276fbdb9820ace8d6933b254d3f492a07ac74a939370",
+    "qualify_mutation_host.py": "58a0b65c9021772b27b69f14e5274fac6e0608fb8ad6d7e83b965a62f8469e78",
+    "rename_migration.py": "28221780e24eb97d05b7e621c5f7a88ad03c9aec998f7277888a8fee909a9bbd",
+    "render_pdfs.py": "1b318030e2f4fca76e0213867ab213519bf150a600f57873dc02e04ff7b4779f",
+    "reuse_stamp.py": "7de6972ccf48c95f70c18fc0647c54c89a2c59e2bba02a172c972876f7e252f8",
+    "reuse_worker.py": "8d576f496daa121d9bdf5c56f6a79afb1528f246ed166b1715bb53cfb9c0d680",
+    "run_scope.py": "d14195dda2636dd6d08d94e83be238cc5ead36526ad596c141f5ef14bf058a17",
+    "secret_inventory.py": "decb53c3c2bb123abee7f8cb8060fcea41b9beb8921a433dc88e7866e47a0f7d",
+    "selftest.py": "c6396912f82555b084bd2f4f6d26d7f12be26d4061faa2a8755d9f2e935d3694",
+    "suite_attr_check.py": "5884079646a0383bb064de36fcd7235d8e19f6f86bdb909825631113e967c4fa",
+    "suite_equiv.py": "0009924b2f369c294c234632fe839ab70695178ee3d9566000742b3dc72cbb7d",
+    "suite_extract.py": "19569c1e2bacc6ac19acb6b3f5dd96b1ba9ddcbfc9a9f6520462010b4fbf9c4c",
+    "suite_labels.py": "faa69fdb03047ddebc15bdeab6f437c721295a806a12085b253c6679195f1d94",
+    "suite_slice.py": "406054f780c394f29cd42d0ba368f76ad1da5adbc41550d65e56eceed8c05bf4",
+    "suite_survey.py": "ae288561577e372a4729d9a5e8c78210fa51636d7eea521fa3cb4d843f4b6fa7",
+    "test_document_writer.py": "048c9c08e4bb355bddcf164be5d7b4f95abd4af747c4975875e497898a86db27",
+    "test_memory_store_events.py": "2447491e5d30587bde8db883389db5c214d77019d05e64220c2bff7cd4795017",
+    "test_mutation_materialize.py": "0e77f28e827f170652bd44ba51cff5a25d8fa9f8f0db83c09d68bcb9b2c84405",
+    "test_yamlish.py": "6bffa773ec8f8731c5a5f022b6665e5f06cfb6b9acd71bfebccc801d62729bf9",
+    "update_index.py": "17fefb59a1a2e9e10abe8b0943c8e725d3f9e9e0ef8e55fd695f5e5fdb1a7334",
+    "writer_corpus_audit.py": "ce3fcd409812d6d44481853e6dd01983e6460356352fa6fb4628c271a25c3f09"
+  },
+  "capacity": {
+    "cpu": 8.0,
+    "manager": 16,
+    "memory": 16106127360
+  },
+  "checks": {
+    "delegation": {
+      "evidence": {
+        "cleaned": true,
+        "controllers": [
+          "cpu",
+          "memory",
+          "pids"
+        ],
+        "measurement": {
+          "cgroups": [
+            "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-4102680-cdf0cdfe.scope/worker-4102680-qualification"
+          ],
+          "cpu_seconds": 0.005083,
+          "metrics_source": "cgroup-v2-anon-sampled-20ms-with-final-unit-accounting",
+          "peak_anon_bytes": 8396800,
+          "peak_memory_bytes": 8396800
+        }
+      },
+      "passed": true
+    },
+    "landlock": {
+      "evidence": "confined interpreter started\nallow-read-write deny-read-write",
+      "passed": true
+    },
+    "namespaces": {
+      "evidence": "PASS namespace-as-the-helper-must-make-it: PID 1, read-only procfs, identity map, no capability, no_new_privs, label veldo-userns-child (enforce)\nPASS bounding-set-empty: CapBnd 0000000000000000\nPASS securebits-locked: securebits 0xef\nPASS sethostname-refused: EPERM\nPASS interface-up-refused: EPERM\nPASS uts-namespace-refused: EPERM\nPASS user-namespace-refused: EACCES\nPASS sethostname-in-new-namespaces-refused: EACCES\nPASS interface-up-in-new-namespaces-refused: EACCES\nPASS executed-sethostname-refused: unshare: unshare failed: Permission denied\nPASS executed-interface-up-refused: unshare: unshare failed: Permission denied\nPASS helper-process-holds-no-capability: every set empty\nPASS helper-exit-status: exit 0 \nPASS launch-starts: exit 0 pts/agent_sandbox.py:80: DeprecationWarning: Due to '_pack_', the 'Beneath' Structure will use memory layout compatible with MSVC (Windows). If this is intended, set _layout_ to 'ms'. The implicit default is deprecated and slated to become an error in Python 3.19.\n  class Beneath(ctypes.Structure):\n\nPASS launch-sees-only-its-tree: [1, 2]\nPASS launch-holds-no-capability: {'CapInh': '0000000000000000', 'CapPrm': '0000000000000000', 'CapEff': '0000000000000000', 'CapBnd': '0000000000000000', 'CapAmb': '0000000000000000', 'NoNewPrivs': '1'}\nPASS launch-securebits-locked: 239\nPASS launch-runs-under-the-child-profile: veldo-userns-child (enforce)\nPASS launch-cannot-create-a-user-namespace: EACCES\nPASS launch-carries-the-launchers-marker: True\nveldo-userns self-test: 20 passed, 0 failed",
+      "passed": true
+    },
+    "pidfds": {
+      "evidence": {
+        "exited_readable": true,
+        "live_unreadable": true
+      },
+      "passed": true
+    },
+    "ptrace": {
+      "evidence": {
+        "observed_read": true,
+        "trace_sha256": "6f5f5c263647453a11064e6a8d8c695d89daca073756f5f02ee6627730ffa86d"
+      },
+      "passed": true
+    },
+    "toolchain": {
+      "evidence": {
+        "missing": [],
+        "runtime": {
+          "cache_tag": "cpython-314",
+          "environment": "06cf4fd6fd0bd3b246e010ca9360c4ca006cdfe1593290c9b9c1f52844da4947",
+          "executable": "/usr/bin/python3.14",
+          "implementation": "cpython",
+          "platform": [
+            "Linux",
+            "dmitry-pc2",
+            "7.0.0-43-generic",
+            "#43-Ubuntu SMP PREEMPT_DYNAMIC Fri Oct 23 13:25:25 UTC 2026",
+            "x86_64",
+            ""
+          ],
+          "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+          "trees": {
+            "/usr/bin/busctl": "97687a2199fbc5555877c1bdf1958488c09620d8bdc37c5f8dba8efab37c5580",
+            "/usr/bin/dash": "f5ab55b482d80792040fa701b62c12b78cb4f343770aa546f3a855c71dcbdc52",
+            "/usr/bin/git": "3aa1c3a10747fd222bb504db6a8bed9120a8ab737e9b0cd0e58aa15bc4760ad2",
+            "/usr/bin/node": "28891053581a61bad9e88719bbdea6c2fbcd14a09ca930798ca5f9a779fb9d09",
+            "/usr/bin/python3.14": "9651112fcc7d07e9f3aca50bae020780a7fe83af85a524662a084c4629dbf93e",
+            "/usr/bin/ssh-keygen": "3d1ade6e90580eec274b210933e292612220fc271cb63c2b540da6c3222f4911",
+            "/usr/bin/strace": "4836af058cf8591a77d106fc30416545e573221904fa380f8481c5ae80782514",
+            "/usr/bin/systemctl": "4b384a15b92b5095a1e352e6300674eefa77a9883aae883352cd79ba307fe531",
+            "/usr/lib/python3.14": "2dd86aafa211c0f1cbb3ab3688dd7544683a05e5b7860aa97a977fc5a1727cae",
+            "/usr/lib/python3.14/lib-dynload/_bz2.cpython-314-x86_64-linux-gnu.so": "6a7c2f41521038e96e2c02ea907cc4deffa365a7ea03d8247653a1dd141057be",
+            "/usr/lib/python3.14/lib-dynload/_ctypes.cpython-314-x86_64-linux-gnu.so": "c8a121d697bdb1fbff8a5de5c5fb2847f5307f28fb39a84034497a8c4dbf4ba4",
+            "/usr/lib/python3.14/lib-dynload/_hashlib.cpython-314-x86_64-linux-gnu.so": "7c82dbe8d0c899025c27f4f78117c153242ddec9880234dda2ae2a01548946dd",
+            "/usr/lib/python3.14/lib-dynload/_hmac.cpython-314-x86_64-linux-gnu.so": "2d134382f24ec9d1de6963a3bc095877d53e1bc29bdb19aa8cacce5348043c87",
+            "/usr/lib/python3.14/lib-dynload/_lzma.cpython-314-x86_64-linux-gnu.so": "8d443ff6d15e9645587991e28647fa32bab73a88fb889585db6a453735bf4331",
+            "/usr/lib/python3.14/lib-dynload/_zstd.cpython-314-x86_64-linux-gnu.so": "383cd131d249dd3045ee83bed5a9ea54f48ef60ccab7a5455f4b845d770c3b77",
+            "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": "ef1d742e2d26b4eee834e5f8ee97688edb53ac63af7e709f34b7e947529e9402",
+            "/usr/lib/x86_64-linux-gnu/libbz2.so.1.0.4": "51f0059d729f704816055a38912679e2eb86ac0b217416ce6c98f0b031a411f6",
+            "/usr/lib/x86_64-linux-gnu/libc.so.6": "7ee984ec37f0a02b978678c1c719dadce96f7f8a8d48d468f8689bb14b670c8f",
+            "/usr/lib/x86_64-linux-gnu/libcrypto.so.3": "ec502f6e550fa35739004c36455b6a53a3480c5aeb876b70a67509eb1a04ba7d",
+            "/usr/lib/x86_64-linux-gnu/libexpat.so.1.11.2": "6d2d53b4f5121717af7c8109fbe79e52fe80891375a56294955c61e8f95da87d",
+            "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0": "aa3b5599974a4c15afbfa48240e26eafa3c0468a855ee15eedbdc6df283cd09c",
+            "/usr/lib/x86_64-linux-gnu/liblzma.so.5.8.3": "28ca72436497f31476d77f5c50c25fcc4bfcd90b6c69d5648048834d3dfe910b",
+            "/usr/lib/x86_64-linux-gnu/libm.so.6": "00864e2d6f1a1ff47b1a22d644c3293edaec7353aeeb61b55fa9ce9c1ce733c9",
+            "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1": "0fc39a4fe25692d8dd8abb9da6a5cd075e1903c353119526eb8bb881b9f39f78",
+            "/usr/lib/x86_64-linux-gnu/libzstd.so.1.5.7": "795c74c295256f3d6bd518cb3abb386dff6be21b7e8d4131f502b211d998c4a0",
+            "/usr/local/lib/veldo/veldo-userns": "918edeec281621d6d64a4e40634f6b20cbd0eef6cbe465f6572317f84fa19368",
+            "/usr/share/nodejs/npm/bin/npm-cli.js": "c4217950f3953bf937bff2eac7dbb87121abde1e210dc5955dbcd6e9e69c0ca8"
+          }
+        },
+        "tools": {
+          "busctl": {
+            "path": "/usr/bin/busctl",
+            "sha256": "df6999b51c9f774e871065ff8e7884cd1c72a3ff6b85418fe4269734f93fd60a"
+          },
+          "git": {
+            "path": "/usr/bin/git",
+            "sha256": "ed8b2df973b28c0fb773b9c0dc0816d3ee2b3835bb932d9153c21417bb51b362"
+          },
+          "node": {
+            "path": "/usr/bin/node",
+            "sha256": "d0efb6fcb9d023ba4e2b160ec2384dc28fe4f17732141ef47f676828fa960505"
+          },
+          "npm": {
+            "path": "/usr/share/nodejs/npm/bin/npm-cli.js",
+            "sha256": "8e5f6f3429f8cdbe693cdc29904e9d5a7b127a494bd15c804bd54c7403bfcbe7"
+          },
+          "sh": {
+            "path": "/usr/bin/dash",
+            "sha256": "c626229526bb58ec2d0f585f3c3ae1412e6f973b4353385042d11c38d8426917"
+          },
+          "ssh-keygen": {
+            "path": "/usr/bin/ssh-keygen",
+            "sha256": "2dd834413c9d3f4c0e3535b9fcf2e96e14c11f3d36fd23b6c5fc24e50411d051"
+          },
+          "strace": {
+            "path": "/usr/bin/strace",
+            "sha256": "f47342683309e807bca57d6d89b82f94a9b39aa614e9c28c2b67cefbc35eee58"
+          },
+          "systemctl": {
+            "path": "/usr/bin/systemctl",
+            "sha256": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082"
+          }
+        },
+        "worker_path": "/usr/bin:/bin"
+      },
+      "passed": true
+    }
+  },
+  "configured_floor": {
+    "cpu": 11,
+    "memory": 9663676416
+  },
+  "effective_floor": {
+    "cpu": 8.0,
+    "memory": 9663676416
+  },
+  "host": "dmitry-pc2",
+  "kernel": [
+    "Linux",
+    "dmitry-pc2",
+    "7.0.0-43-generic",
+    "#43-Ubuntu SMP PREEMPT_DYNAMIC Fri Oct 23 13:25:25 UTC 2026",
+    "x86_64",
+    ""
+  ],
+  "schema": "veldo.mutation-host-qualification/v1",
+  "scope": "/user.slice/user-1000.slice/user@1000.service/app.slice/veldo-gate-4102680-cdf0cdfe.scope",
+  "scope_counters": {
+    "cpu.stat": "usage_usec 776038\nuser_usec 633664\nsystem_usec 142374\nnice_usec 632000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+    "memory.peak": "60342272\n"
+  },
+  "status": "passed"
+}
