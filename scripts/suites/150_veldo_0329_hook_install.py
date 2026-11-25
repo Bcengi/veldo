@@ -933,7 +933,7 @@ time.sleep(60)
                   installed.get('ok') is True and changed.returncode == 0 and 0.5 < ref_took < 12
                   and ref_inputs == [expected_input]
                   and owner_lines == expected_input)
-            check(row, 'after the ref hook returns its CLI and descendant have ended',
+            check(row, 'after the ref hook returns its CLI and descendant have ended: ' + repr(recorded_pids()),
                   len(recorded_pids()) == 2 and ended(recorded_pids()))
             # Exercise the other invocation arm too: no installation configured, then a checkout.
             git(deadline, 'config', '--unset', 'veldo.space.installation')

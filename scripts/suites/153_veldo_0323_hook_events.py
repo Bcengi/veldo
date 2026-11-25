@@ -624,8 +624,7 @@ def _v323_suite():
             client, process, again, again_path = client_session('client-alive-restart')
             clients.append(client)
             early = event('session_ended', dict(session='client-alive-restart', cwd=str(base), **process))
-            for descriptor in list(service.space_consumer.watched):
-                os.close(descriptor)
+            # Rewiring retires the old consumer and closes its watched descriptors.
             service.space = service.space
             service.space_worker_start()
             drain()

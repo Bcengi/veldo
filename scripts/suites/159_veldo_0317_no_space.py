@@ -323,6 +323,8 @@ def _v317_suite():
                         signal = load('control_space_signal')
                         result = signal.signal(f.ledger, 'reconnect', {}, **{key: value for key, value in f.space.items()
                                                if key != 'ledger'})
+                        if not result['ok']:
+                            print('space317 reconnect', mode, result)
                         check('ac3/reconnect', result['ok'] and (work / 'unfinished.txt').read_text() == 'unique uncommitted work')
                         launch, out = rerun(f, rec)
                         if mode == 'act':

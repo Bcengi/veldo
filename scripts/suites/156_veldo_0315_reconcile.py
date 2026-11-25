@@ -41,7 +41,7 @@ def _v315_suite():
         spec.loader.exec_module(module)
         return module
 
-    with tempfile.TemporaryDirectory(prefix='veldo-0315-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='r315-') as temporary:
         base = Path(temporary).resolve()
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
@@ -228,7 +228,7 @@ def _v315_suite():
         def case(name, body):
             rows.setdefault(name, [])
             try:
-                fixture = Fixture(name.replace('/', '-'))
+                fixture = Fixture('%02d' % len(fixtures))
                 fixtures.append(fixture)
                 body(fixture, name)
             except Exception:
