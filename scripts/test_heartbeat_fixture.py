@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +21,7 @@ def load(path):
 WAITS = load(ROOT / 'scripts/suites/support/waits.py')
 CLOCK = load(ROOT / 'scripts/fixtures/heartbeat_clock.py')
 HB = load(ROOT / '.veldo/control_heartbeat.py')
+ALLOCATOR = load(ROOT / 'scripts/gate_fixtures.py')
 
 
 class HeartbeatFixture(unittest.TestCase):
@@ -32,7 +32,7 @@ class HeartbeatFixture(unittest.TestCase):
         engine = next(n.args[0].right.value for n in ast.walk(tree) if isinstance(n, ast.Call)
                       and isinstance(n.func, ast.Attribute) and isinstance(n.func.value, ast.Name)
                       and n.func.value.id == 'engine' and n.func.attr == 'write_text')
-        with tempfile.TemporaryDirectory() as folder:
+        with ALLOCATOR.directory() as folder:
             directory = Path(folder)
             source = eval(compile(ast.Expression(common), 'common', 'eval'),
                           {'mods': ROOT / 'scripts/fixtures'}) + engine
@@ -128,7 +128,7 @@ class HeartbeatFixture(unittest.TestCase):
                 pass
 
     def test_snapshot_reports_decision_sample_even_if_clock_advanced_before_publication(self):
-        with tempfile.TemporaryDirectory() as folder:
+        with ALLOCATOR.directory() as folder:
             directory = Path(folder)
             CLOCK.write(directory / 'now', 100)
             clock = CLOCK.Clock(directory)
@@ -138,7 +138,7 @@ class HeartbeatFixture(unittest.TestCase):
             self.assertEqual(CLOCK.read(directory / 'receiver')['now'], 100)
 
     def test_clock_wakes_poll_without_advancing_from_scheduling(self):
-        with tempfile.TemporaryDirectory() as folder:
+        with ALLOCATOR.directory() as folder:
             directory = Path(folder)
             CLOCK.write(directory / 'now', 100)
             os.mkfifo(directory / 'sender')

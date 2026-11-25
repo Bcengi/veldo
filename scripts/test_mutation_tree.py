@@ -6,13 +6,15 @@ import os
 from pathlib import Path
 import signal
 import sys
-import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('mutation_tree_observer', ROOT / 'scripts/mutation_observer.py')
 OBSERVER = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(OBSERVER)
+spec = importlib.util.spec_from_file_location('gate_fixtures', ROOT / 'scripts/gate_fixtures.py')
+ALLOCATOR = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(ALLOCATOR)
 
 BOOTSTRAP = r'''
 import importlib.util, json, sys
@@ -73,7 +75,7 @@ class MutationTree(unittest.TestCase):
         self.assertEqual(libc.prctl(36, 1, 0, 0, 0), 0)
         orphan = None
         try:
-            with tempfile.TemporaryDirectory() as directory:
+            with ALLOCATOR.directory() as directory:
                 root = Path(directory)
                 suites = root / 'scripts/suites'
                 suites.mkdir(parents=True)
