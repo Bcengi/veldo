@@ -1,0 +1,112 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0363",
+  "commit": "b3be3eb52a5413d3dd275fc05168e51e533566f1",
+  "producer": "local bounded unit execution",
+  "status": "partial",
+  "scope": "Selected diagnostics and fake event replay; no full-gate or landing acceptance",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0363/replay.json",
+          "detail": "734 historical groups, 3978 validated cases; first mutant after its own pair, before unrelated controls."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0363/guards.json",
+          "detail": "Dependency, pair agreement, target presence and stale-rerun falsifiers killed at named rows."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0363/checks.json",
+          "detail": "Core and coordinator suites pass; controlled cancellation preserves receipts, closes fake cgroups and releases grants. Native suite104 attempt interrupted and excluded."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0363/guards.json",
+          "detail": "Default first-red abort, explicit collect-all, invalid-group exclusion, incomplete coverage and audit revocation retain fail-closed verdicts."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0363/guards.json",
+          "detail": "36 registered baseline/no-op/mutant controls killed at named rows; failure priority, measured tails, group priority and authority-only red-stage hints covered."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit.selected",
+      "status": "passed"
+    },
+    {
+      "name": "wallclock",
+      "status": "passed",
+      "detail": "No added sites; 2844 sites, unchanged baseline and exception files."
+    },
+    {
+      "name": "personal_setup",
+      "status": "passed",
+      "findings": 0
+    },
+    {
+      "name": "stale_mutants",
+      "status": "passed",
+      "registered": 4040,
+      "findings": 0
+    },
+    {
+      "name": "engine_sync",
+      "status": "passed"
+    },
+    {
+      "name": "gate_unconfined_unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "suite104_native",
+      "status": "not_completed",
+      "detail": "Interrupted when nested gate work was recognized; excluded from green evidence."
+    },
+    {
+      "name": "canonical_gate",
+      "status": "not_run",
+      "detail": "No direct invocation; native fixture incident recorded in README."
+    },
+    {
+      "name": "independent_review",
+      "status": "pending"
+    },
+    {
+      "name": "protected_path_approval",
+      "status": "pending"
+    }
+  ],
+  "protected_paths": [
+    "engine/scripts/check_gate_mutations.py",
+    "scripts/check_gate_mutations.py"
+  ],
+  "source_digests": {
+    "scripts/check_gate_mutations.py": "c00a5491ee7abb374b14f8066baa8207b682a09522769e04d82d9c052c6bb8f2",
+    "engine/scripts/check_gate_mutations.py": "c00a5491ee7abb374b14f8066baa8207b682a09522769e04d82d9c052c6bb8f2",
+    "scripts/check_teeth_mutations.py": "5c8b98aa3caa5d5b42e3fc29f6f77d3e7b101d1ce71ccd07ab13e50814f59b71",
+    "scripts/suites/support/v363_early.py": "d9808d91805de6a08cca8f672ebc6b0977548d80f2e4fd191f590e1b5de82e0c"
+  },
+  "rollback": "Revert implementation commit; ordering hints are disposable and authorize no verdict."
+}
