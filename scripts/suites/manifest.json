@@ -979,6 +979,14 @@
    "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py. Real SQLite store, OpenSSH command, journal, possession and edge signatures, the actual protected signer process, the VELDO-0066 Acquirer, VELDO-0065 presenter, VELDO-0126 intake and VELDO-0068 settlement over a loopback Bot API, openssl-generated ES256 and Ed25519 passkey keys, and the API served on a loopback port. Phase 3: an enrolled Git clone and host trust, control_service.install with the channel ingress and API service configurations, the installed unit's ExecStart run as the service process by a user manager stand-in of the suite's own (Type=notify on its own socket, SIGTERM on stop; the real user manager is only read by the installer's host qualification), and the API process constructed by control_client_api.open_api in the suite's process. Writes only temporary fixtures."
   },
   {
+   "name": "71_veldo_0130_api_service",
+   "file": "71_veldo_0130_api_service.py",
+   "requires": [
+    "71_veldo_0130_api_service"
+   ],
+   "requires_note": "Installed-service API checks with their own real installer and service fixture; the API protocol closure remains in 71_veldo_0130_api."
+  },
+  {
    "name": "73_veldo_0139_factory_setup",
    "file": "73_veldo_0139_factory_setup.py",
    "requires": [
@@ -1049,6 +1057,14 @@
    ],
    "regions": "Every registered subscription account at once: three Claude Code accounts and one Codex account, registered once each by the owner over profiles the local helper prepares, running concurrently through the account pool the VELDO-0036 worker reservation chooses in, each invocation on exactly its own account's profile and charged to that account, with overlapping recorded start and end times; a second registration of an account, by its id or by its login under another name, refused by name; new work moved off an account whose CLI reported its window exhausted until its reported reset, the next dispatch waiting with the earliest reset named when every account is busy or at its limit; an account registered while work runs taking the next dispatch with the preparing process and every running worker keeping its process identity and start time, and admitting one run at a time until its first observation; a run whose stream reports its window exhausted or whose engine ends with its rate-limit result classified account_limit with the window and reset recorded on the account, for Claude Code and Codex, and an ordinary nonzero exit and a 429 that is not the account's limit ending as ordinary failures; the re-run-or-ask decision over fixture records naming exactly the calls to MCP tools not marked read-only; the scaffold laying down the new modules",
    "requires_note": "Uses only shared ROOT and expect. Real SQLite store, OpenSSH journal signatures, control_accounts records registered by the owner over profiles .veldo/accounts.py prepares, VELDO-0036 reservations under their production authorization with control_account_pool choosing inside them, the VELDO-0052 Gate, VELDO-0031 claims, a Git source repository, the VELDO-0039 Runner and launch receiver processes and the trusted wrapper, with fake claude and codex executables the suite writes that print scripted lines in the CLIs' own stream formats (checked against proof/VELDO-0062/cli-formats.json); no real engine runs, no login and no credential. Worker launches use the wrapper without a containment group, so the systemd user manager is never touched. Writes only temporary fixtures."
+  },
+  {
+   "name": "78_veldo_0160_account_assets",
+   "file": "78_veldo_0160_account_assets.py",
+   "requires": [
+    "78_veldo_0160_account_assets"
+   ],
+   "requires_note": "The same scratch production modules and actual scaffold inventory; no account dispatches are needed."
   },
   {
    "name": "78_veldo_0060_claude_adapter",
@@ -1222,6 +1238,14 @@
    }
   },
   {
+   "name": "86_veldo_0127_init_bound",
+   "file": "86_veldo_0127_init_bound.py",
+   "requires": [
+    "86_veldo_0127_init_bound"
+   ],
+   "requires_note": "The no-init fault through the same real Runner and fake engine; unchanged timing assertion and bounds."
+  },
+  {
    "name": "83_veldo_0166_usage_windows",
    "file": "83_veldo_0166_usage_windows.py",
    "requires": [
@@ -1301,6 +1325,14 @@
    ],
    "regions": "veldo factory setup re-run over an installation an earlier engine laid down: the whole .veldo of 8bc34e94 and of 971186ac each set up by its own setup module on its own scratch host and upgraded in place to the current engine, the upgraded engine directory, units, record and every configuration file equal to a fresh installation's after each host's scratch root and identities are substituted, apart from the fields proof/VELDO-0189/fresh-equivalence.json lists; a current installation upgraded to a fixture engine without one module, that module gone; every captured first-parent installer from 8bc34e94 on and the current installer writing the closure and template the upgrade reads; an edited engine file, an unrecorded file and a filesystem that cannot exchange directories refused by name, writing nothing; setup SIGKILLed at every write point of its step log with a complete engine installed after each kill, the installed service answering and a second run finishing; a failed restart switched back with the service answering on the previous engine; a restart that came up on the current engine and then failed, over both older hosts, switched back with the previous engine's channel and every owned command available after the current engine's own ownership restore; a restore over a file without the previous bytes refused by name, keeping the new bindings; a committed upgrade keeping no record of previous bindings; every key, trust, binding, token, store row and owner-set configuration value kept; the plain line before the first write and the engine_upgrade step; the restart rules (once through the unit, nothing outside it, nothing when stopped); a second run writing and restarting nothing; atomic host engines record with interruption at open, partial write and rename; unreadable record repaired, different record refused before writes; consistent fresh and upgrade Codex refusal; missing pins and record reported as writes; malformed runtime inventory and receiver missing store refused by path before writes",
    "requires_note": "Uses only shared ROOT and expect. Loads scripts/suites/support/v73_authority.py for its loopback Bot API and scripts/suites/support/v171_tailscale.py for the Tailscale stand-in replaying proof/VELDO-0171/tailscale-capture.json, and reads proof/VELDO-0189/fresh-equivalence.json. Real SQLite stores, OpenSSH keys and signatures, Git clones, the older engines of commits 8bc34e94 and 971186ac and their installer census read from digest-verified committed fixtures in proof/VELDO-0189/older, with no repository history needed, the setup modules' own command surface writing only into scratch state roots, host trust paths, install roots and unit directories, the installed authority unit's ExecStart run as the service process by a user manager stand-in of the suite's own, and setup run in a process of its own that is SIGKILLed at each write point, its systemctl calls answered by that stand-in over a UNIX socket. A socket guard replaces socket.create_connection and socket.getaddrinfo for the suite's duration and refuses every connection beyond 127.0.0.1, and the same guard is armed in every process the suite starts. The host's real Tailscale and systemd are never run. Writes only temporary fixtures."
+  },
+  {
+   "name": "86_veldo_0189_engine_records",
+   "file": "86_veldo_0189_engine_records.py",
+   "requires": [
+    "86_veldo_0189_engine_records"
+   ],
+   "requires_note": "Fresh-install engine record checks, restored between cases from the real installer snapshot; older-install upgrade checks remain in 86_veldo_0189_engine_upgrade."
   },
   {
    "name": "91_veldo_0167_setup_records",
@@ -1526,6 +1558,14 @@
    }
   },
   {
+   "name": "110_veldo_0143_corrections",
+   "file": "110_veldo_0143_corrections.py",
+   "requires": [
+    "110_veldo_0143_corrections"
+   ],
+   "requires_note": "Three correction rows, using the same real common new-project fixture and local correction helpers."
+  },
+  {
    "name": "111_veldo_0214_first_use_budget",
    "file": "111_veldo_0214_first_use_budget.py",
    "requires": [
@@ -1702,6 +1742,25 @@
    }
   },
   {
+   "name": "121_veldo_0131_factory_progress",
+   "file": "121_veldo_0131_factory_progress.py",
+   "requires": [
+    "121_veldo_0131_factory_progress"
+   ],
+   "requires_note": "The existing Playwright reporter test with its event-driven fake clock; installs locked dependencies but does not build or render the UI.",
+   "resources": {
+    "ui_browser": 1
+   }
+  },
+  {
+   "name": "121_veldo_0131_factory_census",
+   "file": "121_veldo_0131_factory_census.py",
+   "requires": [
+    "121_veldo_0131_factory_census"
+   ],
+   "requires_note": "Only the wall-clock census over the existing browser and suite sources; no browser or package install."
+  },
+  {
    "name": "122_veldo_0131_factory_screens_wide",
    "file": "122_veldo_0131_factory_screens_wide.py",
    "requires": [
@@ -1721,6 +1780,17 @@
    ],
    "regions": "Eight rows (VELDO-0131, split from suite 120 by VELDO-0229): fix round 2 (review-2026-11-01): ac1/repositories, the read-only Git identities and repositories (table on a desktop, cards on a phone); ac1/every-configuration, every stored role and skill; ac1/whole-catalog, every catalog server and credential record by label, set at and set by; ac1/usage-provider, each account's provider and the provider breakdown; ac1/worker-capability, each worker's capability and the named cap gap; fix round 3 (owner, Telegram 38184): ac2/priority-save, ac2/worker-stop and ac2/worker-cap, the owner's three work commands through the real API, accepted, a stale version refused and an unauthorized member refused beside the control, nothing written.",
    "requires_note": "Only ROOT and expect. As suite 120: copies engine/ui into scratch with its production copies (PRODUCTION) laid over it, uses the checkout's engine/ui/node_modules (or npm ci from the npm cache), builds it with its own build script and runs the Playwright browser tests of engine/ui/e2e/factory.spec.ts whose titles begin with one of its eight rows (--grep) in system Chrome against engine/ui/e2e/factory_harness.py with the API organs (ORGANS) laid over a scratch copy of the checkout's .veldo. Writes only temporary files.",
+   "resources": {
+    "ui_browser": 1
+   }
+  },
+  {
+   "name": "124_veldo_0131_factory_commands",
+   "file": "124_veldo_0131_factory_commands.py",
+   "requires": [
+    "124_veldo_0131_factory_commands"
+   ],
+   "requires_note": "The three work command browser rows against the real factory harness; read-only rows remain in 124_veldo_0131_factory_reads_commands.",
    "resources": {
     "ui_browser": 1
    }
