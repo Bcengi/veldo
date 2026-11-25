@@ -854,6 +854,12 @@ def _v347_space_work_suite():
                 check(ROW, 'one clone-only request names this item', request.get('state') == 'requested'
                       and request['proposal'].get('clones', [{}])[0].get('item') == item
                       and 'worktrees' not in request['proposal'])
+                later = send('run_finished', {'run': run_id})
+                check(ROW, 'the next event raises no second request and the %s stays whole [%s]'
+                      % (form, named(later, item)),
+                      (L.item(item).get('disposition') or {}) == request
+                      and not L.item(item).get('disposition_history')
+                      and L.item(item)['state'] == 'deferred' and sorted(os.listdir(str(where))) == listing)
                 settled, edge, marked = desk.owner_keeps(L, item, SP.ITEM_KIND)
                 check(ROW, 'only the signed owner command applies Keep', settled.get('outcome') == 'settled'
                       and not edge.get('ok') and marked.get('ok') and L.item(item).get('owner_keep') == {'by': 'owner'})
