@@ -1,10 +1,10 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0366",
-  "commit": "7b9a5b6dd2dd746e7c655a23a8c3e64c8d1bda18",
+  "commit": "2ebbf54bbbc1cb5c9e8b3e7b8a53620228d2f6ee",
   "producer": "direct fake-node and idle-child fixtures",
   "status": "partial",
-  "scope": "63 direct assertions and 13 registered guard falsifiers. Native pc2 qualification remains red; no full gate, full leg or native distributed claim.",
+  "scope": "Phase 2 fix round 1: 71 bounded assertions and 21 registered guard falsifiers, including an isolated inventory TCP probe and historical single-host receipt byte comparison. Native pc2 qualification remains red; no canonical gate or native distributed claim.",
   "criteria": [
     {
       "id": "AC1",
@@ -12,12 +12,12 @@
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0366/targeted.json"
+          "ref": "proof/VELDO-0366/fix-round-1/targeted.json"
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0366/guards.json",
-          "detail": "Fake nodes only, baseline and no-op controls with named target failures."
+          "ref": "proof/VELDO-0366/fix-round-1/guards.json",
+          "detail": "Baseline and no-op controls pass; every named mutant fails its target. Fake nodes and isolated TCP inventory probe only."
         }
       ]
     },
@@ -27,12 +27,12 @@
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0366/targeted.json"
+          "ref": "proof/VELDO-0366/fix-round-1/targeted.json"
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0366/guards.json",
-          "detail": "Fake nodes only, baseline and no-op controls with named target failures."
+          "ref": "proof/VELDO-0366/fix-round-1/guards.json",
+          "detail": "Baseline and no-op controls pass; every named mutant fails its target. Fake nodes and isolated TCP inventory probe only."
         }
       ]
     },
@@ -42,12 +42,12 @@
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0366/targeted.json"
+          "ref": "proof/VELDO-0366/fix-round-1/targeted.json"
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0366/guards.json",
-          "detail": "Fake nodes only, baseline and no-op controls with named target failures."
+          "ref": "proof/VELDO-0366/fix-round-1/guards.json",
+          "detail": "Baseline and no-op controls pass; every named mutant fails its target. Fake nodes and isolated TCP inventory probe only."
         }
       ]
     },
@@ -57,12 +57,12 @@
       "evidence": [
         {
           "type": "unit",
-          "ref": "proof/VELDO-0366/targeted.json"
+          "ref": "proof/VELDO-0366/fix-round-1/targeted.json"
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0366/guards.json",
-          "detail": "Fake nodes only, baseline and no-op controls with named target failures."
+          "ref": "proof/VELDO-0366/fix-round-1/guards.json",
+          "detail": "Baseline and no-op controls pass; every named mutant fails its target. Fake nodes and isolated TCP inventory probe only."
         }
       ]
     }
@@ -98,18 +98,25 @@
     "proof/VELDO-0366/stale.json",
     "proof/VELDO-0366/targeted.json",
     "proof/VELDO-0366/targeted.py",
-    "proof/VELDO-0366/template-sync.log"
+    "proof/VELDO-0366/template-sync.log",
+    "proof/VELDO-0366/fix-round-1/census.log",
+    "proof/VELDO-0366/fix-round-1/guards.json",
+    "proof/VELDO-0366/fix-round-1/historical-receipt.json",
+    "proof/VELDO-0366/fix-round-1/personal.log",
+    "proof/VELDO-0366/fix-round-1/stale.json",
+    "proof/VELDO-0366/fix-round-1/targeted.json",
+    "proof/VELDO-0366/fix-round-1/template-sync.log"
   ],
   "checks": [
     {
       "name": "fake_nodes",
       "status": "passed",
-      "assertions": 63
+      "assertions": 71
     },
     {
       "name": "guard_falsifiers",
       "status": "passed",
-      "count": 13
+      "count": 21
     },
     {
       "name": "wallclock",
@@ -124,7 +131,7 @@
       "name": "stale_mutants",
       "status": "passed",
       "findings": 0,
-      "inventory": 4058
+      "inventory": 4066
     },
     {
       "name": "template_sync",
@@ -143,7 +150,14 @@
     },
     {
       "name": "independent_review",
-      "status": "not_run"
+      "status": "not_run",
+      "detail": "Initial review requested these two bounded fixes; re-review pending."
+    },
+    {
+      "name": "historical_single_host_receipt",
+      "status": "passed",
+      "reference": "2bea06cb4",
+      "bytes": 797
     }
   ],
   "rollback": "Disable distributed opt-in and revert VELDO-0366; no host packages or persistent credentials were installed."

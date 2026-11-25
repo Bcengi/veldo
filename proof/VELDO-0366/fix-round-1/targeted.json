@@ -1,0 +1,289 @@
+{
+  "passed": true,
+  "rows": [
+    {
+      "name": "VELDO-0366 shards/identity-multiset",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/full-cover",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/missing-shard",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/foreign-shard",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/missing-result",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/duplicate-result",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/foreign-result",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/failed-shard",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/cancelled-shard",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/survivor",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/control-failed",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/input-mismatch",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/runtime-mismatch",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/network-boundary",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/assignment-mismatch",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/cleanup-failed",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/scratch-survived",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/worker-survived",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/pending-result",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/missing-case-receipt",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/reused-result",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/count-mismatch",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/forged-receipt",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/wrong-key",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/replayed-receipt",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/duplicate-assignment",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/missing-assignment",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/changed-definition",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/runtime-race",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/qualified",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/unqualified-host",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/qualification-network",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/qualification-replay",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/qualification-host",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/split-assignment-refused",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/definition-refused",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/dirty-inputs-refused",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/group-cost-balance",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/controls-together",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/native-declaration",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/unconfined-local",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/per-host-exclusions",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/early-release-retained",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/fail-fast-retained",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/disconnect-mid-run",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/cancellation-pipe-drained",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/disconnect-cleanup",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/disconnect-lock-release",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/coordinator-unqualified",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/coordinator-unreachable",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/coordinator-failure",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/coordinator-disconnect",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/coordinator-duplicate",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/coordinator-green",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/coordinator-collect-all",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/committed-clean-transport",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/transport-tree-cleanup",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/truncated-bundle",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/no-network-filter",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/scratch-unix-retained",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/worker-store-separation",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/worker-network-before-code",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/worker-unconfined-refused",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/inventory-network-before-code",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/inventory-local-tcp",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/assignment-inventory-request",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/remote-inventory-request",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/local-inventory-request",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/single-host-receipt-bytes",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/stage-inventory-request",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0366 shards/remote-receipt-network",
+      "passed": true
+    }
+  ]
+}
