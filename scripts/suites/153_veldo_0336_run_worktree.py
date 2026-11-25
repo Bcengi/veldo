@@ -551,7 +551,7 @@ def _v336_suite():
         one('loss/kept-child', lambda row: kept(row, True))
 
         def kept_evidence(row, child=True):
-            given, path, identity = begin('kept-child' if child else 'kept')
+            given, path, identity = begin('kept-evidence-child' if child else 'kept-evidence')
             (path / 'notes').write_bytes(b'owner keeps this')
             picked = identity
             if child:

@@ -1045,6 +1045,13 @@ class Presenter:
             # Every authority input is pinned at the version in the one snapshot the checks above read,
             # so a revocation landing anywhere between those checks and the commit refuses it.
             seen = state['entities']
+            previous = self._entity(fid)
+            if (previous is not None
+                    and previous.get('data', {}).get('signed', {}).get('command') == command
+                    and self._framing_signed(request, previous, state, c)):
+                # The original commit pins its original versions. Rebuilding them after framing
+                # would turn an identical signed retry into a different store command.
+                return self._observe('frame', request, previous['data']['expected_versions'], 'accepted', None)
             versions = {request: brief['version'], fid: (self._entity(fid) or {}).get('version', 0),
                         principal: entry['entity_version'],
                         key['key_id']: seen.get(key['key_id'], {}).get('version', 0),

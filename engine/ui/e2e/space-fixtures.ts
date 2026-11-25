@@ -63,6 +63,7 @@ async function start(seed: '1' | '0' | 'keep') {
     origin: ready.origin,
     domain: ready.domain,
     control,
+    now: async () => (await control<{ now: number }>('/clock')).now,
     state: () => control('/state'),
     entity: async (id) => (await control<{ entity: Awaited<ReturnType<FactoryUi['entity']>> }>('/factory/entity', { id })).entity,
     kind: async (kind) => (await control<{ entities: Awaited<ReturnType<FactoryUi['kind']>> }>('/factory/kind', { kind })).entities,
