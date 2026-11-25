@@ -6804,7 +6804,7 @@
     "suite_binding": "Each current predicate carries its owning suite SHA-256. The top-level revision identifies the historical audit, not a runtime validation of the current predicates."
   },
   "fix_round_2": {
-    "revision": "5bf6b6821ec7195051d12384d755f0c7304b0538",
+    "revision": "367328c60",
     "scope": "Every one of the 179 fix-round-1 partial current mappings, grouped by ticket. Only 0316, 0317, 0334 and 0347 had partial mappings; tickets 0318-0346 have none in this audit.",
     "statuses": {
       "restored": "the missing clause is now asserted on the current implementation",
@@ -6829,10 +6829,9 @@
         "retired": 1
       },
       "VELDO-0347": {
-        "open": 76,
-        "restored": 8,
-        "retained": 2,
-        "retired": 3
+        "restored": 82,
+        "retained": 3,
+        "retired": 4
       }
     },
     "by_ticket": [
@@ -7890,13 +7889,13 @@
           {
             "line": 460,
             "old_row": "ac1/loose-ignored-file",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac1/loose-ignored-file"
             ],
-            "evidence": "not resolved in fix round 2: Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "found['ignored'] == ['settings.local'] exactly, case 3; the rule-provenance clause (ignored_rules) is retired: the candidate's ignored_work returns {read, said, work, build} and names no rule source (proof/VELDO-0347/assembly-v1.md: 'Old probe ignored_work signature ... superseded by candidate tracked-ignore directory checks', owner order 43607)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 464,
@@ -7907,7 +7906,7 @@
             ],
             "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 491,
@@ -7918,84 +7917,84 @@
             ],
             "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 494,
             "old_row": "ac1/personal-rule",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac1/personal-rule"
             ],
-            "evidence": "not resolved in fix round 2: Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "with a build folder beside them, found['ignored'] == ['personal-notes-347/', 'private-347.md'] exactly (the build output not named); the rule-provenance clause (ignored_rules) is retired: the candidate's ignored_work returns {read, said, work, build} and names no rule source (proof/VELDO-0347/assembly-v1.md: 'Old probe ignored_work signature ... superseded by candidate tracked-ignore directory checks', owner order 43607)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 516,
             "old_row": "ac1/untraced-rule",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac1/untraced-rule"
             ],
-            "evidence": "not resolved in fix round 2: Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "untraced (git names no rule: exit 1, nothing said, the candidate's untraced form): read True, cases == [3], ignored == ['build/'] exactly; a git that cannot read its rules makes read False and holds the item (control_space_probe.ignored_work); the rule-provenance clause (ignored_rules) is retired: the candidate's ignored_work returns {read, said, work, build} and names no rule source (proof/VELDO-0347/assembly-v1.md: 'Old probe ignored_work signature ... superseded by candidate tracked-ignore directory checks', owner order 43607)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 520,
             "old_row": "ac1/untraced-rule",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac1/untraced-rule"
             ],
-            "evidence": "not resolved in fix round 2: Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "traced to the committed ignore file: P.unique_work(...)['cases'] == []",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 524,
             "old_row": "ac1/untraced-rule",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac1/untraced-rule"
             ],
-            "evidence": "not resolved in fix round 2: Current rule checks retain the safety outcome but omit exact ignored-rule provenance/equality clauses.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "deferred unique_work by rule 5, the deferral's ignored == ['build/'], build/out.o in place; never handed is the Recording remover invariant of send() on every event of the row; the rule-provenance clause (ignored_rules) is retired: the candidate's ignored_work returns {read, said, work, build} and names no rule source (proof/VELDO-0347/assembly-v1.md: 'Old probe ignored_work signature ... superseded by candidate tracked-ignore directory checks', owner order 43607)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 544,
             "old_row": "ac1/build-output-is-not-work",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac1/build-output-is-not-work"
             ],
-            "evidence": "not resolved in fix round 2: Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a folder only info/exclude covers: cases [3], ignored ['target-347/']; with the pattern declared: [] and []; adopted with the pattern: [3] and ['build/']; then the worktree with build output alone is removed, handed to the remover exactly once. The empty-folder sub-clause of 544 is retired: the candidate's ignored_work names every ignored folder git reports, an empty one too, so it holds the worktree (more is held, nothing is lost; observed on pc2, v1-fix2/claude/diag1.log), superseded per proof/VELDO-0347/assembly-v1.md",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 547,
             "old_row": "ac1/build-output-is-not-work",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac1/build-output-is-not-work"
             ],
-            "evidence": "not resolved in fix round 2: Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a folder only info/exclude covers: cases [3], ignored ['target-347/']; with the pattern declared: [] and []; adopted with the pattern: [3] and ['build/']; then the worktree with build output alone is removed, handed to the remover exactly once. The empty-folder sub-clause of 544 is retired: the candidate's ignored_work names every ignored folder git reports, an empty one too, so it holds the worktree (more is held, nothing is lost; observed on pc2, v1-fix2/claude/diag1.log), superseded per proof/VELDO-0347/assembly-v1.md",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 550,
             "old_row": "ac1/build-output-is-not-work",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac1/build-output-is-not-work"
             ],
-            "evidence": "not resolved in fix round 2: Current build-output/untraced fixtures do not reproduce all historical configured-pattern and adopted-item combinations.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a folder only info/exclude covers: cases [3], ignored ['target-347/']; with the pattern declared: [] and []; adopted with the pattern: [3] and ['build/']; then the worktree with build output alone is removed, handed to the remover exactly once. The empty-folder sub-clause of 544 is retired: the candidate's ignored_work names every ignored folder git reports, an empty one too, so it holds the worktree (more is held, nothing is lost; observed on pc2, v1-fix2/claude/diag1.log), superseded per proof/VELDO-0347/assembly-v1.md",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 555,
@@ -8006,172 +8005,172 @@
             ],
             "evidence": "removed outcome and the path absent: removal is only possible through the remover",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 564,
             "old_row": "ac2/clean-clone-goes",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/clean-clone-goes"
             ],
-            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a fresh clone of a remote on this host: read True, clean_clone True, why None and said None (the candidate form of no reason)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 568,
             "old_row": "ac2/clean-clone-goes",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/clean-clone-goes"
             ],
-            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the session scratch holding that clean clone at vendor/lib is removed and its path is gone",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 579,
             "old_row": "ac2/unpushed-commit",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac2/unpushed-commit"
+              "ac2/unpushed-in-session-scratch"
             ],
-            "evidence": "not resolved in fix round 2: Current row checks unrecorded child retention, not the exact reason and commit list.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "held_paths == [(path:<clone>, unrecorded)]; the probe's reason is exactly 'a commit no remote-tracking ref reaches: <the unpushed commit>'; the incoming rule 6 wrote a per-repository record (why, commits) into the deferral; the candidate's rule 6 records {items, states} only (control_space_signal._rule_children, inside) and the probe gives one reason, the first that failed (control_space_probe.clean_clone 'why'), retained by owner order 43607 (proof/VELDO-0347/assembly-v1.md: old clean-clone walk superseded); the reason clause is restored on the probe's reading, exact, naming the commit",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 584,
             "old_row": "ac2/unpushed-commit",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac2/unpushed-commit"
+              "ac2/unpushed-in-session-scratch"
             ],
-            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks retained commit/folder; historical exact file bytes and remover-call list are not all asserted.",
+            "evidence": "HEAD == the commit, its file and the scratch's own file byte for byte; never handed is the Recording remover invariant of send() on every event of the row",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 590,
             "old_row": "ac2/unpushed-commit",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac2/unpushed-commit"
+              "ac2/unpushed-in-session-scratch"
             ],
-            "evidence": "not resolved in fix round 2: Current remote holding and clone removal are checked; exact remote main ref equality is not asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "removed, the path gone, and git rev-parse main of the remote == the commit",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 600,
             "old_row": "ac2/log-only-commit",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac2/log-only-commit"
+              "ac2/reset-log"
             ],
-            "evidence": "not resolved in fix round 2: Current reflog-only fixture checks log, branches and remote absence; historical status, HEAD and all-ref equalities are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "after the reset: status clean, HEAD == origin/main, rev-list --count --all --not --remotes == '0'",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 604,
             "old_row": "ac2/log-only-commit",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac2/log-only-commit"
+              "ac2/reset-log"
             ],
-            "evidence": "not resolved in fix round 2: Current row checks unrecorded child retention, not the exact reason and commit list.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "deferred in_use children; the probe's reason is exactly 'a commit no remote-tracking ref reaches: <the commit only the log names>'; never handed is the Recording remover invariant of send() on every event of the row; the incoming rule 6 wrote a per-repository record (why, commits) into the deferral; the candidate's rule 6 records {items, states} only (control_space_signal._rule_children, inside) and the probe gives one reason, the first that failed (control_space_probe.clean_clone 'why'), retained by owner order 43607 (proof/VELDO-0347/assembly-v1.md: old clean-clone walk superseded); the reason clause is restored on the probe's reading, exact, naming the commit",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 608,
             "old_row": "ac2/log-only-commit",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac2/log-only-commit"
+              "ac2/reset-log"
             ],
-            "evidence": "not resolved in fix round 2: Current row checks retained commit/folder; historical exact file bytes and remover-call list are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "cat-file -t == commit and show <commit>:lost.txt reads as written",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 621,
             "old_row": "ac2/hand-written-ref",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac2/hand-written-ref"
+              "ac2/forged-remote-ref"
             ],
-            "evidence": "not resolved in fix round 2: Current row checks unrecorded child retention, not the exact reason and commit list.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "deferred in_use children; the probe's reason is exactly 'the local remote origin does not hold <the commit>'; never handed is the Recording remover invariant of send() on every event of the row; the incoming rule 6 wrote a per-repository record (why, commits) into the deferral; the candidate's rule 6 records {items, states} only (control_space_signal._rule_children, inside) and the probe gives one reason, the first that failed (control_space_probe.clean_clone 'why'), retained by owner order 43607 (proof/VELDO-0347/assembly-v1.md: old clean-clone walk superseded); the reason clause is restored on the probe's reading, exact, naming the commit",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 632,
             "old_row": "ac2/work-tree-and-stash",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/work-tree-and-stash"
             ],
-            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "an untracked file, then an uncommitted edit: read True, clean_clone False, why == 'a modified, staged or untracked file' (the candidate's one reason for the incoming files_in_no_commit)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 636,
             "old_row": "ac2/work-tree-and-stash",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/work-tree-and-stash"
             ],
-            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "an untracked file, then an uncommitted edit: read True, clean_clone False, why == 'a modified, staged or untracked file' (the candidate's one reason for the incoming files_in_no_commit)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 640,
             "old_row": "ac2/work-tree-and-stash",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/work-tree-and-stash"
             ],
-            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a stash entry with a clean work tree: why == 'a stash entry' exactly (so no files reason), clean_clone False",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 646,
             "old_row": "ac2/work-tree-and-stash",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/work-tree-and-stash"
             ],
-            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a branch and a tag at a commit the remote holds: clean_clone True",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 650,
             "old_row": "ac2/work-tree-and-stash",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/work-tree-and-stash"
             ],
-            "evidence": "not resolved in fix round 2: Current clean-clone row covers clean, dirty, stash, nested and unread states, but not every historical diagnostic reason and clean-after-reset/removal clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a relative remote address that names no repository: read False and clean_clone False",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 656,
             "old_row": "ac2/work-tree-and-stash",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/work-tree-and-stash"
             ],
-            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields.",
+            "evidence": "a dirty clone in a session's scratch: deferred in_use children, held_paths == [(path:<clone>, unrecorded)], the probe's reason is the files reason, new.txt byte for byte; never handed is the Recording remover invariant of send() on every event of the row; the incoming rule 6 wrote a per-repository record (why, commits) into the deferral; the candidate's rule 6 records {items, states} only (control_space_signal._rule_children, inside) and the probe gives one reason, the first that failed (control_space_probe.clean_clone 'why'), retained by owner order 43607 (proof/VELDO-0347/assembly-v1.md: old clean-clone walk superseded); the reason clause is restored on the probe's reading, exact, naming the commit",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 666,
@@ -8183,7 +8182,7 @@
             ],
             "evidence": "the incoming per-path state label 'unread' is superseded by the spec's AC2 (specs/VELDO-0347, AC2: a repository that cannot be read, or whose local remote cannot be read, holds the item as unrecorded); holding, bytes and the never-handed invariant are asserted, and the clean-clone control is ac2/clean-clone-reading",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 675,
@@ -8195,7 +8194,7 @@
             ],
             "evidence": "the incoming per-path state label 'unread' is superseded by the spec's AC2 (specs/VELDO-0347, AC2: a repository that cannot be read, or whose local remote cannot be read, holds the item as unrecorded); holding, bytes and the never-handed invariant are asserted, and the clean-clone control is ac2/clean-clone-reading",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 678,
@@ -8207,128 +8206,128 @@
             ],
             "evidence": "the incoming per-path state label 'unread' is superseded by the spec's AC2 (specs/VELDO-0347, AC2: a repository that cannot be read, or whose local remote cannot be read, holds the item as unrecorded); holding, bytes and the never-handed invariant are asserted, and the clean-clone control is ac2/clean-clone-reading",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 690,
             "old_row": "ac2/unreadable-holds",
-            "status": "open",
+            "status": "retained",
             "current_rows": [
-              "ac2/unreadable-holds"
+              "ac2/unreadable"
             ],
-            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields.",
+            "evidence": "the unlistable fixture asserts nested() read False, deferred in_use children, held_paths == [(path:<item>, unread)] and the shut file's bytes (the full predicate); never handed is the Recording remover invariant of send() on every event of the row",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 704,
             "old_row": "ac2/build-output",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/build-output"
             ],
-            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields.",
+            "evidence": "an unpushed commit in a clone beneath a build output item: deferred in_use children, held_paths == [(path:<clone>, unrecorded)], HEAD == the commit; never handed is the Recording remover invariant of send() on every event of the row",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 726,
             "old_row": "ac2/last-look",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/last-look"
             ],
-            "evidence": "not resolved in fix round 2: Mapped current rows do not reproduce the late nested-clone commit after rule 6 and marked-path restoration together.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a commit made after rule 6 looked (len(late) == 1) is found by the remover at the delete: deferred by the tool, the remover handed exactly the item, said 'a git repository is in the folder, at lib'. The deferral is the candidate's remove_refused (the folder remover's walk stops on a repository that is not a clean clone), as ac2/sandbox-scratch asserts for the same walk; the incoming deferral name in_use is superseded with the folder remover (proof/VELDO-0347/assembly-v1.md)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 728,
             "old_row": "ac2/last-look",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac2/last-look"
             ],
-            "evidence": "not resolved in fix round 2: Mapped current rows do not reproduce the late nested-clone commit after rule 6 and marked-path restoration together.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "nothing at the marked name, HEAD == the late commit, late.txt byte for byte",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 740,
             "old_row": "ac3/creators-declare-the-form",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac3/creators-declare-the-form"
+              "ac3/kind-and-form"
             ],
-            "evidence": "not resolved in fix round 2: Creator wiring is checked by literal source anchors, not the historical one-call AST cardinality assertion.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "for each of the four creators exactly one creation.item( call carries the form within 400 characters, and it starts with 'agent_repository'",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 762,
             "old_row": "ac3/keep-first",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/keep-first"
             ],
-            "evidence": "not resolved in fix round 2: Current batch commit is retained on a ref; all three clone forms, method names and exact git-show content are not asserted here.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "for each of batch_clone, candidate_workspace and worker_clone: before, the shared repository lacks the commit; removed at run finished with removal method keep_then_rename_probe_delete (worker: keep_snapshot_then_rename_probe_compare_delete); the commit is on refs/veldo/kept/ of the main repository and git show <commit>:own.txt reads as written",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 766,
             "old_row": "ac3/keep-first",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/keep-first"
             ],
-            "evidence": "not resolved in fix round 2: Current batch commit is retained on a ref; all three clone forms, method names and exact git-show content are not asserted here.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "for each of batch_clone, candidate_workspace and worker_clone: before, the shared repository lacks the commit; removed at run finished with removal method keep_then_rename_probe_delete (worker: keep_snapshot_then_rename_probe_compare_delete); the commit is on refs/veldo/kept/ of the main repository and git show <commit>:own.txt reads as written",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 781,
             "old_row": "ac3/clone-request",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/clone-request"
             ],
-            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields.",
+            "evidence": "deferred unique_work, no remover handed it, and the deferral names the file as the candidate's rule 5 names it: found['untracked'] == ['notes.txt'] (batch clone), found['modified'] == ['tracked.txt'] (candidate workspace); the incoming found['files'] is the request's files, asserted exactly in 788",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 784,
             "old_row": "ac3/clone-request",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/clone-request"
             ],
-            "evidence": "not resolved in fix round 2: Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the outcome's decision_request ok, the request requested with number 1, and the deferral's decision_request == its alias",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 788,
             "old_row": "ac3/clone-request",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/clone-request"
             ],
-            "evidence": "not resolved in fix round 2: Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "proposal == {'keep': SPACE_CLONE_KEEP, 'clones': [{item, path, form, files: [the file]}]} exactly",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 794,
             "old_row": "ac3/clone-request",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/clone-request"
             ],
-            "evidence": "not resolved in fix round 2: Current request row checks clone identity and signed Keep; exact proposal/presentation choices, replay and already-requested refusal clauses are absent.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "space_presentation: choices == ['accept keep'], the brief names Clone, Form and the file, no Worktree and no Discard",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 801,
@@ -8339,7 +8338,7 @@
             ],
             "evidence": "a later run_finished leaves the disposition equal, no history, the item deferred and the clone whole",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 808,
@@ -8350,150 +8349,150 @@
             ],
             "evidence": "terms naming a clone as a worktree are refused (fix round 1 F2 restoration and tooth)",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 840,
             "old_row": "ac3/worker-clone-saved",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/worker-clone-saved"
             ],
-            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the incoming fixture (edited tracked file, draft, info/exclude file, ignored settings, a file in an untracked folder, a link, build output, a commit): removed with method keep_snapshot_then_rename_probe_compare_delete, no request, one attempt under <state>/space-saved holding every file byte for byte and the link as a link, build output not saved, the commit on a kept ref",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 844,
             "old_row": "ac3/worker-clone-saved",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/worker-clone-saved"
             ],
-            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the incoming fixture (edited tracked file, draft, info/exclude file, ignored settings, a file in an untracked folder, a link, build output, a commit): removed with method keep_snapshot_then_rename_probe_compare_delete, no request, one attempt under <state>/space-saved holding every file byte for byte and the link as a link, build output not saved, the commit on a kept ref",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 846,
             "old_row": "ac3/worker-clone-saved",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/worker-clone-saved"
             ],
-            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the incoming fixture (edited tracked file, draft, info/exclude file, ignored settings, a file in an untracked folder, a link, build output, a commit): removed with method keep_snapshot_then_rename_probe_compare_delete, no request, one attempt under <state>/space-saved holding every file byte for byte and the link as a link, build output not saved, the commit on a kept ref",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 852,
             "old_row": "ac3/worker-clone-saved",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/worker-clone-saved"
             ],
-            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the incoming fixture (edited tracked file, draft, info/exclude file, ignored settings, a file in an untracked folder, a link, build output, a commit): removed with method keep_snapshot_then_rename_probe_compare_delete, no request, one attempt under <state>/space-saved holding every file byte for byte and the link as a link, build output not saved, the commit on a kept ref",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 855,
             "old_row": "ac3/worker-clone-saved",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/worker-clone-saved"
             ],
-            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the incoming fixture (edited tracked file, draft, info/exclude file, ignored settings, a file in an untracked folder, a link, build output, a commit): removed with method keep_snapshot_then_rename_probe_compare_delete, no request, one attempt under <state>/space-saved holding every file byte for byte and the link as a link, build output not saved, the commit on a kept ref",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 886,
             "old_row": "ac3/changed-after-snapshot",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/changed-after-snapshot"
             ],
-            "evidence": "not resolved in fix round 2: Current comparison stops deletion and preserves bytes at locator or snapshot; historical exact single rewrite, locator-only and first snapshot predicates are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a draft rewritten once under the marked name between the last look and the delete: wrote == [True], deferred keep_failed by the tool, state deferred, the rewritten content at the locator, and the one snapshot holding the first draft",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 890,
             "old_row": "ac3/changed-after-snapshot",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/changed-after-snapshot"
             ],
-            "evidence": "not resolved in fix round 2: Current comparison stops deletion and preserves bytes at locator or snapshot; historical exact single rewrite, locator-only and first snapshot predicates are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a draft rewritten once under the marked name between the last look and the delete: wrote == [True], deferred keep_failed by the tool, state deferred, the rewritten content at the locator, and the one snapshot holding the first draft",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 892,
             "old_row": "ac3/changed-after-snapshot",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/changed-after-snapshot"
             ],
-            "evidence": "not resolved in fix round 2: Current comparison stops deletion and preserves bytes at locator or snapshot; historical exact single rewrite, locator-only and first snapshot predicates are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a draft rewritten once under the marked name between the last look and the delete: wrote == [True], deferred keep_failed by the tool, state deferred, the rewritten content at the locator, and the one snapshot holding the first draft",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 900,
             "old_row": "ac3/renamed-back",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/renamed-back"
             ],
-            "evidence": "not resolved in fix round 2: Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "at the stop: .git is a folder, HEAD unchanged, nothing at the marked name; the locator and id kept, deferred, no left_at; reconcile's places() == (True, False); the next attempt removes the clone with attempts numbered [1, 2], the second holding the rewrite and the first the first draft",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 902,
             "old_row": "ac3/renamed-back",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/renamed-back"
             ],
-            "evidence": "not resolved in fix round 2: Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "at the stop: .git is a folder, HEAD unchanged, nothing at the marked name; the locator and id kept, deferred, no left_at; reconcile's places() == (True, False); the next attempt removes the clone with attempts numbered [1, 2], the second holding the rewrite and the first the first draft",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 906,
             "old_row": "ac3/renamed-back",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/renamed-back"
             ],
-            "evidence": "not resolved in fix round 2: Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "at the stop: .git is a folder, HEAD unchanged, nothing at the marked name; the locator and id kept, deferred, no left_at; reconcile's places() == (True, False); the next attempt removes the clone with attempts numbered [1, 2], the second holding the rewrite and the first the first draft",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 910,
             "old_row": "ac3/renamed-back",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/renamed-back"
             ],
-            "evidence": "not resolved in fix round 2: Current put-back row checks locator bytes and reconcile retention; historical HEAD/id/left_at/places and exact numbered retries are not all asserted in that row.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "at the stop: .git is a folder, HEAD unchanged, nothing at the marked name; the locator and id kept, deferred, no left_at; reconcile's places() == (True, False); the next attempt removes the clone with attempts numbered [1, 2], the second holding the rewrite and the first the first draft",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 952,
             "old_row": "ac3/table-1-clone",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/table-1-clone"
             ],
-            "evidence": "not resolved in fix round 2: Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a batch clone and a worker clone declared under table 1 by a Ledger of table 1: versions ['1', '1'], ticket_ended and not run_finished in their events, their forms; at one ticket_ended the remover is handed exactly the two and refuses both keep_failed; no request, no request refusal, no disposition; no work_tree read; no snapshot of the worker; every file byte for byte at its locator and nothing at the marked names",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 959,
@@ -8504,73 +8503,73 @@
             ],
             "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 963,
             "old_row": "ac3/table-1-clone",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/table-1-clone"
             ],
-            "evidence": "not resolved in fix round 2: Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a batch clone and a worker clone declared under table 1 by a Ledger of table 1: versions ['1', '1'], ticket_ended and not run_finished in their events, their forms; at one ticket_ended the remover is handed exactly the two and refuses both keep_failed; no request, no request refusal, no disposition; no work_tree read; no snapshot of the worker; every file byte for byte at its locator and nothing at the marked names",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 967,
             "old_row": "ac3/table-1-clone",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/table-1-clone"
             ],
-            "evidence": "not resolved in fix round 2: Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a batch clone and a worker clone declared under table 1 by a Ledger of table 1: versions ['1', '1'], ticket_ended and not run_finished in their events, their forms; at one ticket_ended the remover is handed exactly the two and refuses both keep_failed; no request, no request refusal, no disposition; no work_tree read; no snapshot of the worker; every file byte for byte at its locator and nothing at the marked names",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 976,
             "old_row": "ac3/table-1-clone",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/table-1-clone"
             ],
-            "evidence": "handed clause restored (a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was); still missing: Current row checks the retained/deleted outcome and work, but does not assert the complete historical remover-call list and all diagnostic fields.",
+            "evidence": "a batch clone and a worker clone declared under table 1 by a Ledger of table 1: versions ['1', '1'], ticket_ended and not run_finished in their events, their forms; at one ticket_ended the remover is handed exactly the two and refuses both keep_failed; no request, no request refusal, no disposition; no work_tree read; no snapshot of the worker; every file byte for byte at its locator and nothing at the marked names",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 981,
             "old_row": "ac3/table-1-clone",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/table-1-clone"
             ],
-            "evidence": "not resolved in fix round 2: Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a batch clone and a worker clone declared under table 1 by a Ledger of table 1: versions ['1', '1'], ticket_ended and not run_finished in their events, their forms; at one ticket_ended the remover is handed exactly the two and refuses both keep_failed; no request, no request refusal, no disposition; no work_tree read; no snapshot of the worker; every file byte for byte at its locator and nothing at the marked names",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 988,
             "old_row": "ac3/table-1-clone",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/table-1-clone"
             ],
-            "evidence": "not resolved in fix round 2: Current table-1 rows check versioned handling and retention; old paired-form, no-request diagnostics, edited-file pair and clean-clone removal clauses are not all reproduced.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a table 1 clone with nothing uncommitted is removed with method keep_then_rename_probe_delete. The incoming clone also had a commit of its own, held_in_main after; under the candidate's table-1 handling (review F2, spec History: an item keeps its table and its branches are held against the shared repository) that clone is deferred as unique work by its branch, asserted by ac3/table-1-keeps-its-handling, so that sub-clause is superseded and retired",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 997,
             "old_row": "ac3/table-2-clone",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/table-2-clone"
             ],
-            "evidence": "not resolved in fix round 2: Current form/request rows cover table 2 and clone identity; old paired fixture and exact decision-request result/file clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the same two clones under table 2 (versions ['2', '2']), sent run_finished: the batch clone deferred unique_work, not handed, untracked == ['notes.txt'], one request naming it alone, the file in place; the worker clone removed with keep_snapshot_then_rename_probe_compare_delete, no disposition, both files in its one snapshot. The incoming 'same event' was ticket_ended; the candidate's table-2 clone row ends at run_finished alone (proof/VELDO-0347/assembly-v1.md: incoming all-events clone cells contradict the candidate's run_finished-only row)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1002,
@@ -8581,172 +8580,172 @@
             ],
             "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1006,
             "old_row": "ac3/table-2-clone",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/table-2-clone"
             ],
-            "evidence": "not resolved in fix round 2: Current form/request rows cover table 2 and clone identity; old paired fixture and exact decision-request result/file clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the same two clones under table 2 (versions ['2', '2']), sent run_finished: the batch clone deferred unique_work, not handed, untracked == ['notes.txt'], one request naming it alone, the file in place; the worker clone removed with keep_snapshot_then_rename_probe_compare_delete, no disposition, both files in its one snapshot. The incoming 'same event' was ticket_ended; the candidate's table-2 clone row ends at run_finished alone (proof/VELDO-0347/assembly-v1.md: incoming all-events clone cells contradict the candidate's run_finished-only row)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1013,
             "old_row": "ac3/table-2-clone",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac3/table-2-clone"
             ],
-            "evidence": "not resolved in fix round 2: Current worker row saves modified/untracked/ignored bytes and a commit; exact method, no-request, info/exclude file, nested link and build exclusion clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the same two clones under table 2 (versions ['2', '2']), sent run_finished: the batch clone deferred unique_work, not handed, untracked == ['notes.txt'], one request naming it alone, the file in place; the worker clone removed with keep_snapshot_then_rename_probe_compare_delete, no disposition, both files in its one snapshot. The incoming 'same event' was ticket_ended; the candidate's table-2 clone row ends at run_finished alone (proof/VELDO-0347/assembly-v1.md: incoming all-events clone cells contradict the candidate's run_finished-only row)",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1133,
             "old_row": "ac4/held-files-go",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/held-files-go"
             ],
-            "evidence": "not resolved in fix round 2: Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "fixture: 'sha256:' + sha256(canonical bytes of the store's first entity) == its stored digest, and the fixture's store reader (a lookup of digests in the real store) holds it",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1154,
             "old_row": "ac4/held-files-go",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/held-files-go"
             ],
-            "evidence": "not resolved in fix round 2: Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "kept, action remove_held, the remover handed exactly the item, the folder there; what is left is ['deep', 'link', 'only-here.log'] with deep empty; only-here.log and the link as they were. Restoring this found a candidate defect: a held file beneath a subfolder was opened as a folder by its own name, and the remover refused the whole item (remove_refused, NotADirectoryError, pc2 diag1.log); fixed in control_space_remove._r_remove_held (engine canon and copy), tooth space347-nested-held-file-opened-as-folder",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1157,
             "old_row": "ac4/held-files-go",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/held-files-go"
             ],
-            "evidence": "not resolved in fix round 2: Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "kept, action remove_held, the remover handed exactly the item, the folder there; what is left is ['deep', 'link', 'only-here.log'] with deep empty; only-here.log and the link as they were. Restoring this found a candidate defect: a held file beneath a subfolder was opened as a folder by its own name, and the remover refused the whole item (remove_refused, NotADirectoryError, pc2 diag1.log); fixed in control_space_remove._r_remove_held (engine canon and copy), tooth space347-nested-held-file-opened-as-folder",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1159,
             "old_row": "ac4/held-files-go",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/held-files-go"
             ],
-            "evidence": "not resolved in fix round 2: Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "kept, action remove_held, the remover handed exactly the item, the folder there; what is left is ['deep', 'link', 'only-here.log'] with deep empty; only-here.log and the link as they were. Restoring this found a candidate defect: a held file beneath a subfolder was opened as a folder by its own name, and the remover refused the whole item (remove_refused, NotADirectoryError, pc2 diag1.log); fixed in control_space_remove._r_remove_held (engine canon and copy), tooth space347-nested-held-file-opened-as-folder",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1161,
             "old_row": "ac4/held-files-go",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/held-files-go"
             ],
-            "evidence": "not resolved in fix round 2: Current evidence row checks held copies removed and unique bytes retained; old stored digest, action/remover list, nested symlink and accounting clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the answer: removed_files paths == the four held files, by copy {'store': 1, 'commit': 3}, kept_files == ['only-here.log'] (the candidate's lists for the incoming counts). The candidate's evidence remover reads regular files only (control_space_remove._evidence_files: no link followed), so the link is not listed among kept files; that it stays as it was is 1159",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1173,
             "old_row": "ac4/changed-after-measure",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/changed-after-measure"
             ],
-            "evidence": "not resolved in fix round 2: Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the evidence remover asked directly with the real store's reader: measured with no copy it stays (kept_files ['receipt.json'], removed_files []); stored, then changed, it stays with the new bytes; with the stored content read now it goes",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1181,
             "old_row": "ac4/changed-after-measure",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/changed-after-measure"
             ],
-            "evidence": "not resolved in fix round 2: Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the evidence remover asked directly with the real store's reader: measured with no copy it stays (kept_files ['receipt.json'], removed_files []); stored, then changed, it stays with the new bytes; with the stored content read now it goes",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1187,
             "old_row": "ac4/changed-after-measure",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/changed-after-measure"
             ],
-            "evidence": "not resolved in fix round 2: Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the evidence remover asked directly with the real store's reader: measured with no copy it stays (kept_files ['receipt.json'], removed_files []); stored, then changed, it stays with the new bytes; with the stored content read now it goes",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1205,
             "old_row": "ac4/changed-after-measure",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/changed-after-measure"
             ],
-            "evidence": "not resolved in fix round 2: Current digest-at-removal fixture preserves changed bytes; the old control sequence and mutation during commit-copy reading are not all reproduced.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the copy check wrapped at the candidate's seam (control_space_remove._held_copy, for the incoming _Copies.find): the copy found is 'commit', the file is written after its digest was read, it stays with the new bytes and nothing is removed",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1225,
             "old_row": "ac4/unreadable-is-no-copy",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/unreadable-is-no-copy"
             ],
-            "evidence": "not resolved in fix round 2: Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a store reader that raises and a trunk naming no branch: both files stay, byte for byte; with the store read again its copy goes and the file only the trunk holds stays; with the trunk read it goes",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1230,
             "old_row": "ac4/unreadable-is-no-copy",
-            "status": "open",
+            "status": "retired",
             "current_rows": [
               "ac4/unreadable-is-no-copy"
             ],
-            "evidence": "not resolved in fix round 2: Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the incoming answer's unread list is superseded: the candidate's _held_copy treats a store that cannot be read as no copy and _committed_blobs a trunk that cannot be read as no commit, and the answer carries no unread list (control_space_remove docstrings; proof/VELDO-0347/assembly-v1.md: trunk callback superseded by held/landing resolution); the safety outcome is 1225",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1235,
             "old_row": "ac4/unreadable-is-no-copy",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/unreadable-is-no-copy"
             ],
-            "evidence": "not resolved in fix round 2: Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a store reader that raises and a trunk naming no branch: both files stay, byte for byte; with the store read again its copy goes and the file only the trunk holds stays; with the trunk read it goes",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1240,
             "old_row": "ac4/unreadable-is-no-copy",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac4/unreadable-is-no-copy"
             ],
-            "evidence": "not resolved in fix round 2: Current unread-store row retains bytes and removes a held single file; old unread-trunk, unread diagnostic and two-file recovery controls are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "a store reader that raises and a trunk naming no branch: both files stay, byte for byte; with the store read again its copy goes and the file only the trunk holds stays; with the trunk read it goes",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1259,
@@ -8757,29 +8756,29 @@
             ],
             "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1261,
             "old_row": "ac5/own-folder-holds",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac5/own-folder-holds"
+              "ac5/own-folder"
             ],
-            "evidence": "not resolved in fix round 2: Current own-folder row checks unrecorded retention and HEAD; exact reason, .git and is_repository truth-table clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "held_paths == [(path:<own folder>, unrecorded)] and the probe reads the folder as a repository (own_repository True); the incoming rule 6 wrote a per-repository record (why, commits) into the deferral; the candidate's rule 6 records {items, states} only (control_space_signal._rule_children, inside) and the probe gives one reason, the first that failed (control_space_probe.clean_clone 'why'), retained by owner order 43607 (proof/VELDO-0347/assembly-v1.md: old clean-clone walk superseded); the reason clause is restored on the probe's reading, exact, naming the commit",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1265,
             "old_row": "ac5/own-folder-holds",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac5/own-folder-holds"
+              "ac5/own-folder"
             ],
-            "evidence": "not resolved in fix round 2: Current own-folder row checks unrecorded retention and HEAD; exact reason, .git and is_repository truth-table clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "HEAD == the only commit and .git is a folder",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1270,
@@ -8790,7 +8789,7 @@
             ],
             "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1276,
@@ -8801,73 +8800,73 @@
             ],
             "evidence": "a Recording remover in send() checks on every event of the row that an item deferred by rule 5 (unique_work) or rule 6 (in_use) was never handed to a remover, and a keep_failed tool deferral was; the remaining clauses (outcome, bytes, listing, .git) are in the current row",
             "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
-            "current_suite_sha256": "b9e24dad40cb2acb273753ed35162501f6d0c2d6abd1e06ace975750042c5e91"
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1278,
             "old_row": "ac5/own-folder-holds",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
-              "ac5/own-folder-holds"
+              "ac5/own-folder"
             ],
-            "evidence": "not resolved in fix round 2: Current own-folder row checks unrecorded retention and HEAD; exact reason, .git and is_repository truth-table clauses are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "the truth table on the candidate's probe own_repository (the incoming is_repository): True for a folder with .git and for a bare repository, False for a plain folder and a missing one",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1285,
             "old_row": "ac5/registry-row",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac5/registry-row"
             ],
-            "evidence": "not resolved in fix round 2: Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "table 1's canonical sha256 == 31d2ce87...; registry and Ledger version '2', the clone row in table 2 only; an item of table 1 reads agent_repository version 1 at landed and nothing at run_finished; an item with no form under table 2 reads agent_repository, requires branches_in_shared_repository",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1288,
             "old_row": "ac5/registry-row",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac5/registry-row"
             ],
-            "evidence": "not resolved in fix round 2: Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "table 1's canonical sha256 == 31d2ce87...; registry and Ledger version '2', the clone row in table 2 only; an item of table 1 reads agent_repository version 1 at landed and nothing at run_finished; an item with no form under table 2 reads agent_repository, requires branches_in_shared_repository",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1299,
             "old_row": "ac5/registry-row",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac5/registry-row"
             ],
-            "evidence": "not resolved in fix round 2: Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "table 1's canonical sha256 == 31d2ce87...; registry and Ledger version '2', the clone row in table 2 only; an item of table 1 reads agent_repository version 1 at landed and nothing at run_finished; an item with no form under table 2 reads agent_repository, requires branches_in_shared_repository",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1305,
             "old_row": "ac5/registry-row",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac5/registry-row"
             ],
-            "evidence": "not resolved in fix round 2: Current clone-row/version checks do not assert the old table digest or every old agent-row/action/requirement clause.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "table 1's canonical sha256 == 31d2ce87...; registry and Ledger version '2', the clone row in table 2 only; an item of table 1 reads agent_repository version 1 at landed and nothing at run_finished; an item with no form under table 2 reads agent_repository, requires branches_in_shared_repository",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           },
           {
             "line": 1322,
             "old_row": "ac5/no-form",
-            "status": "open",
+            "status": "restored",
             "current_rows": [
               "ac5/no-form"
             ],
-            "evidence": "not resolved in fix round 2: Current no-form fixture checks present folders and child state; exact empty outcome/no-remover and child file predicates are not all asserted.",
-            "current_suite": null,
-            "current_suite_sha256": null
+            "evidence": "an agent repository with no form and its worktree in place: at run finished state present, no outcome, not handed, .git a folder and the worktree's tracked file there. The worktree is owned by a ticket: a run-owned worktree is due at run finished by its own table-2 row, which is not this criterion's subject",
+            "current_suite": "scripts/suites/161_veldo_0347_space_work.py",
+            "current_suite_sha256": "aafd04035fb2f38373c89e3d0316840a6337e55a06206f6e59afa4edb18a82c3"
           }
         ]
       }
