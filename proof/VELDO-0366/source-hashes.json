@@ -1,0 +1,27 @@
+{
+  "commit": "7b9a5b6dd2dd746e7c655a23a8c3e64c8d1bda18",
+  "files": {
+    ".veldo/policy.yaml": "a505307d70e2be83343bcab52f4841f20faf91e1ba44cfc0585470d57830aa96",
+    "engine/.veldo/policy.yaml": "03a6a22c9480d2c574c81d1e76f68c5561708db4245be3974f31e8b497ad46f3",
+    "engine/scripts/check_gate_mutations.py": "521f314242924d790b4583b1ae8811f3a296a8cb257c34878255c132deb28963",
+    "engine/scripts/mutation_shards.py": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864",
+    "engine/scripts/mutation_transport.py": "a0b8de75aee9a2929bab738a5cc7863c9ce5a118988d2cf056f176c3b6681e4d",
+    "engine/scripts/reuse_worker.py": "5c833386ad3f5470b77922748f81e7ed7a3af0d35fb57f5ef4ae3fe98a313bce",
+    "proof/VELDO-0366/README.md": "6ce9f261f5ad5db270cf5b0c79dcd669014b5f1b6f6f6a89588f25a4aaae7960",
+    "proof/VELDO-0366/guards.py": "a94a37b813418e097b8b452b52f390febd9708e9589bd1ed5a42bf4d6c2d4fdc",
+    "proof/VELDO-0366/protected-paths.json": "52bfe4ee6b9c4e496f567b37d9886dd55a6592ad18721a9ae39addafc874486f",
+    "proof/VELDO-0366/targeted.py": "808da5d10f7e1658ac5fa170203581c97596af219bf99c45dea2534931a10aea",
+    "scripts/check_gate_mutations.py": "521f314242924d790b4583b1ae8811f3a296a8cb257c34878255c132deb28963",
+    "scripts/check_teeth_mutations.py": "4ad89404a948f0ea4b39e6a30fbbba8976a76b161ab059141f6474731da5fdb3",
+    "scripts/mutation_hosts.json": "b00e91a0cfe2b25b8ed74cb883d808997e6d9ac7758ffeebf865593da7268373",
+    "scripts/mutation_shards.py": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864",
+    "scripts/mutation_transport.py": "a0b8de75aee9a2929bab738a5cc7863c9ce5a118988d2cf056f176c3b6681e4d",
+    "scripts/reuse_worker.py": "5c833386ad3f5470b77922748f81e7ed7a3af0d35fb57f5ef4ae3fe98a313bce",
+    "scripts/suites/163_veldo_0366_shards.py": "aaaa1c3bbda8ed6ee36281a2f8ddd91a875256f009baee086b1fd9fc27c8b315",
+    "scripts/suites/manifest.json": "9447840c868b9b0c2a2b46bdc7fdfb69c9bebb7d75da89cedeb508bb7df78d96",
+    "scripts/suites/requires.json": "4cb1d67676bb5451e0809875bb3655a0753d2404eaead04f6d168bcf04876c42",
+    "scripts/suites/support/v366_nodes.py": "1a881cfc2b75c391e5102b1e78055cfc9a9418665f95a0b0ab8aec817c4704dd",
+    "specs/VELDO-0366-distributed-mutation-stage.md": "1a5bf50fe994e32d6ab65aef594ce791222dccec3364e124d9d95d453fe0ce1f",
+    "specs/index.md": "910e592caf4aa18a54794ad24bec795972f8af98931d40759695eefcf736c852"
+  }
+}

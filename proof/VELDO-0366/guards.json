@@ -1,0 +1,405 @@
+{
+  "passed": true,
+  "count": 13,
+  "guards": [
+    {
+      "name": "shards366-identity-set",
+      "row": "shards/identity-multiset",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/identity-multiset",
+            "VELDO-0366 shards/foreign-shard",
+            "VELDO-0366 shards/missing-result",
+            "VELDO-0366 shards/duplicate-result",
+            "VELDO-0366 shards/missing-case-receipt"
+          ],
+          "source_sha256": "aeeea5f625c1b8ab0c4fd0f23c5c95c1790891f1cd18705edb76f9e062cd32eb"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-authentication",
+      "row": "shards/forged-receipt",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/forged-receipt",
+            "VELDO-0366 shards/wrong-key"
+          ],
+          "source_sha256": "8ba65e6a2f7f0aa6d631b68674d79a3c32dfc75b60900fb219c202e582362ae3"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-qualification-any",
+      "row": "shards/unqualified-host",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/unqualified-host",
+            "VELDO-0366 shards/coordinator-unqualified"
+          ],
+          "source_sha256": "7ae4b65feed2e26278e69a7275e8d4ec317da24c09249e7821fae3318c6b925e"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-input-unbound",
+      "row": "shards/input-mismatch",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/input-mismatch"
+          ],
+          "source_sha256": "4f5999a71bb92cacc83a88173f01d1c3ab140d0a7bfbcc32e296785034db3cbc"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-cleanup-unbound",
+      "row": "shards/cleanup-failed",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/cleanup-failed"
+          ],
+          "source_sha256": "4beda59d71c5822b90a9d4b21eb1aad78aed44f8380be1fd69649e7b6d24f07e"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-verdict-unchecked",
+      "row": "shards/survivor",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/survivor",
+            "VELDO-0366 shards/control-failed"
+          ],
+          "source_sha256": "47259efd242f6f5a8489188695cab32ab9c6fa5b39b1182b0f9fe3c16130504b"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-split-controls",
+      "row": "shards/controls-together",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/group-cost-balance",
+            "VELDO-0366 shards/controls-together",
+            "VELDO-0366 shards/coordinator-green"
+          ],
+          "source_sha256": "32bd9f79c46b896b3fa19eb3cf9113ad05cb31fc0ba553e10f6344790f694eff"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-native-assumed",
+      "row": "shards/native-declaration",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/native-declaration"
+          ],
+          "source_sha256": "eba87d2b194249201c4bcca21a17e833abb40df624080c930ee39fa43f450b0f"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-duplicate-shard",
+      "row": "shards/coordinator-duplicate",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/coordinator-duplicate"
+          ],
+          "source_sha256": "f4c8829a9a0d37c44b56967264d888087eca354f136f6b9e81e6ac13e5a8ba8b"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-network-unattested",
+      "row": "shards/network-boundary",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/network-boundary"
+          ],
+          "source_sha256": "35e2d804d5114a94f40a74b6846c56b1d9f287fe933e683c0e1727d553b1a7ab"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-network-socket-allowed",
+      "row": "shards/no-network-filter",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "a0b8de75aee9a2929bab738a5cc7863c9ce5a118988d2cf056f176c3b6681e4d"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "2e5599acc131dfacd72b8580599bb6c3f9a523eaa569b0515b55814def68c04b"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/no-network-filter"
+          ],
+          "source_sha256": "af4007c3407108b26b793efe42102430bd8cc6d2b579fe75330fd85ae527ac5b"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-worker-network-omitted",
+      "row": "shards/worker-network-before-code",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "5c833386ad3f5470b77922748f81e7ed7a3af0d35fb57f5ef4ae3fe98a313bce"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "23ea9a872f3cf3d3413d3e652d9ab99dfd4074bbaad02174a7457826bacc3581"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/worker-network-before-code"
+          ],
+          "source_sha256": "df6cbef20609e1b13568a812836563f232ccd9f1c3cc1eebd090b5b2cead7d5d"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "shards366-runtime-race-ignored",
+      "row": "shards/runtime-race",
+      "observations": {
+        "baseline": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "8410fd37b334fd27e7de594c4f0839ce2c7530b510ed9cac622e0ea0ea082864"
+        },
+        "noop": {
+          "target": [
+            true
+          ],
+          "failed": [],
+          "source_sha256": "4c22d7c58cf4451a10ab3d4de517144424c2826ab0e84a5fdeefa9a547a8afcd"
+        },
+        "mutant": {
+          "target": [
+            false
+          ],
+          "failed": [
+            "VELDO-0366 shards/runtime-race"
+          ],
+          "source_sha256": "0d48dba929a9dadfbfdffd2aa210088ec745757b35c562f5ce57e9292ab0ec92"
+        }
+      },
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0366",
+  "commit": "7b9a5b6dd2dd746e7c655a23a8c3e64c8d1bda18",
+  "producer": "direct fake-node and idle-child fixtures",
+  "status": "partial",
+  "scope": "63 direct assertions and 13 registered guard falsifiers. Native pc2 qualification remains red; no full gate, full leg or native distributed claim.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0366/targeted.json"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0366/guards.json",
+          "detail": "Fake nodes only, baseline and no-op controls with named target failures."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0366/targeted.json"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0366/guards.json",
+          "detail": "Fake nodes only, baseline and no-op controls with named target failures."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0366/targeted.json"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0366/guards.json",
+          "detail": "Fake nodes only, baseline and no-op controls with named target failures."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0366/targeted.json"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0366/guards.json",
+          "detail": "Fake nodes only, baseline and no-op controls with named target failures."
+        }
+      ]
+    }
+  ],
+  "protected_paths": [
+    ".veldo/policy.yaml",
+    "engine/.veldo/policy.yaml",
+    "scripts/check_gate_mutations.py",
+    "engine/scripts/check_gate_mutations.py",
+    "scripts/reuse_worker.py",
+    "engine/scripts/reuse_worker.py",
+    "scripts/mutation_shards.py",
+    "engine/scripts/mutation_shards.py",
+    "scripts/mutation_transport.py",
+    "engine/scripts/mutation_transport.py",
+    "scripts/mutation_hosts.json"
+  ],
+  "limitations": [
+    "pc2 lacks worker-visible Node/npm; no native batch authorized while red",
+    "Remote rollout explicitly limited to nine declared suites; all remaining identities stay local",
+    "Independent review and canonical gate remain outstanding"
+  ],
+  "artifacts": [
+    "proof/VELDO-0366/README.md",
+    "proof/VELDO-0366/census.log",
+    "proof/VELDO-0366/guards.json",
+    "proof/VELDO-0366/guards.py",
+    "proof/VELDO-0366/pc2-prerequisites.json",
+    "proof/VELDO-0366/personal.log",
+    "proof/VELDO-0366/protected-paths.json",
+    "proof/VELDO-0366/source-hashes.json",
+    "proof/VELDO-0366/spec.log",
+    "proof/VELDO-0366/stale.json",
+    "proof/VELDO-0366/targeted.json",
+    "proof/VELDO-0366/targeted.py",
+    "proof/VELDO-0366/template-sync.log"
+  ],
+  "checks": [
+    {
+      "name": "fake_nodes",
+      "status": "passed",
+      "assertions": 63
+    },
+    {
+      "name": "guard_falsifiers",
+      "status": "passed",
+      "count": 13
+    },
+    {
+      "name": "wallclock",
+      "status": "passed"
+    },
+    {
+      "name": "personal_setup",
+      "status": "passed",
+      "findings": 0
+    },
+    {
+      "name": "stale_mutants",
+      "status": "passed",
+      "findings": 0,
+      "inventory": 4058
+    },
+    {
+      "name": "template_sync",
+      "status": "passed",
+      "pairs": 365
+    },
+    {
+      "name": "native_pc2",
+      "status": "not_run",
+      "detail": "Missing worker-visible Node/npm; qualification remains red."
+    },
+    {
+      "name": "canonical_gate",
+      "status": "not_run",
+      "detail": "Excluded by owner instruction."
+    },
+    {
+      "name": "independent_review",
+      "status": "not_run"
+    }
+  ],
+  "rollback": "Disable distributed opt-in and revert VELDO-0366; no host packages or persistent credentials were installed."
+}

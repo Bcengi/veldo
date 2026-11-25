@@ -1,0 +1,9 @@
+{
+  "status": "blocked",
+  "host": "dmitry-pc2",
+  "method": "read-only SSH query using distro Python; no native qualification or worker launched",
+  "system_node": false,
+  "system_npm": false,
+  "account_node_bins": [],
+  "qualification": "Phase 1 remains red; a fresh passing receipt including the network probe is required"
+}
