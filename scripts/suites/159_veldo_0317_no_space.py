@@ -301,6 +301,12 @@ def _v317_suite():
                               and failure.get('pools') == [{'pool': 'host', 'free': 0, 'floor': 20},
                                                          {'pool': 'image', 'free': 1000, 'floor': 5}]
                               and f.ledger.hold(rec['contract']['space']['hold'])['state'] == 'released')
+                        raw_failure = {key: failure[key] for key in ('classification', 'taxonomy', 'pools', 'worktree')}
+                        f.dispatches.exit(rec['dispatch_id'], D.digest(rec['contract']), rec['process'],
+                            rec['termination'], now=rec['history'][-1]['at'], space_failure=raw_failure)
+                        check('ac1/replayed-end', f.dispatches.charged('unit', 'build') == 0
+                              and f.dispatches.attempts('unit', 'build') == 1
+                              and f.dispatches.record(rec['dispatch_id']) == rec)
                         retained_state = f.ledger.item(receiver.run_census['worktree'])['state']
                         # A ticket worktree is measured on run_finished and can remain present.
                         retained_states = ('present', 'due', 'deferred', 'kept')

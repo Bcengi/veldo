@@ -18,10 +18,10 @@ Rows below preserve the required assertion through the named current row(s). Row
 | `ac3/nonfreeing` | ac3/nonfreeing-no-mark |
 | `ac3/pool-isolation` | ac3/pool-only |
 | `ac3/refusal-atomic` | race/own-version-refused |
-| `ac3/release-replay` | replay/own-hold |
+| `ac3/release-replay` | ac3/release-replay |
 | `ac3/stopped-clock` | ac3/release-wakes |
 | `ac3/waiting-set-race` | race/release-resent; race/resend-bounded |
-| `compat/one-shot-adapter` | ac1/retry-removes |
+| `compat/one-shot-adapter` | SUPERSEDED fixture-only adapter lacking expected_version; candidate gate/wrapper adapters use the versioned Ledger API (suites 151/153_0309). The externally visible advised behavior remains ac1/retry-removes and report/signal-refused-advised. |
 | `fix1/act-refused-signal` | act/signal-refused-waits |
 | `fix1/report-refused-signal` | report/signal-refused-advised |
 | `fix2/release-marks-per-pool` | fix2/release-marks-per-pool |

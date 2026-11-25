@@ -31,7 +31,7 @@ Rows below preserve the required assertion through the named current row(s). Row
 | `ac4/one-run-default` | ac4/five-before-measured |
 | `ac4/project-file` | ac4/declared-first |
 | `ac4/unmeasured-default` | ac4/five-before-measured |
-| `ac4/unread-declaration` | ac4/project-station |
+| `ac4/unread-declaration` | ac4/unread-declaration |
 | `fix1/failed-judgment` | fix1/failed-judgment |
 | `fix2/left-backlog` | fix2/left-backlog |
 | `fix2/withdrawn-restart` | recovery/orphan-released; recovery/next-offer |

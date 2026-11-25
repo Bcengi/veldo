@@ -109,8 +109,11 @@ def _admit(ledger, identity, free, principal, command_id, given):
         given.setdefault('probe', organ('control_space_probe'))
         given.setdefault('kinds', organ('control_space_kinds'))
         given.setdefault('remover', organ('control_space_remove'))
-        sent = organ('control_space_signal').signal(
-            ledger, 'admission_requested', {'pool': reason['pool']}, free=free, **given)
+        try:
+            sent = organ('control_space_signal').signal(
+                ledger, 'admission_requested', {'pool': reason['pool']}, free=free, **given)
+        except Exception as error:
+            sent = {'ok': False, 'reason': getattr(error, 'code', type(error).__name__), 'detail': str(error)}
         # A refused retry removed nothing, and the hold is still judged: the reservation above left it
         # waiting, and a run of a scope in report mode is advised, never left waiting (fix round 1).
         retry = None if sent['ok'] else {'reason': sent['reason'], 'detail': sent.get('detail', '')}

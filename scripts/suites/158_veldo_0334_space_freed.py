@@ -479,6 +479,29 @@ def _v334_suite():
         run('report/signal-refused-advised', lambda: signal_refused('report', 'report/signal-refused-advised'))
         run('act/signal-refused-waits', lambda: signal_refused('act', 'act/signal-refused-waits'))
 
+        def signal_lost():
+            for mode in ('act', 'report'):
+                f = wired('signal-lost-' + mode, mode)
+                try:
+                    def lost(event, subject, **kwargs):
+                        f.signals.append((event, subject))
+                        raise RuntimeError('fixture cleanup lost')
+                    f.ledger.signal = lost
+                    f.free['host'] = 110
+                    result = pass_from(f, 'journal')
+                    hold = next(iter(f.ledger.holds().values()))
+                    check('fix1/' + mode + '-lost-signal', hold['retry_asked'] and len(f.signals) == 1
+                          and hold['state'] == ('advised' if mode == 'report' else 'waiting')
+                          and bool(result['offered']) == (mode == 'report'))
+                    seen = {'operation': SP.RELEASE, 'command_id': 'fixture-release',
+                            'wrote': {SP.hold_id('waiting'): {'state': 'waiting'},
+                                      SP.hold_id('wrapped'): {'state': 'released'}}}
+                    answer = f.ledger._original(seen, {'parameters': {'hold': 'wrapped'}})
+                    check('ac3/release-replay', answer['state'] == 'released')
+                finally:
+                    f.close()
+        run('fix1/report-lost-signal', signal_lost)
+
         # Fix round 1 (F3). A marked hold that is released carries its older mark; nobody waits, no wake.
         def released_mark():
             f = wired('released-mark')

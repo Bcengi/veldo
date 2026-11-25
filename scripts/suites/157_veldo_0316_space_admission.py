@@ -663,6 +663,20 @@ def _v316_suite():
                 f.close()
         run('ac1/unread-pool', unread_free)
 
+        def unread_declaration():
+            f = Fixture('bad-declaration')
+            try:
+                (f.repo / '.veldo' / 'space.yaml').write_text('needs: invalid\n')
+                error = None
+                try:
+                    f.prepare()
+                except Exception as caught:
+                    error = caught
+                check('ac4/unread-declaration', error is not None and not f.ledger.holds() and not f.started)
+            finally:
+                f.close()
+        run('ac4/unread-declaration', unread_declaration)
+
     for row, answers in rows.items():
         expect('VELDO-0316 space316/' + row, bool(answers) and all(answers))
 

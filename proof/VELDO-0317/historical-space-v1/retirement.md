@@ -10,7 +10,7 @@ Rows below preserve the required assertion through the named current row(s). Row
 | `ac1/behind-admission` | ac1/behind-admission |
 | `ac1/order` | ac1/numbers-before-cleanup |
 | `ac1/refunded` | ac1/not-charged (charged count zero; attempt IDs remain distinct) |
-| `ac1/replayed-end` | ac1/not-charged; candidate dispatch idempotence |
+| `ac1/replayed-end` | ac1/replayed-end |
 | `ac2/repeat-once` | ac2/repeated-once; ac2/repeat-red |
 | `ac2/restart` | ac4/restart-stop |
 | `ac3/next-brief` | ac3/next-brief |
