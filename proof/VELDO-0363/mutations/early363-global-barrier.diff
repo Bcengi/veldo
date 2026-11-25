@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1148 +1148 @@
+-                        if 'requires' not in j or j['requires'] in self.validated_groups), key=job_order)
++                        if 'requires' not in j or (j['requires'] in self.validated_groups and not any(k.get('mode') != 'mutant' for _, k in pending) and not self.active)), key=job_order)

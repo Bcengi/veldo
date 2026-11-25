@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -77 +77 @@
+-        values[identity] = dict(failed=failed or (prior['failed'] and not passed),
++        values[identity] = dict(failed=failed or (prior['failed']),

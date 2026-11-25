@@ -18218,8 +18218,8 @@ def cases():
         ['case-deadlines/unmeasured-slow-baseline'])
     result[-1]['dir'] = 'scripts'
     add(285, 'deadline285-no-same-stage-derivation', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
-        '            control_results = workers.run(controls, directory, frozen, on_result=measured_baseline)\n',
-        '            control_results = workers.run(controls, directory, frozen)\n',
+        '                measured_baseline(name, completed)\n',
+        '                pass  # defect: no same-stage estimate refresh\n',
         ['case-deadlines/unmeasured-slow-baseline'])
     result[-1]['dir'] = 'scripts'
 
@@ -18944,6 +18944,66 @@ def cases():
         "                if not completed.get('declaration_stale'):\n",
         '                if False:\n', ['admission/learning/red-stage'])
     result[-1]['dir'] = 'scripts'
+    # VELDO-0363: each dependency, validation, abort and ordering guard has a row.
+    for name, old, new, row in [
+        ('failure-order', "not job.get('last_failed', False)", 'False', 'ordering'),
+        ('tail-order', "-job.get('priority_seconds', job.get('budget_seconds', 0))",
+         "job.get('priority_seconds', job.get('budget_seconds', 0))", 'ordering'),
+        ('ready-tie', "job.get('mode') != 'mutant'", "job.get('mode') == 'mutant'", 'release'),
+        ('dependencies', "if 'requires' not in j or j['requires'] in self.validated_groups",
+         'if True', 'both-controls'),
+        ('global-barrier', "if 'requires' not in j or j['requires'] in self.validated_groups",
+         "if 'requires' not in j or (j['requires'] in self.validated_groups and not any("
+         "k.get('mode') != 'mutant' for _, k in pending) and not self.active)", 'release'),
+        ('blocked-group', "if j.get('requires') not in self.blocked_groups", 'if True', 'collect-baseline'),
+        ('missing-dependency', 'if pending and not self.active and not eligible:',
+         'if False:', 'missing-dependency'),
+        ('collect-switch', "os.environ.get('VELDO_GATE_COLLECT_ALL') == '1'", 'True', 'explicit-collect'),
+        ('mutant-abort', "                    if not collect_all:\n                        raise Refused(getattr(error, 'code', 'driver_error'), str(error)) from error",
+         "                    if False:\n                        raise Refused(getattr(error, 'code', 'driver_error'), str(error)) from error", 'abort-survivor'),
+        ('control-abort', "                    if not collect_all:\n                        raise Refused(code, str(error)) from error",
+         "                    if False:\n                        raise Refused(code, str(error)) from error", 'abort-baseline'),
+        ('control-red', 'if (not all(ok is True for _, ok in rows) or any(observation.get(k)',
+         'if (False or any(observation.get(k)', 'abort-baseline'),
+        ('control-watchdog', "for k in ('watchdog_fired', 'hung_rows', 'not_run_rows'))):",
+         'for k in ())):', 'collect-watchdog'),
+        ('control-pair', 'if all(pair) and group not in workers.blocked_groups:',
+         "if mode == 'baseline' and group not in workers.blocked_groups:", 'release'),
+        ('control-equality', "if observations(pair[0]['result']['observation']) != observations(pair[1]['result']['observation']):",
+         'if False:', 'collect-mismatch'),
+        ('control-target', "if [ok for n, ok in rows if n.split()[-1] == label] != [True]:",
+         'if False:', 'collect-missing-target'),
+        ('dispatch', 'if name in by_identity:', 'if False:', 'release'),
+        ('audit-control', "if identity in audits and not any(e['identity'] == identity for e in receipt['audit']['entries']):",
+         'if False:', 'audit-control'),
+        ('audit-observed', "for m in ('baseline', 'noop') if group + ':' + m in control_results}",
+         "for m in ('baseline', 'noop') if False}", 'audit-control'),
+        ('audit-differences', "if audits[identity][m] != value}", 'if False}', 'audit-control'),
+        ('stale-ready', 'workers.validated_groups.discard(group)', 'pass', 'stale-rerun'),
+        ('stale-pair', "control_results.pop(group + ':' + mode, None)", 'pass', 'stale-rerun'),
+        ('control-stale', "                if completed.get('declaration_stale'):\n                    rerun.update",
+         "                if False:\n                    rerun.update", 'stale-declarations/runs-fresh'),
+        ('group-failure-priority', "last_failed=any(mutant_jobs[c['identity']]['last_failed'] for c in own)",
+         'last_failed=False', 'ordering'),
+        ('history-authority', 'if not authority or group_for is None:', 'if group_for is None:', 'authority-only'),
+        ('history-setup', 'if not authority or group_for is None:', 'if not authority:', 'setup-history'),
+        ('history-dict', 'if isinstance(item, dict)', 'if True', 'corrupt-history'),
+        ('history-bool', "and type(item.get('failed')) is bool", 'and True', 'corrupt-history'),
+        ('history-number', "and type(item.get('seconds')) in (int, float)", 'and True', 'corrupt-history'),
+        ('history-finite', "math.isfinite(item['seconds']) and item['seconds'] >= 0", "item['seconds'] >= 0", 'corrupt-history'),
+        ('history-positive', "math.isfinite(item['seconds']) and item['seconds'] >= 0", "math.isfinite(item['seconds'])", 'corrupt-history'),
+        ('history-invalid', "if 'case' in r}", 'if False}', 'red-history'),
+        ('history-completed', 'if n in outcomes]', 'if False]', 'red-history'),
+        ('history-worker', "any(o.get('error') not in (None, 'worker_cancelled') for o in own)",
+         'False', 'worker-error-history'),
+        ('history-cancelled', "o.get('error') not in (None, 'worker_cancelled')", "o.get('error') is not None", 'worker-error-history'),
+        ('history-clear', "prior['failed'] and not passed", "prior['failed']", 'clear-failure'),
+        ('history-pending', "prior['failed'] and not passed", 'False', 'pending-history'),
+    ]:
+        suite = '158_veldo_0224_stale_declarations.py' if name == 'control-stale' else '98_veldo_0204_mutation_receipts.py'
+        add(363, 'early363-' + name, suite, 'check_gate_mutations.py', old, new,
+            [row if name == 'control-stale' else 'early/' + row])
+        result[-1]['dir'] = 'scripts'
     return result
 
 

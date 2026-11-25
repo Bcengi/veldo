@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -61 +61 @@
+-            job.get('mode') != 'mutant')
++            job.get('mode') == 'mutant')

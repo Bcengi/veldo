@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1657 +1657 @@
+-                if name in by_identity:
++                if False:
