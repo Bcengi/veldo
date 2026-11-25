@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -278 +278 @@
+-            if not isinstance(item, dict) or any(item.get(k) != v for k, v in dict(
++            if False and any(item.get(k) != v for k, v in dict(

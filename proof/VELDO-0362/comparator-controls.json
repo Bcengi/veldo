@@ -1,0 +1,80 @@
+{
+  "kind": "synthetic checker controls, not benchmark evidence",
+  "source_sha256": "3e66592cb297e509a89335e54ca299b1a62f2b57c007b5168cfccaae5bb99702",
+  "green": true,
+  "negative_controls": [
+    {
+      "change": "coverage",
+      "rejected_by": [
+        "calibrated/coverage"
+      ]
+    },
+    {
+      "change": "foreign-case",
+      "rejected_by": [
+        "calibrated/coverage",
+        "same-verdicts"
+      ]
+    },
+    {
+      "change": "memory",
+      "rejected_by": [
+        "calibrated/memory-cap"
+      ]
+    },
+    {
+      "change": "worker-anon",
+      "rejected_by": [
+        "calibrated/worker-anon-cap"
+      ]
+    },
+    {
+      "change": "cpu-throttle",
+      "rejected_by": [
+        "calibrated/no-quota-or-memory-high-throttling"
+      ]
+    },
+    {
+      "change": "memory-high",
+      "rejected_by": [
+        "calibrated/no-quota-or-memory-high-throttling"
+      ]
+    },
+    {
+      "change": "timeout",
+      "rejected_by": [
+        "calibrated/no-timeouts"
+      ]
+    },
+    {
+      "change": "overlapping-generators",
+      "rejected_by": [
+        "calibrated/one-generator"
+      ]
+    },
+    {
+      "change": "verdict",
+      "rejected_by": [
+        "same-verdicts"
+      ]
+    },
+    {
+      "change": "inputs",
+      "rejected_by": [
+        "same-inputs"
+      ]
+    },
+    {
+      "change": "uncalibrated",
+      "rejected_by": [
+        "calibrated-claims"
+      ]
+    },
+    {
+      "change": "non-default-before",
+      "rejected_by": [
+        "default-claims"
+      ]
+    }
+  ]
+}
