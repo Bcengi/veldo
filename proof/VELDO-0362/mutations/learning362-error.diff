@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -260 +260 @@
+-                if ('error' in outcome or outcome.get('declaration_stale')
++                if (outcome.get('declaration_stale')

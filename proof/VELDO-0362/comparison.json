@@ -1,0 +1,1784 @@
+{
+  "checks": {
+    "calibrated-claims": true,
+    "calibrated/coverage": true,
+    "calibrated/memory-cap": true,
+    "calibrated/no-quota-or-memory-high-throttling": true,
+    "calibrated/no-timeouts": true,
+    "calibrated/one-generator": true,
+    "calibrated/worker-anon-cap": true,
+    "default-claims": true,
+    "default/coverage": true,
+    "default/memory-cap": true,
+    "default/no-quota-or-memory-high-throttling": true,
+    "default/no-timeouts": true,
+    "default/one-generator": true,
+    "default/worker-anon-cap": true,
+    "same-inputs": true,
+    "same-verdicts": true
+  },
+  "metrics": {
+    "calibrated": {
+      "cpu_throttled_usec": 0,
+      "host_memory_cap": 17179869184,
+      "implementation_digest": "e1ad25b4f6172adc0a922675406bc261fed76084975bd3675f24873dff9aa29f",
+      "input_digest": "d2a9d31c3d727e99e54f1de0bbe192f2415a556ad30805c38650e46d8a8fa96e",
+      "mean_busy_cores": 5.048921038853602,
+      "memory_events": {
+        "high": "0",
+        "low": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_group_kill": "0",
+        "oom_kill": "0",
+        "sock_throttled": "388"
+      },
+      "peak_worker_anon_bytes": 12539015168,
+      "peak_workers": 32,
+      "receipt_sha256": "be1d94ccf0e19c29e761c762ead8b8462cf856d1c08966991f7f9b40ee9143d4",
+      "scope_peak_memory_bytes": 16331059200,
+      "wall_seconds": 3259.2893012040295,
+      "workers": 272
+    },
+    "default": {
+      "cpu_throttled_usec": 0,
+      "host_memory_cap": 17179869184,
+      "implementation_digest": "e1ad25b4f6172adc0a922675406bc261fed76084975bd3675f24873dff9aa29f",
+      "input_digest": "d2a9d31c3d727e99e54f1de0bbe192f2415a556ad30805c38650e46d8a8fa96e",
+      "mean_busy_cores": 4.3828841839752455,
+      "memory_events": {
+        "high": "0",
+        "low": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_group_kill": "0",
+        "oom_kill": "0",
+        "sock_throttled": "692"
+      },
+      "peak_worker_anon_bytes": 11571965952,
+      "peak_workers": 14,
+      "receipt_sha256": "2b5c3ff36b26644c391d972324b6e9d2e7c1200dfe5687ab45d826d05e03d4bb",
+      "scope_peak_memory_bytes": 12209082368,
+      "wall_seconds": 3543.8202694500796,
+      "workers": 272
+    }
+  },
+  "passed": true,
+  "seconds_saved": 284.5309682460502,
+  "verdicts": {
+    "check_teeth_mutations.py:acceptance-records-no-paths": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "aliases/floor-from-recorded-numbers",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-boundary-always-initial": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "usage/reserved-before-launch",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-claude-main-loop-usage": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "settle/model-usage",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-claude-old-tables": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "login/no-paid-api",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-claude-repeat-counted": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "settle/once",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-claude-resume-unknown-prior-whole": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "settle/resumed-delta",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-claude-resume-whole-total": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "settle/resumed-delta",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-codex-spend-cap-unobserved": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "usage/rate-limit-reset",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-configured-login-accepted": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "login/configured-environment",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-credential-tables-ignored": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "login/no-paid-api",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-fleet-codex-to-claude": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "login/fleet-provider",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-host-creds-passes": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "login/no-paid-api",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-profile-from-caller": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "login/recorded-account-profile",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-timeout-releases": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "settle/timeout-retained",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-unknown-remaining-counted": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "attribution/measurement-removed",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:account-window-reopens-late": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "usage/rate-limit-reset",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:alias-floor-ignores-history": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "aliases/historical-floor",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:alias-floor-slug-directory-single-line": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "aliases/floor-counts-every-carrier",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:alias-floor-slug-grammar": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "aliases/floor-counts-every-carrier",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:alias-reserved-unchecked": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "aliases/reserved-directories",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:api-call-verified-by-keyring": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "service/edge-signed-requests",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:authority-domain-unchecked": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "edge/authority-recheck",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:autostart113-construction-outside-authority": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "unavailable/in-process-construction-boundary",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:autostart113-incomplete-counts-as-success": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "unavailable/no-auto-start-needs-census",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:autostart113-reaped-fallback": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "unavailable/no-client-starts-the-authority",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:autostart113-transient-abstract-listener": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "unavailable/no-client-hosts-a-listener",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:body-actor-authorizes": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "routes/body-actor-refused",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:cookie-scriptable": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "session/cookie-and-expiry",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:decision-claude-agent-rename-unread": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/redacted-name",
+          "unproven"
+        ],
+        [
+          "format/tool-forms",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:decision-claude-nameless-call-skipped": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/unreadable-asks",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:decision-claude-task-count-unreadable-skipped": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/subagent-calls",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:decision-codex-unlisted-item-free": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/unknown-forms",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:decision-unmarked-revision-read-only": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/ask",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:document-current-version": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "documents/stale-overwrite",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-acceptance-is-completion": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/completion/provider",
+          "unproven"
+        ],
+        [
+          "effects/completion/publication",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-completion-from-push-output": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-hook-text-without-newline",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-confirm-ignores-new-refs": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-confirms-one-change",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-confirm-without-symref-targets": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-head-change",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-destinations-from-fetch-url": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-records-resolved-destination",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-destinations-not-scrubbed": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-record-scrubs-destination",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-network-profile-drops-transport-variables": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-network-profile-strips-coordinates",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-pending-reconciled-as-settled": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/revocation-in-flight/provider",
+          "unproven"
+        ],
+        [
+          "effects/revocation-in-flight/publication",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-receiver-refused-conclusive": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/receiver-refused-is-unknown/provider",
+          "unproven"
+        ],
+        [
+          "effects/receiver-refused-is-unknown/publication",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-refusal-owes-a-stop": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-refusal-reaches-caller",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-resolution-config-exit-unchecked": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-resolution-output-checked",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-scrub-keeps-fragment": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-scrub-query-fragment",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-scrub-malformed-host-kept": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-scrub-malformed-address",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-url-section-pushurl-unchecked": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/publication-destination-listed-as-resolved",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:effects-worker-scope": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "effects/scope/provider",
+          "unproven"
+        ],
+        [
+          "effects/scope/publication",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:follow-ignores-revocation": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "session/revocation-ends",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:format-codex-dynamic-item-builtin": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/unknown-forms",
+          "unproven"
+        ],
+        [
+          "format/tool-forms",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:history-merges-by-config": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "aliases/history-read-whatever-repository-config",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:limit-claude-reset-minute-start": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "limit/rate-limit-result",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:load358-graph-red-not-blocking": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "leg/graph-blocks",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:load358-no-spinners": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "load/level-by-construction",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:nested-workflow-dropped": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/nested-constructs",
+          "unproven"
+        ],
+        [
+          "format/tool-forms",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-activated-while-provisioning": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "activation/order",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-adoption-renamed-created": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "proposal/adoption-visibility",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-ambient-push": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "provision/created",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-directory-overwritten": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "provision/directory-not-empty",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-ended-factory-deferred": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "activation/factory-canceled",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-factory-repository-unbound": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "factory/own-repository",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-interrupted-left-provisioning": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "provision/interrupted",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-judge-choices-unchecked": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "proposal/choices",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-judge-correction-unbound": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "proposal/correction-bound",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-line-not-added": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "activation/line-from-pass",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-own-message-visibility": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "proposal/own-message-doubt",
+          "unproven"
+        ],
+        [
+          "provision/adoption-path",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-own-message-visibility-word": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "proposal/own-message-doubt",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-paused-factory-owners-taken": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "activation/factory-paused-resumed",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-presented-when-named": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "proposal/nothing-asked",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-provisioner-unsettled": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "provision/settlement-required",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-refused-cycles-retried": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "activation/factory-line-kept",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-remote-owner-unchecked": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "provision/step-failures",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-second-question": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "proposal/correction",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-signer-reaches-agent": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "provision/signing-no-agent",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-step-failure-continues": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "provision/step-failures",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-take-on-not-sent": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "provision/handed-over",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:newproject143-visibility-from-text": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "proposal/correction-negated",
+          "unproven"
+        ],
+        [
+          "proposal/correction-phrasings",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:outward-codex-wait-agent-allowed": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/outward-tool-asks",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:outward-unknown-tool-allowed": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/outward-tool-asks",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:outward-workflow-label-read": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/outward-tool-asks",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:owners37-added-command-lost": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "owners/superset/kinds",
+          "unproven"
+        ],
+        [
+          "owners/superset/prefixes",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:owners37-different-owner-adds": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "owners/different-owner/kinds",
+          "unproven"
+        ],
+        [
+          "owners/different-owner/prefixes",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:pool-limit-uncounted": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "limit/rate-limit-result",
+          "unproven"
+        ],
+        [
+          "limit/stream-exhausted",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:pool-shared-profile": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "pool/per-account-isolation",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:pool-until-first-window-reset": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "pool/until-earliest",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:possession-unclaimed": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "enrollment/possession-race",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:raised-catch-up-not-owed": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "events/retry-after-failure",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:read-model-gaps-claim-projects": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "reads/implemented-writers",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:reader-follows-links": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "publication/no-symlink-escape",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:reconcile-reenters-delivery": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "events/reconcile-deferred",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:record-trusts-supplied-digest": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "publication/recorded-only-by-publisher",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:redaction-skips-credential-fields": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "reads/authoritative",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:remote-trigger-not-outside": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "decision/remote-agent-asks",
+          "unproven"
+        ],
+        [
+          "format/tool-forms",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:revision-any-repository": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "aliases/revision-in-enrolled-repository",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:revision-regression-allowed": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "aliases/floor-from-every-accepted-revision",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:revoked-member-credential-current": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "session/revocation-ends",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-add-default-tool": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "dispatch/refusal",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-bundled-skills-kept": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "handoff/claude",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-catalog-functions-not-normalized": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "wire/normalization",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-catalog-granted-patch-lost": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "catalog/grants",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-catalog-patch-retained": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "catalog/fields",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-catalog-resource-readers-hidden": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "wire/resources",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-code-mode-hides-missing-grants": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "review/codex-tools",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-codex-listing-profile": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "handoff/codex",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-forget-first-context": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "launch/instructions",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-init-unbounded": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "review/init-bound",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-lead-model-mode-ignored": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "review/codex-capture",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-resource-grant-omitted": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "wire/resources",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-search-result-unread": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "wire/later-requests",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-skill-private-git": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "review/skill-git-boundary",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:role127-wire-extra-ignored": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "review/codex-tools",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:save-speaker-is-edge": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "actions/workflow-save",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:shallow-check-reads-bare": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "aliases/shallow-repository-refused",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:store-owner-outer-code-only": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "aliases/owned-by-code-not-name",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:timers358-browser-profile-skipped": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "timers/profile-applied",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:ui131-cap-shown-unsent": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ac2/worker-cap",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:ui131-capability-dropped": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ac1/worker-capability",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:ui131-catalog-first-server-only": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ac1/whole-catalog",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:ui131-configurations-team-named-only": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ac1/every-configuration",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:ui131-credential-metadata-dropped": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ac1/whole-catalog",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:ui131-decision-action-hidden-360": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ac1/screens-360",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:ui131-identities-dropped": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ac1/repositories",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:ui131-priority-shown-unsent": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ac2/priority-save",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:ui131-provider-unread": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ac1/usage-provider",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:ui131-stop-shown-unsent": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ac2/worker-stop",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-commit-not-sent": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ownership/committed",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-commit-with-previous-engine": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ownership/commit-refused",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-different-record-accepted": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "engines/refuse-record",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-edited-file-overwritten": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "upgrade/refused-by-name",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-existing-pin-rewritten": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "upgrade/fresh-0186",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-in-place-writes": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "switch/kill-points",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-module-not-scaffolded": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "install/assets",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-no-ownership-restore": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "switch/failed-after-start",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-pin-missing": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "upgrade/from-8bc34e94",
+          "assertion"
+        ],
+        [
+          "upgrade/from-971186ac",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-previous-commands-not-recorded": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ownership/restore-commands",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-receiver-store-unchecked": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "upgrade/receiver-without-store",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-repair-count-hidden": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "engines/repair-report",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-restore-refusal-unreported": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "ownership/restore-reported",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-runtime-record-stale": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "upgrade/from-8bc34e94",
+          "assertion"
+        ],
+        [
+          "upgrade/from-971186ac",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:upgrade189-switch-back-not-due": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "switch/rollback-kills",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:user-handle-unchecked": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "webauthn/stand-in-browser",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:uv-unchecked": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "webauthn/independent-vectors",
+          "unproven"
+        ],
+        [
+          "webauthn/stand-in-browser",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:wait358-browser-watchdog-silent": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "browser/hang-by-progress",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:wait358-browser-watchdog-total-time": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "browser/hang-by-progress",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:wave358-browser-expectation-restored": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "wave1/no-sites",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:wave358-browser-fixed-wait-restored": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "wave1/no-sites",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:wave358-browser-test-limit-restored": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "wave1/no-sites",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:wave358-harness-bound-restored": {
+      "kill_by": "assertion",
+      "kills": [
+        [
+          "wave1/no-sites",
+          "assertion"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    },
+    "check_teeth_mutations.py:workflow-save-authority-bypassed": {
+      "kill_by": "unproven",
+      "kills": [
+        [
+          "actions/unauthorized-write",
+          "unproven"
+        ]
+      ],
+      "source": "fresh",
+      "validated": true
+    }
+  }
+}

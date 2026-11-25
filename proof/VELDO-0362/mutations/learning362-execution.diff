@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -329 +329 @@
+-                        or any(r.get('execution_key') != path.stem or not r.get('execution')
++                        or any(False

@@ -1,0 +1,104 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0362",
+  "commit": "987b93183245b013c5a86c4bd7710e29d529aadd",
+  "producer": "local bounded execution",
+  "status": "partial",
+  "scope": "selected diagnostics and bounded native comparison; not a canonical gate or landing stamp",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0362/guard-mutants.json",
+          "detail": "Registered red-stage, invalid-worker, invalid-control and input/runtime-race falsifiers killed at their named rows; resource samples remain separate from verdicts."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0362/comparison.json",
+          "detail": "Each native drive completed and cleaned 272 workers; all verdicts remain fresh. The first drive wrote 450 per-case worker samples, and the second read only those samples."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0362/guard-mutants.json",
+          "detail": "Cross-key maxima, partial default floors, unseen outliers, foreign platforms and corrupted records have named-row falsifiers."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0362/comparison.json",
+          "detail": "Default claims on all 150 cases versus current-key calibrated claims on all 150; original reserves and caps retained."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0362/comparison.json",
+          "detail": "Identical selected inputs and per-case verdicts; 150/150 rejections each, no worker errors, no CPU quota or memory-high throttling, memory within 16 GiB. Wall time 3543.82 to 3259.29 seconds, 284.53 seconds saved (8.03 percent)."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0362/comparator-controls.json",
+          "detail": "The comparison checker accepts its positive fixture and rejects 12 independently altered negative controls."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit.selected",
+      "status": "passed",
+      "detail": "Suite 115: 68 checks passed; suites 104/112 in the immutable snapshot: 59 passed. These are targeted diagnostics."
+    },
+    {
+      "name": "mutation.selected",
+      "status": "passed",
+      "detail": "25 new guard mutants killed at named rows; exact diffs retained."
+    },
+    {
+      "name": "wallclock",
+      "status": "passed",
+      "detail": "No added sites; census green."
+    },
+    {
+      "name": "personal_setup",
+      "status": "passed",
+      "findings": 0
+    },
+    {
+      "name": "stale_mutants",
+      "status": "passed",
+      "findings": 0
+    },
+    {
+      "name": "engine_sync",
+      "status": "passed"
+    },
+    {
+      "name": "canonical_gate",
+      "status": "not_run",
+      "detail": "Owner prohibits full gate and full legs for this task."
+    },
+    {
+      "name": "protected_path_approval",
+      "status": "pending",
+      "detail": "Owner approval is required at landing."
+    }
+  ],
+  "protected_paths": [
+    "scripts/check_gate_mutations.py",
+    "engine/scripts/check_gate_mutations.py"
+  ],
+  "rollback": "Revert the implementation commit; resource hints are disposable and cannot authorize verdicts."
+}

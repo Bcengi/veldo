@@ -5,3 +5,4 @@ Wall-clock census: green, no added sites.
 Personal setup: 0 findings (built-in shapes; no installed configuration found).
 Full gate and full legs not run by owner instruction.
 An intermediate 3-case drive rejected all 3, but its stage was red because the benchmark helper changed during the drive; the frozen-input repeat passed all 3.
+Worker ownership and timing regression repeat in the immutable snapshot: 59 passed, 0 failed. The initial live-worktree drive rejected its four mutants but failed the input race check during edits; no assertion was changed.

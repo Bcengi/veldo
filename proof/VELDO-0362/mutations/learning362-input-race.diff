@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1644 +1644 @@
+-                    and inputs_unchanged(root, expected_common, files, head) and reuse.unchanged()):
++                    and reuse.unchanged()):
