@@ -61,6 +61,13 @@ def _v364_checks():
     else:
         for name in ('aggregate-and-mix', 'worker-too-large', 'manager-unchanged'):
             row(name, False)
+    independent = scheduler.Ledger(capacity())
+    with contextlib.redirect_stdout(io.StringIO()):
+        held = independent.acquire('holder', dict(claim(manager='shared'), ports=[12345], host_lock='shared'))
+        blocked = [not independent.acquire('manager-exclusive', claim(manager='exclusive')),
+                   not independent.acquire('port-collision', dict(claim(), ports=[12345])),
+                   not independent.acquire('lock-exclusive', dict(claim(), host_lock='exclusive'))]
+    row('exclusions-retained', held and all(blocked))
     large = scheduler.Ledger(capacity(20), configured)
     old = scheduler.startup_estimate(node['estimate'])
     fitted, _ = scheduler.node_claim(node, None, capacity(20))
