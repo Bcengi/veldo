@@ -88,6 +88,11 @@
     {
       "name": "protected_path_approval",
       "status": "pending"
+    },
+    {
+      "name": "final_evidence_metadata_remote_recheck",
+      "status": "not_run",
+      "detail": "Cancelled own queued recheck before launch because another exclusive remote job occupied the node. Source checks passed at the implementation commit; proof manifest structure checked separately."
     }
   ],
   "protected_paths": [

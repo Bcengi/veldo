@@ -30,3 +30,7 @@ duplicate and changed results, invalid controls, reuse and incomplete cleanup.
 `final_checks.sh` performs static checks and the final native qualification. All workload
 execution is through the owner's remote runner on the second host. No full gate, full leg,
 live engine capture, transport, aggregator or first-host workload is part of this evidence.
+
+The final evidence-only metadata recheck was queued behind another exclusive remote job
+and cancelled before it started. Source checks above are bound to `f3b2f3739`; the proof
+manifest's structure was checked separately. No later full-gate result is implied.
