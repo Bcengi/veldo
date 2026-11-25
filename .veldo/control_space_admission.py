@@ -95,7 +95,8 @@ def _admit(ledger, identity, free, principal, command_id, given):
     if hold['state'] != 'waiting':
         return ledger.admit(identity, 'admitted', principal=principal, command_id=command_id)
     if hold.get('reason') is not None and hold['retry_asked'] and not hold['freed']:
-        return {'ok': True, 'state': 'waiting', 'answer': 'waiting', 'reason': hold['reason']}
+        if ledger.acts(hold.get('scope')):
+            return {'ok': True, 'state': 'waiting', 'answer': 'waiting', 'reason': hold['reason']}
     scope = hold.get('scope')
     version = ledger._row('space:hold:' + identity, 'space_hold')[0]
     reason = judge(ledger, identity, free)
@@ -438,6 +439,11 @@ class Requests:
                 del self.answers[key]
                 if answer.get('space'):
                     answer = None
+            if (answer is not None and hold and hold['state'] == 'waiting'
+                    and not space['ledger'].acts(hold.get('scope'))):
+                # A persisted wait or an act-to-report change cannot strand a report-mode offer.
+                self.answers.pop(key, None)
+                answer = None
             if answer is not None:
                 if answer.get('ok'):
                     return answer.get('space')

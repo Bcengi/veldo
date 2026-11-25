@@ -498,6 +498,12 @@ def _v334_suite():
                                       SP.hold_id('wrapped'): {'state': 'released'}}}
                     answer = f.ledger._original(seen, {'parameters': {'hold': 'wrapped'}})
                     check('ac3/release-replay', answer['state'] == 'released')
+                    if mode == 'act':
+                        f.mode('report')
+                        continued = pass_from(f, 'journal')
+                        check('fix1/report-recovers-persisted-wait', bool(continued['offered'])
+                              and not continued['waiting'] and len(f.signals) == 1
+                              and next(iter(f.ledger.holds().values()))['state'] == 'advised')
                 finally:
                     f.close()
         run('fix1/report-lost-signal', signal_lost)
