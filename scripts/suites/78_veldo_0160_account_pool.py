@@ -70,7 +70,7 @@ def _v160_suite():
             'decision/outward-tool-asks',
             'pool/moved-off', 'pool/added-account', 'pool/one-run-while-unknown',
             'pool/usage-observes', 'pool/selection-order', 'pool/until-earliest',
-            'install/assets', 'format/claude-fake-lines', 'format/codex-fake-lines')
+            'format/claude-fake-lines', 'format/codex-fake-lines')
     rows = {name: [] for name in ROWS}
 
     def check(row, label, condition):
@@ -2245,20 +2245,6 @@ sys.exit(payload.get('code', 0))
                   'no table lists (the unlisted ones) [%s]' % wrong, not wrong and bool(CFORMS) and bool(XFORMS)
                   and {'dynamic_tool_call', 'collab_agent_tool_call', 'sub_agent_activity'} <= listed['thread_items']
                   and not {'dynamic_tool_call', 'collab_agent_tool_call', 'sub_agent_activity'} & exec_items)
-
-        # Installation: both new modules laid down by the scaffold, the engine copies identical.
-        with region('install/assets'):
-            scaffold = load('v160_scaffold', mods / 'init_scaffold.py')
-            rels = ('.veldo/control_account_pool.py', '.veldo/control_account_limit.py')
-            touched = rels + tuple('.veldo/' + m for m in PRODUCTION)
-            check('install/assets', 'the scaffold lays down the account pool and the decision [%s]'
-                  % [r for r in rels if r not in scaffold._FILES], all(r in scaffold._FILES for r in rels)
-                  and not any(r in scaffold.REQUIRED_SUBSTRATE for r in rels))
-            check('install/assets', 'every engine copy of a module this work touches is identical [%s]'
-                  % [r for r in touched if not ((ROOT / 'engine' / r).is_file() and (ROOT / r).is_file()
-                                               and (ROOT / 'engine' / r).read_bytes() == (ROOT / r).read_bytes())],
-                  all((ROOT / 'engine' / r).is_file() and (ROOT / 'engine' / r).read_bytes() == (ROOT / r).read_bytes()
-                      for r in touched))
 
         # AC1: an account is registered once; the same login under another name is a second registration.
         with region('pool/one-registration'):

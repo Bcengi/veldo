@@ -63,6 +63,8 @@ def _v131_reads_commands():
         'src/features/workers/workers.ts': ROOT / "engine/ui/src/features/workers" / "workers.ts",
         'src/api/actions.ts': ROOT / "engine/ui/src/api" / "actions.ts",
     }
+    PRODUCTION.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in PRODUCTION})
     # The API organs the factory harness loads (VELDO_ORGANS): the checkout's .veldo, with these production copies
     # laid over a scratch copy of it (the registered mutation driver substitutes each of them here).
     ORGANS = {
@@ -71,9 +73,13 @@ def _v131_reads_commands():
         # checkout's synced copy is the same file once it is laid down).
         'timers.py': ROOT / "engine/.veldo" / "timers.py",
     }
+    ORGANS.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in ORGANS})
     # Fix round 2 (review-2026-11-01 F1 to F5) and fix round 3 (owner, Telegram 38184); suite 120 runs the rest.
     BROWSER = ('ac1/repositories', 'ac1/every-configuration', 'ac1/whole-catalog', 'ac1/usage-provider',
                'ac1/worker-capability', 'ac2/priority-save', 'ac2/worker-stop', 'ac2/worker-cap')
+    BROWSER = tuple(row for row in BROWSER if row.startswith(
+        'ac2/' if globals().get('__speed_closure__') == 'commands' else 'ac1/'))
     ROWS = BROWSER
     # VELDO-0358: the browser tests' own files (literal anchors: the registered mutation driver substitutes each of
     # them here). They are laid over the scratch copy with PRODUCTION, and wave1/no-sites reads them.
@@ -88,11 +94,15 @@ def _v131_reads_commands():
         'e2e/run.spec.ts': ROOT / "engine/ui/e2e" / "run.spec.ts",
         'e2e/harness.py': ROOT / "engine/ui/e2e" / "harness.py",
     }
+    E2E.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in E2E})
     SUITES = {
         '120_veldo_0131_factory_ui.py': ROOT / "scripts/suites" / "120_veldo_0131_factory_ui.py",
         '121_veldo_0131_factory_screens_narrow.py': ROOT / "scripts/suites" / "121_veldo_0131_factory_screens_narrow.py",
         '124_veldo_0131_factory_reads_commands.py': ROOT / "scripts/suites" / "124_veldo_0131_factory_reads_commands.py",
     }
+    SUITES.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in SUITES})
     WAVE = ('timers/profile-applied', 'wave1/no-sites')
     ROWS = ROWS + WAVE
     BUILT = tuple(row for row in ROWS if row != 'wave1/no-sites')

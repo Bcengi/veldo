@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
-import type { Browser, Page, Route } from '@playwright/test'
+import type { Browser, Locator, Page, Route } from '@playwright/test'
 import { expect, guard, routeOf, settled, signIn, test, unique, type FactoryUi } from './factory-fixtures'
 
 /**
@@ -162,6 +162,7 @@ function renders(): Render[] {
       async open(page, factory) {
         await page.goto(factory.origin + '/workflows/delivery')
         await page.locator('[data-step="wait"] [data-testid="step-select"]').click()
+        await selectedSettings(page.getByTestId('node-settings'))
         await expect(page.getByTestId('node-settings')).toBeVisible()
         return { primary: '[data-testid="node-port-admit"]' }
       },
@@ -186,6 +187,12 @@ function renders(): Render[] {
     },
   )
   return out
+}
+
+/** Attachment is the selected-node render event; visibility is part of that same render. */
+async function selectedSettings(settings: Locator) {
+  await expect(settings).toBeAttached()
+  expect(await settings.isVisible(), 'the selected node renders visible settings').toBe(true)
 }
 
 interface Problems {
@@ -490,6 +497,7 @@ test('ac3/keyboard-desktop: the owner\'s task path by keyboard only', async ({ b
   const version = (await factory.workflow()).version as number
   await page.locator('[data-step="wait"] [data-testid="step-select"]').focus()
   await page.keyboard.press('Enter')
+  await selectedSettings(page.getByTestId('node-settings'))
   await expect(page.getByTestId('node-settings')).toBeVisible()
   let reached = false
   for (let i = 0; i < 40 && !reached; i += 1) {
@@ -552,6 +560,7 @@ test('ac3/touch-phone: the owner\'s task path by touch on a phone', async ({ bro
   await page.locator('[data-step="wait"] [data-testid="step-select"]').tap()
   const sheet = page.getByTestId('flow-sheet')
   await expect(sheet).toBeVisible()
+  await selectedSettings(sheet.getByTestId('node-settings'))
   await expect(sheet.getByTestId('node-settings')).toBeVisible()
   await big('[data-testid="flow-sheet"] [data-testid="node-port-decline"]')
   await sheet.getByRole('button', { name: 'Close' }).tap()
@@ -610,6 +619,8 @@ test('ac1/repositories: the read-only identities and repositories, a table on a 
     const phone = isPhone(page)
     await expect(page.locator('table[aria-label="Git identities"]')).toHaveCount(phone ? 0 : 1)
     await expect(page.locator('table[aria-label="Repositories"]')).toHaveCount(phone ? 0 : 1)
+    // The ready panel is the read-completion event; its rows are rendered together.
+    expect(await page.locator('[data-identity]').count()).toBe(2)
     const work = page.locator('[data-identity="work"]')
     for (const text of ['Work', 'Factory Owner <owner@example.com>', 'github.com/acme', '/projects', 'private'])
       await expect(work).toContainText(text)
@@ -633,6 +644,7 @@ test('ac1/every-configuration: every stored role revision and skill is listed, a
     await page.goto(factory.origin + '/configuration')
     await expect(page.getByTestId('roles-table')).toBeVisible()
     const reviewer = page.locator('[data-role="reviewer"]')
+    expect(await reviewer.isVisible()).toBe(true)
     await expect(reviewer).toBeVisible()
     await expect(reviewer).toContainText('Grep')
     await expect(reviewer).toContainText('no team')
@@ -650,10 +662,12 @@ test('ac1/whole-catalog: every catalog server and every credential record by lab
     // github is selected by no configuration; the catalog read lists it with atlassian.
     await expect(page.locator('[data-server="atlassian"]')).toBeVisible()
     const github = page.locator('[data-server="github"]')
+    expect(await github.isVisible()).toBe(true)
     await expect(github).toBeVisible()
     await expect(github).toContainText('GitHub token for the factory')
     await expect(github).toContainText('owner')
     const record = page.locator('[data-credential-record="github-token"]')
+    expect(await record.allTextContents()).toEqual([expect.stringContaining('GitHub token for the factory')])
     await expect(record).toContainText('GitHub token for the factory')
     await expect(record).toContainText('owner')
     await expect(record).not.toContainText('not recorded')
@@ -668,6 +682,7 @@ test('ac1/usage-provider: each account names its provider and usage breaks down 
     await page.goto(factory.origin + '/usage')
     await expect(page.getByTestId('usage')).toBeVisible()
     const account = page.locator('[data-account="owner-plan"]')
+    expect(await account.getByTestId('account-provider').allTextContents()).toEqual(['claude_code'])
     await expect(account.getByTestId('account-provider')).toHaveText('claude_code')
     await expect(account).toContainText("Owner's plan")
     await page.getByTestId('usage-by').selectOption('provider')
@@ -682,6 +697,7 @@ test('ac1/worker-capability: each worker shows its capability, and the missing c
     await page.goto(factory.origin + '/workers')
     await expect(page.getByTestId('workers')).toBeVisible()
     const capability = page.locator('[data-dispatch*="VELDO-9146"]').getByTestId('worker-capability')
+    expect((await capability.allTextContents()).join(' ')).toContain('claude_code')
     await expect(capability).toContainText('claude_code')
     await expect(capability).toContainText('role general r2')
     await expect(capability).toContainText('servers atlassian')
@@ -766,6 +782,18 @@ async function openBacklog(page: Page, factory: FactoryUi, what: string) {
   }
 }
 
+/** These result elements are published only when the action finishes. Judge that completed result before
+ * the existing UI assertions, so a completed wrong outcome cannot spend the hang bound waiting to change. */
+async function completedRefusal(result: Locator, refusal: RegExp) {
+  await expect(result).toBeVisible()
+  expect(await result.getAttribute('data-refusal')).toMatch(refusal)
+}
+
+async function completedText(result: Locator, text: string) {
+  await expect(result).toBeVisible()
+  expect(await result.textContent()).toContain(text)
+}
+
 // Fix round 3 (owner, Telegram 38184): the owner's backlog priority, worker stop and account cap, each the engine's
 // own command through the authenticated API: accepted, a stale version refused beside the control, an unauthorized
 // member refused beside the control. These run last: they change the harness's ranks, a run and the cap.
@@ -781,6 +809,7 @@ test('ac2/priority-save: Save priority order sends each rank at its version; sta
   const before = await factory.entity('backlog:131-encoding')
   const other = await pageAs(browser, factory, 'owner2', desk)
   const refused = await moveFirst(other, 'backlog:131-encoding', 'a member who owns no project')
+  await completedRefusal(refused, /not_owner:project/)
   await expect(refused).toHaveAttribute('data-refusal', /not_owner:project/)
   await expect(refused).toContainText('Not saved')
   expect((await factory.entity('backlog:131-encoding'))?.version).toBe(before?.version)
@@ -792,6 +821,7 @@ test('ac2/priority-save: Save priority order sends each rank at its version; sta
   const owner = await pageAs(browser, factory, 'owner', desk)
   const watch = await guard(owner)
   const saved = await moveFirst(owner, 'backlog:131-encoding', 'the owner')
+  await completedText(saved, 'Saved')
   await expect(saved).toContainText('Saved')
   const after = await factory.entity('backlog:131-encoding')
   expect(after?.data.priority.rank).toBe(1)
@@ -802,6 +832,7 @@ test('ac2/priority-save: Save priority order sends each rank at its version; sta
   await stalled.locator('.tree-grid [data-row="backlog:131-encoding"] [data-testid="move-up"]').click()
   await stalled.getByTestId('priority-save').click()
   const stale = stalled.getByTestId('priority-gap-result')
+  await completedRefusal(stale, /^stale_version/)
   await expect(stale).toHaveAttribute('data-refusal', /^stale_version/)
   expect((await factory.entity('backlog:131-encoding'))?.version).toBe(after?.version)
   await stalled.context().close()
@@ -822,6 +853,7 @@ test('ac2/worker-stop: Stop records the owner\'s stop request on the dispatch; s
   // Unauthorized: bmember sees project-b's run but holds no owner role, so the stop is refused and nothing written.
   const member = await pageAs(browser, factory, 'bmember', desk)
   const memberCard = await stopOn(member, 'VELDO-9182')
+  await completedRefusal(memberCard.getByTestId('worker-stop-result'), /not_authorized:role/)
   await expect(memberCard.getByTestId('worker-stop-result')).toHaveAttribute('data-refusal', /not_authorized:role/)
   expect((await factory.entity('dispatch:' + elsewhere))?.data.stop_request ?? null).toBeNull()
   await member.context().close()
@@ -835,6 +867,7 @@ test('ac2/worker-stop: Stop records the owner\'s stop request on the dispatch; s
   const staleCard = stalled.locator('[data-dispatch*="VELDO-9181"]')
   await staleCard.getByTestId('worker-stop').click()
   await staleCard.getByTestId('worker-stop-confirm').click()
+  await completedRefusal(staleCard.getByTestId('worker-stop-result'), /^stale_version/)
   await expect(staleCard.getByTestId('worker-stop-result')).toHaveAttribute('data-refusal', /^stale_version/)
   expect((await factory.entity('dispatch:' + dispatch))?.data.stop_request ?? null).toBeNull()
   await stalled.context().close()
@@ -842,6 +875,7 @@ test('ac2/worker-stop: Stop records the owner\'s stop request on the dispatch; s
   // card shows the stop only as the record holds it.
   const owner = await pageAs(browser, factory, 'owner', desk)
   const card = await stopOn(owner, 'VELDO-9181')
+  await completedText(card.getByTestId('worker-stop-result'), 'Stop requested')
   await expect(card.getByTestId('worker-stop-result')).toContainText('Stop requested')
   await expect(card.getByTestId('worker-stop-state')).toContainText('Requested by owner')
   await expect(card.getByTestId('worker-stop-state')).toHaveAttribute('data-asked', 'null')
@@ -867,6 +901,7 @@ test('ac2/worker-cap: Save cap sets the account\'s run cap at its version; stale
   await other.goto(factory.origin + '/workers')
   await expect(other.getByTestId('worker-caps')).toBeVisible()
   const refused = await capTo(other, '3')
+  await completedRefusal(refused, /missing_authority:scope/)
   await expect(refused).toHaveAttribute('data-refusal', /missing_authority:scope/)
   expect((await factory.entity('account:owner-plan'))?.version).toBe(before?.version)
   await other.context().close()
@@ -878,6 +913,7 @@ test('ac2/worker-cap: Save cap sets the account\'s run cap at its version; stale
   const owner = await pageAs(browser, factory, 'owner', desk)
   await owner.goto(factory.origin + '/workers')
   const saved = await capTo(owner, '2')
+  await completedText(saved, 'Cap saved: 2')
   await expect(saved).toContainText('Cap saved: 2')
   const after = await factory.entity('account:owner-plan')
   expect(after?.data.concurrency).toBe(2)
@@ -885,6 +921,7 @@ test('ac2/worker-cap: Save cap sets the account\'s run cap at its version; stale
   expect(after?.data.concurrency_history.at(-1).by).toBe('owner')
   await expect(owner.locator('[data-account="owner-plan"] [data-testid="cap-current"]')).toContainText('2 concurrent runs')
   const stale = await capTo(stalled, '4')
+  await completedRefusal(stale, /^stale_version/)
   await expect(stale).toHaveAttribute('data-refusal', /^stale_version/)
   expect((await factory.entity('account:owner-plan'))?.data.concurrency).toBe(2)
   await stalled.context().close()

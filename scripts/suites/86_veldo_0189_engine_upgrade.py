@@ -53,6 +53,8 @@ def _v189_suite():
         'control_store.py': ROOT / ".veldo" / "control_store.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
+    PRODUCTION.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in PRODUCTION})
     ROWS = ('install/assets', 'upgrade/from-8bc34e94', 'upgrade/from-971186ac', 'upgrade/removed-module',
             'upgrade/census', 'upgrade/refused-by-name', 'switch/kill-points', 'switch/failed-restart',
             'kept/owner-data', 'announce/before-first-write', 'restart/rules', 'second-run/changes-nothing',
@@ -69,6 +71,8 @@ def _v189_suite():
     ROWS += (EQ, RN, PF, AT, ER, EM, CD, WR, RT, RC)
     COMMANDS = 'ownership/restore-commands'
     ROWS += (COMMANDS, AK)
+    RECORD_ROWS = (PF, AT, ER, EM, CD, WR, RT, RC)
+    records_only = globals().get('__speed_closure__') == 'records'
     rows = {name: [] for name in ROWS}
     # The older engines, each the whole .veldo of its commit.
     OLDER = ('8bc34e94', '971186ac')
@@ -1060,1083 +1064,1086 @@ def _v189_suite():
             for name in ROWS:
                 check(name, 'the fresh installer records are usable [%s: %s]' % (type(error).__name__, error), False)
             raise StopIteration
-        with section(PF):
-            before = snapshot(*fresh.trees())
-            code, report = fresh.setup()
-            check(PF, 'post-0186 re-run accepts recorded runtime directory: ' + str(report.get('reason')), code == 0)
-            after = snapshot(*fresh.trees())
-            changed = changes(before, after)
-            check(PF, 'post-0186 re-run writes nothing: ' + str(changed), after == before)
-            check(PF, 'post-0186 re-run keeps the journal unchanged', journal(fresh.store) == head)
-        # Review rows start from the real installer's host and record, restored between cases.
-        restore(saved_fresh)
-        engines_helper = load('v189_engines_review', mods / 'control_factory_setup_engines.py')
-        engine_plan = engines_helper.check(F.Refused)
-
-        def setup_result():
-            # A crash is an observed result, never an exception standing in for a red assertion.
-            try:
-                return fresh.setup()
-            except Exception as error:
-                return None, {'raised': type(error).__name__}
-
-        atomic_driver = base / 'atomic_record.py'
-        atomic_driver.write_text(
-            'import importlib.util, json, os, signal, sys\n'
-            'from pathlib import Path\n'
-            'module, root, directory, plan, point = sys.argv[1:]\n'
-            'spec = importlib.util.spec_from_file_location("engine_record_writer", module)\n'
-            'E = importlib.util.module_from_spec(spec); spec.loader.exec_module(E)\n'
-            'fdopen, replace = os.fdopen, os.replace\n'
-            'def die(): os.kill(os.getpid(), signal.SIGKILL)\n'
-            'class Handle:\n'
-            '    def __init__(self, fd, mode): self.inner = fdopen(fd, mode)\n'
-            '    def __enter__(self):\n'
-            '        if point == "opened": die()\n'
-            '        return self\n'
-            '    def write(self, text):\n'
-            '        if point == "partial":\n'
-            '            self.inner.write(text[:len(text)//2]); self.inner.flush(); die()\n'
-            '        return self.inner.write(text)\n'
-            '    def __exit__(self, *args): self.inner.close()\n'
-            'def replacing(source, target):\n'
-            '    if point == "complete": die()\n'
-            '    replace(source, target)\n'
-            '    if point == "renamed": die()\n'
-            'os.fdopen, os.replace = Handle, replacing\n'
-            'E.ensure(root, directory, json.loads(plan), RuntimeError, lambda event: None)\n')
-        with section(AT):
-            for point in ('opened', 'partial', 'complete', 'renamed'):
-                restore(saved_fresh)
-                engine_record.unlink()
-                proc = subprocess.run([sys.executable, '-B', str(atomic_driver), str(mods / 'control_factory_setup_engines.py'),
-                                       str(fresh.root), str(fresh.home / 'bin'), json.dumps(engine_plan), point],
-                                      capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, env=child_env())
-                check(AT, point + ': stopped the real writer', proc.returncode == -signal.SIGKILL)
-                try:
-                    visible = json.loads(engine_record.read_text()) if engine_record.exists() else None
-                except (OSError, ValueError):
-                    visible = 'unreadable'
-                check(AT, point + ': destination absent or complete', visible in (None, expected_engines))
-                code, answer = setup_result()
-                try:
-                    repaired = json.loads(engine_record.read_text())
-                except (OSError, ValueError):
-                    repaired = None
-                check(AT, point + ': rerun leaves complete record', code == 0 and repaired == expected_engines)
-                check(AT, point + ': record mode', stat.S_IMODE(engine_record.stat().st_mode) == 0o600)
-        restore(saved_fresh)
-
-        with section(ER):
-            for broken in (b'', b'{', bytes([255])):
-                restore(saved_fresh)
-                engine_record.write_bytes(broken)
-                code, answer = setup_result()
-                try:
-                    repaired = json.loads(engine_record.read_text())
-                except (OSError, ValueError):
-                    repaired = None
-                check(ER, 'unreadable record repaired: ' + repr(broken), code == 0 and repaired == expected_engines)
-                check(ER, 'repair reported', answer.get('engines_record') == str(engine_record))
-        restore(saved_fresh)
-
-        with section(EM):
-            for missing_pin in (False, True):
-                restore(saved_fresh)
-                changed_record = json.loads(engine_record.read_text())
-                changed_record['codex']['version'] += '.different'
-                engine_record.write_text(json.dumps(changed_record))
-                if missing_pin:
-                    pinned.unlink()
+        if records_only:
+            with section(PF):
                 before = snapshot(*fresh.trees())
-                code, answer = setup_result()
-                check(EM, 'different readable record refused by path: ' + str(answer), code == 1 and
-                      answer.get('reason') == 'invalid_input:state_root:differs:' + str(engine_record))
-                check(EM, 'different record refused before writes', snapshot(*fresh.trees()) == before)
-        restore(saved_fresh)
+                code, report = fresh.setup()
+                check(PF, 'post-0186 re-run accepts recorded runtime directory: ' + str(report.get('reason')), code == 0)
+                after = snapshot(*fresh.trees())
+                changed = changes(before, after)
+                check(PF, 'post-0186 re-run writes nothing: ' + str(changed), after == before)
+                check(PF, 'post-0186 re-run keeps the journal unchanged', journal(fresh.store) == head)
+            # Review rows start from the real installer's host and record, restored between cases.
+            restore(saved_fresh)
+            engines_helper = load('v189_engines_review', mods / 'control_factory_setup_engines.py')
+            engine_plan = engines_helper.check(F.Refused)
 
-        with section(CD):
-            vendor = engines186['vendor']
-            vendor_bytes = vendor.read_bytes()
-            engine_record.unlink()
-            vendor.write_bytes(vendor_bytes + b'changed after preflight\n')
-            def refusal(call):
+            def setup_result():
+                # A crash is an observed result, never an exception standing in for a red assertion.
                 try:
-                    call()
-                except F.Refused as error:
-                    return error.code
+                    return fresh.setup()
                 except Exception as error:
-                    return type(error).__name__
-                return None
-            try:
-                installed = refusal(lambda: engines_helper.install(str(fresh.root), fresh.home / 'bin', engine_plan, F.Refused))
-                upgraded = refusal(lambda: engines_helper.ensure(str(fresh.root), fresh.home / 'bin', engine_plan,
-                                                                 F.Refused, lambda event: None))
-                check(CD, 'same changed Codex bytes have the fresh refusal: ' + str((installed, upgraded)),
-                      installed == upgraded == 'binding_mismatch:engine_digest')
-                check(CD, 'no record of refused binding', not engine_record.exists())
-            finally:
-                vendor.write_bytes(vendor_bytes)
-        restore(saved_fresh)
+                    return None, {'raised': type(error).__name__}
 
-        with section(WR):
-            for missing_pin, missing_record in ((True, False), (False, True), (True, True)):
-                restore(saved_fresh)
-                if missing_pin:
-                    pinned.unlink()
-                if missing_record:
+            atomic_driver = base / 'atomic_record.py'
+            atomic_driver.write_text(
+                'import importlib.util, json, os, signal, sys\n'
+                'from pathlib import Path\n'
+                'module, root, directory, plan, point = sys.argv[1:]\n'
+                'spec = importlib.util.spec_from_file_location("engine_record_writer", module)\n'
+                'E = importlib.util.module_from_spec(spec); spec.loader.exec_module(E)\n'
+                'fdopen, replace = os.fdopen, os.replace\n'
+                'def die(): os.kill(os.getpid(), signal.SIGKILL)\n'
+                'class Handle:\n'
+                '    def __init__(self, fd, mode): self.inner = fdopen(fd, mode)\n'
+                '    def __enter__(self):\n'
+                '        if point == "opened": die()\n'
+                '        return self\n'
+                '    def write(self, text):\n'
+                '        if point == "partial":\n'
+                '            self.inner.write(text[:len(text)//2]); self.inner.flush(); die()\n'
+                '        return self.inner.write(text)\n'
+                '    def __exit__(self, *args): self.inner.close()\n'
+                'def replacing(source, target):\n'
+                '    if point == "complete": die()\n'
+                '    replace(source, target)\n'
+                '    if point == "renamed": die()\n'
+                'os.fdopen, os.replace = Handle, replacing\n'
+                'E.ensure(root, directory, json.loads(plan), RuntimeError, lambda event: None)\n')
+            with section(AT):
+                for point in ('opened', 'partial', 'complete', 'renamed'):
+                    restore(saved_fresh)
                     engine_record.unlink()
-                code, answer = setup_result()
-                step = next((one for one in answer.get('steps', []) if one.get('step') == 'engine_upgrade'), {})
-                check(WR, 'repair is reported as a write', code == 0 and answer.get('outcome') == 'set_up'
-                      and step.get('outcome') == 'done')
-                for report in (step, answer):
-                    check(WR, 'actual pin count and record reported', report.get('pins_made') == int(missing_pin)
-                          and report.get('engines_record') == (str(engine_record) if missing_record else None)
-                          and report.get('engines') == expected_engines)
-                code, answer = setup_result()
-                check(WR, 'completed rerun reports no new writes', code == 0 and answer.get('outcome') == 'already_set_up'
-                      and answer.get('pins_made') == 0 and answer.get('engines_record') is None)
-        restore(saved_fresh)
+                    proc = subprocess.run([sys.executable, '-B', str(atomic_driver), str(mods / 'control_factory_setup_engines.py'),
+                                           str(fresh.root), str(fresh.home / 'bin'), json.dumps(engine_plan), point],
+                                          capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS, env=child_env())
+                    check(AT, point + ': stopped the real writer', proc.returncode == -signal.SIGKILL)
+                    try:
+                        visible = json.loads(engine_record.read_text()) if engine_record.exists() else None
+                    except (OSError, ValueError):
+                        visible = 'unreadable'
+                    check(AT, point + ': destination absent or complete', visible in (None, expected_engines))
+                    code, answer = setup_result()
+                    try:
+                        repaired = json.loads(engine_record.read_text())
+                    except (OSError, ValueError):
+                        repaired = None
+                    check(AT, point + ': rerun leaves complete record', code == 0 and repaired == expected_engines)
+                    check(AT, point + ': record mode', stat.S_IMODE(engine_record.stat().st_mode) == 0o600)
+            restore(saved_fresh)
 
-        with section(RT):
-            for bad in ([], None, 'corrupt'):
-                restore(saved_fresh)
-                record = fresh.record()
-                record['runtime_assets'] = bad
-                fresh.record_path.write_text(json.dumps(record))
-                before = snapshot(*fresh.trees())
-                code, answer = setup_result()
-                check(RT, 'runtime inventory refused by path: ' + str(answer), code == 1 and
-                      answer.get('reason') == 'invalid_input:install_root:differs:' + str(fresh.record_path))
-                check(RT, 'corrupt inventory refused before writes', snapshot(*fresh.trees()) == before)
-        restore(saved_fresh)
+            with section(ER):
+                for broken in (b'', b'{', bytes([255])):
+                    restore(saved_fresh)
+                    engine_record.write_bytes(broken)
+                    code, answer = setup_result()
+                    try:
+                        repaired = json.loads(engine_record.read_text())
+                    except (OSError, ValueError):
+                        repaired = None
+                    check(ER, 'unreadable record repaired: ' + repr(broken), code == 0 and repaired == expected_engines)
+                    check(ER, 'repair reported', answer.get('engines_record') == str(engine_record))
+            restore(saved_fresh)
 
-        with section(RC):
-            receivers = [path for path in sorted((fresh.home / 'config').glob('*.json'))
-                         if path.name.startswith('receiver-')]
-            check(RC, 'real installer wrote receiver configurations', bool(receivers))
-            for path in receivers:
-                restore(saved_fresh)
-                held = json.loads(path.read_text())
-                held.pop('state_root', None)
-                held.pop('store', None)
-                path.write_text(json.dumps(held))
-                before = snapshot(*fresh.trees())
-                code, answer = setup_result()
-                check(RC, 'receiver refused by path: ' + str(answer), code == 1 and
-                      answer.get('reason') == 'invalid_input:install_root:differs:' + str(path))
-                check(RC, 'receiver refused before writes', snapshot(*fresh.trees()) == before)
-        restore(saved_fresh)
+            with section(EM):
+                for missing_pin in (False, True):
+                    restore(saved_fresh)
+                    changed_record = json.loads(engine_record.read_text())
+                    changed_record['codex']['version'] += '.different'
+                    engine_record.write_text(json.dumps(changed_record))
+                    if missing_pin:
+                        pinned.unlink()
+                    before = snapshot(*fresh.trees())
+                    code, answer = setup_result()
+                    check(EM, 'different readable record refused by path: ' + str(answer), code == 1 and
+                          answer.get('reason') == 'invalid_input:state_root:differs:' + str(engine_record))
+                    check(EM, 'different record refused before writes', snapshot(*fresh.trees()) == before)
+            restore(saved_fresh)
 
-        current = named(fresh.home / 'bin')
+            with section(CD):
+                vendor = engines186['vendor']
+                vendor_bytes = vendor.read_bytes()
+                engine_record.unlink()
+                vendor.write_bytes(vendor_bytes + b'changed after preflight\n')
+                def refusal(call):
+                    try:
+                        call()
+                    except F.Refused as error:
+                        return error.code
+                    except Exception as error:
+                        return type(error).__name__
+                    return None
+                try:
+                    installed = refusal(lambda: engines_helper.install(str(fresh.root), fresh.home / 'bin', engine_plan, F.Refused))
+                    upgraded = refusal(lambda: engines_helper.ensure(str(fresh.root), fresh.home / 'bin', engine_plan,
+                                                                     F.Refused, lambda event: None))
+                    check(CD, 'same changed Codex bytes have the fresh refusal: ' + str((installed, upgraded)),
+                          installed == upgraded == 'binding_mismatch:engine_digest')
+                    check(CD, 'no record of refused binding', not engine_record.exists())
+                finally:
+                    vendor.write_bytes(vendor_bytes)
+            restore(saved_fresh)
 
-        # AC1 and AC3 and AC4, over each older engine's host.
-        hosts, laid_down = {}, {}
-        for commit, row in zip(OLDER, (U8, U9)):
-            old = older_engine(commit, row)
-            host = Host('h' + commit)
-            code, laid = host.setup(module=old) if old else (None, {})
-            if code != 0 or laid.get('outcome') != 'set_up':
-                for name in (row, KD, AN, RS, SR) + ((KP, FR, RF) if commit == OLDER[0] else ()):
-                    check(name, 'the setup of %s laid a host down [%s]' % (commit, laid.get('reason')), False)
-                continue
-            hosts[commit] = host
-            laid_down[commit] = save(host.root, host.install, host.units, host.trust.parent)
-            active = commit == OLDER[1]
-            if active:
-                # The 971186ac host upgrades with its service running through its unit, on its own engine; the
-                # 8bc34e94 host with nothing running.
-                host.manager.start(host.unit)
-            chosen = owner_sets(host)
-            launch = load('v189_runs_' + commit, mods / 'control_launch.py')
-            receivers = list(host.record()['receiver']['configs'].values())
-            runs_before = {p: launch.runs_root(json.loads(Path(p).read_text())) for p in receivers}
-            for place in runs_before.values():
-                (Path(place) / 'existing-run').mkdir(parents=True, mode=0o700)
-                private(Path(place) / 'existing-run' / 'evidence.json', '{"kept": true}\n')
-            before_kept = kept(host)
-            record = host.record()
-            recorded = record['closure']
-            installed_before = named(host.home / 'bin')
-            before_trees = snapshot(*host.trees())
-            pid_before = host.manager.pid(host.unit)
+            with section(WR):
+                for missing_pin, missing_record in ((True, False), (False, True), (True, True)):
+                    restore(saved_fresh)
+                    if missing_pin:
+                        pinned.unlink()
+                    if missing_record:
+                        engine_record.unlink()
+                    code, answer = setup_result()
+                    step = next((one for one in answer.get('steps', []) if one.get('step') == 'engine_upgrade'), {})
+                    check(WR, 'repair is reported as a write', code == 0 and answer.get('outcome') == 'set_up'
+                          and step.get('outcome') == 'done')
+                    for report in (step, answer):
+                        check(WR, 'actual pin count and record reported', report.get('pins_made') == int(missing_pin)
+                              and report.get('engines_record') == (str(engine_record) if missing_record else None)
+                              and report.get('engines') == expected_engines)
+                    code, answer = setup_result()
+                    check(WR, 'completed rerun reports no new writes', code == 0 and answer.get('outcome') == 'already_set_up'
+                          and answer.get('pins_made') == 0 and answer.get('engines_record') is None)
+            restore(saved_fresh)
 
-            def observe(host=host, record_bytes=host.record_path.read_bytes(), trees=before_trees):
-                changed, added, removed = changes(trees, snapshot(*host.trees()))
-                written = [p for p in changed + added + removed
-                           if not p.startswith((str(host.root / 'authority'), str(host.home / 'state')))]
-                return {'written': written, 'record_same': host.record_path.read_bytes() == record_bytes}
-            witness = Witness(observe)
-            calls = len(host.manager.calls)
-            ts.set('ready')
-            code, report = host.setup(stderr=witness)
-            steps = {s.get('step'): s for s in report.get('steps') or []}
-            upgrade = steps.get('engine_upgrade') or {}
-            with section(row):
-                check(row, 'the re-run with the same arguments over the %s host is accepted and upgrades its engine [%s %s]'
-                      % (commit, report.get('outcome'), report.get('reason')),
-                      code == 0 and report.get('outcome') == 'set_up' and upgrade.get('outcome') == 'done')
-                check(row, 'before the upgrade the host held the older engine: the record named %d files and the '
-                      'engine directory was exactly those' % len(recorded), installed_before == recorded != current)
-                check(row, 'the upgraded engine directory holds control_client_api.py, the API process the older engine '
-                      'lacked',
-                      'control_client_api.py' not in recorded and (host.home / 'bin' / 'control_client_api.py').is_file()
-                      and named(host.home / 'bin').get('control_client_api.py') == current.get('control_client_api.py'))
-                equals_fresh(row, host, fresh, commit)
-                check(row, 'the record names the current engine: its closure and template are the fresh host\'s',
-                      host.record()['closure'] == fresh.record()['closure']
-                      and host.record()['template'] == current_template)
-                check(row, 'nothing of the switch is left beside the engine directory [%s]'
-                      % sorted(p.name for p in host.home.iterdir()),
-                      sorted(p.name for p in host.home.iterdir()) == ['bin', 'config', 'state'])
-                runtime_record_upgrade(row, fresh, commit)
-            with section(EQ):
-                equals_fresh(EQ, host, fresh, commit)
-            with section(RN):
-                for path, place in runs_before.items():
-                    held = json.loads(Path(path).read_text())
-                    check(RN, commit + ': state_root names the factory and runs keeps its previous resolution',
-                          held.get('state_root') == str(host.root) and held.get('runs') == place
-                          and launch.runs_root(held) == place)
-                check(RN, commit + ': existing runs contents and modes unchanged',
-                      kept(host)['runs'] == before_kept['runs'] and bool(before_kept['runs']))
-            with section(KD):
-                kept_after(KD, host, before_kept, chosen, commit)
-            with section(AN):
-                ran = host.manager.calls[calls:]
-                check(AN, '%s: setup printed one plain line to its standard error before its first write, besides the installation resolution line (VELDO-0259) [%r %s]'
-                      % (commit, witness.getvalue()[:160], witness.first),
-                      len(witness.getvalue().strip().splitlines()) == 1 and len(witness.resolution) == 1
-                      and witness.first is not None
-                      and not witness.first['written'] and witness.first['record_same'])
-                changed_names = sorted(n for n in recorded if n in current and recorded[n] != current[n])
-                added_names = sorted(n for n in current if n not in recorded)
-                removed_names = sorted(n for n in recorded if n not in current)
-                words = ('Upgrading the installed factory engine: %d files change, %d are new, %d are removed; '
-                         % (len(changed_names), len(added_names), len(removed_names)))
-                check(AN, '%s: the line names what will change and what the service will do [%s]'
-                      % (commit, witness.getvalue().strip()),
-                      witness.getvalue().startswith(words) and (
-                          'the authority service will restart once.' if active
-                          else 'the authority service is not running, so its next start runs the current engine.')
-                      in witness.getvalue())
-                check(AN, '%s: the engine_upgrade step names the previous and current engine digests and the files '
-                      'changed, added and removed [%s %s %s]' % (commit, len(upgrade.get('changed') or []),
-                                                                 len(upgrade.get('added') or []),
-                                                                 len(upgrade.get('removed') or [])),
-                      upgrade.get('previous') == engine_digest(recorded, record['template'])
-                      and upgrade.get('current') == engine_digest(current, current_template)
-                      and upgrade.get('changed') == changed_names and upgrade.get('added') == added_names
-                      and upgrade.get('removed') == removed_names)
-            with section(RS):
-                restarts = [c for c in ran if c[0] in ('start', 'stop', 'restart')]
+            with section(RT):
+                for bad in ([], None, 'corrupt'):
+                    restore(saved_fresh)
+                    record = fresh.record()
+                    record['runtime_assets'] = bad
+                    fresh.record_path.write_text(json.dumps(record))
+                    before = snapshot(*fresh.trees())
+                    code, answer = setup_result()
+                    check(RT, 'runtime inventory refused by path: ' + str(answer), code == 1 and
+                          answer.get('reason') == 'invalid_input:install_root:differs:' + str(fresh.record_path))
+                    check(RT, 'corrupt inventory refused before writes', snapshot(*fresh.trees()) == before)
+            restore(saved_fresh)
+
+            with section(RC):
+                receivers = [path for path in sorted((fresh.home / 'config').glob('*.json'))
+                             if path.name.startswith('receiver-')]
+                check(RC, 'real installer wrote receiver configurations', bool(receivers))
+                for path in receivers:
+                    restore(saved_fresh)
+                    held = json.loads(path.read_text())
+                    held.pop('state_root', None)
+                    held.pop('store', None)
+                    path.write_text(json.dumps(held))
+                    before = snapshot(*fresh.trees())
+                    code, answer = setup_result()
+                    check(RC, 'receiver refused by path: ' + str(answer), code == 1 and
+                          answer.get('reason') == 'invalid_input:install_root:differs:' + str(path))
+                    check(RC, 'receiver refused before writes', snapshot(*fresh.trees()) == before)
+            restore(saved_fresh)
+
+        if not records_only:
+            current = named(fresh.home / 'bin')
+
+            # AC1 and AC3 and AC4, over each older engine's host.
+            hosts, laid_down = {}, {}
+            for commit, row in zip(OLDER, (U8, U9)):
+                old = older_engine(commit, row)
+                host = Host('h' + commit)
+                code, laid = host.setup(module=old) if old else (None, {})
+                if code != 0 or laid.get('outcome') != 'set_up':
+                    for name in (row, KD, AN, RS, SR) + ((KP, FR, RF) if commit == OLDER[0] else ()):
+                        check(name, 'the setup of %s laid a host down [%s]' % (commit, laid.get('reason')), False)
+                    continue
+                hosts[commit] = host
+                laid_down[commit] = save(host.root, host.install, host.units, host.trust.parent)
+                active = commit == OLDER[1]
                 if active:
-                    check(RS, 'with the authority unit active, setup restarted it once through systemctl and nothing else '
-                          '[%s]' % restarts, restarts == [['restart', host.unit]] and upgrade.get('restart') == 'restarted')
-                    check(RS, 'the service answers an inspect over its socket, a new process on the current engine [%s %s]'
-                          % (pid_before, host.manager.pid(host.unit)),
-                          host.answers() and host.manager.pid(host.unit) not in (None, pid_before))
-                else:
-                    check(RS, 'with nothing running, setup started and restarted nothing [%s]' % restarts,
-                          restarts == [] and upgrade.get('restart') == 'not_running')
-                    check(RS, 'the answer says the next start runs the current engine [%s]' % upgrade.get('next'),
-                          'next start runs the current engine' in str(upgrade.get('next')))
+                    # The 971186ac host upgrades with its service running through its unit, on its own engine; the
+                    # 8bc34e94 host with nothing running.
+                    host.manager.start(host.unit)
+                chosen = owner_sets(host)
+                launch = load('v189_runs_' + commit, mods / 'control_launch.py')
+                receivers = list(host.record()['receiver']['configs'].values())
+                runs_before = {p: launch.runs_root(json.loads(Path(p).read_text())) for p in receivers}
+                for place in runs_before.values():
+                    (Path(place) / 'existing-run').mkdir(parents=True, mode=0o700)
+                    private(Path(place) / 'existing-run' / 'evidence.json', '{"kept": true}\n')
+                before_kept = kept(host)
+                record = host.record()
+                recorded = record['closure']
+                installed_before = named(host.home / 'bin')
+                before_trees = snapshot(*host.trees())
+                pid_before = host.manager.pid(host.unit)
 
-        # AC4 (declared falsifier): a second run over the upgraded host writes nothing and restarts nothing.
-        host = hosts.get(OLDER[1])
-        if host is not None:
-            with section(SR):
-                # The host at rest: the authority and its API unit running, as after the owner's restart.
-                host.manager.stop(host.unit)
-                host.manager.start(host.unit)
-                own = (str(host.root / 'authority'), str(host.home / 'state'), str(host.root / 'api'))
+                def observe(host=host, record_bytes=host.record_path.read_bytes(), trees=before_trees):
+                    changed, added, removed = changes(trees, snapshot(*host.trees()))
+                    written = [p for p in changed + added + removed
+                               if not p.startswith((str(host.root / 'authority'), str(host.home / 'state')))]
+                    return {'written': written, 'record_same': host.record_path.read_bytes() == record_bytes}
+                witness = Witness(observe)
+                calls = len(host.manager.calls)
+                ts.set('ready')
+                code, report = host.setup(stderr=witness)
+                steps = {s.get('step'): s for s in report.get('steps') or []}
+                upgrade = steps.get('engine_upgrade') or {}
+                with section(row):
+                    check(row, 'the re-run with the same arguments over the %s host is accepted and upgrades its engine [%s %s]'
+                          % (commit, report.get('outcome'), report.get('reason')),
+                          code == 0 and report.get('outcome') == 'set_up' and upgrade.get('outcome') == 'done')
+                    check(row, 'before the upgrade the host held the older engine: the record named %d files and the '
+                          'engine directory was exactly those' % len(recorded), installed_before == recorded != current)
+                    check(row, 'the upgraded engine directory holds control_client_api.py, the API process the older engine '
+                          'lacked',
+                          'control_client_api.py' not in recorded and (host.home / 'bin' / 'control_client_api.py').is_file()
+                          and named(host.home / 'bin').get('control_client_api.py') == current.get('control_client_api.py'))
+                    equals_fresh(row, host, fresh, commit)
+                    check(row, 'the record names the current engine: its closure and template are the fresh host\'s',
+                          host.record()['closure'] == fresh.record()['closure']
+                          and host.record()['template'] == current_template)
+                    check(row, 'nothing of the switch is left beside the engine directory [%s]'
+                          % sorted(p.name for p in host.home.iterdir()),
+                          sorted(p.name for p in host.home.iterdir()) == ['bin', 'config', 'state'])
+                    runtime_record_upgrade(row, fresh, commit)
+                with section(EQ):
+                    equals_fresh(EQ, host, fresh, commit)
+                with section(RN):
+                    for path, place in runs_before.items():
+                        held = json.loads(Path(path).read_text())
+                        check(RN, commit + ': state_root names the factory and runs keeps its previous resolution',
+                              held.get('state_root') == str(host.root) and held.get('runs') == place
+                              and launch.runs_root(held) == place)
+                    check(RN, commit + ': existing runs contents and modes unchanged',
+                          kept(host)['runs'] == before_kept['runs'] and bool(before_kept['runs']))
+                with section(KD):
+                    kept_after(KD, host, before_kept, chosen, commit)
+                with section(AN):
+                    ran = host.manager.calls[calls:]
+                    check(AN, '%s: setup printed one plain line to its standard error before its first write, besides the installation resolution line (VELDO-0259) [%r %s]'
+                          % (commit, witness.getvalue()[:160], witness.first),
+                          len(witness.getvalue().strip().splitlines()) == 1 and len(witness.resolution) == 1
+                          and witness.first is not None
+                          and not witness.first['written'] and witness.first['record_same'])
+                    changed_names = sorted(n for n in recorded if n in current and recorded[n] != current[n])
+                    added_names = sorted(n for n in current if n not in recorded)
+                    removed_names = sorted(n for n in recorded if n not in current)
+                    words = ('Upgrading the installed factory engine: %d files change, %d are new, %d are removed; '
+                             % (len(changed_names), len(added_names), len(removed_names)))
+                    check(AN, '%s: the line names what will change and what the service will do [%s]'
+                          % (commit, witness.getvalue().strip()),
+                          witness.getvalue().startswith(words) and (
+                              'the authority service will restart once.' if active
+                              else 'the authority service is not running, so its next start runs the current engine.')
+                          in witness.getvalue())
+                    check(AN, '%s: the engine_upgrade step names the previous and current engine digests and the files '
+                          'changed, added and removed [%s %s %s]' % (commit, len(upgrade.get('changed') or []),
+                                                                     len(upgrade.get('added') or []),
+                                                                     len(upgrade.get('removed') or [])),
+                          upgrade.get('previous') == engine_digest(recorded, record['template'])
+                          and upgrade.get('current') == engine_digest(current, current_template)
+                          and upgrade.get('changed') == changed_names and upgrade.get('added') == added_names
+                          and upgrade.get('removed') == removed_names)
+                with section(RS):
+                    restarts = [c for c in ran if c[0] in ('start', 'stop', 'restart')]
+                    if active:
+                        check(RS, 'with the authority unit active, setup restarted it once through systemctl and nothing else '
+                              '[%s]' % restarts, restarts == [['restart', host.unit]] and upgrade.get('restart') == 'restarted')
+                        check(RS, 'the service answers an inspect over its socket, a new process on the current engine [%s %s]'
+                              % (pid_before, host.manager.pid(host.unit)),
+                              host.answers() and host.manager.pid(host.unit) not in (None, pid_before))
+                    else:
+                        check(RS, 'with nothing running, setup started and restarted nothing [%s]' % restarts,
+                              restarts == [] and upgrade.get('restart') == 'not_running')
+                        check(RS, 'the answer says the next start runs the current engine [%s]' % upgrade.get('next'),
+                              'next start runs the current engine' in str(upgrade.get('next')))
 
-                def trees():
-                    return {k: v for k, v in snapshot(*host.trees()).items() if not k.startswith(own)}
-                before, head, calls = trees(), journal(host.store), len(host.manager.calls)
-                ts.clear()
-                code, again = host.setup()
-                ran = host.manager.calls[calls:]
-                changed, added, removed = changes(before, trees())
-                steps = {s.get('step'): s for s in again.get('steps') or []}
-                check(SR, 'the second run is accepted, its engine_upgrade already done [%s %s]'
-                      % (again.get('outcome'), steps.get('engine_upgrade', {}).get('outcome')),
-                      code == 0 and again.get('outcome') == 'already_set_up'
-                      and steps.get('engine_upgrade', {}).get('outcome') == 'already_done')
-                check(SR, 'every file under the state root, install root, unit directory, host trust and workspace '
-                      'binding is byte for byte the same [%s]' % (changed + added + removed)[:4],
-                      not (changed or added or removed))
-                check(SR, 'the journal head is unchanged', journal(host.store) == head)
-                check(SR, 'the invocation log shows no restart, start or stop [%s]'
-                      % [c for c in ran if c[0] in ('start', 'stop', 'restart')],
-                      not any(c[0] in ('start', 'stop', 'restart') for c in ran))
-                host.manager.stop_all()
+            # AC4 (declared falsifier): a second run over the upgraded host writes nothing and restarts nothing.
+            host = hosts.get(OLDER[1])
+            if host is not None:
+                with section(SR):
+                    # The host at rest: the authority and its API unit running, as after the owner's restart.
+                    host.manager.stop(host.unit)
+                    host.manager.start(host.unit)
+                    own = (str(host.root / 'authority'), str(host.home / 'state'), str(host.root / 'api'))
 
-        # AC1: every installer from 8bc34e94 on writes the closure and template keys the upgrade reads.
-        with section(CN):
-            import ast
-            data = fixture('census.json.gz', CN)
-            census = json.loads(gzip.decompress(data)) if data is not None else {}
-            chain = census.get('chain', [])
-            anchor = census.get('anchor')
-            check(CN, '8bc34e94 is on the captured first-parent history of this engine [%d commits]' % len(chain),
-                  bool(anchor) and anchor.startswith(OLDER[0]) and anchor in chain)
-            commits = chain[:chain.index(anchor) + 1] if anchor in chain else []
-            main = census.get('main', [])
-            if anchor in main:
-                commits += [c for c in main[:main.index(anchor) + 1] if c not in commits]
-            blobs = census.get('blobs', {})
-            check(CN, 'the census includes exactly every captured commit',
-                  sorted(c for item in blobs.values() for c in item['commits']) == sorted(commits))
+                    def trees():
+                        return {k: v for k, v in snapshot(*host.trees()).items() if not k.startswith(own)}
+                    before, head, calls = trees(), journal(host.store), len(host.manager.calls)
+                    ts.clear()
+                    code, again = host.setup()
+                    ran = host.manager.calls[calls:]
+                    changed, added, removed = changes(before, trees())
+                    steps = {s.get('step'): s for s in again.get('steps') or []}
+                    check(SR, 'the second run is accepted, its engine_upgrade already done [%s %s]'
+                          % (again.get('outcome'), steps.get('engine_upgrade', {}).get('outcome')),
+                          code == 0 and again.get('outcome') == 'already_set_up'
+                          and steps.get('engine_upgrade', {}).get('outcome') == 'already_done')
+                    check(SR, 'every file under the state root, install root, unit directory, host trust and workspace '
+                          'binding is byte for byte the same [%s]' % (changed + added + removed)[:4],
+                          not (changed or added or removed))
+                    check(SR, 'the journal head is unchanged', journal(host.store) == head)
+                    check(SR, 'the invocation log shows no restart, start or stop [%s]'
+                          % [c for c in ran if c[0] in ('start', 'stop', 'restart')],
+                          not any(c[0] in ('start', 'stop', 'restart') for c in ran))
+                    host.manager.stop_all()
 
-            def writes_engine_keys(source):
-                tree = ast.parse(source)
-                functions = {n.name: n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)}
-                if 'install' not in functions:
+            # AC1: every installer from 8bc34e94 on writes the closure and template keys the upgrade reads.
+            with section(CN):
+                import ast
+                data = fixture('census.json.gz', CN)
+                census = json.loads(gzip.decompress(data)) if data is not None else {}
+                chain = census.get('chain', [])
+                anchor = census.get('anchor')
+                check(CN, '8bc34e94 is on the captured first-parent history of this engine [%d commits]' % len(chain),
+                      bool(anchor) and anchor.startswith(OLDER[0]) and anchor in chain)
+                commits = chain[:chain.index(anchor) + 1] if anchor in chain else []
+                main = census.get('main', [])
+                if anchor in main:
+                    commits += [c for c in main[:main.index(anchor) + 1] if c not in commits]
+                blobs = census.get('blobs', {})
+                check(CN, 'the census includes exactly every captured commit',
+                      sorted(c for item in blobs.values() for c in item['commits']) == sorted(commits))
+
+                def writes_engine_keys(source):
+                    tree = ast.parse(source)
+                    functions = {n.name: n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)}
+                    if 'install' not in functions:
+                        return False
+                    for name in ('install', 'layout'):
+                        for node in ast.walk(functions.get(name) or ast.Module(body=[], type_ignores=[])):
+                            if not isinstance(node, ast.Dict):
+                                continue
+                            keys = {k.value: v for k, v in zip(node.keys, node.values) if isinstance(k, ast.Constant)}
+                            closure, template = keys.get('closure'), keys.get('template')
+                            if (isinstance(closure, ast.DictComp) and isinstance(closure.value, ast.Call)
+                                    and getattr(closure.value.func, 'id', None) == '_digest'
+                                    and isinstance(template, ast.Call) and getattr(template.func, 'id', None) == '_digest'):
+                                return True
                     return False
-                for name in ('install', 'layout'):
-                    for node in ast.walk(functions.get(name) or ast.Module(body=[], type_ignores=[])):
-                        if not isinstance(node, ast.Dict):
-                            continue
-                        keys = {k.value: v for k, v in zip(node.keys, node.values) if isinstance(k, ast.Constant)}
-                        closure, template = keys.get('closure'), keys.get('template')
-                        if (isinstance(closure, ast.DictComp) and isinstance(closure.value, ast.Call)
-                                and getattr(closure.value.func, 'id', None) == '_digest'
-                                and isinstance(template, ast.Call) and getattr(template.func, 'id', None) == '_digest'):
-                            return True
-                return False
-            lacking = []
-            for blob, item in sorted(blobs.items()):
-                source, found = item['source'], item['commits']
-                if not source or not writes_engine_keys(source):
-                    lacking += found
-            check(CN, 'the current production installer still writes the same engine keys',
-                  writes_engine_keys(PRODUCTION['control_service.py'].read_text()))
-            check(CN, 'each of the %d first-parent commits from 8bc34e94 on (%d distinct installers) writes the record\'s '
-                  'closure (each file\'s digest) and template digest [%s]' % (len(commits), len(blobs), lacking[:3]),
-                  len(commits) > 1 and not lacking)
+                lacking = []
+                for blob, item in sorted(blobs.items()):
+                    source, found = item['source'], item['commits']
+                    if not source or not writes_engine_keys(source):
+                        lacking += found
+                check(CN, 'the current production installer still writes the same engine keys',
+                      writes_engine_keys(PRODUCTION['control_service.py'].read_text()))
+                check(CN, 'each of the %d first-parent commits from 8bc34e94 on (%d distinct installers) writes the record\'s '
+                      'closure (each file\'s digest) and template digest [%s]' % (len(commits), len(blobs), lacking[:3]),
+                      len(commits) > 1 and not lacking)
 
-        # AC2: kill setup at each write point its upgrade's step log names, over the 8bc34e94 host.
-        old8 = load('v189_setup_kill', base / ('engine-' + OLDER[0]) / '.veldo' / 'control_factory_setup.py') \
-            if (base / ('engine-' + OLDER[0])).is_dir() else None
-        if old8 is not None:
-            # The older installer's real writer lays down a unit whose template differs today.
-            template = base / ('engine-' + OLDER[0]) / '.veldo' / 'services' / 'veldo-authority.service'
-            template.write_text(template.read_text() + '\n# earlier installation template\n')
-        kill = Host('kill')
-        code, laid = kill.setup(module=old8) if old8 else (None, {})
-        if code != 0:
-            for name in (KP, FR, RF, FA, OC):
-                check(name, 'the setup of %s laid the kill host down [%s]' % (OLDER[0], laid.get('reason')), False)
-            raise StopIteration
-        owner_sets(kill)
-        saved = save(kill.root, kill.install, kill.units, kill.trust.parent)
-        old_engine = named(kill.home / 'bin')
-        old_record = kill.record_path.read_bytes()
-        bridge = Bridge(kill.manager, base / 'bridge.sock')
-        bridges.append(bridge)
-        log = kill.home / 'state' / UP.LOG
+            # AC2: kill setup at each write point its upgrade's step log names, over the 8bc34e94 host.
+            old8 = load('v189_setup_kill', base / ('engine-' + OLDER[0]) / '.veldo' / 'control_factory_setup.py') \
+                if (base / ('engine-' + OLDER[0])).is_dir() else None
+            if old8 is not None:
+                # The older installer's real writer lays down a unit whose template differs today.
+                template = base / ('engine-' + OLDER[0]) / '.veldo' / 'services' / 'veldo-authority.service'
+                template.write_text(template.read_text() + '\n# earlier installation template\n')
+            kill = Host('kill')
+            code, laid = kill.setup(module=old8) if old8 else (None, {})
+            if code != 0:
+                for name in (KP, FR, RF, FA, OC):
+                    check(name, 'the setup of %s laid the kill host down [%s]' % (OLDER[0], laid.get('reason')), False)
+                raise StopIteration
+            owner_sets(kill)
+            saved = save(kill.root, kill.install, kill.units, kill.trust.parent)
+            old_engine = named(kill.home / 'bin')
+            old_record = kill.record_path.read_bytes()
+            bridge = Bridge(kill.manager, base / 'bridge.sock')
+            bridges.append(bridge)
+            log = kill.home / 'state' / UP.LOG
 
-        def killed(at):
-            """One setup in a process of its own, SIGKILLed right after its upgrade's `at`th write point."""
-            done = subprocess.run([sys.executable, '-B', str(driver), str(mods), str(at), bridge.path,
-                                   json.dumps(kill.overrides()), json.dumps(kill.argv())], env=child_env(),
-                                  capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS,
-                                  stdin=subprocess.DEVNULL)
-            return done.returncode
-
-        def fresh_start():
-            """The kill host as its setup laid it down, its authority running through its unit on its own engine."""
-            kill.manager.stop_all()
-            restore(saved)
-            ts.set('ready')
-            kill.manager.start(kill.unit)
-
-        with section(KP, OC):
-            fresh_start()
-            whole = killed(0)
-            points = [json.loads(line).get('point') for line in log.read_text().splitlines()] if log.is_file() else []
-            # AC2: the upgrade committed (its restart answered, the previous engine removed), and its service had
-            # recorded the previous bindings its rebinding replaced while the previous engine was beside bin.
-            seen = ownership_observations(kill)
-            rebinds = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_rebind']
-            commits = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_commit']
-            check(OC, 'the upgraded service rebound the declarations of the owning modules the upgrade changed [%s]'
-                  % [len(b or []) for b in rebinds], len(rebinds) == 1 and rebinds[0])
-            check(OC, 'the commit dropped exactly the previous bindings that rebinding recorded [%s]'
-                  % [len(b or []) for b in commits], commits == rebinds[:1] and commits)
-            check(OC, 'the step log records the commit after the previous engine was removed [%s]' % points[-4:],
-                  points[-3:] == ['removed_previous', 'committed', 'done'])
-            check(OC, 'a committed upgrade has no recorded previous bindings [%s]' % recorded_previous(kill),
-                  recorded_previous(kill) == [])
-            check(KP, 'an upgrade run to its end names its write points in its step log [%s %s]' % (whole, points),
-                  whole == 0 and 'exchanged' in points and points[-1:] == ['done'])
-            exchanged = points.index('exchanged') + 1 if 'exchanged' in points else None
-            restarted = points.index('restart') + 1 if 'restart' in points else None
-            before_points = sum(not one for _label, one in rows[KP])
-            for at in range(1, len(points) + 1):
-                # The row is red from the first point that fails; the points after it are not run (a defect that
-                # writes one point per file would otherwise cost a kill per file).
-                if sum(not one for _label, one in rows[KP]) > before_points:
-                    check(KP, 'the kill rows stopped at the first point that failed, before point %d' % at, False)
-                    break
-                fresh_start()
-                calls = len(kill.manager.calls)
-                code = killed(at)
-                name = points[at - 1]
-                engine = named(kill.home / 'bin')
-                check(KP, 'killed at write point %d (%s): the setup process died by SIGKILL [%s]' % (at, name, code),
-                      code == -signal.SIGKILL)
-                check(KP, 'killed at %d (%s): the installed engine directory equals exactly one engine\'s digests '
-                      '[%s]' % (at, name, 'previous' if engine == old_engine else 'current' if engine == current
-                                else 'neither (%d files)' % len(engine)),
-                      (engine == old_engine) != (engine == current))
-                kill.manager.stop(kill.unit)
-                kill.manager.start(kill.unit)
-                check(KP, 'killed at %d (%s): the installed control_service.py serve starts on the scratch store and '
-                      'answers an inspect over its socket' % (at, name), kill.answers())
-                code, report = kill.setup()
-                channel = ((kill.send({'operation': 'inspect', 'entity_ids': []}).get('result') or {}).get('channel')
-                           or {}) if code else {}
-                check(KP, 'killed at %d (%s): a second run is accepted [%s %s; the service\'s channel %s]'
-                      % (at, name, report.get('outcome'), report.get('reason'),
-                         {k: channel.get(k) for k in ('available', 'refusal') if k in channel}), code == 0)
-                equals_fresh(KP, kill, fresh, 'killed at %d (%s), then run again' % (at, name))
-                restarts = [c for c in kill.manager.calls[calls:] if c == ['restart', kill.unit]]
-                check(KP, 'killed at %d (%s): the service was restarted once across the killed run and the second '
-                      '[%d]' % (at, name, len(restarts)), len(restarts) == 1)
-                if exchanged is not None and exchanged <= at < (restarted or 0):
-                    check(KP, 'killed at %d (%s), after the exchange and before its restart: the second run restarted '
-                          'the service [%s]' % (at, name, [s for s in report.get('steps') or []
-                                                           if s.get('step') == 'engine_upgrade'][:1]),
-                          any(s.get('step') == 'engine_upgrade' and s.get('restart') == 'restarted'
-                              for s in report.get('steps') or []))
-            check(KP, 'a kill row ran at every point, at least begin, staged, exchanged, record and restart [%s]' % points,
-                  {'begin', 'staged', 'exchanged', 'record', 'restart'} <= set(points))
-            # The service the upgrade restarted carried the store's ownership declarations to the installed engine's
-            # bytes (control_store.rebind_owners from its record), and a digest the file's bytes do not have rebinds
-            # nothing (on a copy of the store, so the running service's own is never written).
-            installed = {os.path.realpath(str(kill.home / 'bin' / n)): d for n, d in kill.record()['closure'].items()}
-            owners = read_store(kill.record()['store_path'], S.entity_owners)
-            bound = [r for r in owners if r[4] in installed]
-            stale = [(r[1], os.path.basename(r[4])) for r in bound if r[5] != installed[r[4]]]
-            check(KP, 'after the upgrades every ownership declaration naming an installed engine file names the digest the '
-                  'record holds [%d of %d declarations name one; stale %s]' % (len(bound), len(owners), stale[:3]),
-                  bound and not stale)
-            copy = base / 'owners-copy.sqlite'
-            source = sqlite3.connect('file:%s?mode=ro' % kill.record()['store_path'], uri=True)
-            target = sqlite3.connect(str(copy))
-            source.backup(target)
-            source.close()
-            target.close()
-            conn = S.open_store(str(copy))
-            try:
-                module = bound[0][4] if bound else str(kill.home / 'bin' / 'control_channel_activation.py')
-                other = 'sha256:' + hashlib.sha256(b'bytes the installed file does not have').hexdigest()
-                again = S.rebind_owners(conn, {module: other})
-                after = S.entity_owners(conn)
-            finally:
-                conn.close()
-            check(KP, 'a declaration is not rebound to a digest its file\'s bytes do not have [%s]' % again,
-                  again == [] and after == owners)
-
-        # VELDO-0161 (R6R7-1): a host whose engine is already current but which lacks the adoption signer (one a setup
-        # from before the signer upgraded) has it laid by setup, which then restarts the service, since the service
-        # reads its enrollment signers only at its start. A run killed after it laid the signers and before that
-        # restart leaves the restart owed in the step log; the next run must pay it, or the running service keeps the
-        # old signers and refuses every adoption while setup reports the factory complete.
-        # The row runs in a function of its own: its names (points, at, whole, restarted...) are its own, so the rows
-        # after it still read the kill host's whole-run points the kill-point section computed.
-        def adoption_signer_kill():
-            serving = fresh.manager.alive(fresh.unit)
-            ak_bridge = Bridge(fresh.manager, base / 'bridge-ak.sock')
-            bridges.append(ak_bridge)
-            ak_log = fresh.home / 'state' / UP.LOG
-            ak_key = fresh.root / 'keys' / F.ADOPTION_KEY
-            ak_signers = (fresh.root / 'host' / 'enrollment_signers', fresh.home / 'config' / 'enrollment_signers')
-            ak_owner_only = base / 'ak-owner-only-signers'
-
-            def killed_fresh(at):
-                """One setup of the fresh host in a process of its own, SIGKILLed right after its `at`th write point."""
-                done = subprocess.run([sys.executable, '-B', str(driver), str(mods), str(at), ak_bridge.path,
-                                       json.dumps(fresh.overrides()), json.dumps(fresh.argv())], env=child_env(),
+            def killed(at):
+                """One setup in a process of its own, SIGKILLed right after its upgrade's `at`th write point."""
+                done = subprocess.run([sys.executable, '-B', str(driver), str(mods), str(at), bridge.path,
+                                       json.dumps(kill.overrides()), json.dumps(kill.argv())], env=child_env(),
                                       capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS,
-                                  stdin=subprocess.DEVNULL)
+                                      stdin=subprocess.DEVNULL)
                 return done.returncode
 
-            def without_signer():
-                """The fresh host as a setup from before the adoption signer left it after upgrading it to the current
-                engine: no adoption key, the owner's line alone in both signers files, its service running on that.
-                Returns the number of step-log lines it holds."""
+            def fresh_start():
+                """The kill host as its setup laid it down, its authority running through its unit on its own engine."""
+                kill.manager.stop_all()
+                restore(saved)
+                ts.set('ready')
+                kill.manager.start(kill.unit)
+
+            with section(KP, OC):
+                fresh_start()
+                whole = killed(0)
+                points = [json.loads(line).get('point') for line in log.read_text().splitlines()] if log.is_file() else []
+                # AC2: the upgrade committed (its restart answered, the previous engine removed), and its service had
+                # recorded the previous bindings its rebinding replaced while the previous engine was beside bin.
+                seen = ownership_observations(kill)
+                rebinds = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_rebind']
+                commits = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_commit']
+                check(OC, 'the upgraded service rebound the declarations of the owning modules the upgrade changed [%s]'
+                      % [len(b or []) for b in rebinds], len(rebinds) == 1 and rebinds[0])
+                check(OC, 'the commit dropped exactly the previous bindings that rebinding recorded [%s]'
+                      % [len(b or []) for b in commits], commits == rebinds[:1] and commits)
+                check(OC, 'the step log records the commit after the previous engine was removed [%s]' % points[-4:],
+                      points[-3:] == ['removed_previous', 'committed', 'done'])
+                check(OC, 'a committed upgrade has no recorded previous bindings [%s]' % recorded_previous(kill),
+                      recorded_previous(kill) == [])
+                check(KP, 'an upgrade run to its end names its write points in its step log [%s %s]' % (whole, points),
+                      whole == 0 and 'exchanged' in points and points[-1:] == ['done'])
+                exchanged = points.index('exchanged') + 1 if 'exchanged' in points else None
+                restarted = points.index('restart') + 1 if 'restart' in points else None
+                before_points = sum(not one for _label, one in rows[KP])
+                for at in range(1, len(points) + 1):
+                    # The row is red from the first point that fails; the points after it are not run (a defect that
+                    # writes one point per file would otherwise cost a kill per file).
+                    if sum(not one for _label, one in rows[KP]) > before_points:
+                        check(KP, 'the kill rows stopped at the first point that failed, before point %d' % at, False)
+                        break
+                    fresh_start()
+                    calls = len(kill.manager.calls)
+                    code = killed(at)
+                    name = points[at - 1]
+                    engine = named(kill.home / 'bin')
+                    check(KP, 'killed at write point %d (%s): the setup process died by SIGKILL [%s]' % (at, name, code),
+                          code == -signal.SIGKILL)
+                    check(KP, 'killed at %d (%s): the installed engine directory equals exactly one engine\'s digests '
+                          '[%s]' % (at, name, 'previous' if engine == old_engine else 'current' if engine == current
+                                    else 'neither (%d files)' % len(engine)),
+                          (engine == old_engine) != (engine == current))
+                    kill.manager.stop(kill.unit)
+                    kill.manager.start(kill.unit)
+                    check(KP, 'killed at %d (%s): the installed control_service.py serve starts on the scratch store and '
+                          'answers an inspect over its socket' % (at, name), kill.answers())
+                    code, report = kill.setup()
+                    channel = ((kill.send({'operation': 'inspect', 'entity_ids': []}).get('result') or {}).get('channel')
+                               or {}) if code else {}
+                    check(KP, 'killed at %d (%s): a second run is accepted [%s %s; the service\'s channel %s]'
+                          % (at, name, report.get('outcome'), report.get('reason'),
+                             {k: channel.get(k) for k in ('available', 'refusal') if k in channel}), code == 0)
+                    equals_fresh(KP, kill, fresh, 'killed at %d (%s), then run again' % (at, name))
+                    restarts = [c for c in kill.manager.calls[calls:] if c == ['restart', kill.unit]]
+                    check(KP, 'killed at %d (%s): the service was restarted once across the killed run and the second '
+                          '[%d]' % (at, name, len(restarts)), len(restarts) == 1)
+                    if exchanged is not None and exchanged <= at < (restarted or 0):
+                        check(KP, 'killed at %d (%s), after the exchange and before its restart: the second run restarted '
+                              'the service [%s]' % (at, name, [s for s in report.get('steps') or []
+                                                               if s.get('step') == 'engine_upgrade'][:1]),
+                              any(s.get('step') == 'engine_upgrade' and s.get('restart') == 'restarted'
+                                  for s in report.get('steps') or []))
+                check(KP, 'a kill row ran at every point, at least begin, staged, exchanged, record and restart [%s]' % points,
+                      {'begin', 'staged', 'exchanged', 'record', 'restart'} <= set(points))
+                # The service the upgrade restarted carried the store's ownership declarations to the installed engine's
+                # bytes (control_store.rebind_owners from its record), and a digest the file's bytes do not have rebinds
+                # nothing (on a copy of the store, so the running service's own is never written).
+                installed = {os.path.realpath(str(kill.home / 'bin' / n)): d for n, d in kill.record()['closure'].items()}
+                owners = read_store(kill.record()['store_path'], S.entity_owners)
+                bound = [r for r in owners if r[4] in installed]
+                stale = [(r[1], os.path.basename(r[4])) for r in bound if r[5] != installed[r[4]]]
+                check(KP, 'after the upgrades every ownership declaration naming an installed engine file names the digest the '
+                      'record holds [%d of %d declarations name one; stale %s]' % (len(bound), len(owners), stale[:3]),
+                      bound and not stale)
+                copy = base / 'owners-copy.sqlite'
+                source = sqlite3.connect('file:%s?mode=ro' % kill.record()['store_path'], uri=True)
+                target = sqlite3.connect(str(copy))
+                source.backup(target)
+                source.close()
+                target.close()
+                conn = S.open_store(str(copy))
+                try:
+                    module = bound[0][4] if bound else str(kill.home / 'bin' / 'control_channel_activation.py')
+                    other = 'sha256:' + hashlib.sha256(b'bytes the installed file does not have').hexdigest()
+                    again = S.rebind_owners(conn, {module: other})
+                    after = S.entity_owners(conn)
+                finally:
+                    conn.close()
+                check(KP, 'a declaration is not rebound to a digest its file\'s bytes do not have [%s]' % again,
+                      again == [] and after == owners)
+
+            # VELDO-0161 (R6R7-1): a host whose engine is already current but which lacks the adoption signer (one a setup
+            # from before the signer upgraded) has it laid by setup, which then restarts the service, since the service
+            # reads its enrollment signers only at its start. A run killed after it laid the signers and before that
+            # restart leaves the restart owed in the step log; the next run must pay it, or the running service keeps the
+            # old signers and refuses every adoption while setup reports the factory complete.
+            # The row runs in a function of its own: its names (points, at, whole, restarted...) are its own, so the rows
+            # after it still read the kill host's whole-run points the kill-point section computed.
+            def adoption_signer_kill():
+                serving = fresh.manager.alive(fresh.unit)
+                ak_bridge = Bridge(fresh.manager, base / 'bridge-ak.sock')
+                bridges.append(ak_bridge)
+                ak_log = fresh.home / 'state' / UP.LOG
+                ak_key = fresh.root / 'keys' / F.ADOPTION_KEY
+                ak_signers = (fresh.root / 'host' / 'enrollment_signers', fresh.home / 'config' / 'enrollment_signers')
+                ak_owner_only = base / 'ak-owner-only-signers'
+
+                def killed_fresh(at):
+                    """One setup of the fresh host in a process of its own, SIGKILLed right after its `at`th write point."""
+                    done = subprocess.run([sys.executable, '-B', str(driver), str(mods), str(at), ak_bridge.path,
+                                           json.dumps(fresh.overrides()), json.dumps(fresh.argv())], env=child_env(),
+                                          capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                                      stdin=subprocess.DEVNULL)
+                    return done.returncode
+
+                def without_signer():
+                    """The fresh host as a setup from before the adoption signer left it after upgrading it to the current
+                    engine: no adoption key, the owner's line alone in both signers files, its service running on that.
+                    Returns the number of step-log lines it holds."""
+                    fresh.manager.stop_all()
+                    restore(saved_fresh)
+                    for path in (ak_key, Path(str(ak_key) + '.pub')):
+                        with contextlib.suppress(FileNotFoundError):
+                            path.unlink()
+                    for path in ak_signers:
+                        path.write_text(''.join(line for line in path.read_text().splitlines(keepends=True)
+                                                if not line.startswith(F.ADOPTION_PRINCIPAL + ' ')))
+                    ts.set('ready')
+                    fresh.manager.start(fresh.unit)
+                    return len(ak_log.read_text().splitlines()) if ak_log.is_file() else 0
+
+                def engine_step(report):
+                    return next((s for s in report.get('steps') or [] if s.get('step') == 'engine_upgrade'), {})
+
+                trust = json.loads(fresh.trust.read_text())
+                check(AK, 'the host trust names the state root\'s enrollment signers [%s]' % trust.get('enrollment_signers'),
+                      os.path.realpath(str(trust.get('enrollment_signers'))) == os.path.realpath(str(ak_signers[0])))
+                held = without_signer()
+                ak_owner_only.write_text(ak_signers[0].read_text())
+                check(AK, 'the stripped host holds no adoption key and only the owner\'s line, the same in both signers files',
+                      not ak_key.exists() and len(ak_owner_only.read_text().splitlines()) == 1
+                      and ak_signers[1].read_text() == ak_owner_only.read_text())
+                whole = killed_fresh(0)
+                points = [json.loads(line).get('point') for line in ak_log.read_text().splitlines()[held:]] \
+                    if ak_log.is_file() else []
+                check(AK, 'a whole run over the current engine lays the key and both signers files and restarts, with no '
+                      'exchange [%s %s]' % (whole, points),
+                      whole == 0 and points.count('adoption_signers') == 2 and 'adoption_key' in points
+                      and 'exchanged' not in points and 'restart' in points and points[-1:] == ['done']
+                      and points.index('restart') > max(i for i, p in enumerate(points) if p == 'adoption_signers'))
+                at = max((i + 1 for i, p in enumerate(points) if p == 'adoption_signers'), default=0)
+                if at:
+                    held = without_signer()
+                    pid, calls = fresh.manager.pid(fresh.unit), len(fresh.manager.calls)
+                    code = killed_fresh(at)
+                    after = [json.loads(line).get('point') for line in ak_log.read_text().splitlines()[held:]] \
+                        if ak_log.is_file() else []
+                    line = adoption_line(fresh)
+                    check(AK, 'killed at %d, after the last adoption_signers: the setup died by SIGKILL with both signers files '
+                          'laid as a fresh setup lays them and no restart point [%s %s]' % (at, code, after),
+                          code == -signal.SIGKILL and line is not None and after[-1:] == ['adoption_signers']
+                          and 'restart' not in after
+                          and all(p.read_text() == ak_owner_only.read_text() + line for p in ak_signers))
+                    check(AK, 'killed at %d: the service still runs the process that read the owner-only signers [%s %s]'
+                          % (at, pid, fresh.manager.pid(fresh.unit)),
+                          pid is not None and fresh.manager.pid(fresh.unit) == pid
+                          and not any(c[0] == 'restart' for c in fresh.manager.calls[calls:]))
+                    check(AK, 'killed at %d: the step log owes the restart [%s]' % (at, UP.recovery(str(ak_log))),
+                          UP.switched_without_restart(str(ak_log)))
+                    code, report = fresh.setup()
+                    step = engine_step(report)
+                    restarts = [c for c in fresh.manager.calls[calls:] if c == ['restart', fresh.unit]]
+                    now = fresh.manager.pid(fresh.unit)
+                    check(AK, 'the next run is accepted and restarts the service once, a new process now serving [%s %s; %s; '
+                          '%d restart(s); pid %s then %s]' % (code, report.get('reason'), {k: step.get(k) for k in
+                                                                                           ('outcome', 'restart')},
+                                                              len(restarts), pid, now),
+                          code == 0 and step.get('restart') == 'restarted' and len(restarts) == 1
+                          and now is not None and now != pid)
+                    check(AK, 'the next run leaves no restart owed and both signers files as they were laid [%s]'
+                          % UP.recovery(str(ak_log)),
+                          not UP.switched_without_restart(str(ak_log))
+                          and all(p.read_text() == ak_owner_only.read_text() + line for p in ak_signers))
+                    # The adoption's take-on is judged by the running service: the enrollment binding the adoption signer
+                    # signs must verify under the signers that service read at its start. The process serving now started
+                    # at the next run's restart, after both files were laid, so it read the installation's copy as it is;
+                    # the process the kill left read the owner-only signers.
+                    config = fresh.record()
+                    binding = json.dumps({'schema': CEN.BINDING_SCHEMA, 'enrolled_by': F.ADOPTION_PRINCIPAL,
+                                          'workspace': str(fresh.clone), 'store_path': config.get('store_path')},
+                                         sort_keys=True).encode()
+                    signature = sign_with(ak_key, binding, EL.ENROLLMENT_NAMESPACE)
+                    restarted = CS.Service(config, None).verify(binding, signature)
+                    stale = CS.Service(dict(config, enrollment_signers=str(ak_owner_only)), None).verify(binding, signature)
+                    check(AK, 'an adoption is accepted after the next run: the adoption signer\'s binding verifies under the '
+                          'signers the restarted service read, and not under those the killed run left it holding [%s %s]'
+                          % (restarted, stale), restarted is True and stale is False)
                 fresh.manager.stop_all()
                 restore(saved_fresh)
-                for path in (ak_key, Path(str(ak_key) + '.pub')):
-                    with contextlib.suppress(FileNotFoundError):
-                        path.unlink()
-                for path in ak_signers:
-                    path.write_text(''.join(line for line in path.read_text().splitlines(keepends=True)
-                                            if not line.startswith(F.ADOPTION_PRINCIPAL + ' ')))
+                if serving:
+                    ts.set('ready')
+                    fresh.manager.start(fresh.unit)
+
+            with section(AK):
+                adoption_signer_kill()
+
+            # AC2 (the review of 2026-09-28): the restart brings the unit up on the current engine, which rebinds the
+            # store's ownership declarations to its bytes, and then fails; the switch back runs the current engine's
+            # own restore before the previous engine starts, so its channel and every owned command are available.
+            def failed_after_start(host, saved, label):
+                host.manager.stop_all()
+                restore(saved)
                 ts.set('ready')
-                fresh.manager.start(fresh.unit)
-                return len(ak_log.read_text().splitlines()) if ak_log.is_file() else 0
-
-            def engine_step(report):
-                return next((s for s in report.get('steps') or [] if s.get('step') == 'engine_upgrade'), {})
-
-            trust = json.loads(fresh.trust.read_text())
-            check(AK, 'the host trust names the state root\'s enrollment signers [%s]' % trust.get('enrollment_signers'),
-                  os.path.realpath(str(trust.get('enrollment_signers'))) == os.path.realpath(str(ak_signers[0])))
-            held = without_signer()
-            ak_owner_only.write_text(ak_signers[0].read_text())
-            check(AK, 'the stripped host holds no adoption key and only the owner\'s line, the same in both signers files',
-                  not ak_key.exists() and len(ak_owner_only.read_text().splitlines()) == 1
-                  and ak_signers[1].read_text() == ak_owner_only.read_text())
-            whole = killed_fresh(0)
-            points = [json.loads(line).get('point') for line in ak_log.read_text().splitlines()[held:]] \
-                if ak_log.is_file() else []
-            check(AK, 'a whole run over the current engine lays the key and both signers files and restarts, with no '
-                  'exchange [%s %s]' % (whole, points),
-                  whole == 0 and points.count('adoption_signers') == 2 and 'adoption_key' in points
-                  and 'exchanged' not in points and 'restart' in points and points[-1:] == ['done']
-                  and points.index('restart') > max(i for i, p in enumerate(points) if p == 'adoption_signers'))
-            at = max((i + 1 for i, p in enumerate(points) if p == 'adoption_signers'), default=0)
-            if at:
-                held = without_signer()
-                pid, calls = fresh.manager.pid(fresh.unit), len(fresh.manager.calls)
-                code = killed_fresh(at)
-                after = [json.loads(line).get('point') for line in ak_log.read_text().splitlines()[held:]] \
-                    if ak_log.is_file() else []
-                line = adoption_line(fresh)
-                check(AK, 'killed at %d, after the last adoption_signers: the setup died by SIGKILL with both signers files '
-                      'laid as a fresh setup lays them and no restart point [%s %s]' % (at, code, after),
-                      code == -signal.SIGKILL and line is not None and after[-1:] == ['adoption_signers']
-                      and 'restart' not in after
-                      and all(p.read_text() == ak_owner_only.read_text() + line for p in ak_signers))
-                check(AK, 'killed at %d: the service still runs the process that read the owner-only signers [%s %s]'
-                      % (at, pid, fresh.manager.pid(fresh.unit)),
-                      pid is not None and fresh.manager.pid(fresh.unit) == pid
-                      and not any(c[0] == 'restart' for c in fresh.manager.calls[calls:]))
-                check(AK, 'killed at %d: the step log owes the restart [%s]' % (at, UP.recovery(str(ak_log))),
-                      UP.switched_without_restart(str(ak_log)))
-                code, report = fresh.setup()
-                step = engine_step(report)
-                restarts = [c for c in fresh.manager.calls[calls:] if c == ['restart', fresh.unit]]
-                now = fresh.manager.pid(fresh.unit)
-                check(AK, 'the next run is accepted and restarts the service once, a new process now serving [%s %s; %s; '
-                      '%d restart(s); pid %s then %s]' % (code, report.get('reason'), {k: step.get(k) for k in
-                                                                                       ('outcome', 'restart')},
-                                                          len(restarts), pid, now),
-                      code == 0 and step.get('restart') == 'restarted' and len(restarts) == 1
-                      and now is not None and now != pid)
-                check(AK, 'the next run leaves no restart owed and both signers files as they were laid [%s]'
-                      % UP.recovery(str(ak_log)),
-                      not UP.switched_without_restart(str(ak_log))
-                      and all(p.read_text() == ak_owner_only.read_text() + line for p in ak_signers))
-                # The adoption's take-on is judged by the running service: the enrollment binding the adoption signer
-                # signs must verify under the signers that service read at its start. The process serving now started
-                # at the next run's restart, after both files were laid, so it read the installation's copy as it is;
-                # the process the kill left read the owner-only signers.
-                config = fresh.record()
-                binding = json.dumps({'schema': CEN.BINDING_SCHEMA, 'enrolled_by': F.ADOPTION_PRINCIPAL,
-                                      'workspace': str(fresh.clone), 'store_path': config.get('store_path')},
-                                     sort_keys=True).encode()
-                signature = sign_with(ak_key, binding, EL.ENROLLMENT_NAMESPACE)
-                restarted = CS.Service(config, None).verify(binding, signature)
-                stale = CS.Service(dict(config, enrollment_signers=str(ak_owner_only)), None).verify(binding, signature)
-                check(AK, 'an adoption is accepted after the next run: the adoption signer\'s binding verifies under the '
-                      'signers the restarted service read, and not under those the killed run left it holding [%s %s]'
-                      % (restarted, stale), restarted is True and stale is False)
-            fresh.manager.stop_all()
-            restore(saved_fresh)
-            if serving:
-                ts.set('ready')
-                fresh.manager.start(fresh.unit)
-
-        with section(AK):
-            adoption_signer_kill()
-
-        # AC2 (the review of 2026-09-28): the restart brings the unit up on the current engine, which rebinds the
-        # store's ownership declarations to its bytes, and then fails; the switch back runs the current engine's
-        # own restore before the previous engine starts, so its channel and every owned command are available.
-        def failed_after_start(host, saved, label):
-            host.manager.stop_all()
-            restore(saved)
-            ts.set('ready')
-            host.manager.start(host.unit)
-            old = named(host.home / 'bin')
-            old_record = host.record_path.read_bytes()
-            before = channel_of(host)
-            check(FA, '%s: before the upgrade the previous engine\'s channel is available [%s]' % (label, before),
-                  before.get('available') is True)
-            declared = read_store(host.store, S.entity_owners)
-            differs = [r for r in declared if os.path.dirname(r[4]) == str(host.home / 'bin')
-                       and host.record()['closure'].get(os.path.basename(r[4])) != current.get(os.path.basename(r[4]))]
-            host.manager.fail_restart, host.manager.fail_after_start, host.manager.came_up = 1, True, []
-            calls = len(host.manager.calls)
-            try:
-                code, report = host.setup()
-            finally:
-                host.manager.fail_restart, host.manager.fail_after_start = 0, False
-            ran = host.manager.calls[calls:]
-            check(FA, '%s: setup refused by name after the restart came up and failed [%s %s; came up %s]'
-                  % (label, code, report.get('reason'), host.manager.came_up),
-                  code == 1 and report.get('reason') == 'unavailable_service:authority:upgrade_start'
-                  and len(host.manager.came_up) == 1 and host.manager.came_up[0])
-            check(FA, '%s: the previous engine is back in bin and its record restored byte for byte' % label,
-                  named(host.home / 'bin') == old and host.record_path.read_bytes() == old_record)
-            seen = ownership_observations(host)
-            rebinds = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_rebind']
-            restores = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_restore']
-            if differs:
-                check(FA, '%s: the current engine came up and rebound the %d declarations of the owning modules it '
-                      'changed, and the switch back restored exactly those [%s %s]'
-                      % (label, len(differs), [len(b or []) for b in rebinds], [len(b or []) for b in restores]),
-                      len(rebinds) == 1 and len(rebinds[0] or []) == len(differs) and restores == rebinds)
-            steps = [json.loads(line) for line in (host.home / 'state' / UP.LOG).read_text().splitlines()]
-            check(FA, '%s: the step log records the switch back and the restore before the previous engine\'s restart '
-                  '[%s]' % (label, [(s.get('point'), s.get('outcome')) for s in steps][-4:]),
-                  [(s.get('point'), s.get('outcome')) for s in steps if s.get('point') != 'stopped'][-3:]
-                  == [('switched_back', None), ('ownership_restore', 'restored'), ('restart', 'previous_engine_restarted')])
-            check(FA, '%s: the service was restarted once more, on the previous engine [%s]'
-                  % (label, [c for c in ran if c[0] in ('start', 'stop', 'restart')]),
-                  [c for c in ran if c[0] == 'restart'] == [['restart', host.unit]] * 2)
-            after = channel_of(host)
-            check(FA, '%s: the previous engine\'s channel is available [%s]' % (label, after),
-                  after.get('available') is True and not after.get('refusal'))
-            owners = read_store(host.store, S.entity_owners)
-            wrong = [(r[1], os.path.basename(r[4])) for r in owners if S.module_digest(r[4]) != r[5]]
-            check(FA, '%s: every owned command is available: each of the %d declarations binds the bytes its file has '
-                  'now, the previous engine\'s [%s]' % (label, len(owners), wrong[:3]), owners and not wrong)
-            check(FA, '%s: no previous binding is left recorded [%s]' % (label, recorded_previous(host)),
-                  recorded_previous(host) == [])
-            host.manager.stop_all()
-
-        with section(FA):
-            failed_after_start(kill, saved, OLDER[0])
-            if OLDER[1] in laid_down:
-                failed_after_start(hosts[OLDER[1]], laid_down[OLDER[1]], OLDER[1])
-            else:
-                check(FA, 'the %s host was laid down' % OLDER[1], False)
-
-        # Each recovery row starts with the real older installer and the real setup writer.
-        def fail_next(keep=False):
-            kill.manager.fail_restart = 1
-            kill.manager.fail_after_start = True
-            kill.manager.keep_failed_running = keep
-
-        def clear_failure():
-            kill.manager.fail_restart = 0
-            kill.manager.fail_after_start = False
-            kill.manager.keep_failed_running = False
-            kill.manager.fail_stop = False
-            kill.manager.after_failed_start = None
-
-        def previous_answers(row, label):
-            check(row, label + ': previous engine and original record restored',
-                  named(kill.home / 'bin') == old_engine and kill.record_path.read_bytes() == old_record)
-            check(row, label + ': previous engine channel available', channel_of(kill).get('available') is True)
-
-        with section(RE):
-            for target in ('unit', 'record'):
-                fresh_start()
-                units_before = snapshot(kill.units)
-                at = points.index(target) + 1 if target in points else None
-                check(RE, 'the upgrade has a ' + target + ' write point', at is not None)
-                if at is None:
-                    continue
-                check(RE, 'setup killed after ' + target, killed(at) == -signal.SIGKILL)
-                # A second begin must not hide the first exchange.
-                check(RE, 'the resumed setup killed after its begin', killed(1) == -signal.SIGKILL)
-                fail_next()
-                code, report = kill.setup()
-                clear_failure()
-                check(RE, target + ': failed resumed restart refused', code == 1)
-                previous_answers(RE, target)
-                check(RE, target + ': every original unit restored across runs', snapshot(kill.units) == units_before)
-                code, report = kill.setup()
-                check(RE, target + ': forward re-run answers before removing previous engine',
-                      code == 0 and channel_of(kill).get('available') is True
-                      and not (kill.home / UP.STAGE).exists())
-
-        with section(BK):
-            fresh_start()
-            fail_next()
-            killed(0)
-            clear_failure()
-            back_points = [json.loads(line)['point'] for line in log.read_text().splitlines()]
-            begin_back = back_points.index('switched_back') if 'switched_back' in back_points else len(back_points)
-            check(BK, 'switch back exposes the stop as a kill point', 'stopped' in back_points)
-            for at in range(begin_back + 1, len(back_points) + 1):
-                fresh_start()
-                fail_next()
-                check(BK, 'killed inside switch back at ' + back_points[at-1], killed(at) == -signal.SIGKILL)
-                clear_failure()
-                calls = len(kill.manager.calls)
-                code, report = kill.setup()
-                ran = kill.manager.calls[calls:]
-                check(BK, 'resume after ' + back_points[at-1] + ' restarts and answers',
-                      code == 0 and ['restart', kill.unit] in ran and channel_of(kill).get('available') is True)
-                check(BK, 'resume removes stage only after the service answers', not (kill.home / UP.STAGE).exists())
-
-        with section(ST):
-            fresh_start()
-            fail_next(keep=True)
-            kill.manager.fail_stop = True
-            code, report = kill.setup()
-            check(ST, 'stop failure is refused by name in the owner answer',
-                  code == 1 and report.get('reason') == 'unavailable_service:authority:upgrade_stop')
-            check(ST, 'stop failure does not attempt ownership restore',
-                  not any(json.loads(line)['point'] == 'ownership_restore' for line in log.read_text().splitlines()))
-            clear_failure()
-            code, report = kill.setup()
-            check(ST, 'a re-run after stop failure recovers', code == 0 and channel_of(kill).get('available') is True)
-
-        with section(BS):
-            fresh_start()
-            fail_next(keep=True)
-            # Observe the stop at the real restore entry. Successful restoration and later
-            # channel availability do not establish that the failed service was stopped first.
-            calls_before = len(kill.manager.calls)
-            stopped_at_restore, observed_upgrades = [], []
-            setup_organ = F.organ
-
-            def observe_restore_stop(name):
-                module = setup_organ(name)
-                if name == 'control_factory_setup_upgrade' and not any(
-                        module is seen for seen, _restore in observed_upgrades):
-                    restore_ownership = module.restore_ownership
-
-                    def observed_restore(plan):
-                        stopped_at_restore.append(
-                            ['stop', kill.unit] in kill.manager.calls[calls_before:]
-                            and not kill.manager.alive(kill.unit))
-                        return restore_ownership(plan)
-
-                    observed_upgrades.append((module, restore_ownership))
-                    module.restore_ownership = observed_restore
-                return module
-
-            F.organ = observe_restore_stop
-            try:
-                code, report = kill.setup()
-            finally:
-                F.organ = setup_organ
-                for module, restore_ownership in observed_upgrades:
-                    module.restore_ownership = restore_ownership
-            clear_failure()
-            previous_answers(BS, 'failed restart leaves current service alive')
-            check(BS, 'the stop was requested and the service was no longer alive when restore began [%s]'
-                  % stopped_at_restore, bool(stopped_at_restore) and all(stopped_at_restore))
-            check(BS, 'restore ran after a successful stop',
-                  any(json.loads(line).get('outcome') == 'restored' for line in log.read_text().splitlines()))
-
-        with section(RP):
-            fresh_start()
-            fail_next()
-            def damage_previous():
-                path = kill.home / UP.STAGE / 'control_channel_activation.py'
-                os.chmod(path, 0o600)
-                path.write_bytes(path.read_bytes() + b'\n# changed previous engine\n')
-            kill.manager.after_failed_start = damage_previous
-            code, report = kill.setup()
-            clear_failure()
-            recorded = recorded_previous(kill)
-            # The blocked rows are the recorded ones whose module no longer has its previous bytes: every row of the
-            # damaged module. Other owning modules the upgrade changed (VELDO-0181 changed the settlement module)
-            # are recorded too and would restore; they are not blocked.
-            damaged = str(kill.home / 'bin' / 'control_channel_activation.py')
-            blocked = [r for r in recorded if S.module_digest(r[2]) != r[3]] if isinstance(recorded, list) else []
-            detail = report.get('detail', '')
-            check(RP, 'restore refusal and forward recovery are in the owner answer',
-                  code == 1 and 'ownership_restore_differs' in detail and 're-run setup forward' in detail)
-            check(RP, 'every blocked ownership row is named in the answer',
-                  len(blocked) >= 2 and blocked == [r for r in recorded if r[2] == damaged]
-                  and all(value in detail and module in detail for _, value, module, _, _ in blocked))
-            check(RP, 'a refused restore leaves all bindings and records intact',
-                  recorded and all(r[5] == next((b[4] for b in recorded if b[0:2] == r[0:2]), r[5])
-                                   for r in read_store(kill.store, S.entity_owners)))
-            # Restore the edited fixture bytes; the refused transaction itself changes no row.
-            path = kill.home / 'bin' / 'control_channel_activation.py'
-            path.write_bytes(saved['entries'][str(path)][2])
-            os.chmod(path, saved['entries'][str(path)][1])
-            code, report = kill.setup()
-            check(RP, 're-running setup forward recovers owned commands',
-                  code == 0 and channel_of(kill).get('available') is True)
-
-        with section(SD, CR):
-            fresh_start()
-            at = points.index('restart') + 1 if 'restart' in points else None
-            check(CR, 'setup killed after current service answered', at is not None and killed(at) == -signal.SIGKILL)
-            before = recorded_previous(kill)
-            reply = kill.send({'operation': CS.OWNERSHIP_COMMIT})
-            check(CR, 'commit refuses while previous engine is installed and keeps all records [%s]' % reply,
-                  (reply.get('accepted') is False or (reply.get('result') or {}).get('ok') is False) and 'previous_engine_installed' in json.dumps(reply)
-                  and before and recorded_previous(kill) == before)
-            kill.manager.stop_all()
-            # Exercise serve's crash recovery after the real setup writer removed the previous engine.
-            fresh_start()
-            at = points.index('removed_previous') + 1 if 'removed_previous' in points else None
-            check(SD, 'setup killed after removing previous engine', at is not None and killed(at) == -signal.SIGKILL)
-            before = recorded_previous(kill)
-            kill.manager.stop_all()
-            kill.manager.start(kill.unit)
-            check(SD, 'serve drops previous bindings with no previous engine beside it',
-                  before and recorded_previous(kill) == [] and channel_of(kill).get('available') is True)
-
-        # A restore whose previous file bytes do not match is refused by name and leaves the new bindings; each
-        # step's observation is written before its commit.
-        with section(OD):
-            parts = ('rebind_owners', 'restore_owners', 'previous_owners')
-            check(OD, 'the store rebinds keeping the previous bindings, restores them and lists them [%s]'
-                  % [n for n in parts if not hasattr(S, n)], all(hasattr(S, n) for n in parts))
-            if all(hasattr(S, n) for n in parts):
-                scratch = base / 'restore-differs'
-                scratch.mkdir()
-                module = Path(os.path.realpath(str(scratch))) / 'owning_module.py'
-                module.write_bytes(b'# the previous engine\n')
-                store = str(scratch / 'owners.sqlite3')
-                conn = S.open_store(store)
-                committed = []
-
-                def seen_by_another(rows):
-                    committed.append(read_store(store, S.entity_owners)[0][5])
+                host.manager.start(host.unit)
+                old = named(host.home / 'bin')
+                old_record = host.record_path.read_bytes()
+                before = channel_of(host)
+                check(FA, '%s: before the upgrade the previous engine\'s channel is available [%s]' % (label, before),
+                      before.get('available') is True)
+                declared = read_store(host.store, S.entity_owners)
+                differs = [r for r in declared if os.path.dirname(r[4]) == str(host.home / 'bin')
+                           and host.record()['closure'].get(os.path.basename(r[4])) != current.get(os.path.basename(r[4]))]
+                host.manager.fail_restart, host.manager.fail_after_start, host.manager.came_up = 1, True, []
+                calls = len(host.manager.calls)
                 try:
-                    S.declare_owners(conn, 'v189-owner', kinds={'v189_owned': ['v189_write']}, module=str(module))
-                    previous = S.module_digest(str(module))
-                    module.write_bytes(b'# the current engine\n')
-                    new = S.module_digest(str(module))
-                    rebound = S.rebind_owners(conn, {str(module): new}, keep_previous=True, observe=seen_by_another)
-                    record = S.previous_owners(conn)
-                    check(OD, 'the rebinding recorded the previous binding in its transaction and was observed before its '
-                          'commit [%s %s]' % (record, committed),
-                          rebound and record == [('kind', 'v189_owned', str(module), previous, new)]
-                          and committed == [previous] and S.entity_owners(conn)[0][5] == new)
-                    module.write_bytes(b'# neither engine\n')
-                    try:
-                        S.restore_owners(conn, observe=seen_by_another)
-                        refused = None
-                    except S.StoreRefused as exc:
-                        refused = (exc.code, exc.detail)
-                    check(OD, 'a restore whose file does not have the previous bytes is refused by name [%s]' % (refused,),
-                          refused is not None and refused[0] == 'ownership_restore_differs' and str(module) in refused[1])
-                    check(OD, 'the refused restore leaves the new bindings and the record [%s]' % S.previous_owners(conn),
-                          S.entity_owners(conn)[0][5] == new and S.previous_owners(conn) == record
-                          and len(committed) == 1)
+                    code, report = host.setup()
+                finally:
+                    host.manager.fail_restart, host.manager.fail_after_start = 0, False
+                ran = host.manager.calls[calls:]
+                check(FA, '%s: setup refused by name after the restart came up and failed [%s %s; came up %s]'
+                      % (label, code, report.get('reason'), host.manager.came_up),
+                      code == 1 and report.get('reason') == 'unavailable_service:authority:upgrade_start'
+                      and len(host.manager.came_up) == 1 and host.manager.came_up[0])
+                check(FA, '%s: the previous engine is back in bin and its record restored byte for byte' % label,
+                      named(host.home / 'bin') == old and host.record_path.read_bytes() == old_record)
+                seen = ownership_observations(host)
+                rebinds = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_rebind']
+                restores = [o.get('bindings') for o in seen if o.get('operation') == 'ownership_restore']
+                if differs:
+                    check(FA, '%s: the current engine came up and rebound the %d declarations of the owning modules it '
+                          'changed, and the switch back restored exactly those [%s %s]'
+                          % (label, len(differs), [len(b or []) for b in rebinds], [len(b or []) for b in restores]),
+                          len(rebinds) == 1 and len(rebinds[0] or []) == len(differs) and restores == rebinds)
+                steps = [json.loads(line) for line in (host.home / 'state' / UP.LOG).read_text().splitlines()]
+                check(FA, '%s: the step log records the switch back and the restore before the previous engine\'s restart '
+                      '[%s]' % (label, [(s.get('point'), s.get('outcome')) for s in steps][-4:]),
+                      [(s.get('point'), s.get('outcome')) for s in steps if s.get('point') != 'stopped'][-3:]
+                      == [('switched_back', None), ('ownership_restore', 'restored'), ('restart', 'previous_engine_restarted')])
+                check(FA, '%s: the service was restarted once more, on the previous engine [%s]'
+                      % (label, [c for c in ran if c[0] in ('start', 'stop', 'restart')]),
+                      [c for c in ran if c[0] == 'restart'] == [['restart', host.unit]] * 2)
+                after = channel_of(host)
+                check(FA, '%s: the previous engine\'s channel is available [%s]' % (label, after),
+                      after.get('available') is True and not after.get('refusal'))
+                owners = read_store(host.store, S.entity_owners)
+                wrong = [(r[1], os.path.basename(r[4])) for r in owners if S.module_digest(r[4]) != r[5]]
+                check(FA, '%s: every owned command is available: each of the %d declarations binds the bytes its file has '
+                      'now, the previous engine\'s [%s]' % (label, len(owners), wrong[:3]), owners and not wrong)
+                check(FA, '%s: no previous binding is left recorded [%s]' % (label, recorded_previous(host)),
+                      recorded_previous(host) == [])
+                host.manager.stop_all()
+
+            with section(FA):
+                failed_after_start(kill, saved, OLDER[0])
+                if OLDER[1] in laid_down:
+                    failed_after_start(hosts[OLDER[1]], laid_down[OLDER[1]], OLDER[1])
+                else:
+                    check(FA, 'the %s host was laid down' % OLDER[1], False)
+
+            # Each recovery row starts with the real older installer and the real setup writer.
+            def fail_next(keep=False):
+                kill.manager.fail_restart = 1
+                kill.manager.fail_after_start = True
+                kill.manager.keep_failed_running = keep
+
+            def clear_failure():
+                kill.manager.fail_restart = 0
+                kill.manager.fail_after_start = False
+                kill.manager.keep_failed_running = False
+                kill.manager.fail_stop = False
+                kill.manager.after_failed_start = None
+
+            def previous_answers(row, label):
+                check(row, label + ': previous engine and original record restored',
+                      named(kill.home / 'bin') == old_engine and kill.record_path.read_bytes() == old_record)
+                check(row, label + ': previous engine channel available', channel_of(kill).get('available') is True)
+
+            with section(RE):
+                for target in ('unit', 'record'):
+                    fresh_start()
+                    units_before = snapshot(kill.units)
+                    at = points.index(target) + 1 if target in points else None
+                    check(RE, 'the upgrade has a ' + target + ' write point', at is not None)
+                    if at is None:
+                        continue
+                    check(RE, 'setup killed after ' + target, killed(at) == -signal.SIGKILL)
+                    # A second begin must not hide the first exchange.
+                    check(RE, 'the resumed setup killed after its begin', killed(1) == -signal.SIGKILL)
+                    fail_next()
+                    code, report = kill.setup()
+                    clear_failure()
+                    check(RE, target + ': failed resumed restart refused', code == 1)
+                    previous_answers(RE, target)
+                    check(RE, target + ': every original unit restored across runs', snapshot(kill.units) == units_before)
+                    code, report = kill.setup()
+                    check(RE, target + ': forward re-run answers before removing previous engine',
+                          code == 0 and channel_of(kill).get('available') is True
+                          and not (kill.home / UP.STAGE).exists())
+
+            with section(BK):
+                fresh_start()
+                fail_next()
+                killed(0)
+                clear_failure()
+                back_points = [json.loads(line)['point'] for line in log.read_text().splitlines()]
+                begin_back = back_points.index('switched_back') if 'switched_back' in back_points else len(back_points)
+                check(BK, 'switch back exposes the stop as a kill point', 'stopped' in back_points)
+                for at in range(begin_back + 1, len(back_points) + 1):
+                    fresh_start()
+                    fail_next()
+                    check(BK, 'killed inside switch back at ' + back_points[at-1], killed(at) == -signal.SIGKILL)
+                    clear_failure()
+                    calls = len(kill.manager.calls)
+                    code, report = kill.setup()
+                    ran = kill.manager.calls[calls:]
+                    check(BK, 'resume after ' + back_points[at-1] + ' restarts and answers',
+                          code == 0 and ['restart', kill.unit] in ran and channel_of(kill).get('available') is True)
+                    check(BK, 'resume removes stage only after the service answers', not (kill.home / UP.STAGE).exists())
+
+            with section(ST):
+                fresh_start()
+                fail_next(keep=True)
+                kill.manager.fail_stop = True
+                code, report = kill.setup()
+                check(ST, 'stop failure is refused by name in the owner answer',
+                      code == 1 and report.get('reason') == 'unavailable_service:authority:upgrade_stop')
+                check(ST, 'stop failure does not attempt ownership restore',
+                      not any(json.loads(line)['point'] == 'ownership_restore' for line in log.read_text().splitlines()))
+                clear_failure()
+                code, report = kill.setup()
+                check(ST, 'a re-run after stop failure recovers', code == 0 and channel_of(kill).get('available') is True)
+
+            with section(BS):
+                fresh_start()
+                fail_next(keep=True)
+                # Observe the stop at the real restore entry. Successful restoration and later
+                # channel availability do not establish that the failed service was stopped first.
+                calls_before = len(kill.manager.calls)
+                stopped_at_restore, observed_upgrades = [], []
+                setup_organ = F.organ
+
+                def observe_restore_stop(name):
+                    module = setup_organ(name)
+                    if name == 'control_factory_setup_upgrade' and not any(
+                            module is seen for seen, _restore in observed_upgrades):
+                        restore_ownership = module.restore_ownership
+
+                        def observed_restore(plan):
+                            stopped_at_restore.append(
+                                ['stop', kill.unit] in kill.manager.calls[calls_before:]
+                                and not kill.manager.alive(kill.unit))
+                            return restore_ownership(plan)
+
+                        observed_upgrades.append((module, restore_ownership))
+                        module.restore_ownership = observed_restore
+                    return module
+
+                F.organ = observe_restore_stop
+                try:
+                    code, report = kill.setup()
+                finally:
+                    F.organ = setup_organ
+                    for module, restore_ownership in observed_upgrades:
+                        module.restore_ownership = restore_ownership
+                clear_failure()
+                previous_answers(BS, 'failed restart leaves current service alive')
+                check(BS, 'the stop was requested and the service was no longer alive when restore began [%s]'
+                      % stopped_at_restore, bool(stopped_at_restore) and all(stopped_at_restore))
+                check(BS, 'restore ran after a successful stop',
+                      any(json.loads(line).get('outcome') == 'restored' for line in log.read_text().splitlines()))
+
+            with section(RP):
+                fresh_start()
+                fail_next()
+                def damage_previous():
+                    path = kill.home / UP.STAGE / 'control_channel_activation.py'
+                    os.chmod(path, 0o600)
+                    path.write_bytes(path.read_bytes() + b'\n# changed previous engine\n')
+                kill.manager.after_failed_start = damage_previous
+                code, report = kill.setup()
+                clear_failure()
+                recorded = recorded_previous(kill)
+                # The blocked rows are the recorded ones whose module no longer has its previous bytes: every row of the
+                # damaged module. Other owning modules the upgrade changed (VELDO-0181 changed the settlement module)
+                # are recorded too and would restore; they are not blocked.
+                damaged = str(kill.home / 'bin' / 'control_channel_activation.py')
+                blocked = [r for r in recorded if S.module_digest(r[2]) != r[3]] if isinstance(recorded, list) else []
+                detail = report.get('detail', '')
+                check(RP, 'restore refusal and forward recovery are in the owner answer',
+                      code == 1 and 'ownership_restore_differs' in detail and 're-run setup forward' in detail)
+                check(RP, 'every blocked ownership row is named in the answer',
+                      len(blocked) >= 2 and blocked == [r for r in recorded if r[2] == damaged]
+                      and all(value in detail and module in detail for _, value, module, _, _ in blocked))
+                check(RP, 'a refused restore leaves all bindings and records intact',
+                      recorded and all(r[5] == next((b[4] for b in recorded if b[0:2] == r[0:2]), r[5])
+                                       for r in read_store(kill.store, S.entity_owners)))
+                # Restore the edited fixture bytes; the refused transaction itself changes no row.
+                path = kill.home / 'bin' / 'control_channel_activation.py'
+                path.write_bytes(saved['entries'][str(path)][2])
+                os.chmod(path, saved['entries'][str(path)][1])
+                code, report = kill.setup()
+                check(RP, 're-running setup forward recovers owned commands',
+                      code == 0 and channel_of(kill).get('available') is True)
+
+            with section(SD, CR):
+                fresh_start()
+                at = points.index('restart') + 1 if 'restart' in points else None
+                check(CR, 'setup killed after current service answered', at is not None and killed(at) == -signal.SIGKILL)
+                before = recorded_previous(kill)
+                reply = kill.send({'operation': CS.OWNERSHIP_COMMIT})
+                check(CR, 'commit refuses while previous engine is installed and keeps all records [%s]' % reply,
+                      (reply.get('accepted') is False or (reply.get('result') or {}).get('ok') is False) and 'previous_engine_installed' in json.dumps(reply)
+                      and before and recorded_previous(kill) == before)
+                kill.manager.stop_all()
+                # Exercise serve's crash recovery after the real setup writer removed the previous engine.
+                fresh_start()
+                at = points.index('removed_previous') + 1 if 'removed_previous' in points else None
+                check(SD, 'setup killed after removing previous engine', at is not None and killed(at) == -signal.SIGKILL)
+                before = recorded_previous(kill)
+                kill.manager.stop_all()
+                kill.manager.start(kill.unit)
+                check(SD, 'serve drops previous bindings with no previous engine beside it',
+                      before and recorded_previous(kill) == [] and channel_of(kill).get('available') is True)
+
+            # A restore whose previous file bytes do not match is refused by name and leaves the new bindings; each
+            # step's observation is written before its commit.
+            with section(OD):
+                parts = ('rebind_owners', 'restore_owners', 'previous_owners')
+                check(OD, 'the store rebinds keeping the previous bindings, restores them and lists them [%s]'
+                      % [n for n in parts if not hasattr(S, n)], all(hasattr(S, n) for n in parts))
+                if all(hasattr(S, n) for n in parts):
+                    scratch = base / 'restore-differs'
+                    scratch.mkdir()
+                    module = Path(os.path.realpath(str(scratch))) / 'owning_module.py'
                     module.write_bytes(b'# the previous engine\n')
-                    restored = S.restore_owners(conn, observe=seen_by_another)
-                    check(OD, 'with the previous bytes back the restore binds the previous digest, clears the record and is '
-                          'observed before its commit [%s %s]' % (restored, committed),
-                          restored == record and S.entity_owners(conn)[0][5] == previous and S.previous_owners(conn) == []
-                          and committed == [previous, new])
+                    store = str(scratch / 'owners.sqlite3')
+                    conn = S.open_store(store)
+                    committed = []
+
+                    def seen_by_another(rows):
+                        committed.append(read_store(store, S.entity_owners)[0][5])
+                    try:
+                        S.declare_owners(conn, 'v189-owner', kinds={'v189_owned': ['v189_write']}, module=str(module))
+                        previous = S.module_digest(str(module))
+                        module.write_bytes(b'# the current engine\n')
+                        new = S.module_digest(str(module))
+                        rebound = S.rebind_owners(conn, {str(module): new}, keep_previous=True, observe=seen_by_another)
+                        record = S.previous_owners(conn)
+                        check(OD, 'the rebinding recorded the previous binding in its transaction and was observed before its '
+                              'commit [%s %s]' % (record, committed),
+                              rebound and record == [('kind', 'v189_owned', str(module), previous, new)]
+                              and committed == [previous] and S.entity_owners(conn)[0][5] == new)
+                        module.write_bytes(b'# neither engine\n')
+                        try:
+                            S.restore_owners(conn, observe=seen_by_another)
+                            refused = None
+                        except S.StoreRefused as exc:
+                            refused = (exc.code, exc.detail)
+                        check(OD, 'a restore whose file does not have the previous bytes is refused by name [%s]' % (refused,),
+                              refused is not None and refused[0] == 'ownership_restore_differs' and str(module) in refused[1])
+                        check(OD, 'the refused restore leaves the new bindings and the record [%s]' % S.previous_owners(conn),
+                              S.entity_owners(conn)[0][5] == new and S.previous_owners(conn) == record
+                              and len(committed) == 1)
+                        module.write_bytes(b'# the previous engine\n')
+                        restored = S.restore_owners(conn, observe=seen_by_another)
+                        check(OD, 'with the previous bytes back the restore binds the previous digest, clears the record and is '
+                              'observed before its commit [%s %s]' % (restored, committed),
+                              restored == record and S.entity_owners(conn)[0][5] == previous and S.previous_owners(conn) == []
+                              and committed == [previous, new])
+                    finally:
+                        conn.close()
+
+            with section(COMMANDS):
+                module = base / 'commands-owner.py'
+                module.write_text('# previous owner\n')
+                conn = S.open_store(str(base / 'commands-owner.sqlite3'))
+                try:
+                    old = dict(kinds={'owned': ('write',)}, prefixes={'owned:': ('write',)})
+                    new = dict(kinds={'owned': ('write', 'route')}, prefixes={'owned:': ('write', 'route')})
+                    S.declare_owners(conn, 'owner', module=str(module), **old)
+                    original = S.entity_owners(conn)
+                    # Existing hosts already have this table, including after a committed upgrade.
+                    conn.execute('CREATE TABLE entity_owner_previous (selector TEXT NOT NULL, value TEXT NOT NULL, '
+                                 'module TEXT NOT NULL, previous_digest TEXT NOT NULL, digest TEXT NOT NULL, '
+                                 'PRIMARY KEY (selector, value))')
+                    module.write_text('# upgraded owner\n')
+                    installed = {str(module): S.module_digest(str(module))}
+                    rebound = S.rebind_owners(conn, installed, keep_previous=True)
+                    S.declare_owners(conn, 'owner', module=str(module), **new)
+                    upgraded = S.entity_owners(conn)
+                    check(COMMANDS, 'upgrade extended both declarations',
+                          len(rebound) == 2 and all(r[3] == ('route', 'write') for r in upgraded))
+                    check(COMMANDS, 'repeated rebind preserves the original record',
+                          S.rebind_owners(conn, installed, keep_previous=True) == [] and S.previous_owners(conn) == rebound)
+                    module.write_text('# previous owner\n')
+                    def refuse_observation(bindings):
+                        raise RuntimeError('fixture refuses restore observation')
+                    try:
+                        S.restore_owners(conn, observe=refuse_observation)
+                    except RuntimeError:
+                        pass
+                    check(COMMANDS, 'failed restore observation rolls back commands, digest and record',
+                          S.entity_owners(conn) == upgraded and S.previous_owners(conn) == rebound)
+                    restored = S.restore_owners(conn)
+                    check(COMMANDS, 'switch back restores exactly the previous declarations',
+                          restored == rebound and S.entity_owners(conn) == original and S.previous_owners(conn) == [])
+                    S.declare_owners(conn, 'owner', module=str(module), **old)
+                    check(COMMANDS, 'the previous engine attaches with its original command set', S.entity_owners(conn) == original)
                 finally:
                     conn.close()
 
-        with section(COMMANDS):
-            module = base / 'commands-owner.py'
-            module.write_text('# previous owner\n')
-            conn = S.open_store(str(base / 'commands-owner.sqlite3'))
-            try:
-                old = dict(kinds={'owned': ('write',)}, prefixes={'owned:': ('write',)})
-                new = dict(kinds={'owned': ('write', 'route')}, prefixes={'owned:': ('write', 'route')})
-                S.declare_owners(conn, 'owner', module=str(module), **old)
-                original = S.entity_owners(conn)
-                # Existing hosts already have this table, including after a committed upgrade.
-                conn.execute('CREATE TABLE entity_owner_previous (selector TEXT NOT NULL, value TEXT NOT NULL, '
-                             'module TEXT NOT NULL, previous_digest TEXT NOT NULL, digest TEXT NOT NULL, '
-                             'PRIMARY KEY (selector, value))')
-                module.write_text('# upgraded owner\n')
-                installed = {str(module): S.module_digest(str(module))}
-                rebound = S.rebind_owners(conn, installed, keep_previous=True)
-                S.declare_owners(conn, 'owner', module=str(module), **new)
-                upgraded = S.entity_owners(conn)
-                check(COMMANDS, 'upgrade extended both declarations',
-                      len(rebound) == 2 and all(r[3] == ('route', 'write') for r in upgraded))
-                check(COMMANDS, 'repeated rebind preserves the original record',
-                      S.rebind_owners(conn, installed, keep_previous=True) == [] and S.previous_owners(conn) == rebound)
-                module.write_text('# previous owner\n')
-                def refuse_observation(bindings):
-                    raise RuntimeError('fixture refuses restore observation')
+            # AC2: a restart that fails puts the previous engine back and the service answering on it.
+            with section(FR):
+                fresh_start()
+                kill.manager.fail_restart = 1
+                calls = len(kill.manager.calls)
+                code, report = kill.setup()
+                ran = kill.manager.calls[calls:]
+                check(FR, 'setup refused by name after the restart failed [%s %s]' % (code, report.get('reason')),
+                      code == 1 and report.get('reason') == 'unavailable_service:authority:upgrade_start')
+                check(FR, 'the previous engine is back in bin', named(kill.home / 'bin') == old_engine)
+                check(FR, 'its record is restored byte for byte', kill.record_path.read_bytes() == old_record)
+                check(FR, 'the service was restarted once more, on the previous engine, and answers [%s]'
+                      % [c for c in ran if c[0] == 'restart'],
+                      [c for c in ran if c[0] == 'restart'] == [['restart', kill.unit]] * 2 and kill.answers())
+                steps = [json.loads(line) for line in log.read_text().splitlines()] if log.is_file() else []
+                check(FR, 'the step log records the switch back with its reason [%s]'
+                      % [s.get('reason') for s in steps if s.get('point') == 'switched_back'],
+                      [s.get('reason') for s in steps if s.get('point') == 'switched_back']
+                      == ['unavailable_service:authority:upgrade_start'])
+                kill.manager.fail_restart = 0
+
+            # AC1 and AC2: an edited engine file, a file the record does not name, and a filesystem that cannot
+            # exchange two directories are each refused by name, writing nothing.
+            with section(RF):
+                kill.manager.stop_all()
+
+                def refused(prepare, expected, label, undo=None):
+                    restore(saved)
+                    path = prepare()
+                    # The store is read by the re-run's argument checks (its WAL files are SQLite's); its rows are
+                    # compared instead of its files.
+                    store_dir = str(kill.root / 'authority')
+
+                    def trees():
+                        return {k: v for k, v in snapshot(*kill.trees()).items() if not k.startswith(store_dir)}
+                    before, rows_before = trees(), (journal(kill.store), entity_rows(kill.store))
+                    witness = Resolved()
+                    try:
+                        code, report = kill.setup(stderr=witness)
+                    finally:
+                        if undo:
+                            undo()
+                    changed, added, removed = changes(before, trees())
+                    check(RF, '%s is refused as %s, writing nothing and printing nothing but the installation resolution line (VELDO-0259) [%s %s %s]'
+                          % (label, expected(path), code, report.get('reason'), (changed + added + removed)[:3]),
+                          code == 1 and report.get('reason') == expected(path) and not (changed or added or removed)
+                          and (journal(kill.store), entity_rows(kill.store)) == rows_before
+                          and not witness.getvalue().strip() and len(witness.resolution) == 1)
+
+                def edit():
+                    path = kill.home / 'bin' / 'control_store.py'
+                    os.chmod(str(path.parent), 0o700)
+                    os.chmod(str(path), 0o600)
+                    path.write_bytes(path.read_bytes() + b'# edited by hand\n')
+                    os.chmod(str(path), 0o400)
+                    os.chmod(str(path.parent), 0o500)
+                    return path
+                refused(edit, lambda p: 'invalid_input:install_root:differs:' + str(p), 'an installed engine file edited by hand')
+
+                def plant():
+                    path = kill.home / 'bin' / 'planted.py'
+                    os.chmod(str(path.parent), 0o700)
+                    path.write_text('# a file the record does not name\n')
+                    os.chmod(str(path.parent), 0o500)
+                    return path
+                refused(plant, lambda p: 'invalid_input:install_root:unrecorded:' + str(p), 'a file the record does not name')
+                import ctypes
+                real_cdll = ctypes.CDLL
+
+                class NoExchange:
+                    """The C library of a filesystem that refuses RENAME_EXCHANGE: renameat2 fails with EINVAL."""
+
+                    def __init__(self, *args, **kwargs):
+                        self.real = real_cdll(*args, **kwargs)
+
+                    def __getattr__(self, name):
+                        if name != 'renameat2':
+                            return getattr(self.real, name)
+
+                        class Call:
+                            argtypes, restype = None, None
+
+                            def __call__(self, *args):
+                                ctypes.set_errno(22)
+                                return -1
+                        return Call()
+
+                def unexchangeable():
+                    ctypes.CDLL = NoExchange
+                    return kill.home
+
+                def exchangeable():
+                    ctypes.CDLL = real_cdll
+                refused(unexchangeable, lambda p: 'unavailable_service:install_root:exchange',
+                        'an install root whose filesystem cannot exchange two directories', exchangeable)
+            # AC1: a current installation upgraded to an engine derived from the current one without one module it
+            # installs; AC4: with the service running outside its unit, setup restarts nothing and names the command.
+            with section(UR, RS):
+                fixture = base / 'engine-fixture' / '.veldo'
+                shutil.copytree(str(mods), str(fixture))
+                dropped = 'control_keys_custody.py'
+                text = (fixture / 'control_service.py').read_text()
+                seeds = "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py', 'control_runtime.py')"
+                check(UR, 'the fixture engine is the current one with %s no longer an entry point and absent' % dropped,
+                      text.count(seeds) == 1 and dropped in current)
+                (fixture / 'control_service.py').write_text(
+                    text.replace(seeds, "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_client_api.py', 'control_runtime.py')"))
+                (fixture / dropped).unlink()
+                FX = load('v189_setup_fixture', fixture / 'control_factory_setup.py')
+                config = fresh.record_path
+                notification = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+                notification.bind(str(base / 'manual.sock'))
+                manual_env = dict(child_env(), NOTIFY_SOCKET=str(base / 'manual.sock'))
+                manual = subprocess.Popen([fresh.record()['python'], '-B', str(fresh.home / 'bin' / 'control_service.py'),
+                                           'serve', str(config)], env=manual_env, stdin=subprocess.DEVNULL,
+                                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, preexec_fn=child_setup)
                 try:
-                    S.restore_owners(conn, observe=refuse_observation)
-                except RuntimeError:
-                    pass
-                check(COMMANDS, 'failed restore observation rolls back commands, digest and record',
-                      S.entity_owners(conn) == upgraded and S.previous_owners(conn) == rebound)
-                restored = S.restore_owners(conn)
-                check(COMMANDS, 'switch back restores exactly the previous declarations',
-                      restored == rebound and S.entity_owners(conn) == original and S.previous_owners(conn) == [])
-                S.declare_owners(conn, 'owner', module=str(module), **old)
-                check(COMMANDS, 'the previous engine attaches with its original command set', S.entity_owners(conn) == original)
-            finally:
-                conn.close()
-
-        # AC2: a restart that fails puts the previous engine back and the service answering on it.
-        with section(FR):
-            fresh_start()
-            kill.manager.fail_restart = 1
-            calls = len(kill.manager.calls)
-            code, report = kill.setup()
-            ran = kill.manager.calls[calls:]
-            check(FR, 'setup refused by name after the restart failed [%s %s]' % (code, report.get('reason')),
-                  code == 1 and report.get('reason') == 'unavailable_service:authority:upgrade_start')
-            check(FR, 'the previous engine is back in bin', named(kill.home / 'bin') == old_engine)
-            check(FR, 'its record is restored byte for byte', kill.record_path.read_bytes() == old_record)
-            check(FR, 'the service was restarted once more, on the previous engine, and answers [%s]'
-                  % [c for c in ran if c[0] == 'restart'],
-                  [c for c in ran if c[0] == 'restart'] == [['restart', kill.unit]] * 2 and kill.answers())
-            steps = [json.loads(line) for line in log.read_text().splitlines()] if log.is_file() else []
-            check(FR, 'the step log records the switch back with its reason [%s]'
-                  % [s.get('reason') for s in steps if s.get('point') == 'switched_back'],
-                  [s.get('reason') for s in steps if s.get('point') == 'switched_back']
-                  == ['unavailable_service:authority:upgrade_start'])
-            kill.manager.fail_restart = 0
-
-        # AC1 and AC2: an edited engine file, a file the record does not name, and a filesystem that cannot
-        # exchange two directories are each refused by name, writing nothing.
-        with section(RF):
-            kill.manager.stop_all()
-
-            def refused(prepare, expected, label, undo=None):
-                restore(saved)
-                path = prepare()
-                # The store is read by the re-run's argument checks (its WAL files are SQLite's); its rows are
-                # compared instead of its files.
-                store_dir = str(kill.root / 'authority')
-
-                def trees():
-                    return {k: v for k, v in snapshot(*kill.trees()).items() if not k.startswith(store_dir)}
-                before, rows_before = trees(), (journal(kill.store), entity_rows(kill.store))
-                witness = Resolved()
-                try:
-                    code, report = kill.setup(stderr=witness)
+                    up = heard_ready(manual, notification, b'READY=1') and fresh.answers()
+                    calls = len(fresh.manager.calls)
+                    out = io.StringIO()
+                    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
+                        code = FX.main(fresh.argv(), runner=fresh.manager, **fresh.overrides())
+                    report = json.loads(out.getvalue().strip().splitlines()[-1]) if out.getvalue().strip() else {}
+                    ran = fresh.manager.calls[calls:]
                 finally:
-                    if undo:
-                        undo()
-                changed, added, removed = changes(before, trees())
-                check(RF, '%s is refused as %s, writing nothing and printing nothing but the installation resolution line (VELDO-0259) [%s %s %s]'
-                      % (label, expected(path), code, report.get('reason'), (changed + added + removed)[:3]),
-                      code == 1 and report.get('reason') == expected(path) and not (changed or added or removed)
-                      and (journal(kill.store), entity_rows(kill.store)) == rows_before
-                      and not witness.getvalue().strip() and len(witness.resolution) == 1)
+                    notification.close()
+                    manual.send_signal(signal.SIGTERM)
+                    runtime.wake_authority(config)
+                    exited(manual, 'the manually started service to exit on SIGTERM')
+                steps = {s.get('step'): s for s in report.get('steps') or []}
+                upgrade = steps.get('engine_upgrade') or {}
+                fixture_engine = {n: 'sha256:' + hashlib.sha256((fixture / n).read_bytes()).hexdigest()
+                                  for n in current if n != dropped}
+                check(UR, 'the re-run from the fixture engine is accepted and upgrades [%s %s]'
+                      % (report.get('outcome'), report.get('reason')), code == 0 and upgrade.get('outcome') == 'done')
+                check(UR, 'the removed module is gone from the installed engine and from the record, and the upgrade names '
+                      'it removed [%s]' % upgrade.get('removed'),
+                      not (fresh.home / 'bin' / dropped).exists() and dropped not in fresh.record()['closure']
+                      and upgrade.get('removed') == [dropped])
+                check(UR, 'the installed engine is exactly the fixture engine\'s files',
+                      named(fresh.home / 'bin') == fixture_engine == dict(fresh.record()['closure'], **fresh.record()['runtime_assets']))
+                check(RS, 'with the service running outside its unit (the lock held, the unit inactive) setup restarted '
+                      'nothing and names the one command to run [%s %s]' % (up, upgrade.get('next')),
+                      up and upgrade.get('restart') == 'not_through_unit'
+                      and not any(c[0] in ('start', 'stop', 'restart') for c in ran)
+                      and 'systemctl --user start %s' % fresh.unit in str(upgrade.get('next')))
 
-            def edit():
-                path = kill.home / 'bin' / 'control_store.py'
-                os.chmod(str(path.parent), 0o700)
-                os.chmod(str(path), 0o600)
-                path.write_bytes(path.read_bytes() + b'# edited by hand\n')
-                os.chmod(str(path), 0o400)
-                os.chmod(str(path.parent), 0o500)
-                return path
-            refused(edit, lambda p: 'invalid_input:install_root:differs:' + str(p), 'an installed engine file edited by hand')
+        if not records_only:
+            # VELDO-0358 AC15: the profile reached every arming site: each timers table of this process, and the start
+            # record of every service process the suite's stand-in managers started (its effective values).
+            with section('timers/profile-applied'):
+                hang = WAITS.WAIT_HANG_SECONDS
+                mine = {'control_service.REPLY_SECONDS', 'control_client.SEND_SECONDS', 'control_client.SERVE_READ_SECONDS',
+                        'control_store.BUSY_SECONDS'}
 
-            def plant():
-                path = kill.home / 'bin' / 'planted.py'
-                os.chmod(str(path.parent), 0o700)
-                path.write_text('# a file the record does not name\n')
-                os.chmod(str(path.parent), 0o500)
-                return path
-            refused(plant, lambda p: 'invalid_input:install_root:unrecorded:' + str(p), 'a file the record does not name')
-            import ctypes
-            real_cdll = ctypes.CDLL
-
-            class NoExchange:
-                """The C library of a filesystem that refuses RENAME_EXCHANGE: renameat2 fails with EINVAL."""
-
-                def __init__(self, *args, **kwargs):
-                    self.real = real_cdll(*args, **kwargs)
-
-                def __getattr__(self, name):
-                    if name != 'renameat2':
-                        return getattr(self.real, name)
-
-                    class Call:
-                        argtypes, restype = None, None
-
-                        def __call__(self, *args):
-                            ctypes.set_errno(22)
-                            return -1
-                    return Call()
-
-            def unexchangeable():
-                ctypes.CDLL = NoExchange
-                return kill.home
-
-            def exchangeable():
-                ctypes.CDLL = real_cdll
-            refused(unexchangeable, lambda p: 'unavailable_service:install_root:exchange',
-                    'an install root whose filesystem cannot exchange two directories', exchangeable)
-        # AC1: a current installation upgraded to an engine derived from the current one without one module it
-        # installs; AC4: with the service running outside its unit, setup restarts nothing and names the command.
-        with section(UR, RS):
-            fixture = base / 'engine-fixture' / '.veldo'
-            shutil.copytree(str(mods), str(fixture))
-            dropped = 'control_keys_custody.py'
-            text = (fixture / 'control_service.py').read_text()
-            seeds = "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_keys_custody.py', 'control_client_api.py', 'control_runtime.py')"
-            check(UR, 'the fixture engine is the current one with %s no longer an entry point and absent' % dropped,
-                  text.count(seeds) == 1 and dropped in current)
-            (fixture / 'control_service.py').write_text(
-                text.replace(seeds, "ENTRY_POINTS = ('control_service.py', 'control_launch.py', 'control_client_api.py', 'control_runtime.py')"))
-            (fixture / dropped).unlink()
-            FX = load('v189_setup_fixture', fixture / 'control_factory_setup.py')
-            config = fresh.record_path
-            notification = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-            notification.bind(str(base / 'manual.sock'))
-            manual_env = dict(child_env(), NOTIFY_SOCKET=str(base / 'manual.sock'))
-            manual = subprocess.Popen([fresh.record()['python'], '-B', str(fresh.home / 'bin' / 'control_service.py'),
-                                       'serve', str(config)], env=manual_env, stdin=subprocess.DEVNULL,
-                                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, preexec_fn=child_setup)
-            try:
-                up = heard_ready(manual, notification, b'READY=1') and fresh.answers()
-                calls = len(fresh.manager.calls)
-                out = io.StringIO()
-                with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
-                    code = FX.main(fresh.argv(), runner=fresh.manager, **fresh.overrides())
-                report = json.loads(out.getvalue().strip().splitlines()[-1]) if out.getvalue().strip() else {}
-                ran = fresh.manager.calls[calls:]
-            finally:
-                notification.close()
-                manual.send_signal(signal.SIGTERM)
-                runtime.wake_authority(config)
-                exited(manual, 'the manually started service to exit on SIGTERM')
-            steps = {s.get('step'): s for s in report.get('steps') or []}
-            upgrade = steps.get('engine_upgrade') or {}
-            fixture_engine = {n: 'sha256:' + hashlib.sha256((fixture / n).read_bytes()).hexdigest()
-                              for n in current if n != dropped}
-            check(UR, 'the re-run from the fixture engine is accepted and upgrades [%s %s]'
-                  % (report.get('outcome'), report.get('reason')), code == 0 and upgrade.get('outcome') == 'done')
-            check(UR, 'the removed module is gone from the installed engine and from the record, and the upgrade names '
-                  'it removed [%s]' % upgrade.get('removed'),
-                  not (fresh.home / 'bin' / dropped).exists() and dropped not in fresh.record()['closure']
-                  and upgrade.get('removed') == [dropped])
-            check(UR, 'the installed engine is exactly the fixture engine\'s files',
-                  named(fresh.home / 'bin') == fixture_engine == dict(fresh.record()['closure'], **fresh.record()['runtime_assets']))
-            check(RS, 'with the service running outside its unit (the lock held, the unit inactive) setup restarted '
-                  'nothing and names the one command to run [%s %s]' % (up, upgrade.get('next')),
-                  up and upgrade.get('restart') == 'not_through_unit'
-                  and not any(c[0] in ('start', 'stop', 'restart') for c in ran)
-                  and 'systemctl --user start %s' % fresh.unit in str(upgrade.get('next')))
-
-        # VELDO-0358 AC15: the profile reached every arming site: each timers table of this process, and the start
-        # record of every service process the suite's stand-in managers started (its effective values).
-        with section('timers/profile-applied'):
-            hang = WAITS.WAIT_HANG_SECONDS
-            mine = {'control_service.REPLY_SECONDS', 'control_client.SEND_SECONDS', 'control_client.SERVE_READ_SECONDS',
-                    'control_store.BUSY_SECONDS'}
-
-            def unset(report, required=mine):
-                """timer_unset: each entry of a report not at the hang bound, and each of brief F's timers absent."""
-                named = {r['name']: r['value'] for r in report or []}
-                return sorted([n for n, v in named.items() if v != hang] + [n + ':absent' for n in required - set(named)])
-            starts = []
-            for log in sorted(base.rglob('observations.jsonl')):
-                with contextlib.suppress(OSError):
-                    starts += [unset(json.loads(line).get('timers')) for line in log.read_text().splitlines()
-                               if '"operation": "timers"' in line]
-            profile = {'in_process': [unset(table.report(), set()) for table in tables.values()], 'services': starts}
-            check('timers/profile-applied', 'timer_unset %r' % profile, bool(tables)
-                  and all(u == [] for u in profile['in_process']) and bool(starts) and all(u == [] for u in starts))
+                def unset(report, required=mine):
+                    """timer_unset: each entry of a report not at the hang bound, and each of brief F's timers absent."""
+                    named = {r['name']: r['value'] for r in report or []}
+                    return sorted([n for n, v in named.items() if v != hang] + [n + ':absent' for n in required - set(named)])
+                starts = []
+                for log in sorted(base.rglob('observations.jsonl')):
+                    with contextlib.suppress(OSError):
+                        starts += [unset(json.loads(line).get('timers')) for line in log.read_text().splitlines()
+                                   if '"operation": "timers"' in line]
+                profile = {'in_process': [unset(table.report(), set()) for table in tables.values()], 'services': starts}
+                check('timers/profile-applied', 'timer_unset %r' % profile, bool(tables)
+                      and all(u == [] for u in profile['in_process']) and bool(starts) and all(u == [] for u in starts))
 
         check(IA, 'no connection beyond the loopback interface was attempted [%s]' % attempts[:3],
               not attempts and not (guard_log.is_file() and guard_log.read_text().strip()))
@@ -2161,7 +2168,10 @@ def _v189_suite():
         profiler.disable()
         profiler.dump_stats(os.environ['VELDO_SUITE_PROFILE'])
 
+    selected = set(RECORD_ROWS) | {IA} if records_only else set(rows) - set(RECORD_ROWS)
     for name, observed in rows.items():
+        if name not in selected:
+            continue
         ok = bool(observed) and all(one for _, one in observed)
         if not ok:
             for label, one in observed:
