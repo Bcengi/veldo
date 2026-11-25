@@ -185,8 +185,8 @@ def _v309_suite():
         text = text.replace('set -u\n', 'set -u\necho $$ > ' + str(base / 'gate.pid') + '\n', 1)
         if scenario == 'leftover':
             # A terminal event on the same pipe proves whether drain sent its
-            # end line. The capture observer consumes this event before closing,
-            # so a missing end fails the row instead of hanging before it exists.
+            # end line. The capture observer aborts any read past this event,
+            # so a missing or ignored end fails the row without waiting for EOF.
             text = text.replace('  exec 1>&$VELDO_SPACE_STDOUT 2>&$VELDO_SPACE_STDERR\n',
                                 "  printf '%s\\n' fixture-drain-boundary\n"
                                 '  exec 1>&$VELDO_SPACE_STDOUT 2>&$VELDO_SPACE_STDERR\n')
@@ -268,8 +268,16 @@ def _v309_suite():
                 ' before = bytes(received).split(boundary, 1)[0]\n'
                 ' if (os.environ[g.END] + "\\n").encode() not in before:\n'
                 f'  Path({str(base / "missing-end")!r}).write_text("drain reached close without its end line")\n'
-                ' buffered = [before, b""]\n'
-                ' g.os.read = lambda fd, size: buffered.pop(0) if fd == 0 and buffered else read(fd, size)\n')
+                ' buffered = bytearray(received)\n'
+                ' def capture_read(fd, size):\n'
+                '  if fd != 0: return read(fd, size)\n'
+                '  if buffered:\n'
+                '   data = bytes(buffered[:size])\n'
+                '   del buffered[:size]\n'
+                '   return data\n'
+                f'  Path({str(base / "read-past-end")!r}).write_text("capture read after the drain boundary")\n'
+                '  raise SystemExit("capture did not stop at the gate end line")\n'
+                ' g.os.read = capture_read\n')
         wrapper += (f'with open({str(base / "calls")!r}, "a") as stream: stream.write(sys.argv[1]+"\\n")\n'
                     'raise SystemExit(g.main(sys.argv[1:]))\n')
         (scripts / 'gate_space.py').write_text(wrapper)
@@ -464,6 +472,8 @@ def _v309_suite():
                 stamp = (root / '.veldo/last_verify').exists()
                 check('exit/leftover-does-not-hold-gate', not (base / 'missing-end').exists(),
                       'drain must send its end line before closing its output while the child holds the pipe')
+                check('exit/leftover-does-not-hold-gate', not (base / 'read-past-end').exists(),
+                      'capture must stop at the gate end line while the child holds the pipe')
                 if not session:
                     check('exit/leftover-does-not-hold-gate', done.returncode == 0 and stamp and not finished
                           and running, str((done.returncode, stamp, finished, running)) + (base / 'out').read_text())
