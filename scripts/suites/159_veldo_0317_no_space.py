@@ -301,7 +301,7 @@ def _v317_suite():
                               and failure.get('pools') == [{'pool': 'host', 'free': 0, 'floor': 20},
                                                          {'pool': 'image', 'free': 1000, 'floor': 5}]
                               and f.ledger.hold(rec['contract']['space']['hold'])['state'] == 'released')
-                        raw_failure = {key: failure[key] for key in ('classification', 'taxonomy', 'pools', 'worktree')}
+                        raw_failure = copy.deepcopy(receiver.space_failure)  # replay the exact observation the receiver sent
                         f.dispatches.exit(rec['dispatch_id'], D.digest(rec['contract']), rec['process'],
                             rec['termination'], now=rec['history'][-1]['at'], space_failure=raw_failure)
                         check('ac1/replayed-end', f.dispatches.charged('unit', 'build') == 0

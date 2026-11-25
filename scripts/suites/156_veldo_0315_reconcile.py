@@ -828,7 +828,7 @@ def _v315_suite():
             queued = f.L.event('session_ended', {'session': 'serve', 'cwd': str(f.root), 'pid': 12345, 'started': 77},
                                {'hook': 'session-end', 'host': 'fixture'})
             assert queued['ok'], queued
-            service.config.update(socket=str(f.state / 'authority.sock'), lock=str(f.state / 'authority.lock'), unit='fixture')
+            service.config.update(socket=str(base / 'a.sock'), lock=str(base / 'a.lock'), unit='fixture')
             adapter = service.space_docker = Docker(f.L)
             order, handlers = [], {}
             open_store, opened = SV.S.open_store, []

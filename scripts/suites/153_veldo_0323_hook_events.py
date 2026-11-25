@@ -124,6 +124,7 @@ def _v323_suite():
         service = object.__new__(SVC.Service)
         service.config = {'space_landing': {'orchard': {'trunk': 'main'}}}
         service.conn, service.loop, service.api = conn, None, None
+        service.space_docker = None
         service.space_seen, service.projects_due = None, False
         service._log = observations.append
         service.space = {'ledger': ledger, 'proc': str(proc), 'free': lambda pool: 1000000000}

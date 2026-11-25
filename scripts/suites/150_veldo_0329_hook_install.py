@@ -807,6 +807,12 @@ def _v329_suite():
 
         # What timeout(1) started ignores the request to end: the deadline's second step kills it.
         stubborn = repository('stubborn')
+        # Use an explicit branch update while HEAD is detached: Git versions differ in
+        # whether a symbolic HEAD creates an additional reference transaction.
+        old_tip = git(stubborn, 'rev-parse', 'HEAD')
+        git(stubborn, 'checkout', '-q', '--detach')
+        git(stubborn, 'commit', '-q', '--allow-empty', '-m', 'the CLI ignores TERM')
+        new_tip = git(stubborn, 'rev-parse', 'HEAD')
         deaf_pids = temp / 'stubborn-pids'
         deaf_source = temp / 'hooks-that-ignore-term'
         deaf_source.mkdir()
@@ -821,7 +827,7 @@ def _v329_suite():
             R.HOOK_SECONDS, R.HOOK_KILL_SECONDS = kept_seconds
         try:
             began = time.monotonic()
-            git(stubborn, 'commit', '-q', '--allow-empty', '-m', 'the CLI ignores TERM')
+            git(stubborn, 'update-ref', 'refs/heads/main', new_tip, old_tip)
             deaf_took = time.monotonic() - began
             started = [int(line) for line in deaf_pids.read_text().split()] if deaf_pids.exists() else []
             until = time.monotonic() + 5
@@ -844,6 +850,7 @@ def _v329_suite():
         first = git(deadline, 'rev-parse', 'HEAD')
         git(deadline, 'commit', '-q', '--allow-empty', '-m', 'before installing')
         tip = git(deadline, 'rev-parse', 'HEAD')
+        git(deadline, 'checkout', '-q', '--detach')
         deadline_state = temp / 'deadline-state'
         deadline_state.mkdir(mode=0o700)
         deadline_pids, terms, inputs, owner_input, snapshot = (
@@ -925,7 +932,7 @@ time.sleep(60)
                   + repr((changed.returncode, ref_took, ref_inputs, owner_lines)),
                   installed.get('ok') is True and changed.returncode == 0 and 0.5 < ref_took < 12
                   and ref_inputs == [expected_input]
-                  and owner_lines == expected_input + '%s %s HEAD\n' % (tip, first))
+                  and owner_lines == expected_input)
             check(row, 'after the ref hook returns its CLI and descendant have ended',
                   len(recorded_pids()) == 2 and ended(recorded_pids()))
             # Exercise the other invocation arm too: no installation configured, then a checkout.
