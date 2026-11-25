@@ -17,7 +17,6 @@ import os
 from pathlib import Path
 import shutil
 import signal
-import statistics
 import subprocess
 import sys
 import tempfile
@@ -39,6 +38,7 @@ WORKER_MULTIPLIER = 3.0
 WAIT_HANG_SECONDS = 600
 PROCESS_HANG_SECONDS = 3600
 CASE_TIMES = Path.home() / '.cache' / 'veldo' / 'mutation-case-seconds'
+RESOURCE_TIMES = CASE_TIMES / 'resources'
 
 def _quota_cpus(root='/sys/fs/cgroup', membership='/proc/self/cgroup'):
     """The CPUs a cgroup v2 quota allows this process: the smallest cpu.max quota on the process's
@@ -240,30 +240,48 @@ def record_case_times(root, samples, times=CASE_TIMES, *, authority=False):
     return True
 
 
-def record_case_resources(cases, keys, outcomes, group_for, times=CASE_TIMES, *, authority=False):
-    """Called only after the complete fresh stage validates and inputs stay stable."""
-    if not authority and Path(times) == CASE_TIMES:
+def resource_platform():
+    return dict(kernel=list(os.uname()), python=sys.version, executable=str(Path(sys.executable).resolve()))
+
+
+def record_case_resources(cases, keys, outcomes, group_for, times=RESOURCE_TIMES, *, authority=False):
+    """Resource hints only: completed, validated workers survive an unrelated red stage."""
+    if not authority and Path(times) == RESOURCE_TIMES:
         return False
-    by_name = {o['name']: o for o in outcomes}
+    by_name = collections.defaultdict(list)
+    for outcome in outcomes:
+        by_name[outcome['name']].append(outcome)
     for case in cases:
         key = keys[case['identity']]
         names = [case['identity'], group_for(case) + ':baseline', group_for(case) + ':noop']
         runs = []
         now = time.time()
         for name in names:
-            outcome = by_name[name]
-            if 'error' in outcome or not outcome.get('measurement'):
-                break
-            runs.append(dict(outcome['measurement'], elapsed=outcome['elapsed'],
-                             mode=outcome['mode'], at=now))
-        if len(runs) != 3 or len(resource_samples({'resource_runs': runs}, now)) != 3:
+            for outcome in by_name[name]:
+                if ('error' in outcome or outcome.get('declaration_stale')
+                        or outcome.get('resource_valid') is not True
+                        or outcome.get('scratch_removed') is not True or 'cleanup' not in outcome
+                        or outcome.get('returncode') != 0 or not outcome.get('measurement')):
+                    continue
+                runs.append(dict(outcome['measurement'], elapsed=outcome['elapsed'],
+                                 mode=outcome['mode'], at=now, worker=name, execution_key=key,
+                                 execution=outcome['resource_execution']))
+        runs = resource_samples({'resource_runs': runs}, now)
+        if not runs:
             continue
         target = Path(times) / (key + '.json')
         try:
-            item = json.loads(target.read_text())
-            if item.get('authority') != str(ROOT) or item.get('key') != key:
-                continue
-            item.update(identity=case['identity'], suite=case['suite'],
+            Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
+            try:
+                item = json.loads(target.read_text())
+            except (OSError, ValueError):
+                item = {}
+            if not isinstance(item, dict) or any(item.get(k) != v for k, v in dict(
+                    authority=str(ROOT), key=key, identity=case['identity'], suite=case['suite'],
+                    platform=resource_platform()).items()):
+                item = {}
+            item = dict(schema='veldo.worker-resources/v1', authority=str(ROOT), key=key,
+                        identity=case['identity'], suite=case['suite'], platform=resource_platform(),
                         resource_runs=resource_samples(item, now) + runs)
             fd, pending = tempfile.mkstemp(prefix='.pending-', dir=str(times))
             with os.fdopen(fd, 'w') as handle:
@@ -297,8 +315,8 @@ def resource_claim(runs):
 
 
 class CaseClaims:
-    """Read the authority store once. Previous keys are hints, never deadline reuse."""
-    def __init__(self, times=CASE_TIMES):
+    """Hints never authorize verdict reuse. Keep maxima across execution keys, not peer medians."""
+    def __init__(self, times=RESOURCE_TIMES):
         self.records = {}
         now = time.time()
         for path in Path(times).glob('*.json'):
@@ -306,42 +324,28 @@ class CaseClaims:
                 item = json.loads(path.read_text())
                 runs = resource_samples(item, now)
                 if (not runs or item.get('authority') != str(ROOT) or item.get('key') != path.stem
-                        or not isinstance(item.get('identity'), str) or not isinstance(item.get('suite'), str)):
+                        or item.get('schema') != 'veldo.worker-resources/v1'
+                        or item.get('platform') != resource_platform()
+                        or not isinstance(item.get('identity'), str) or not isinstance(item.get('suite'), str)
+                        or any(r.get('execution_key') != path.stem or not r.get('execution')
+                               or not r.get('worker') or r.get('mode') not in ('baseline', 'noop', 'mutant')
+                               for r in runs)):
                     continue
                 self.records[path.stem] = dict(item, resource_runs=runs)
             except (OSError, ValueError, TypeError, OverflowError):
                 continue
 
     def claim(self, case, key):
-        item = self.records.get(key)
-        if item is not None and (item['identity'] != case['identity'] or item['suite'] != case['suite']):
-            item = None
-        source, keys = 'this_key', [key]
-        if item is None:
-            previous = [i for i in self.records.values() if i['identity'] == case['identity']]
-            if previous:
-                item = max(previous, key=lambda i: max(r['at'] for r in i['resource_runs']))
-                source, keys = 'previous_key', [item['key']]
-        if item is not None:
-            claim = resource_claim(item['resource_runs'])
-        else:
-            # One latest record per identity, so key churn cannot weight a median.
-            latest = {}
-            for record in self.records.values():
-                identity = record['identity']
-                if identity not in latest or max(r['at'] for r in record['resource_runs']) > max(
-                        r['at'] for r in latest[identity]['resource_runs']):
-                    latest[identity] = record
-            members = [i for i in latest.values() if i['suite'] == case['suite']]
-            source = 'suite_median'
-            if not members:
-                members, source = list(latest.values()), 'all_median'
-            if members:
-                claims = [resource_claim(i['resource_runs']) for i in members]
-                claim = {r: statistics.median(c[r] for c in claims) for r in ('cpu', 'memory')}
-                keys = sorted(i['key'] for i in members)
-            else:
-                claim, source, keys = dict(cpu=1.0, memory=2**30), 'default', []
+        members = [i for i in self.records.values()
+                   if i['identity'] == case['identity'] and i['suite'] == case['suite']]
+        runs = [r for item in members for r in item['resource_runs']]
+        claim, source, keys = dict(cpu=1.0, memory=2**30), 'default', []
+        if runs:
+            measured = resource_claim(runs)
+            complete = {r['mode'] for r in runs} == {'baseline', 'noop', 'mutant'}
+            claim = measured if complete else {r: max(claim[r], measured[r]) for r in claim}
+            keys = sorted(i['key'] for i in members)
+            source = ('this_key' if keys == [key] else 'previous_key') if complete else 'partial_default'
         return dict(claim, source=source, keys=keys)
 
 
@@ -1323,6 +1327,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                'registered': 0, 'executed': 0, 'reused': 0,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
     cases, reuse = [], None
+    fresh, time_keys, group_for = [], {}, None
     audits, audit_keys = {}, {}
     audit_module = AUDIT or _load_audit(ROOT / 'scripts/mutation_reuse.py')
     receipt['audit'] = dict(population=[], entries=[], audited=0, matched=0, mismatched=0,
@@ -1483,6 +1488,17 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 members[group_for(case)].append(case)
 
             def measured_baseline(name, completed):
+                if not completed.get('declaration_stale'):
+                    try:
+                        observation = completed['result']['observation']
+                        rows = observations(observation)
+                        valid = (all(ok is True for _, ok in rows) and not any(
+                            observation.get(k) for k in ('watchdog_fired', 'hung_rows', 'not_run_rows')))
+                        if valid:
+                            workers.outcomes[-1].update(resource_valid=True,
+                                resource_execution=receipt['input_digest'])
+                    except (KeyError, TypeError, ValueError):
+                        pass
                 # Refresh the admission estimate from this stage's baseline. A shared
                 # control represents its largest member; completed work is never rejudged.
                 group, _, mode = name.rpartition(':')
@@ -1563,6 +1579,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 shown += sorted(set().union(*(run.get('withheld', ()) for run in runs)))
                 if shown and hasattr(reuse, 'withhold'):
                     reuse.withhold(case, shown[0])
+                workers.outcomes[-1].update(resource_valid=True, resource_execution=receipt['input_digest'])
                 results[identity] = record
                 receipt['results'].append(dict(reuse.evidence(case, record, False),
                                                elapsed=completed['elapsed'],
@@ -1583,7 +1600,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                     len(again), workers.parallel, [rerun_controls.values(), rerun_mutants.values()],
                     workers.resources, floor=admission.floor if admission else None))
                 receipt['estimate_seconds'] = budget
-                control_results.update(workers.run(rerun_controls, directory, frozen))
+                control_results.update(workers.run(rerun_controls, directory, frozen, on_result=measured_baseline))
                 workers.run(rerun_mutants, directory, frozen, on_result=collect)
             if receipt['invalid_results']:
                 first = receipt['invalid_results'][0]
@@ -1612,8 +1629,6 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                    elapsed[group_for(c) + ':baseline'], elapsed[group_for(c) + ':noop'])
                    for c in fresh}
         record_case_times(root, samples, authority=measure)
-        if admission:
-            record_case_resources(fresh, time_keys, workers.outcomes, group_for, authority=measure)
         receipt['status'] = 'passed'
     except Exception as error:  # All incomplete drives are named errors, never detections.
         receipt['status'] = 'failed'
@@ -1623,6 +1638,14 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         receipt['detail'] = str(error)
     finally:
         workers.cleanup()
+        # Resource hints do not publish verdicts or change the red receipt. Stable frozen
+        # inputs and runtime are required even when another worker failed validation.
+        try:
+            if (admission and group_for is not None and reuse is not None
+                    and inputs_unchanged(root, expected_common, files, head) and reuse.unchanged()):
+                record_case_resources(fresh, time_keys, workers.outcomes, group_for, authority=measure)
+        except Exception as sample_error:
+            receipt['resource_sample_error'] = str(sample_error)
         receipt['declaration_stale'] = list(getattr(reuse, 'stale', {}).values())
         receipt['stale_count'] = len(receipt['declaration_stale'])
         receipt['gate_run'] = getattr(reuse, 'gate_run', None)
