@@ -1440,16 +1440,20 @@ def _v319_suite():
               and all(L.item(item)['state'] == 'deferred' and not L.item(item).get('owner_keep')
                       for item in (members[0], members[2])))
 
+    # A mutation's name can itself match the secret scanner. Keep fixture locators
+    # outside its TMPDIR using the guarded allocator; path-redaction assertions
+    # must examine the fixture's declared paths, with every assertion unchanged.
+    fixtures = load('v319_gate_fixtures', ROOT / 'scripts' / 'gate_fixtures.py')
     try:
         with contextlib.ExitStack() as wired:
-            exercise(Path(wired.enter_context(tempfile.TemporaryDirectory(prefix='v319-'))).resolve(), wired)
+            exercise(wired.enter_context(fixtures.directory()), wired)
     except Exception as error:  # noqa: BLE001
         for name in ROWS:
             if not rows[name] and not name.startswith(KEEP_ROWS):
                 check(name, 'ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:300]), False)
     try:
         with contextlib.ExitStack() as wired:
-            keep_world(Path(wired.enter_context(tempfile.TemporaryDirectory(prefix='v319k-'))).resolve(), wired)
+            keep_world(wired.enter_context(fixtures.directory()), wired)
     except Exception as error:  # noqa: BLE001
         import traceback
         where = traceback.extract_tb(error.__traceback__)[-1]
