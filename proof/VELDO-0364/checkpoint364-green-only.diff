@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1318,7 +1318,7 @@
+     Revalidate at the signing boundary; a checkpoint never changes coverage or green.
+     """
+     checkpoint = receipt['checkpoint'] = dict(published=[], withheld=None)
+-    if reuse is None:
++    if receipt['status'] != 'passed' or reuse is None:
+         return
+     if (cleanup_errors or workers.active
+             or any(o.get('error') == 'worker_cleanup_error' for o in workers.outcomes)):

@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1336,7 +1336,7 @@
+         checkpoint['withheld'] = 'reuse_audit_mismatch'
+         raise Refused('reuse_audit_mismatch', 'checkpoint withheld after audit mismatch')
+     for case, record in completed.values():
+-        validate_result(record, case)
++        pass
+         if reuse.publish(case, record, validate_result):
+             checkpoint['published'].append(case['identity'])
+     if reuse.store and reuse.store.integrity_errors:

@@ -1,0 +1,108 @@
+{
+  "scope": "two sequential single-case coordinator runs; no host admission or timing-store publication",
+  "case": "request-digest-omits-version",
+  "runs": {
+    "fresh": {
+      "status": "passed",
+      "input_digest": "a3f106c400ee2be5b8f265a94c7e26e5d29f1f9148fdbb519b90ee83cebaba80",
+      "implementation_digest": "a2790ef7bdb21daf9d7eb60722eebb1d78448f74979b4e3517b47429614f7832",
+      "force_fresh": false,
+      "registered": 1,
+      "executed": 1,
+      "reused": 0,
+      "rejected": 1,
+      "worker_invocations": 3,
+      "elapsed": 349.16138446098194,
+      "surviving_workers": 0,
+      "checkpoint": {
+        "published": [],
+        "withheld": null
+      },
+      "observations": {
+        "baseline": "13fb7a426f892c7b89fc6bc84e5140e01b33371973f441f1702ca7c127eae8fd",
+        "noop": "13fb7a426f892c7b89fc6bc84e5140e01b33371973f441f1702ca7c127eae8fd",
+        "mutant": "ef9966847c299bf3ac7b2baa0cd3d40e1fe7b1cf45302a87b617be362167ef5a"
+      },
+      "cleanup": [
+        {
+          "mode": "baseline",
+          "scratch_removed": true,
+          "receipt": {
+            "units": [],
+            "directories": 602
+          }
+        },
+        {
+          "mode": "noop",
+          "scratch_removed": true,
+          "receipt": {
+            "units": [],
+            "directories": 602
+          }
+        },
+        {
+          "mode": "mutant",
+          "scratch_removed": true,
+          "receipt": {
+            "units": [],
+            "directories": 602
+          }
+        }
+      ]
+    },
+    "forced": {
+      "status": "passed",
+      "input_digest": "a3f106c400ee2be5b8f265a94c7e26e5d29f1f9148fdbb519b90ee83cebaba80",
+      "implementation_digest": "a2790ef7bdb21daf9d7eb60722eebb1d78448f74979b4e3517b47429614f7832",
+      "force_fresh": true,
+      "registered": 1,
+      "executed": 1,
+      "reused": 0,
+      "rejected": 1,
+      "worker_invocations": 3,
+      "elapsed": 296.96776841115206,
+      "surviving_workers": 0,
+      "checkpoint": {
+        "published": [],
+        "withheld": null
+      },
+      "observations": {
+        "baseline": "13fb7a426f892c7b89fc6bc84e5140e01b33371973f441f1702ca7c127eae8fd",
+        "noop": "13fb7a426f892c7b89fc6bc84e5140e01b33371973f441f1702ca7c127eae8fd",
+        "mutant": "ef9966847c299bf3ac7b2baa0cd3d40e1fe7b1cf45302a87b617be362167ef5a"
+      },
+      "cleanup": [
+        {
+          "mode": "baseline",
+          "scratch_removed": true,
+          "receipt": {
+            "units": [],
+            "directories": 602
+          }
+        },
+        {
+          "mode": "noop",
+          "scratch_removed": true,
+          "receipt": {
+            "units": [],
+            "directories": 602
+          }
+        },
+        {
+          "mode": "mutant",
+          "scratch_removed": true,
+          "receipt": {
+            "units": [],
+            "directories": 602
+          }
+        }
+      ]
+    }
+  },
+  "parameters": {
+    "parallel": 1,
+    "measure": false
+  },
+  "equivalent": true,
+  "binding_note": "Coordinator bytes match final implementation. Later edits add tests/registry cases, remove an unmodeled host-specific path from the unreviewed toolchain proposal and update evidence/specification. No full-tree gate claim."
+}

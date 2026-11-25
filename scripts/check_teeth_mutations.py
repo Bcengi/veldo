@@ -18762,6 +18762,31 @@ def cases():
         "                if not completed.get('declaration_stale'):\n",
         '                if False:\n', ['admission/learning/red-stage'])
     result[-1]['dir'] = 'scripts'
+    # VELDO-0364: publication after red-stage cleanup, never before its race checks.
+    for name, old, new, row in (
+        ('green-only', "    if reuse is None:\n",
+         "    if receipt['status'] != 'passed' or reuse is None:\n", 'red'),
+        ('input-race', '    if not stable_inputs():\n', '    if False:\n', 'input-race'),
+        ('runtime-race', "    if not reuse.unchanged():\n        checkpoint['withheld']",
+         "    if False:\n        checkpoint['withheld']", 'runtime-race'),
+        ('cleanup', '    if (cleanup_errors or workers.active\n',
+         '    if (workers.active\n', 'cleanup'),
+        ('active', '    if (cleanup_errors or workers.active\n',
+         '    if (cleanup_errors\n', 'active'),
+        ('cleanup-outcome', "or any(o.get('error') == 'worker_cleanup_error' for o in workers.outcomes)",
+         'or False', 'cleanup-outcome'),
+        ('audit', "    if any(not entry['matched'] for entry in receipt['audit']['entries']):\n",
+         '    if False:\n', 'audit'),
+        ('invalid', '    for case, record in completed.values():\n        validate_result(record, case)\n',
+         '    for case, record in completed.values():\n        pass\n', 'invalid'),
+        ('remember-race', 'lambda: not race_detected and inputs_unchanged',
+         'lambda: inputs_unchanged', 'stage-input-restored'),
+        ('collect', '                checkpoint_records[identity] = (case, record)\n',
+         '                pass\n', 'stage-red'),
+    ):
+        add(364, 'checkpoint364-' + name, '161_veldo_0364_reuse_checkpoints.py',
+            'check_gate_mutations.py', old, new, ['checkpoint/' + row])
+        result[-1]['dir'] = 'scripts'
     return result
 
 

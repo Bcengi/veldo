@@ -1,0 +1,17 @@
+{
+  "stale_mutants": {
+    "registered": 4014,
+    "findings": 0
+  },
+  "unit_rows": 85,
+  "falsifiers": 10,
+  "spec": true,
+  "wallclock": {
+    "exit": 0
+  },
+  "personal_setup": {
+    "exit": 0
+  },
+  "engine_sync": true,
+  "unconfined_unchanged": true
+}

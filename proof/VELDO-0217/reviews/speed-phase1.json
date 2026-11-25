@@ -1,0 +1,927 @@
+{
+  "schema": "veldo.case-input-review/v1",
+  "batch": "speed-phase1",
+  "status": "pending-evidence-and-independent-review",
+  "reviewed": false,
+  "reviewer": null,
+  "commit": null,
+  "cases": {
+    "check_teeth_mutations.py:effects-worker-scope": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-overlong-handle": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-second-use-before-consumption": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-changed-content-replay": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-acceptance-is-completion": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-unbound-result": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-ignore-authorization-revocation": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-revocation-preflight-only": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-invisible-to-revocation": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-pending-reconciled-as-settled": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-future-dated-revocation-waits": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-revocation-skew-allowance": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-revoked-reviewer-accepted": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-reviewer-membership-only": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-receiver-refused-conclusive": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-receiver-refused-provider-only": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-push-widened-by-clone-config": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-push-follows-tags": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-confirm-authorized-ref-only": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-confirm-ignores-new-refs": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-push-by-send-pack": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-remote-must-exist-verbatim": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-push-transports-restricted": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-confirm-without-head": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-confirm-without-symref-targets": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-push-options-from-config": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-push-options-flag-only": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-destination-not-recorded": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-destinations-from-fetch-url": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-destinations-from-push-output": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-resolution-network-profile": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-newline-config-accepted": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-completion-from-exit-status": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-completion-from-push-output": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-state-read-locally": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-push-output-read-strictly": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-listing-read-strictly": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-destination-with-credentials": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-destinations-not-scrubbed": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-scrub-scp-first-at": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-scrub-scp-unchanged": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-scrub-transport-not-recursed": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-scrub-keeps-query": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-scrub-keeps-fragment": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-push-without-old-tip-check": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-unlisted-destination-pushed": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-receiver-refusal-as-unknown": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-replayed-refusal-reads-accepted": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-refusal-owes-a-stop": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-refusal-left-in-flight": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-creation-expects-zero-id": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-creation-over-existing-ref": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-url-section-pushurl-unchecked": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-push-step-timeout-shortened": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-call-window-not-extended": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-scrub-scp-user-at-first-colon": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-scrub-ext-command-kept": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-scrub-malformed-host-kept": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-scrub-at-in-path-kept": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-completion-ignores-exit-status": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-completion-ignores-hook-failure": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-remote-line-break-accepted": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-resolution-config-exit-unchecked": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-empty-resolution-accepted": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-local-config-guard-omitted": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-config-exit-unchecked": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-network-profile-without-global-config": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-network-profile-drops-transport-variables": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-network-profile-keeps-coordinates": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-network-profile-drops-config-selection": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:effects-network-profile-drops-config-injection": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:request-digest-omits-version": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:bindings-ignore-request-identity": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:render-omits-risk": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:framing-signature-unchecked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:presentation-key-without-digest": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:replacement-without-reply-link": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:answer-checks-subject-only": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:missing-reference-uses-current": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:answer-drops-rationale": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:answer-skips-edge-signature": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:unsent-marked-published": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:unseen-only-refused-outcome": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:answer-records-typed-choice-as-ruling": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:unmapped-choice-presented": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:project-owner-frames-again": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:stored-framing-any-framer": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:stored-framing-any-writer": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:stored-framing-key-at-any-time": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:answer-time-unchecked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:answer-time-same-second-refused": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:group-chat-presented": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:unpresented-reason-not-counted": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:replacement-requires-reply-target": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:reply-link-always-claimed": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:receipt-reply-link-unchecked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:receipt-platform-reply-unchecked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:part-length-in-characters": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:answer-only-to-last-part": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:projection-notice-beside-presentation": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:projection-never-reports-presented": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:projection-ignores-presentations": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:projection-ignores-enrollment-setting": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:presentation-ignores-notice": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:notice-not-marked-superseded": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:partial-never-sent-again": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:retry-after-ignored": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:choice-match-case-sensitive": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:owner-not-told": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:notice-kind-from-caller": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:notice-of-any-request": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:frame-key-by-time": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:frame-ledger-unchecked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:frame-ledger-pin-read-later": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:frame-key-pin-read-later": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:framing-key-read-now": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:framing-ledger-unchecked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:retry-after-any-number": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:retry-after-boolean-accepted": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:retry-after-unbounded": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:retry-after-above-bound-ignored": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:choice-without-nfkc": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:choice-separators-distinct": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:answered-checked-after-choice": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:answered-not-told": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:tell-not-deduplicated": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:tell-keyed-by-text": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:notice-intent-without-framing-pin": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:pending-notice-never-marked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:journal-reader-ignores-kind": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:split-before-nfkc": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:redelivered-answer-told": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:redelivery-by-chat-only": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:redelivery-silent-only-while-pending": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:closed-not-told": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:closed-reported-as-stale": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:older-sent-notice-preferred": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:only-first-notice-marked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:reconcile-current-only": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:edge-scope-unchecked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:frame-ledger-any-kind": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:frame-ledger-digest-unchecked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:rationale-nfkc-folded": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:rationale-keeps-the-colon": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:stale-not-told": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:x-drop-2043": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:x-membership-pin-later": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:x-versions-pin-later": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:x-notice-transition-any-notice": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:stale-neutral-not-told": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:owner-enrollment-unchecked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:owner-membership-unchecked": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:answered-told-only-while-pending": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:redelivery-before-edge-scope": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:frame-ledger-any-shape": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:owner-ledger-unread": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:ledger-owner-not-looked-up": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:bindings-ledger-unread": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-decomposition-digest-unbound": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-live-binding-unchecked": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-brief-omits-questions": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-brief-omits-protected-paths": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-thin-admission-accepted": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-brief-unchecked": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-thin-path-reopened": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-specification-files-unchecked": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-pending-request-not-revised": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-route-ignores-question": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-route-ignores-priority": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-route-ignores-answered-objective": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-route-ignores-author": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-message-admission-skips-route": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-route-never-own-message": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-route-ignores-presentation": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-settled-ruling-ignored": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-message-admission-ignores-history": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-proposal-not-superseding": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-proposal-over-settled-ruling": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-presented-over-settled-ruling": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-rejection-freshness-checked": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-reject-freshness-checked": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-return-freshness-checked": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-admitted-not-groomable": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-route-ignores-used-message": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-message-admission-ignores-used-message": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-message-history-unmatched": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-message-admission-priority-role": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-admission-questions-unrecorded": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-priority-applied-before-admission": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-withdraw-skipped": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-reprioritize-unapplied": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-ruling-digest-unvalidated": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-not-scaffolded": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-request-not-scaffolded": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:grooming-refusal-unclassified": {
+      "declaration": "e8cba032273d58e1e174d555e2f597dd9bcccfda0865fa44d680fd5893dfb937",
+      "traces": []
+    },
+    "check_teeth_mutations.py:outside258-effect-observer-dropped": {
+      "declaration": "159369fe96d4d26f40a1124b60466a4a84a4e9bddcb85af73c205db6e8a43c64",
+      "traces": []
+    },
+    "check_teeth_mutations.py:newproject143-pick-unmapped": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:newproject143-ambiguous-choices-presented": {
+      "declaration": "157a0ec83ec4cc5bb49defc6d13154f51fdc10c29b400ccc5d367e564877cf35",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-adopt-unowned": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-batch-as-scratch": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-remove-reports": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-locator-alone": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-background-start": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-periodic-call": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-ignore-carrier": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-unread-is-missing": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-ignore-due": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-no-bootstrap": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-drop-ending": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-stop-retries": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-complete-without-keep": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-stale-read": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-reconcile-unlocked": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-signal-unlocked": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-no-worker-start": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-no-worker-stop": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-no-received-hook": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-docker-no-event-retry": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-cli-no-service": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-failed-task-stops-the-dispatcher": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-reconcile-waited-inside-the-request": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-reconcile-wait-nested-in-the-request": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space315-filter-hides-children": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    },
+    "check_teeth_mutations.py:space347-batch-clone-never-removed": {
+      "declaration": "1ffdee0a6767a0ed2e9247d3313e49ae888a5489cf3ab137199f78a54f8a1da2",
+      "traces": []
+    }
+  },
+  "toolchain": {
+    "driver": "check_teeth_mutations.py",
+    "digest": "66249617cc4a60f87a2535aa7b6251851f2a3d2de64e9d7108ef4d4e82a7ddf7",
+    "reviewed": false
+  },
+  "blocking_conditions": [
+    "four_mode_traces_pending",
+    "successful_current_observation_missing",
+    "sensitivity_runner_missing",
+    "sensitivity_library_missing",
+    "host_socket_probe_observed_in_representative",
+    "shared_preamble_probes_git_metadata",
+    "unmodeled_host_specific_bootstrap_cgroup_probe"
+  ],
+  "required_signoff": [
+    "Independent L2 reviewer: judge each rationale, full closure, directory membership and absence, four current trace digests, equal baseline read sets and equality with a successful input-bound fresh observation; record reviewer identity and exact implementation commit.",
+    "Reviewer must reject any host-service, history, nested-gate or live-capture dependence that remains unclosed. Never waive trace refusals.",
+    "Review system paths with interpreter, loader, mapped libraries, subprocess binaries, configuration, locale and failed probes; bind the complete toolchain record digest.",
+    "Non-agent authority: run and attest VELDO-0226 sensitivity for each final exact key, including all modes with clocks +400d x1.5 and changed randomness and evidence every process received perturbation. Existing checker alone is not a producer.",
+    "Owner: approve exact final commit and protected paths; only then set reviewed true and review_sha256 to the SHA256 of the independently completed record. Writer has granted no approval."
+  ]
+}

@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1321,7 +1321,7 @@
+     if reuse is None:
+         return
+     if (cleanup_errors or workers.active
+-            or any(o.get('error') == 'worker_cleanup_error' for o in workers.outcomes)):
++            or False):
+         checkpoint['withheld'] = 'cleanup_incomplete'
+         raise Refused('worker_cleanup_error', 'checkpoint cleanup incomplete')
+     if not completed:

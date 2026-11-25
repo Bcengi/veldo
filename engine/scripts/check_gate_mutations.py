@@ -1310,6 +1310,40 @@ def snapshot(root, expected_common, destination, files, head):
     return common
 
 
+def checkpoint_completed(reuse, completed, workers, cleanup_errors, receipt, stable_inputs):
+    """Authority-only publication after cleanup, including a partially red stage.
+
+    completed contains only records accepted by collect after Workers.finish reaped
+    their controls and mutant. It is not the inventory, nor the reused results.
+    Revalidate at the signing boundary; a checkpoint never changes coverage or green.
+    """
+    checkpoint = receipt['checkpoint'] = dict(published=[], withheld=None)
+    if reuse is None:
+        return
+    if (cleanup_errors or workers.active
+            or any(o.get('error') == 'worker_cleanup_error' for o in workers.outcomes)):
+        checkpoint['withheld'] = 'cleanup_incomplete'
+        raise Refused('worker_cleanup_error', 'checkpoint cleanup incomplete')
+    if not completed:
+        return
+    if not stable_inputs():
+        checkpoint['withheld'] = 'inputs_changed'
+        raise Refused('driver_error', 'inputs changed during stage')
+    if not reuse.unchanged():
+        checkpoint['withheld'] = 'runtime_changed'
+        raise Refused('driver_error', 'runtime inputs changed during stage')
+    if any(not entry['matched'] for entry in receipt['audit']['entries']):
+        checkpoint['withheld'] = 'reuse_audit_mismatch'
+        raise Refused('reuse_audit_mismatch', 'checkpoint withheld after audit mismatch')
+    for case, record in completed.values():
+        validate_result(record, case)
+        if reuse.publish(case, record, validate_result):
+            checkpoint['published'].append(case['identity'])
+    if reuse.store and reuse.store.integrity_errors:
+        raise Refused('reuse_integrity_conflict', 'conflicting cache record: ' +
+                      ', '.join(reuse.store.integrity_errors))
+
+
 
 
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
@@ -1327,6 +1361,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
     cases, reuse = [], None
     fresh, time_keys, group_for = [], {}, None
+    checkpoint_records = {}
+    race_detected = False
     audits, audit_keys = {}, {}
     audit_module = AUDIT or _load_audit(ROOT / 'scripts/mutation_reuse.py')
     receipt['audit'] = dict(population=[], entries=[], audited=0, matched=0, mismatched=0,
@@ -1583,6 +1619,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 assert workers.outcomes[-1]['name'] == name
                 workers.outcomes[-1].update(resource_valid=True, resource_execution=receipt['input_digest'])
                 results[identity] = record
+                checkpoint_records[identity] = (case, record)
                 receipt['results'].append(dict(reuse.evidence(case, record, False),
                                                elapsed=completed['elapsed'],
                                                **(dict(audited=True, reuse_key=audit_keys[identity])
@@ -1609,8 +1646,10 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 raise Refused(first['error'], first['detail'])
             # Reject changes to the checked inputs during execution.
             if not inputs_unchanged(root, expected_common, files, head):
+                race_detected = True
                 raise Refused('driver_error', 'inputs changed during stage')
             if not reuse.unchanged():
+                race_detected = True
                 raise Refused('driver_error', 'runtime inputs changed during stage')
             workers.check()
             if set(results) != {c['identity'] for c in cases}:
@@ -1618,11 +1657,6 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             for case in cases:
                 validate_result(results[case['identity']], case)
         workers.check()
-        for case in fresh:
-            reuse.publish(case, results[case['identity']], validate_result)
-        if reuse.store and reuse.store.integrity_errors:
-            raise Refused('reuse_integrity_conflict', 'conflicting cache record: ' +
-                          ', '.join(reuse.store.integrity_errors))
         workers.check()
         # Timed by the coordinator, never taken from worker JSON. No failed stage or reused
         # case refreshes a sample; controls shared by several cases contribute to each one.
@@ -1639,7 +1673,19 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                                    else 'driver_error')
         receipt['detail'] = str(error)
     finally:
-        workers.cleanup()
+        try:
+            cleanup_errors = workers.cleanup()
+        except Exception as cleanup_error:
+            cleanup_errors = [cleanup_error]
+        try:
+            checkpoint_completed(reuse, checkpoint_records, workers, cleanup_errors, receipt,
+                                 lambda: not race_detected and inputs_unchanged(root, expected_common, files, head))
+        except Exception as checkpoint_error:
+            receipt['checkpoint_error'] = str(checkpoint_error)
+            # Preserve the first red; a previously green stage must fail closed.
+            if receipt.get('status') == 'passed':
+                receipt.update(status='failed', error=getattr(checkpoint_error, 'code', 'driver_error'),
+                               detail=str(checkpoint_error))
         # Resource hints do not publish verdicts or change the red receipt. Stable frozen
         # inputs and runtime are required even when another worker failed validation.
         try:

@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1320,7 +1320,7 @@
+     checkpoint = receipt['checkpoint'] = dict(published=[], withheld=None)
+     if reuse is None:
+         return
+-    if (cleanup_errors or workers.active
++    if (cleanup_errors
+             or any(o.get('error') == 'worker_cleanup_error' for o in workers.outcomes)):
+         checkpoint['withheld'] = 'cleanup_incomplete'
+         raise Refused('worker_cleanup_error', 'checkpoint cleanup incomplete')

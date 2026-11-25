@@ -1,0 +1,342 @@
+[
+  {
+    "row": "VELDO-0207 case/spec",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/keys-declared-edit",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/keys-shared-edit",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/keys-unrelated-commit",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/keys-own-registry-entry",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/keys-registry-edit",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/per-driver-toolchain",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/keys-toolchain",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/absent-input-addition-refused",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/store-cold-warm",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/store-planted-stale",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/store-tamper",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/force-fresh",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/listed-directory-new-child-invalidates",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/mutant-bus-systemd-inherited-denied",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/unavailable-ipc-filter-fails-closed",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/metadata-syscall-stat",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/metadata-syscall-lstat",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/metadata-syscall-statx",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/metadata-syscall-newfstatat",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/metadata-syscall-access",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/metadata-syscall-faccessat",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/metadata-syscall-faccessat2",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/metadata-syscall-readlink",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/metadata-syscall-readlinkat",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/getdents-parent-not-declared",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/deterministic-concurrent-publication",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/content-conflict-turns-stage-red",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/poisoned-key-stays-red",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0207 case/receipts",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/spec",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/stale-found",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/proposal-records-read-digests",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/legacy-declaration-stale",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/report-complete",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/refused-inside-a-gate",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/parallel-admission",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/review-record-bound",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/review-conditions",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/reviewed-flag-protected",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/key-covers-inputs",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/non-file-refused",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/absent-socket-keyed",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/outside-process",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/accept-pending",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/worker-trace-refused",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/undeclared-absent-socket",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/incomplete-trace-demoted",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/gate-observation-current",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0217 declarations/review-records-protected",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/fresh-session-digests",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/sample-size",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/unpredictable",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/field/baseline",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/field/noop",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/field/mutant_targets",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/field/replacement_count",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/field/old_digest",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/field/new_digest",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/compare",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/receipts",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0218 reuse-audit/worker-seconds",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/red",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/input-race",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/runtime-race",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/cleanup",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/active",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/cleanup-outcome",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/audit",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/invalid",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/stage-red",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/stage-fatal",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/pending-coverage",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/stage-force",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/stage-green",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/authenticated",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/corrupt-miss",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/stage-input-race",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/stage-runtime-race",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/stage-cleanup",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/stage-input-restored",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/stage-runtime-restored",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/stage-cleanup-raises",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/sensitivity-unproved",
+    "passed": true
+  },
+  {
+    "row": "VELDO-0364 checkpoint/sensitivity-wrong-key",
+    "passed": true
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "scope": "single-case unit fixture; review, runtime and sensitivity admission stood in",
+  "results": {
+    "unrelated_edit_hit": true,
+    "transitive_dependency_miss": true,
+    "forced_fresh_equivalence": true,
+    "corrupted_record_miss": true
+  },
+  "production_sensitivity": "NOT PROVED; missing runner/library"
+}

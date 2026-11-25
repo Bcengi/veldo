@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1326,7 +1326,7 @@
+         raise Refused('worker_cleanup_error', 'checkpoint cleanup incomplete')
+     if not completed:
+         return
+-    if not stable_inputs():
++    if False:
+         checkpoint['withheld'] = 'inputs_changed'
+         raise Refused('driver_error', 'inputs changed during stage')
+     if not reuse.unchanged():

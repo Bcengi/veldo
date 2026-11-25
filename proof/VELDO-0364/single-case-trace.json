@@ -1,0 +1,32 @@
+{
+  "case": "check_teeth_mutations.py:request-digest-omits-version",
+  "run": {
+    "mode": "baseline",
+    "exit": 0,
+    "seconds": 54.505,
+    "trace": "a76b2d6004033667e41c9a3d27a9f3ad5b11e93d7eb57c2e916d6710e554b110",
+    "observation": "b1438e5d9181dbb3a6c52a8158f11d1cf208db990fa78639cb3fe93cb748ef45",
+    "failed_rows": [],
+    "non_file": [
+      "host_socket"
+    ],
+    "reads": "03ca2e1c4b1e8b5e7adb89c5cafee33bc08ab1debf910cb1cf0bba70dfd7f638"
+  },
+  "captured_repository_files": 1234,
+  "post_confinement_missing_files": [
+    ".git"
+  ],
+  "post_confinement_listings": [
+    ".veldo",
+    "scripts/suites/support",
+    "specs"
+  ],
+  "post_confinement_gate_reads": [],
+  "non_file_classes": {
+    "host_socket": 3076
+  },
+  "non_file_example": {
+    "host_socket": "541417 connect(3<UNIX-STREAM:[1195178982]>, {sa_family=AF_UNIX, sun_path=\"/var/run/nscd/socket\"}, 110 )           = -1 EACCES (Permission denied)"
+  },
+  "qualification": "refused: host_socket; four-mode traces, matching successful observation and sensitivity proof absent"
+}

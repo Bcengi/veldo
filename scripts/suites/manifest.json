@@ -2477,14 +2477,18 @@
   },
   {
    "name": "114_veldo_0113_no_autostart",
-   "requires": ["114_veldo_0113_no_autostart"],
+   "requires": [
+    "114_veldo_0113_no_autostart"
+   ],
    "requires_note": "Only ROOT and expect from shared.py; the fixture loads its production modules explicitly.",
    "file": "114_veldo_0113_no_autostart.py",
    "regions": "VELDO-0113"
   },
   {
    "name": "115_veldo_0113_work_client",
-   "requires": ["115_veldo_0113_work_client"],
+   "requires": [
+    "115_veldo_0113_work_client"
+   ],
    "requires_note": "Only ROOT and expect from shared.py; the fixture loads its production modules explicitly.",
    "file": "115_veldo_0113_work_client.py",
    "regions": "VELDO-0113 work authority boundary"
@@ -2545,6 +2549,15 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "161_veldo_0364_reuse_checkpoints",
+   "file": "161_veldo_0364_reuse_checkpoints.py",
+   "requires": [
+    "161_veldo_0364_reuse_checkpoints"
+   ],
+   "regions": "VELDO-0364: red-stage checkpoints, cleanup and input/runtime races, complete coverage and authenticated publication.",
+   "requires_note": "Only ROOT and expect. Controlled worker execution; real reducer, validators and private temporary signing store. No nested gate."
   }
  ],
  "resource_capacities": {

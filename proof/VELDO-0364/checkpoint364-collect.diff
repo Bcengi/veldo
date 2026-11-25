@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1619,7 +1619,7 @@
+                 assert workers.outcomes[-1]['name'] == name
+                 workers.outcomes[-1].update(resource_valid=True, resource_execution=receipt['input_digest'])
+                 results[identity] = record
+-                checkpoint_records[identity] = (case, record)
++                pass
+                 receipt['results'].append(dict(reuse.evidence(case, record, False),
+                                                elapsed=completed['elapsed'],
+                                                **(dict(audited=True, reuse_key=audit_keys[identity])

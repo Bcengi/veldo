@@ -1,0 +1,807 @@
+{
+  "schema": "veldo.mutation-result/v1",
+  "fixture_version": 1,
+  "case": {
+    "finding": 364,
+    "name": "checkpoint364-cleanup-outcome",
+    "suite": "161_veldo_0364_reuse_checkpoints.py",
+    "module": "check_gate_mutations.py",
+    "old": "or any(o.get('error') == 'worker_cleanup_error' for o in workers.outcomes)",
+    "new": "or False",
+    "rows": [
+      "checkpoint/cleanup-outcome"
+    ],
+    "dir": "scripts",
+    "driver": "check_teeth_mutations.py",
+    "identity": "check_teeth_mutations.py:checkpoint364-cleanup-outcome"
+  },
+  "baseline": {
+    "count": 49,
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/red",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/input-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/runtime-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/cleanup",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/active",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/cleanup-outcome",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/audit",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/invalid",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-red",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-fatal",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/pending-coverage",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-force",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-green",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/authenticated",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/corrupt-miss",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-input-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-runtime-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-cleanup",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-input-restored",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-runtime-restored",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-cleanup-raises",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/sensitivity-unproved",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/sensitivity-wrong-key",
+        true
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0364 checkpoint/red",
+      "VELDO-0364 checkpoint/input-race",
+      "VELDO-0364 checkpoint/runtime-race",
+      "VELDO-0364 checkpoint/cleanup",
+      "VELDO-0364 checkpoint/active",
+      "VELDO-0364 checkpoint/cleanup-outcome",
+      "VELDO-0364 checkpoint/audit",
+      "VELDO-0364 checkpoint/invalid",
+      "VELDO-0364 checkpoint/stage-red",
+      "VELDO-0364 checkpoint/stage-fatal",
+      "VELDO-0364 checkpoint/pending-coverage",
+      "VELDO-0364 checkpoint/stage-force",
+      "VELDO-0364 checkpoint/stage-green",
+      "VELDO-0364 checkpoint/authenticated",
+      "VELDO-0364 checkpoint/corrupt-miss",
+      "VELDO-0364 checkpoint/stage-input-race",
+      "VELDO-0364 checkpoint/stage-runtime-race",
+      "VELDO-0364 checkpoint/stage-cleanup",
+      "VELDO-0364 checkpoint/stage-input-restored",
+      "VELDO-0364 checkpoint/stage-runtime-restored",
+      "VELDO-0364 checkpoint/stage-cleanup-raises",
+      "VELDO-0364 checkpoint/sensitivity-unproved",
+      "VELDO-0364 checkpoint/sensitivity-wrong-key"
+    ],
+    "failed_rows": [],
+    "failed_details": [],
+    "targets": {
+      "checkpoint/cleanup-outcome": [
+        true
+      ]
+    }
+  },
+  "noop": {
+    "count": 49,
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/red",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/input-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/runtime-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/cleanup",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/active",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/cleanup-outcome",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/audit",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/invalid",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-red",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-fatal",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/pending-coverage",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-force",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-green",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/authenticated",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/corrupt-miss",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-input-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-runtime-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-cleanup",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-input-restored",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-runtime-restored",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-cleanup-raises",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/sensitivity-unproved",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/sensitivity-wrong-key",
+        true
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0364 checkpoint/red",
+      "VELDO-0364 checkpoint/input-race",
+      "VELDO-0364 checkpoint/runtime-race",
+      "VELDO-0364 checkpoint/cleanup",
+      "VELDO-0364 checkpoint/active",
+      "VELDO-0364 checkpoint/cleanup-outcome",
+      "VELDO-0364 checkpoint/audit",
+      "VELDO-0364 checkpoint/invalid",
+      "VELDO-0364 checkpoint/stage-red",
+      "VELDO-0364 checkpoint/stage-fatal",
+      "VELDO-0364 checkpoint/pending-coverage",
+      "VELDO-0364 checkpoint/stage-force",
+      "VELDO-0364 checkpoint/stage-green",
+      "VELDO-0364 checkpoint/authenticated",
+      "VELDO-0364 checkpoint/corrupt-miss",
+      "VELDO-0364 checkpoint/stage-input-race",
+      "VELDO-0364 checkpoint/stage-runtime-race",
+      "VELDO-0364 checkpoint/stage-cleanup",
+      "VELDO-0364 checkpoint/stage-input-restored",
+      "VELDO-0364 checkpoint/stage-runtime-restored",
+      "VELDO-0364 checkpoint/stage-cleanup-raises",
+      "VELDO-0364 checkpoint/sensitivity-unproved",
+      "VELDO-0364 checkpoint/sensitivity-wrong-key"
+    ],
+    "failed_rows": [],
+    "failed_details": [],
+    "targets": {
+      "checkpoint/cleanup-outcome": [
+        true
+      ]
+    }
+  },
+  "mutant": {
+    "count": 49,
+    "observations": [
+      [
+        "good spec accepted",
+        true
+      ],
+      [
+        "spec without criteria rejected",
+        true
+      ],
+      [
+        "unknown evidence kind rejected",
+        true
+      ],
+      [
+        "bad status rejected",
+        true
+      ],
+      [
+        "invented proof criterion rejected",
+        true
+      ],
+      [
+        "missing proof criterion rejected",
+        true
+      ],
+      [
+        "absent required evidence rejected",
+        true
+      ],
+      [
+        "passed-without-evidence rejected",
+        true
+      ],
+      [
+        "bad verdict value rejected",
+        true
+      ],
+      [
+        "good plan accepted",
+        true
+      ],
+      [
+        "plan dependency cycle rejected",
+        true
+      ],
+      [
+        "dangling dependency rejected",
+        true
+      ],
+      [
+        "unknown outcome ref rejected",
+        true
+      ],
+      [
+        "unknown feature ref rejected",
+        true
+      ],
+      [
+        "undeclared depends_on rejected",
+        true
+      ],
+      [
+        "ready without approval rejected",
+        true
+      ],
+      [
+        "decision without blocks rejected",
+        true
+      ],
+      [
+        "decision blocking unknown spec rejected",
+        true
+      ],
+      [
+        "duplicate work spec rejected",
+        true
+      ],
+      [
+        "bad release mode rejected",
+        true
+      ],
+      [
+        "mirror mismatch rejected",
+        true
+      ],
+      [
+        "correct mirror accepted",
+        true
+      ],
+      [
+        "spec binding to wrong plan rejected",
+        true
+      ],
+      [
+        "spec claiming missing work item rejected",
+        true
+      ],
+      [
+        "spec plan without work rejected",
+        true
+      ],
+      [
+        "correct spec binding accepted",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/red",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/input-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/runtime-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/cleanup",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/active",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/cleanup-outcome",
+        false
+      ],
+      [
+        "VELDO-0364 checkpoint/audit",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/invalid",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-red",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-fatal",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/pending-coverage",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-force",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-green",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/authenticated",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/corrupt-miss",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-input-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-runtime-race",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-cleanup",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-input-restored",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-runtime-restored",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/stage-cleanup-raises",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/sensitivity-unproved",
+        true
+      ],
+      [
+        "VELDO-0364 checkpoint/sensitivity-wrong-key",
+        true
+      ]
+    ],
+    "row_names": [
+      "good spec accepted",
+      "spec without criteria rejected",
+      "unknown evidence kind rejected",
+      "bad status rejected",
+      "invented proof criterion rejected",
+      "missing proof criterion rejected",
+      "absent required evidence rejected",
+      "passed-without-evidence rejected",
+      "bad verdict value rejected",
+      "good plan accepted",
+      "plan dependency cycle rejected",
+      "dangling dependency rejected",
+      "unknown outcome ref rejected",
+      "unknown feature ref rejected",
+      "undeclared depends_on rejected",
+      "ready without approval rejected",
+      "decision without blocks rejected",
+      "decision blocking unknown spec rejected",
+      "duplicate work spec rejected",
+      "bad release mode rejected",
+      "mirror mismatch rejected",
+      "correct mirror accepted",
+      "spec binding to wrong plan rejected",
+      "spec claiming missing work item rejected",
+      "spec plan without work rejected",
+      "correct spec binding accepted",
+      "VELDO-0364 checkpoint/red",
+      "VELDO-0364 checkpoint/input-race",
+      "VELDO-0364 checkpoint/runtime-race",
+      "VELDO-0364 checkpoint/cleanup",
+      "VELDO-0364 checkpoint/active",
+      "VELDO-0364 checkpoint/cleanup-outcome",
+      "VELDO-0364 checkpoint/audit",
+      "VELDO-0364 checkpoint/invalid",
+      "VELDO-0364 checkpoint/stage-red",
+      "VELDO-0364 checkpoint/stage-fatal",
+      "VELDO-0364 checkpoint/pending-coverage",
+      "VELDO-0364 checkpoint/stage-force",
+      "VELDO-0364 checkpoint/stage-green",
+      "VELDO-0364 checkpoint/authenticated",
+      "VELDO-0364 checkpoint/corrupt-miss",
+      "VELDO-0364 checkpoint/stage-input-race",
+      "VELDO-0364 checkpoint/stage-runtime-race",
+      "VELDO-0364 checkpoint/stage-cleanup",
+      "VELDO-0364 checkpoint/stage-input-restored",
+      "VELDO-0364 checkpoint/stage-runtime-restored",
+      "VELDO-0364 checkpoint/stage-cleanup-raises",
+      "VELDO-0364 checkpoint/sensitivity-unproved",
+      "VELDO-0364 checkpoint/sensitivity-wrong-key"
+    ],
+    "failed_rows": [
+      "VELDO-0364 checkpoint/cleanup-outcome"
+    ],
+    "failed_details": [],
+    "targets": {
+      "checkpoint/cleanup-outcome": [
+        false
+      ]
+    }
+  },
+  "replacement_count": 1,
+  "old_digest": "a2790ef7bdb21daf9d7eb60722eebb1d78448f74979b4e3517b47429614f7832",
+  "new_digest": "989e697fc7b8566e4b8f419d9a08b34e48850341681c1bdb798ca8229b790734",
+  "kills": [
+    {
+      "row": "VELDO-0364 checkpoint/cleanup-outcome",
+      "kill_by": "assertion"
+    }
+  ],
+  "kill_by": "assertion"
+}

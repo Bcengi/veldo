@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1329,7 +1329,7 @@
+     if not stable_inputs():
+         checkpoint['withheld'] = 'inputs_changed'
+         raise Refused('driver_error', 'inputs changed during stage')
+-    if not reuse.unchanged():
++    if False:
+         checkpoint['withheld'] = 'runtime_changed'
+         raise Refused('driver_error', 'runtime inputs changed during stage')
+     if any(not entry['matched'] for entry in receipt['audit']['entries']):

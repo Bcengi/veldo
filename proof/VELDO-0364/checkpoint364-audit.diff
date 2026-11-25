@@ -1,0 +1,11 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -1332,7 +1332,7 @@
+     if not reuse.unchanged():
+         checkpoint['withheld'] = 'runtime_changed'
+         raise Refused('driver_error', 'runtime inputs changed during stage')
+-    if any(not entry['matched'] for entry in receipt['audit']['entries']):
++    if False:
+         checkpoint['withheld'] = 'reuse_audit_mismatch'
+         raise Refused('reuse_audit_mismatch', 'checkpoint withheld after audit mismatch')
+     for case, record in completed.values():
