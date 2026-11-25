@@ -1566,7 +1566,7 @@
    "requires": [
     "110_veldo_0143_corrections"
    ],
-   "requires_note": "Three correction rows, using the same real common new-project fixture and local correction helpers.",
+   "requires_note": "Correction and correction-notification rows, using the same real common new-project fixture, local helpers and reporter.",
    "resources": {
     "new_project_fixture": 1
    }

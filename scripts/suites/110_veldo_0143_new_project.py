@@ -458,6 +458,33 @@ def _v143_suite():
                 held_ = PP.read(conn, decision) or {}
                 return held_.get('state'), held_.get('reason')
 
+            # The owner's progress reports (VELDO-0128), through the reporter's one rendered send, as suite 93 runs it.
+            TRP = load('v143_report', mods / 'control_telegram_report.py')
+            report_gate = SimpleNamespace(conn=conn, channel='telegram_chat')
+            # A report's send that raised, as the edge named it: the reporter records only `unknown_outcome` for a
+            # transport failure, so a red report row could not say what the exchange met. Raised again unchanged.
+            report_faults = []
+
+            def report_send(chat, text, reply_to=None):
+                try:
+                    return presenter.edge.send(chat, text, reply_to)
+                except Exception as error:
+                    report_faults.append('%s %s <- %r' % (type(error).__name__, error.args, error.__context__))
+                    raise
+            report_edge = SimpleNamespace(activation=report_gate, send=report_send)
+            reporter = TRP.Reporter(SimpleNamespace(conn=conn, inbox=inbox, gate=report_gate, presenter=SimpleNamespace(
+                conn=conn, P=f['P'], edge=report_edge, current=presenter.current)), owner=OWNER)
+
+            def reported():
+                """Each project_ready report not sent yet, sent now: [(entity, outcome, text)]."""
+                out = []
+                for fact in reporter.sources(since=0):
+                    if fact['event'] == 'project_ready':
+                        done = reporter.report(fact)
+                        if done.get('outcome') != 'already_reported':
+                            out.append((fact['source']['entity_id'], done.get('outcome'), fact['headline']))
+                return out
+
             if not corrections_only:
                 with region('factory/own-repository'):
                     small = dict(plan, root=str(state_root), store=str(f['db']), owner_key=str(f['keyfile'][OWNER]))
@@ -909,6 +936,24 @@ def _v143_suite():
                          and ('bcengi', 'private', 'personal', 'private') not in settles_p("Personally I'd make it private")
                          and ('personal', 'private', 'bcengi', 'private') not in settles_p('use bc\u0435ngi'))])
 
+                with region('proposal/correction-told'):
+                    # VELDO-0143 rounds 6 and 7: a correction refused because it would have set the identity or the
+                    # visibility tells him so in plain words: only a choice he picks sets them.
+                    reported()
+                    texts_r = [text for _c, _m, _r, text in bot_messages()]
+                    told_r = {field: [text for text in texts_r if '%s could not be set up' % name in text]
+                              for field, name in (('identity', 'rockbass'), ('visibility', 'kelpcrab'))}
+                    if not all(len(v) == 1 for v in told_r.values()):
+                        print('  %sdetail: correction told: %s' % (PREFIX, told_r))
+                    plain_r = {'identity': 'Your correction would have set the identity',
+                               'visibility': 'Your correction would have set the visibility'}
+                    check('proposal/correction-told', [
+                        ('the refused %s correction is told once, in plain words, with how to answer' % field,
+                         len(told_r[field]) == 1 and plain_r[field] in told_r[field][0]
+                         and 'change only by the choice you pick' in told_r[field][0]
+                         and 'pick the choice that names the identity and visibility you want' in told_r[field][0])
+                        for field in ('identity', 'visibility')])
+
             if not corrections_only:
                 with region('proposal/own-message-doubt'):
                     # VELDO-0143 round 7: his own message settles with nothing asked only where nothing in it could mean
@@ -1154,7 +1199,7 @@ def _v143_suite():
                     # it is on GitHub, and a decision recording a visibility for an adoption is not one the judge settles.
                     def existing(name):
                         """A directory under personal's projects root that is already a Git repository, its origin on
-                        GitHub."""
+                    GitHub."""
                         path, bare = projects_root['personal'] / name, base / 'gh' / 'olga-p' / (name + '.git')
                         GP.run(['git', 'init', '-q', '-b', 'main', str(path)], check=True, capture_output=True)
                         GP.run(['git', 'init', '-q', '--bare', '-b', 'main', str(bare)], check=True, capture_output=True)
@@ -1518,33 +1563,6 @@ def _v143_suite():
                          while_failed.get('reason') == 'not_ready:repository:failed' and PJ.read(S, conn, 'refusedpush') is None),
                         ('nothing is written', journal() == before)])
 
-                # The owner's progress reports (VELDO-0128), through the reporter's one rendered send, as suite 93 runs it.
-                TRP = load('v143_report', mods / 'control_telegram_report.py')
-                report_gate = SimpleNamespace(conn=conn, channel='telegram_chat')
-                # A report's send that raised, as the edge named it: the reporter records only `unknown_outcome` for a
-                # transport failure, so a red report row could not say what the exchange met. Raised again unchanged.
-                report_faults = []
-
-                def report_send(chat, text, reply_to=None):
-                    try:
-                        return presenter.edge.send(chat, text, reply_to)
-                    except Exception as error:
-                        report_faults.append('%s %s <- %r' % (type(error).__name__, error.args, error.__context__))
-                        raise
-                report_edge = SimpleNamespace(activation=report_gate, send=report_send)
-                reporter = TRP.Reporter(SimpleNamespace(conn=conn, inbox=inbox, gate=report_gate, presenter=SimpleNamespace(
-                    conn=conn, P=f['P'], edge=report_edge, current=presenter.current)), owner=OWNER)
-
-                def reported():
-                    """Each project_ready report not sent yet, sent now: [(entity, outcome, text)]."""
-                    out = []
-                    for fact in reporter.sources(since=0):
-                        if fact['event'] == 'project_ready':
-                            done = reporter.report(fact)
-                            if done.get('outcome') != 'already_reported':
-                                out.append((fact['source']['entity_id'], done.get('outcome'), fact['headline']))
-                    return out
-
                 with region('activation/applied'):
                     taken = service.take_on()
                     before_messages = bot_messages()
@@ -1643,7 +1661,7 @@ def _v143_suite():
 
                 def judged(svc):
                     """control_client.send's shape, judged by control_client's Authority over `svc` as the socket's
-                    serving side judges it (VELDO-0161's suite does the same), with no socket."""
+                serving side judges it (VELDO-0161's suite does the same), with no socket."""
                     authority = SV.CC.Authority(ids['store_uuid'], DOMAIN, str(f['db']), SV.E, svc.verify, HOST, svc.apply,
                                                 watermark=svc.watermark, minimum_generation=1, context=True)
 
@@ -1725,24 +1743,6 @@ def _v143_suite():
                         ('a decision settled where the running service has no configuration is failed by name, not left waiting',
                          (PP.read(conn, PP.decision_id(pid6)) or {}).get('state') == 'failed'
                          and (PP.read(conn, PP.decision_id(pid6)) or {}).get('reason') == 'unavailable_service:provisioner')])
-
-                with region('proposal/correction-told'):
-                    # VELDO-0143 rounds 6 and 7: a correction refused because it would have set the identity or the
-                    # visibility tells him so in plain words: only a choice he picks sets them.
-                    reported()
-                    texts_r = [text for _c, _m, _r, text in bot_messages()]
-                    told_r = {field: [text for text in texts_r if '%s could not be set up' % name in text]
-                              for field, name in (('identity', 'rockbass'), ('visibility', 'kelpcrab'))}
-                    if not all(len(v) == 1 for v in told_r.values()):
-                        print('  %sdetail: correction told: %s' % (PREFIX, told_r))
-                    plain_r = {'identity': 'Your correction would have set the identity',
-                               'visibility': 'Your correction would have set the visibility'}
-                    check('proposal/correction-told', [
-                        ('the refused %s correction is told once, in plain words, with how to answer' % field,
-                         len(told_r[field]) == 1 and plain_r[field] in told_r[field][0]
-                         and 'change only by the choice you pick' in told_r[field][0]
-                         and 'pick the choice that names the identity and visibility you want' in told_r[field][0])
-                        for field in ('identity', 'visibility')])
 
                 with region('proposal/identities-fold-alike'):
                     # VELDO-0143 round 8 (R7-3): an identity is picked by typing its id, which the presentation module
@@ -1933,11 +1933,11 @@ def _v143_suite():
 
                 class AgentWatch:
                     """provision/signing-no-agent's own SSH agent, outside the fence's (as VELDO-0161's
-                    adoption/signer-no-agent has one). While active, SSH_AUTH_SOCK and SSH_AGENT_PID name it and a
-                    stand-in ssh-keygen first on PATH records each invocation's agent variables, then runs the real one.
-                    Where local sockets may be made the agent is a recording socket (every connection is kept, with the
-                    process that made it); where they may not, it is a path where nothing listens or can, and the
-                    stand-in's record is the evidence. A signer that reaches for an agent fails the row by name."""
+                adoption/signer-no-agent has one). While active, SSH_AUTH_SOCK and SSH_AGENT_PID name it and a
+                stand-in ssh-keygen first on PATH records each invocation's agent variables, then runs the real one.
+                Where local sockets may be made the agent is a recording socket (every connection is kept, with the
+                process that made it); where they may not, it is a path where nothing listens or can, and the
+                stand-in's record is the evidence. A signer that reaches for an agent fails the row by name."""
 
                     def __init__(self):
                         import socket
@@ -2074,8 +2074,8 @@ def _v143_suite():
 
                     def serve_turn(listener=None, authority=None):
                         """One turn of the serve loop's own shape: the socket and the provisioners' pipes waited on (the
-                        wait primitive, woken by whichever is readable), each served, and a pass when an event made it
-                        due. False when nothing is left to wait on, so nothing more can come."""
+                    wait primitive, woken by whichever is readable), each served, and a pass when an event made it
+                    due. False when nothing is left to wait on, so nothing more can come."""
                         pipes = service.provisioner_pipes()
                         fds = ([listener] if listener is not None else []) + sorted(pipes)
                         if not fds:
@@ -2285,27 +2285,27 @@ def _v143_suite():
                     fake = base / 'pm-fake' / 'claude'
                     fake.parent.mkdir()
                     fake.write_text(fake_formats.embed('''import json,sys
-    from pathlib import Path
-    def emit(event):
-        event = complete_event(event)
-        with Path(sys.argv[2]).with_suffix('.events.jsonl').open('a') as stream:
-            stream.write(json.dumps(event) + '\\n')
-        print(json.dumps(event), flush=True)
-    if '--input-format' in sys.argv:
-        opening = json.loads(sys.stdin.readline())
-        assert opening['type'] == 'control_request'
-        emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': opening['request_id'],
-              'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
-        packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
-    else:
-        packet = json.load(sys.stdin)
-    Path(sys.argv[2]).write_text(json.dumps(packet))
-    result = Path(sys.argv[1]).read_text()
-    emit({'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': result}],
-          'usage': {'input_tokens': 2, 'output_tokens': 3}}})
-    emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': result,
-          'usage': {'input_tokens': 2, 'output_tokens': 4}})
-    '''))
+from pathlib import Path
+def emit(event):
+    event = complete_event(event)
+    with Path(sys.argv[2]).with_suffix('.events.jsonl').open('a') as stream:
+        stream.write(json.dumps(event) + '\\n')
+    print(json.dumps(event), flush=True)
+if '--input-format' in sys.argv:
+    opening = json.loads(sys.stdin.readline())
+    assert opening['type'] == 'control_request'
+    emit({'type': 'control_response', 'response': {'subtype': 'success', 'request_id': opening['request_id'],
+          'response': {'account': {'subscriptionType': 'Claude Team', 'apiProvider': 'firstParty'}}}})
+    packet = json.loads(json.loads(sys.stdin.readline())['message']['content'])
+else:
+    packet = json.load(sys.stdin)
+Path(sys.argv[2]).write_text(json.dumps(packet))
+result = Path(sys.argv[1]).read_text()
+emit({'type': 'assistant', 'message': {'content': [{'type': 'text', 'text': result}],
+      'usage': {'input_tokens': 2, 'output_tokens': 3}}})
+emit({'type': 'result', 'subtype': 'success', 'is_error': False, 'result': result,
+      'usage': {'input_tokens': 2, 'output_tokens': 4}})
+'''))
                     pm_signers = base / 'pm-enrollment-signers'
                     pm_signers.write_text('')
                     pm_trust = base / 'pm-host-trust.json'
