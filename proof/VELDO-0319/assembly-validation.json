@@ -1,0 +1,2245 @@
+{
+  "schema": "space-v1-targeted-validation/v1",
+  "scope": "Per-revision targeted diagnostics; not gate admission or authenticated reuse",
+  "standard_cases": [
+    {
+      "name": "space336-project-owns-detached",
+      "receipt": "teeth-2.log",
+      "sha256": "9b19a08a233394dc29b670a320cb05c5888ecb174829b112b5ef01326fae3809",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space336-run-owns-branch",
+      "receipt": "remaining-7bc0be301/validation-teeth/space336-run-owns-branch.log",
+      "sha256": "daf6dd8c2e548307da679234656b42c922e149a28b5f39fc1bb7796f1e374ee8",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space336-scratch-is-unique-work",
+      "receipt": "remaining-7bc0be301/validation-teeth/space336-scratch-is-unique-work.log",
+      "sha256": "0cc325d6f7a450cd16b7ad58b91b5f71aaa4f7b9084698c640677ae434cc9275",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space336-scratch-not-saved",
+      "receipt": "remaining-7bc0be301/validation-teeth/space336-scratch-not-saved.log",
+      "sha256": "26eb2b4481dac436fffaa24d979bcf1df7f3a22376ae94f69ea50c088c635a2d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space336-delete-without-comparison",
+      "receipt": "remaining-7bc0be301/validation-teeth/space336-delete-without-comparison.log",
+      "sha256": "8b22dcd98efc424ddf1860b17ec4249d68d484826724a4490d5ea3b00cc542e0",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space336-link-target-deleted",
+      "receipt": "remaining-7bc0be301/validation-teeth/space336-link-target-deleted.log",
+      "sha256": "05782802897921670c41a54008ca9eca63a6f6012216ff4a22a76396a68a057e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space336-open-file-ignored",
+      "receipt": "remaining-7bc0be301/validation-teeth/space336-open-file-ignored.log",
+      "sha256": "3cf34b23d110d285544ecfa94c08ea0ed67f4e6bb7dfe11c22e92728b47bbbe3",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space336-per-path-rules-skipped",
+      "receipt": "remaining-7bc0be301/validation-teeth/space336-per-path-rules-skipped.log",
+      "sha256": "5e4b40cb78fb37ccdfe9475f58f2bec31884e81c33308605df179f75e1c376e2",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space336-parent-follows-link",
+      "receipt": "remaining-7bc0be301/validation-teeth/space336-parent-follows-link.log",
+      "sha256": "8ff19dc22451a5bf93862bb0f12f5ee099f54c85518f6bc83ef4e5594e20ca42",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space336-build-census-skipped",
+      "receipt": "remaining-7bc0be301/validation-teeth/space336-build-census-skipped.log",
+      "sha256": "0d4004f626859fee459067888da179ec15b7b0f9963e848f923a1aaa1ec4b1ca",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space336-paths-truncated",
+      "receipt": "remaining-7bc0be301/validation-teeth/space336-paths-truncated.log",
+      "sha256": "8d2a251e905a46a0617131450347ccc811413c6b1af9be7729b572b8f400987b",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 336
+    },
+    {
+      "name": "space319-usage-sums-only-present-items",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-usage-sums-only-present-items.log",
+      "sha256": "9e54327a28bdc48343ba33b7147823534fa4cfbd42f54cb90f1e7c4597dcdf10",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-pending-hides-deferred-items",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-pending-hides-deferred-items.log",
+      "sha256": "1825ebd0c4e93d43423a6df4bf24881ebb5d2949f9639476084fbc23ac7b37ed",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-abandon-as-a-plain-read-route",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-abandon-as-a-plain-read-route.log",
+      "sha256": "b62eed404ae7117aeb889c99fa9b42df4342a7c97bba797e386cbc5e8bc4b6d6",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-reconcile-for-any-member",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-reconcile-for-any-member.log",
+      "sha256": "74860b74e4b0799d6e81ed1d22ef9daea06c98aea9c8835b196bd11ee6184052",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-removed-oldest-first",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-removed-oldest-first.log",
+      "sha256": "b6516dd32a93d1b06cf5e2cf37d00f2e5e2415c767acc88874b84aba564a82a6",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-held-counts-a-waiting-hold",
+      "receipt": "remaining-a50245fb8/validation-teeth/space319-held-counts-a-waiting-hold.log",
+      "sha256": "5f71be91c0b859d41400c95243208644c035d25bea128c9f30f9d60a5d766d5a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-advised-holds-not-listed",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-advised-holds-not-listed.log",
+      "sha256": "1a925adca82aab2d67effecd48ca948c991b3a82efdad2788d18df88c556cb02",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-locator-served-with-its-credential",
+      "receipt": "remaining-a50245fb8/validation-teeth/space319-locator-served-with-its-credential.log",
+      "sha256": "05e6e6cbd2cecaa8ba13a671b29b1dd561dca365a6d886ac9337910444fb34a1",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-removed-restores-journal-scan",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-removed-restores-journal-scan.log",
+      "sha256": "c8ffbdce8e4d6936b4b1330b98015254f480b0a85768f6b56231e535ba063371",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-carried-restores-dispatch-scan",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-carried-restores-dispatch-scan.log",
+      "sha256": "887b9d62ea152c3ce9421a94dfeb8b5e17d16989ef4caaae7c49553479e396f0",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-removal-without-ledger-stamp",
+      "receipt": "remaining-a50245fb8/validation-teeth/space319-removal-without-ledger-stamp.log",
+      "sha256": "8970a3e33aafc0ab8aec7ca6e9e4c4c523b1889e88b06e914fbb21e19387ab65",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-keep-route-without-a-transition",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-keep-route-without-a-transition.log",
+      "sha256": "f51fea036360992b80da4a427bfb81e8ac498c2b198f37838a989c0f93561239",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-keep-takes-the-edge-signature",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-keep-takes-the-edge-signature.log",
+      "sha256": "23b3508ae9312abecd716c7c1d9b7019c1848d2781bc35c809768a4bf844b221",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-keep-skips-the-challenge",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-keep-skips-the-challenge.log",
+      "sha256": "8528c3b1d627a042b2a8ad9bdef6ca37ffa396502686a03f472895ca83c5029e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-keep-applies-any-settled-choice",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-keep-applies-any-settled-choice.log",
+      "sha256": "cbb63e6deb5bf2a2860d5ec12e7df77870086019d92635414e55ead18975cda5",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-keep-takes-any-enrolled-credential",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-keep-takes-any-enrolled-credential.log",
+      "sha256": "1530d23dd34eb12925a6bae20b7909059a5e269b5395085a08e68e719c34cf90",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-pending-hides-an-answered-keep",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-pending-hides-an-answered-keep.log",
+      "sha256": "f38a93fdd79581bdbb6f41a24bd6b6181a5262535993ee31cb70daa92f2f6c29",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space319-member-under-the-groups-current-request",
+      "receipt": "remaining-7bc0be301/validation-teeth/space319-member-under-the-groups-current-request.log",
+      "sha256": "932dba81aaef2b8ce1dfbc94b3d751cff82b23692315e81af3e0d4c1cdc818a4",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 319
+    },
+    {
+      "name": "space347-ignored-left-out-of-case-3",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-ignored-left-out-of-case-3.log",
+      "sha256": "c2ff61e7f25783261048bdc0fab4e6a1c9633e64b365a59598567d8884272f2d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-beneath-worktrees-only",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-beneath-worktrees-only.log",
+      "sha256": "b743f1e45c5ad8d788c66eec8c832dee5347bdf3662eef090712aaa72245d736",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-logs-left-out",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-logs-left-out.log",
+      "sha256": "730d81f1f759b4f365b54d1efc2f2d45f3c9cb8b09620a052427fc4a99ce705f",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-remote-ref-at-its-word",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-remote-ref-at-its-word.log",
+      "sha256": "c75be7e49ceac2b036e55c07217b401b3636975014980ec96a97868f2bf6084d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-clone-by-folder-remover-alone",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-clone-by-folder-remover-alone.log",
+      "sha256": "7fe2ff2d52e0f7fe77c4ac8c16e9b0a615da42828ffd2355c1335cbd7ba2d772",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-worker-clone-without-snapshot",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-worker-clone-without-snapshot.log",
+      "sha256": "333cb133f733534d12c6191eda1343b47d3b64d0a88a2067a535c7a8a891b8dd",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-delete-without-comparison",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-delete-without-comparison.log",
+      "sha256": "82da2a39625f21231b1de1e4e565d534d195d1aa8b66ff5978183861f2302dbe",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-left-under-marked-name",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-left-under-marked-name.log",
+      "sha256": "31b508965f29c20c7ab9f5cc575eeaadc862fafb30362414ed9cc7ae7dda9aab",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-measured-digest-used",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-measured-digest-used.log",
+      "sha256": "8480004f44af41a1a07173e22de712d4213c99c8f8ccc3c92b85377ff13e03c6",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-beneath-the-item-only",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-beneath-the-item-only.log",
+      "sha256": "bdf8080fd233d02be065dcba574f37a17c08b7fb08462cc91d140fb0d7ce10ca",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-formless-gets-clone-row",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-formless-gets-clone-row.log",
+      "sha256": "177fe085aeff7eca240928068e238bfbd6f76e41ca23688f0f23671daac25e79",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-trunk-is-head",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-trunk-is-head.log",
+      "sha256": "bca7cad748d4a8e744d29695f3e38f9498487f5dfe02ff03088eb39180a4711f",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-table-1-judged-by-form",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-table-1-judged-by-form.log",
+      "sha256": "98d1f7de1864e25736511d16b2d1fe9a5165ba9e84021a5938ed8a7316e21e17",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-table-1-snapshot-by-form",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-table-1-snapshot-by-form.log",
+      "sha256": "5cb99280bd53e40371beaf3ae00fb0c28f590b4fde3571dffac90cb58100a222",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-table-1-compared-by-form",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-table-1-compared-by-form.log",
+      "sha256": "e7dd90bcb98b1bd08ed9835bac29d44da893febb86fde6170b4fce13403ae5f0",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-unlistable-opened-everywhere",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-unlistable-opened-everywhere.log",
+      "sha256": "2ec1d023218f833026a7c47426693f9d4a84a10ecb253e5a2021cbdf20b2cf43",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-present-taken-for-reachable",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-present-taken-for-reachable.log",
+      "sha256": "c5d4fdf3e917bcaa85f67f07f075c27d77e42065763f9f3802da90e536a21639",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-table-2-not-whole",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-table-2-not-whole.log",
+      "sha256": "607bc12f89afe5c5cee7e53b514f7032f6620e2ae5b5a0651d9011d993efa3b3",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-batch-clone-never-removed",
+      "receipt": "remaining-a50245fb8/validation-teeth/space347-batch-clone-never-removed.log",
+      "sha256": "4b7b95342db17626955f03a62edab64cfccacce98e0962794bef6613e16a447d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-own-look-on-worktrees",
+      "receipt": "remaining-7bc0be301/validation-teeth/space347-own-look-on-worktrees.log",
+      "sha256": "8b09b24eeddcd6d352d4eadf094bd617a4728b28777ca7c6919d98b3311e508a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space347-clone-with-files-raises-no-request",
+      "receipt": "remaining-a50245fb8/validation-teeth/space347-clone-with-files-raises-no-request.log",
+      "sha256": "730a8db719d32ec6455f83c73ff165cc41ded4db262e778212e7c32c70045aaa",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 347
+    },
+    {
+      "name": "space324-batch-direct-delete",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-batch-direct-delete.log",
+      "sha256": "d9dd003e1577a5de999976f3115852353521f5767f95710c6429ffb44d7c2ab4",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-launcher-direct-delete",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-launcher-direct-delete.log",
+      "sha256": "bef348eb956e6c18f65c8d4913bf2567455868e13fa9f03a476a66fb53b5855e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-stale-pass-without-installation",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-stale-pass-without-installation.log",
+      "sha256": "3dcb3bc428819d592bfa8bc93ae553b7789f4b7eafa597968eebbcac13b98d21",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-requires-ledger-outside-run",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-requires-ledger-outside-run.log",
+      "sha256": "9b6df9dd34bad62dc0bdf27c36607192c35c3f11c232183cc395aaa6f8209cce",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-failed-keep-still-deletes",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-failed-keep-still-deletes.log",
+      "sha256": "0d514f5f6b81cd35e8add9aad30a9815caaa89d5ed98aa530fafcddc14cc25b1",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-nested-repository-deleted",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-nested-repository-deleted.log",
+      "sha256": "9e82084f86baf4473bff4737605cf7f4eba2a32a1436ec91d8405c58c564a161",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-declaration-skipped",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-declaration-skipped.log",
+      "sha256": "7938db29f5abb8f10cf67ae46a4015f193386904246c2e6f3f3073a48017287d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-discard-event-dropped",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-discard-event-dropped.log",
+      "sha256": "e0efd4399a02b4c2d7ed5a154fcfee79a6ff91c5a4a638e8c7ae678007a67550",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-discard-deferrals-dropped",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-discard-deferrals-dropped.log",
+      "sha256": "da35c2d75fdfa66108cdd356ac8c682a895ece01a91f38062a85de3e2a2fdff3",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-request-deferrals-dropped",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-request-deferrals-dropped.log",
+      "sha256": "04f2afb3f31cb0a3a33b2fa12cdb47a45d1b2e92957ebeee8e47088b1a8ce895",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-request-before-discard-landed",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-request-before-discard-landed.log",
+      "sha256": "496604ab46188910efcdd99ec0df91f671cd616944a9539217f47515d877cb14",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-request-before-discard-stopped",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-request-before-discard-stopped.log",
+      "sha256": "90f9b78f233f1d45034297e7fb8b1effe9de9a915dc5347bb7b8a9e50ce8f20f",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-request-before-discard-reland-failed",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-request-before-discard-reland-failed.log",
+      "sha256": "b0a81a2e14826f58e5d9c349963a1bedff6f713369b70e04420aaec8fedc11d2",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-request-before-discard-refused",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-request-before-discard-refused.log",
+      "sha256": "222e58599a005bb8a9870ff8503fb4b7a17acb937f9e5756c3b5fea6914d4067",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-foreign-run-parent",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-foreign-run-parent.log",
+      "sha256": "33b60126402da343fb83dec7f85af5b41e3e0bbe85383d5940ad2ac7ece9c206",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-observation-as-scratch",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-observation-as-scratch.log",
+      "sha256": "80d730f2ccf059b3b52ae7cb38a95a8287d46af760cf209b43ab908ad9362a37",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-ledger-drops-ticket-end",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-ledger-drops-ticket-end.log",
+      "sha256": "b20c3e3409e92b181ca1e43e60b712b0d3425d8a9d69dfcc9fc599ea636d4907",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-declare-end-option",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-declare-end-option.log",
+      "sha256": "2d1e4f9368e6107b1c3fbc56bf685ab1caa8807a2474a1cc156d3d32a1120f04",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-reassembly-drops-deferrals",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-reassembly-drops-deferrals.log",
+      "sha256": "436f2b35c055697750f43266be599f553150cf772c05d11415598fd7fc8c111c",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space324-discard-drops-prior-outcomes",
+      "receipt": "remaining-7bc0be301/validation-teeth/space324-discard-drops-prior-outcomes.log",
+      "sha256": "dd796eac9f5eed5ecae1534a3db23d17b5f3f411866ba9bc30842ab823c91243",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 324
+    },
+    {
+      "name": "space323-waits-for-interval",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-waits-for-interval.log",
+      "sha256": "a4f43bb534b8e1c2264c8a82a271c104b8c4bf6d33fb2d737c8a13b0241fb65f",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-service-computes-containment",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-service-computes-containment.log",
+      "sha256": "346c5e64a3ab53e49ee10f81de1cb925ff029d7a8a7efcf635a83f4020e5ecb6",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-consumption-not-recorded",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-consumption-not-recorded.log",
+      "sha256": "2590d68ee9d5e164fb0b2541c5bb6d4ebff579cc073cc3d35556ea53d29d24f5",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-no-project-sessions-skipped",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-no-project-sessions-skipped.log",
+      "sha256": "0e377f414e5f13007a63be2f9168b287416049d5971df4b47556ae5aa77ca921",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-keeper-skipped",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-keeper-skipped.log",
+      "sha256": "514191982bbff804efb663da0936487dacaf45c1767ad7bda8c5e9bfdfaaf29d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-session-repository-deleted",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-session-repository-deleted.log",
+      "sha256": "e15f953554c142a518080987f3bbb4b8f6ae154ac031d89fc88daecad12026c7",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-service-descriptors-kept",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-service-descriptors-kept.log",
+      "sha256": "88c6b348328194509ceac2900ec1b42b27872bee0bcdb7c0a421ab6b6dd48d61",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-service-git-by-another-path",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-service-git-by-another-path.log",
+      "sha256": "9c0651269725cbcc43dfbdd00eef972970814c0d6d6f3c9b00292370c14ab99a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-newest-first",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-newest-first.log",
+      "sha256": "75225bd324df6f4cba97b8cf353629c5ff09682ca42f16ee6fe049312cb2505d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-no-worker-lock",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-no-worker-lock.log",
+      "sha256": "676d31a0e57f9e3cae8bdb17424ea428c3a792eb2b73e69897134446ed65b63a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-no-read-under-lock",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-no-read-under-lock.log",
+      "sha256": "4ee3b2687d47c6c8ca2a6da97d2e7ad8557918f3c00d8179365a83833a59c993",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-live-session-end-dropped",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-live-session-end-dropped.log",
+      "sha256": "470d2bcfc7b15d717fc8996f6b59ae581cb1fbb66901d10c06654eb22ef5fe03",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-client-exit-not-watched",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-client-exit-not-watched.log",
+      "sha256": "46a3e7a4510a3614be8be8ef0e2254bd26d30603709af2f97d6d71072e4aa72a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-uncollected-client-alive",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-uncollected-client-alive.log",
+      "sha256": "91fc321fc32b832ec5d03dfd1bf6e371fd17a6bfb56c31c6eccdc7401774808a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-channel-descriptor-kept",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-channel-descriptor-kept.log",
+      "sha256": "f1b5053f4023affd0b3d7be29db426bef171ac19258a693fc18776a6ad438033",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space323-api-descriptor-kept",
+      "receipt": "remaining-a50245fb8/validation-teeth/space323-api-descriptor-kept.log",
+      "sha256": "beb660c2b1115cce74c671eced8be6efff7a144a51e5e1aba376a459aa32bd1c",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 323
+    },
+    {
+      "name": "space302-declare-after-creation",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-declare-after-creation.log",
+      "sha256": "9b0adbf088640c3f68aa631f8b902d73e89ed9312c547acd8559e79f09ca11bb",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-batch-is-scratch",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-batch-is-scratch.log",
+      "sha256": "172a679ddf69e2b973974bc09a155847b785728f55fe36c61fe1630c6fc26acc",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-sandbox-worktree-only",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-sandbox-worktree-only.log",
+      "sha256": "314676d36860989eb20485727d43b172bcf921c8730e9c112ea16893df0d31d9",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-create-on-refused-declare",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-create-on-refused-declare.log",
+      "sha256": "175a9856ce02424a96c51c68602791f1cfb6eddaa564dc5acc87e9d83eb3fdd0",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-no-provisioned-call",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-no-provisioned-call.log",
+      "sha256": "862bc804739bcd86285aa46e53c9db4c6ee697d8fd8f19cbe224887bfae2df0d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-unknown-form-accepted",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-unknown-form-accepted.log",
+      "sha256": "ce8fb254ab54e916b62b6cc1e57f32c372396f1a096595d65d95a49eda14af2e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-partial-creation-gone",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-partial-creation-gone.log",
+      "sha256": "3fc7663182699e7c46d759003788dd915bcf5fe11371507ad74e59dc3de677db",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-receipts-after-spawn",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-receipts-after-spawn.log",
+      "sha256": "735db99cb7148f0890d01a2146d6d4d023358d85d990c299f92550b3833d883c",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-failed-clone-without-save",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-failed-clone-without-save.log",
+      "sha256": "08bcce7b7391f294be4fba1a0a7984526a598e678be54c53140896a3b63bb6bf",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-agent-form-refused",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-agent-form-refused.log",
+      "sha256": "19d12f9041ade292e3beae04dd1d0475a468ec0937be19c898c269ebc46a2daa",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-worktree-source-not-resolved",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-worktree-source-not-resolved.log",
+      "sha256": "fac8eb76d74d03954e42a5b0af3ca01379bbb98f61fb2a4b6b99fd5f09f346f5",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space302-any-source-accepted",
+      "receipt": "remaining-7bc0be301/validation-teeth/space302-any-source-accepted.log",
+      "sha256": "e71ad5703be487385e4b262c66e148491a46fb30b92d5ce31bb7a6de9906e602",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 302
+    },
+    {
+      "name": "space316-ignore-floor",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-ignore-floor.log",
+      "sha256": "712e111bdb03f40c66e4fe4be042f63b5a82b113c0ba5cc64cf590f90c91da0b",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-admission-at-acceptance",
+      "receipt": "remaining-a50245fb8/validation-teeth/space316-admission-at-acceptance.log",
+      "sha256": "4c93b1c0c82b1fc5f10eed42284d07413cee46fddafe5327048549ab0704a11e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-block-report",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-block-report.log",
+      "sha256": "112a572e9a966c20d74e33d34be6dc3f01eafd6e86cfc1f3bb8e8c5adaac0044",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-measure-after-one",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-measure-after-one.log",
+      "sha256": "24f884b17d4e5095c6dae299a5083033000a03b7ccf62c30c876a7c24d994895",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-wait-is-refused",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-wait-is-refused.log",
+      "sha256": "3d48a9478ef33cbe3d81e6a7d7b26d510f5f188363479ec19d6f95088c5fdab5",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-first-five",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-first-five.log",
+      "sha256": "60029bd08e150e1a4b4060d93ddd43372f8923a1ae6e91ac9298e921b3d000d4",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-declared-ignored",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-declared-ignored.log",
+      "sha256": "41b6d2e8b788a794a325a3e60ab21a62efff87d432f9989563df48c51b40f90a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-accept-released",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-accept-released.log",
+      "sha256": "635b3692a0e31ce4a3804a13401e0c39055685cbb1d1f1c2a445ccb57f8a6d3d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-digest-omits-space",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-digest-omits-space.log",
+      "sha256": "8b05c3abc2749846ce635783e387529d39bd865ef51d881bff51811653fab312",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-ignore-others",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-ignore-others.log",
+      "sha256": "7fcd74e832357d86397e19cb67732cb156f4ce8a24c7577a429c3ac9d57b864b",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-no-measurement-at-end",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-no-measurement-at-end.log",
+      "sha256": "d58277987c83b11bbcb10ea93a9e14abb77a8f1d982c238978cb6afb8c006718",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-measure-after-four",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-measure-after-four.log",
+      "sha256": "f1f2d176fe5b4c6a0478ea376804f4a956542baf0cd08e44cba8971fb671a9a4",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-legacy-history-ignored",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-legacy-history-ignored.log",
+      "sha256": "20ee1fe85b0a19dd19874782375259ea0983e1c0490a10517a6f3c36c5b2efaf",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-start-keeps-orphan-holds",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-start-keeps-orphan-holds.log",
+      "sha256": "9f35ad2b816dcc123222fcb313d06b3cff6dae5cf5c1d0fffef77ab4883fd395",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-recover-releases-bound",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-recover-releases-bound.log",
+      "sha256": "b60df901029fd4e9735b5510e30bff2bb740dd93f5a760b86e8d446a9fb5cbf9",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-metrics-unexposed",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-metrics-unexposed.log",
+      "sha256": "df3a188d332188548857fc2e40c8658eb337237badcfa1a07451011e8d5d914e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-lost-completion-wake",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-lost-completion-wake.log",
+      "sha256": "f95e779b2b55bfd11f787cb234000c55dbedd7aa715ea0227f0f1d423064a8b5",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-release-winning-promise",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-release-winning-promise.log",
+      "sha256": "2c8842e9a26f4b76c7862af01c541803c2a4e77f7bb898eb666e47eeec8b1f22",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space316-no-account-loses-hold",
+      "receipt": "remaining-7bc0be301/validation-teeth/space316-no-account-loses-hold.log",
+      "sha256": "172af1f6a83255dff8e4ad9118f7423da098ab5f3d8d846b24a4379f0c0cccbe",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 316
+    },
+    {
+      "name": "space317-charge-attempt",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-charge-attempt.log",
+      "sha256": "e4ef75de82350a3c2dccf4d9d723c4ceda1b2985f52cc5c1ade026a41020a6e2",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-text-alone",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-text-alone.log",
+      "sha256": "4c1cc86aa705c6c9d9a37af8f9b928a4f7e94e2e882804fba89bb19c721c19cd",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-remove-worktree",
+      "receipt": "remaining-a50245fb8/validation-teeth/space317-remove-worktree.log",
+      "sha256": "5ac248103f918e95d41d6be3e67fb2699cc29a41a3e4bec7a1b7c6a4459ef3b3",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-third-attempt",
+      "receipt": "remaining-a50245fb8/validation-teeth/space317-third-attempt.log",
+      "sha256": "ed6d082b2993ce39e5a3a31054675e4a7320d5e28433b8eea597e70eb9afcece",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-omit-next-brief",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-omit-next-brief.log",
+      "sha256": "716693491c9963ad2b0836abfd0cf077f4df84e460b16b0e7dae6c9897083c90",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-write-verdict",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-write-verdict.log",
+      "sha256": "4d792077299310004c204b5c1ccc6775acab914800b82d862ad963da96d177f1",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-no-owner-request",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-no-owner-request.log",
+      "sha256": "721af41e7744f358b64f8f3ecc9992df1084be5c28a9c2a4d58ace5c30c45bd7",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-unwired-receiver",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-unwired-receiver.log",
+      "sha256": "bdfd60a40e236ebee143bf735b4d84e14a924a468dfafb77761758bdfbe142fa",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-reissue-refunded-attempt",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-reissue-refunded-attempt.log",
+      "sha256": "2771ddfcec66ee8bd1caa83990d6144a573b0883d9d04c5ac13f39a7a9e8d1bf",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-andon-refuses-dispatch",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-andon-refuses-dispatch.log",
+      "sha256": "64466ab44abed5ff12cc03abc69d393a6a31c4939ceb564cadf43f35e84e33b7",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-andon-never-cleared",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-andon-never-cleared.log",
+      "sha256": "ffe9d476c392e97a582982e5d89f9c96a4069ede830869b94e3fe980b6b785d5",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-brief-any-end",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-brief-any-end.log",
+      "sha256": "a0cb54470157a53b50a30ae780848ab64a8ac251f5593e27b11cc481641230de",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-brief-dead-item",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-brief-dead-item.log",
+      "sha256": "9e364aabd924bf7e99907c45c8fdf50006941b8ebff8df15b662638494d0278c",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-slots-unbounded",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-slots-unbounded.log",
+      "sha256": "19b4fc0e54d43e5a2031350267b36d61dd62e80c12f53f9a9da530d71343812e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-unconfirmed-count-carries",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-unconfirmed-count-carries.log",
+      "sha256": "669641b4591a87009384f5dcdfadcc53f5f7e07728f8b80970b5cc460a236a0a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space317-failed-andon-notice-kept",
+      "receipt": "remaining-7bc0be301/validation-teeth/space317-failed-andon-notice-kept.log",
+      "sha256": "7ede93b55fa0cccdf92d667799e21d23905766bb8c1fa1f802562a249b213585",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 317
+    },
+    {
+      "name": "space334-retry-every-offer",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-retry-every-offer.log",
+      "sha256": "454f487a3e978b6ac4d3fe425dd31a1de4a6dc806b43efc9433b9f5cd26ee572",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-read-every-offer",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-read-every-offer.log",
+      "sha256": "98cc04d0b7a5dfd2b966e98cdb30b16f3a65ae28455062f1af32c0c89a5710ae",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-mark-without-wake",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-mark-without-wake.log",
+      "sha256": "8b3acaa964b48965e40cbb442b619ffd8bcb1c29f6397d342571ee6610b7390f",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-removal-without-mark",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-removal-without-mark.log",
+      "sha256": "5d76ecc7382de6d04d5ff63ee9014110147b2fb3c99e18b60ab457e89ae5fedb",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-release-without-mark",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-release-without-mark.log",
+      "sha256": "e6fe21dc8b061784bbdfffc2e9d2ab54d84b8a4e2b6b800acc8dd93b3413f2ab",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-reconcile-without-mark",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-reconcile-without-mark.log",
+      "sha256": "dc2202aaa1cf588587b55006754ea91f0ee775cb34e5822b40898b54d0419d33",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-never-clear-mark",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-never-clear-mark.log",
+      "sha256": "e34adb99cbf820b64e9a9e10619e54f2efd2abc02c48df8c4c04f569ab6b5924",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-retry-without-ending-action",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-retry-without-ending-action.log",
+      "sha256": "72abf13cfeedda8acadb20a2e631f6789157c157bea5eb2db085975dd0c1c689",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-worker-without-space-pass",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-worker-without-space-pass.log",
+      "sha256": "cf9afa47bcefb770afd94258f499e75c8cd4891d93a605903758a7c798498b14",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-clear-newer-mark",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-clear-newer-mark.log",
+      "sha256": "8e1f3eab8a37e114a24a1109be0feee364ca8e4164fd1196d3bd42b9934144f7",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-freeing-without-resend",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-freeing-without-resend.log",
+      "sha256": "ff0e8e95afd684b0b35138f73be833bfa308d6b39f9d79b3d73439a7b0a8c572",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-resend-when-own-version-moved",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-resend-when-own-version-moved.log",
+      "sha256": "e13629ac90a9cb447f154623f9a8605cc11e2985a3f9b2d9b3682b680b59462a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-resend-unbounded",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-resend-unbounded.log",
+      "sha256": "0fbfc0010c57d1ca0d5a3a2750c83ef1398c1bffe598601f97c4c744699585da",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-signal-refusal-leaves-waiting",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-signal-refusal-leaves-waiting.log",
+      "sha256": "2f02f1987cfc609658d7018ca83d283b955c9365743c879f0f0f3ad5b04b8f1d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-wake-for-released-mark",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-wake-for-released-mark.log",
+      "sha256": "b008d052755623538c9826db087dc5585fcb72a090e83ff151a9ea75f382cc15",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-cache-hides-freed",
+      "receipt": "remaining-a50245fb8/validation-teeth/space334-cache-hides-freed.log",
+      "sha256": "8c3b0b4e3fd5e4e56032072d59490b5409032314de3599d168a48ebf3c620525",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-failed-judgment-kept",
+      "receipt": "remaining-a50245fb8/validation-teeth/space334-failed-judgment-kept.log",
+      "sha256": "ced763ed5cf876c83804682dba147c868dff20515afaefbc77eeff8133437d40",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-requests-resubmit-every-pass",
+      "receipt": "remaining-a50245fb8/validation-teeth/space334-requests-resubmit-every-pass.log",
+      "sha256": "34de21668356f28301026fbabfd466d0027dadd2cfd6672ecf8d2174052d21cd",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space334-waiting-release-marks",
+      "receipt": "remaining-7bc0be301/validation-teeth/space334-waiting-release-marks.log",
+      "sha256": "1dc3788839ab815059735fdbaf71862f5bd0c808d948d3d7bb17aa49c323d941",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 334
+    },
+    {
+      "name": "space318-request-every-event",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-request-every-event.log",
+      "sha256": "e26c616ceccdcf36bbbd523ae754fefea598aa8b0a3a2cf0a52653ecef0693eb",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-commit-at-deferral",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-commit-at-deferral.log",
+      "sha256": "9e54d9d8c8de6c61be57223f40063527ff5fba133f542e8be42783c1d01176b1",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-save-without-comparison",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-save-without-comparison.log",
+      "sha256": "1bf0aaf968bd84cf9088f350aa26f249ef1c3192c06a8b11d7d8ce340d6f4920",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-save-at-original-path",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-save-at-original-path.log",
+      "sha256": "9a8d15e366b694953e07a01546796dda080ebff32a2914eb24b81df46a547d0e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-discard-at-original-path",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-discard-at-original-path.log",
+      "sha256": "a3bae477607d50ea5b3d39b8008fec71cdd574db50e25518cf2d2fd435c38908",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-discard-without-list",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-discard-without-list.log",
+      "sha256": "3924c625e7c8b7a5ce9673778577992c70ab9cd03c5f081cc5b71b88f168166d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-terms-without-commits",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-terms-without-commits.log",
+      "sha256": "eed0a9502fd457813677876f8d1621a756c0a75f99bca2d2a590f5772be6781f",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-clean-tree-is-a-failed-snapshot",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-clean-tree-is-a-failed-snapshot.log",
+      "sha256": "1b7b7690bb0a3684c7568b5f0ff2b04a23cee1c8b2d459639fafe1499d3a4ace",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-save-invents-a-commit",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-save-invents-a-commit.log",
+      "sha256": "355b208b6cc79e2daaad0525151046b227e4718fdd4398c014fd9790423dc24c",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-discard-without-commit-comparison",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-discard-without-commit-comparison.log",
+      "sha256": "72058dd8a5c6010070aded1cf56f4be6f6157cbe2e2f486de16b930921728a53",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-keep-left-deferred",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-keep-left-deferred.log",
+      "sha256": "1b93cbeb9fd116127bfaf9d4ba820d0e235d68d6303cc31c4ec2b2ab948fc56c",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-keep-without-mark",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-keep-without-mark.log",
+      "sha256": "7c6c7423ef7e6575a29ee67bb5388e6e6ab57d930f316aefd532b39a2a2622ac",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-keep-two-commands",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-keep-two-commands.log",
+      "sha256": "f14447617e1761f213b4a87a93290bb6abb4671dc88b93e12755f368905088bf",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-keep-without-owner-signature",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-keep-without-owner-signature.log",
+      "sha256": "0bd7271b374bdb4c2a691ea92cadfdf88cf450457d1a2e789f3a88e36514572a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-lost-worker-wakeup",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-lost-worker-wakeup.log",
+      "sha256": "4160d4fe9e496dff2a03354b41164c40c4d12d0c2c6b7dbd5014a8d17f2d7499",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-no-channel-stops-the-task",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-no-channel-stops-the-task.log",
+      "sha256": "dafd6075fb34c5a1852111441733bd2484b23d8d322c3f7bbcbcbb3934eb28b7",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-commit-compared-only-when-commits-were-shown",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-commit-compared-only-when-commits-were-shown.log",
+      "sha256": "509cab8f9eab9881ba3f48ea4a6c912e9cd1eb628b4f40cef50e334e8964d9d0",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-terms-compared-before-the-snapshot",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-terms-compared-before-the-snapshot.log",
+      "sha256": "558622840570d83c590007eada3adefafd5e8df18b924cbcd041f7043b8e94ff",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-save-onto-a-held-branch",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-save-onto-a-held-branch.log",
+      "sha256": "247d49743870b7235fd7c8337f69375e1bd9200dfb0b153114a5815024670770",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-second-worktree-takes-the-first-name",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-second-worktree-takes-the-first-name.log",
+      "sha256": "22baeb859655b0b29a893c88e8b611c4f91e7e1d52fba23c58245bda151fb42d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-force-beyond-the-discard",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-force-beyond-the-discard.log",
+      "sha256": "0ec073634618de7cb73a6cb9a2e901df93d3539525025f106e3557d0e5c1de58",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space318-a-second-force-option",
+      "receipt": "remaining-7bc0be301/validation-teeth/space318-a-second-force-option.log",
+      "sha256": "9662083edbc72ce0f68c20e41a25717fa31a1a06282b849414e425c10503821a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 318
+    },
+    {
+      "name": "space327-bare-choices",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-bare-choices.log",
+      "sha256": "0a16502233cba00a114a41f331c70518453153486a4b87fdd96de5ece48d4c73",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-empty-file-list",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-empty-file-list.log",
+      "sha256": "8c1b55851a4407955daa66d3e1e399fba80c3fec35d71788a8e325198d548a02",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-ruling-instead-of-choice",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-ruling-instead-of-choice.log",
+      "sha256": "3109c662b61bebfdb8c7881597226bcf1b8979210e76fd0d5f1b7f326d83dc5c",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-expand-rulings",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-expand-rulings.log",
+      "sha256": "71f922bb5d9355665a9cb99094a444752e07d6dc936d7834f93fdfe012ff7258",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-hide-request-list",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-hide-request-list.log",
+      "sha256": "5180a1bf4456e3186f70f83c55d6bf07a7eb0f76148fbc6198b4e2caedc84e97",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-write-skips-validator",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-write-skips-validator.log",
+      "sha256": "d6368a78ea4dce848a84acdaa3b6e1d4f327f33442e2df1b02985de8b8e4ce63",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-frames-unmatched",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-frames-unmatched.log",
+      "sha256": "174407609e0c86ac0aaef146e0c75258a2f1f5a37a23166ff1cfb0bd8be76db7",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-presents-unmatched",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-presents-unmatched.log",
+      "sha256": "721bf4687ed83a9a75a8f8b0cfe4932fef9654a5cf80863a65be53ece298cc89",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-no-detached-branch",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-no-detached-branch.log",
+      "sha256": "45967356c1d445dab7082881be68652e91581ea769a520970c5c9a4e547879bf",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-target-another-item",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-target-another-item.log",
+      "sha256": "64aeba6fcecd7a2d243e95bfa7322f2e3af5c7a0e1e1beef9171f4ead3130df4",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-files-only",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-files-only.log",
+      "sha256": "ff71b155a3ab150da40f57e999212c53cd88c617622a10f3ed34f3d917db6f28",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-commits-not-said-to-stay",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-commits-not-said-to-stay.log",
+      "sha256": "88cb60e306b1a17aa469ae327f51ae197d4041fc68d1e5402894e68411200e0d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-commit-tips-unlisted",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-commit-tips-unlisted.log",
+      "sha256": "f8b5b987b1d0639c31d8366bf80fa46420380ba5e399fd0aed8dd3a14ffd04d8",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-detached-commits-no-branch",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-detached-commits-no-branch.log",
+      "sha256": "a31a9ce91f009caa0a411cf46dd2af03f1bef15c2f2842b7a5e938c5564d45c6",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-no-save-explanation",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-no-save-explanation.log",
+      "sha256": "ab11cd7abebe438504614eff7892ede55dfbe37fb7a5d5f81f0fd617019b2e16",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space327-wrong-restore",
+      "receipt": "remaining-7bc0be301/validation-teeth/space327-wrong-restore.log",
+      "sha256": "982cea9121e0725599014b59ecc62ed4c937b702246e66c00bdca391f0d2e02f",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 327
+    },
+    {
+      "name": "space340-one-request-per-worktree",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-one-request-per-worktree.log",
+      "sha256": "bd1aa411b69e83eee633cfb5ae05f5e9d40e7f6f5fba8e3e29390e1fa092ee2b",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-one-day-for-every-deferral",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-one-day-for-every-deferral.log",
+      "sha256": "df3bb796889aedecfe3a3dffc6b7197a12fba211adba83fdba1753a4093cc762",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-join-without-a-new-version",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-join-without-a-new-version.log",
+      "sha256": "b8208a323226a1ff604de0b3d0edf9139517840af283f7f07b3fb87b13a0a830",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-pick-reaches-an-unseen-member",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-pick-reaches-an-unseen-member.log",
+      "sha256": "0bb1912bc8f881ea854e5cca294be17cbc1ba9cf3e41b2246d0c8cfd6e69e3cd",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-discard-without-the-comparison-per-worktree",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-discard-without-the-comparison-per-worktree.log",
+      "sha256": "8d00caf1ffb7fb956d5a0b02cfbf93da9fe884d3ba87662f0d800d5459c5f25b",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-pick-reaches-one-member",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-pick-reaches-one-member.log",
+      "sha256": "97ffba6844d5cd1b9ab83ebca5f5dda6681b16272aad044ff8befb13349b528f",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-answered-group-takes-a-join",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-answered-group-takes-a-join.log",
+      "sha256": "bf7193a18b5b33fa419386327c564f1c2540b0afa2b602bc8176bf0c26369f2f",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-scratch-removal-inside-a-disposition",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-scratch-removal-inside-a-disposition.log",
+      "sha256": "0f4a3d4c9165d91ca2a320905c7ded823988d86241fb3d46e881cee11370e834",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-every-run-worktree-is-a-review-worktree",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-every-run-worktree-is-a-review-worktree.log",
+      "sha256": "e62824ed9b8cbb2e39aee1d6d88c711bea09b04a39d56c590252a315a7c54685",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-group-target-without-its-members",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-group-target-without-its-members.log",
+      "sha256": "0c13d4134f2c9df4f6ee949f73494f62b452c1e962c759b88f901695c8c16fda",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-join-without-the-read-in-the-write",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-join-without-the-read-in-the-write.log",
+      "sha256": "5a334a39e90c2272da67050029c0018a21275b69c4455bbeae43dce3d6db6f5d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-ledger-takes-a-target-short-of-the-listed-items",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-ledger-takes-a-target-short-of-the-listed-items.log",
+      "sha256": "d44cb4419ffbdb119387afd03b76eb9c043072cf0ce6d6801fc3490d064b7b95",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space340-answered-read-scans-every-request",
+      "receipt": "remaining-7bc0be301/validation-teeth/space340-answered-read-scans-every-request.log",
+      "sha256": "1f9d511c51771889c3610607ca33c01122bb8cb6f271d4ba456215cb534b9050",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 340
+    },
+    {
+      "name": "space342-member-pick-reaches-the-whole-group",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-member-pick-reaches-the-whole-group.log",
+      "sha256": "e88e11d5a8db83fbd1c5a759ddacf63eac3f4604f60cdabc31c492e6a27deb7e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-every-member-pick-whatever-the-size",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-every-member-pick-whatever-the-size.log",
+      "sha256": "2d17785c69df1e107f33adef1dec7b1f0bc298ed369c427f5414d902a919d8aa",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-reuse-the-day-key",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-reuse-the-day-key.log",
+      "sha256": "74d9dd239baaa266bde99466832430c228334657a828d68e339ff3fa073a2b50",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-ledger-takes-a-pick-for-another-member",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-ledger-takes-a-pick-for-another-member.log",
+      "sha256": "5a0bd9d9524e864c60f3593178aa657e595b5d8f6739e043dc0221ea5e0f4a79",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-signal-carries-a-pick-for-another-member",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-signal-carries-a-pick-for-another-member.log",
+      "sha256": "069d28fab27974a79ed999c45f412c76b2ca060fad90691d7522fa68172fb20b",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-remover-takes-a-pick-for-another-member",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-remover-takes-a-pick-for-another-member.log",
+      "sha256": "26990c780858b70557b7436df59daec61375659f03b7bc952cbec7c92f202fd6",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-one-worktree-request-takes-a-member-pick",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-one-worktree-request-takes-a-member-pick.log",
+      "sha256": "76c2d7f96bc0c4cba0dd3df531467ed3503e90bb5d36e7ab6b976cd5e099a02e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-authority-keeps-by-a-member-pick",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-authority-keeps-by-a-member-pick.log",
+      "sha256": "d30957d01fe0f5f1218e7a2db19ec010ed42066a832b62b01f04d33ab080c6e5",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-next-request-while-the-pick-can-be-applied",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-next-request-while-the-pick-can-be-applied.log",
+      "sha256": "8cf45236b7f8c81b7f77bf1849f8de8f30ba512304300daebadc464d74cb1dca",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-no-next-request-when-the-named-member-is-gone",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-no-next-request-when-the-named-member-is-gone.log",
+      "sha256": "bcc17f871c9f647b73c8705c715e7037fe32b1cbf1491ae3d4f2f1e289a1ddf1",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-answered-member-cannot-join-again",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-answered-member-cannot-join-again.log",
+      "sha256": "1b6fad91ba2070bcb0717174111b9b0c59b0a6f8b0aa76dc2129a21413ed118e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-join-in-the-window-opens-a-second-group",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-join-in-the-window-opens-a-second-group.log",
+      "sha256": "cf1648c807dc24db9504e14aa483f076d5d3f9485ee9c40debde509d41dbb1d4",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-keep-waits-for-application",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-keep-waits-for-application.log",
+      "sha256": "15c836e3fce3e0cf647fdc8338d76d1cd7fdb5b22cb1ac116d71caee366c420a",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-pending-keep-loses-its-original-request",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-pending-keep-loses-its-original-request.log",
+      "sha256": "82ff50f3a9c151a198b09ba40394a09ead12a47970776300b965d5a3712183c9",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-keep-text-omits-settlement",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-keep-text-omits-settlement.log",
+      "sha256": "7a93e48ca2237482b0326590ab447c15867909ad83ff6f927ab88c28cc688442",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-departed-member-not-marked-gone",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-departed-member-not-marked-gone.log",
+      "sha256": "70960f6d6c99b875ca19997798fc24f34da16ac207f00b4f250df98db3d74294",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-departed-member-replays-old-request",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-departed-member-replays-old-request.log",
+      "sha256": "c9954c36a2fcbe4757f2ace556f58bc4b1ade4824135d0b821a4b3a7f946330d",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-worktrees-numbered-by-their-place",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-worktrees-numbered-by-their-place.log",
+      "sha256": "2fad3de0f21507174c35dba4cf0a14c9142256db03c4aaafea3e7cdba96501c3",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-members-without-a-pick-not-named",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-members-without-a-pick-not-named.log",
+      "sha256": "5d10363dbf8802b0d7abcb356bda47f03596b5bf372b23cc3bd4bfbfd5669477",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space342-picks-for-any-indexes",
+      "receipt": "remaining-7bc0be301/validation-teeth/space342-picks-for-any-indexes.log",
+      "sha256": "2bf1dfa4134d0e95ade8838d4d0ce4bd556dafb6281d57110e872909cf576b26",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 342
+    },
+    {
+      "name": "space343-discard-without-the-branch",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-discard-without-the-branch.log",
+      "sha256": "177db22f355e8ec0e627e117501aaf9544c6334c4afad9a9fcadc509164ec2ef",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-remove-after-the-failed-branch-write",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-remove-after-the-failed-branch-write.log",
+      "sha256": "cfa2d0e24f74e183ed46f85b3d1d3f5e4c2563b1a3ebd7618f940f5d23edce26",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-agent-repository-goes-with-the-worktree",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-agent-repository-goes-with-the-worktree.log",
+      "sha256": "f80e98285ab8741a9e922e359ee40f2c1b954e700c57d4b8d976a2998be0d647",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-discard-commits-as-save-does",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-discard-commits-as-save-does.log",
+      "sha256": "53059a2c9e2ac40ed692eb95173358c871c46a00aacb0ef0069c3ede2feaca82",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-branch-made-and-not-recorded",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-branch-made-and-not-recorded.log",
+      "sha256": "71f48b237646c79fe1e1b61fb801c25fe34b2089f094a3110792e2557f2bf901",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-branch-for-a-held-commit",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-branch-for-a-held-commit.log",
+      "sha256": "788d55e9662c41c8e2ebd07e93b4cbf347485082d5370f7f9a7e52300820d277",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-ledger-trusts-the-branch",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-ledger-trusts-the-branch.log",
+      "sha256": "da98e7ff7842ce5632ed2d399095dc6f4b0922b18d0c0ce174f9be9eece21802",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-ledger-trusts-the-commit",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-ledger-trusts-the-commit.log",
+      "sha256": "83a4a43ab266e83f3cb0e0659ec6d79cc27254138d741c66c51962dff4c8d109",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-kept-branch-in-the-agent-repository",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-kept-branch-in-the-agent-repository.log",
+      "sha256": "8d34ade9f08421d0b7fbf3992668b6415cc67c5dea64fbe02336c71f09bc7024",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-ledger-records-in-the-agent-repository",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-ledger-records-in-the-agent-repository.log",
+      "sha256": "a11585addff8fc62504089c2e10556e69f83f35ab1e5c2dc9db9a6a6fb970855",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-orphan-branch-counted-a-holder",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-orphan-branch-counted-a-holder.log",
+      "sha256": "9c3d93f6e6d5dfaecdf946c07d55c5987a38d8b26c61c24973ef963b69db549f",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-ledger-accepts-an-attached-worktree",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-ledger-accepts-an-attached-worktree.log",
+      "sha256": "77813f3855207d2cf7dd1ae02eddd11c4d0da3e49714e9e1e45d1fd325e29850",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-kept-branch-written-over-a-branch",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-kept-branch-written-over-a-branch.log",
+      "sha256": "53305452b99d2cb5ed116c80654f3805d3a611a39e098bf7f20931603cfb761e",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-tag-and-remote-ref-counted-holders",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-tag-and-remote-ref-counted-holders.log",
+      "sha256": "e558f3b3de7863a40a0cae9e889f8e8cea9f7960ddce4664b31281bdd178aecc",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-name-of-a-leaving-item-is-free",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-name-of-a-leaving-item-is-free.log",
+      "sha256": "89aebda9ff12605f74efd60c6f3a872887965eddd05d080a5d5f700715267e91",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-left-branch-read-and-not-recorded",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-left-branch-read-and-not-recorded.log",
+      "sha256": "5cc0184a580a2f696ad6e2d99e758f63307280d48d494e87727e9d14cea358c0",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-reconcile-defers-without-recording",
+      "receipt": "remaining-7bc0be301/validation-teeth/space343-reconcile-defers-without-recording.log",
+      "sha256": "da117a483298807cdcf840609bff3ffc1b3f701a60f9119a3b2b785c51be3e76",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-observer-keeps-a-branch",
+      "receipt": "remaining-22bbcf5be/validation-teeth/space343-observer-keeps-a-branch.log",
+      "sha256": "6d28a4d640b851d75d5715d69b77c686ec0fcbc1ff5a74511f88e36b09989a81",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-observer-requests-a-disposition",
+      "receipt": "remaining-22bbcf5be/validation-teeth/space343-observer-requests-a-disposition.log",
+      "sha256": "64e11a1e07c9866795d5dcc1914fe19a989f9004bb253e338e93c7c82c5da592",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    },
+    {
+      "name": "space343-observer-signs-a-disposition",
+      "receipt": "remaining-22bbcf5be/validation-teeth/space343-observer-signs-a-disposition.log",
+      "sha256": "bbe3609a1a045276b5d33700989d030c75c226900fcf7425facaa9beb6711c71",
+      "registered": 1,
+      "executed": 1,
+      "rejected": 1,
+      "finding": 343
+    }
+  ],
+  "browser_cases": [
+    {
+      "status": "passed",
+      "case": "space319-keep-answer-without-the-packet",
+      "killed": [
+        "space319ui/ac5/keep-applied"
+      ],
+      "scope": "single-case diagnostic; proposal-only browser admission",
+      "receipt": "browser-22bbcf5be/validation-browser/space319-keep-answer-without-the-packet.log",
+      "sha256": "077ab98687fb5569b5fbabc4a2349e33873acb2c5b1392791e8665da05a68344"
+    },
+    {
+      "status": "passed",
+      "case": "space319-numeric-cells-lose-to-table-rule",
+      "killed": [
+        "space319ui/ac1/numeric-alignment-1440"
+      ],
+      "scope": "single-case diagnostic; proposal-only browser admission",
+      "receipt": "browser-22bbcf5be/validation-browser/space319-numeric-cells-lose-to-table-rule.log",
+      "sha256": "54246e73d6d03692268af1f56457e3552a89388c2f3e2c6bca09cad5acf38d9f"
+    },
+    {
+      "status": "passed",
+      "case": "space319-poll-on-an-interval",
+      "killed": [
+        "space319ui/ac4/live-no-clock"
+      ],
+      "scope": "single-case diagnostic; proposal-only browser admission",
+      "receipt": "browser-22bbcf5be/validation-browser/space319-poll-on-an-interval.log",
+      "sha256": "f406f600460d8c90ce621aa7872c2bc6d66bf965b05830e0d1fd2b39387bad48"
+    },
+    {
+      "status": "passed",
+      "case": "space319-run-row-without-its-hold",
+      "killed": [
+        "space319ui/ac4/runs-list"
+      ],
+      "scope": "single-case diagnostic; proposal-only browser admission",
+      "receipt": "browser-22bbcf5be/validation-browser/space319-run-row-without-its-hold.log",
+      "sha256": "7dda338368f62051e15c3a4729853a513bba7abef7c5919e861381403748f29b"
+    },
+    {
+      "status": "passed",
+      "case": "space319-sign-keep-sends-nothing",
+      "killed": [
+        "space319ui/ac7/sign-keep"
+      ],
+      "scope": "single-case diagnostic; proposal-only browser admission",
+      "receipt": "browser-22bbcf5be/validation-browser/space319-sign-keep-sends-nothing.log",
+      "sha256": "ff4a73d86d0dbedd3fc528bbe6820fa3b0df1ccaf9a0f8b1abae86ab91c4a997"
+    }
+  ]
+}

@@ -1,0 +1,2445 @@
+{
+  "schema": "space-v1-distinct-assertions/v1",
+  "revision": "22bbcf5be35fce7cf0110eb547b4dbb6966e6994",
+  "historical_receipts_are_not_validation": true,
+  "groups": [
+    {
+      "finding": 316,
+      "source": "proof/VELDO-0316/historical-space-v1/150_veldo_0316_admission.py.txt",
+      "source_sha256": "bf976737895c5b1f956538783f8ed00a0e139ee9b814abc1c80f0c7b2414d23c",
+      "mapping": "proof/VELDO-0316/historical-space-v1/retirement.md",
+      "assertions": [
+        {
+          "old_row": "ac1/floor-boundaries",
+          "line": 185,
+          "label": "str(value)",
+          "assertion": "result['ok'] == (value >= 120)",
+          "disposition": "retained",
+          "evidence": "ac1/boundaries"
+        },
+        {
+          "old_row": "ac1/floor-boundaries",
+          "line": 187,
+          "label": "'numbers ' + str(value)",
+          "assertion": "result.get('reason') == dict(pool='host', need=100, free=value, held=0, floor=20)",
+          "disposition": "retained",
+          "evidence": "ac1/boundaries"
+        },
+        {
+          "old_row": "ac1/other-holds",
+          "line": 196,
+          "label": "'advised counted and used subtracted'",
+          "assertion": "(result.get('reason') or {}).get('held') == 50",
+          "disposition": "retained",
+          "evidence": "ac3/advised-counts"
+        },
+        {
+          "old_row": "ac1/other-holds",
+          "line": 199,
+          "label": "'exact boundary and usage clamped'",
+          "assertion": "result['ok']",
+          "disposition": "retained",
+          "evidence": "ac3/advised-counts"
+        },
+        {
+          "old_row": "ac1/second-pool",
+          "line": 203,
+          "label": "'engine pool waits'",
+          "assertion": "result.get('code') == 'space_wait:image'",
+          "disposition": "retained",
+          "evidence": "ac1/second-pool"
+        },
+        {
+          "old_row": "ac2/before-reservation",
+          "line": 207,
+          "label": "'wait code'",
+          "assertion": "getattr(error, 'code', '') == 'space_wait:host'",
+          "disposition": "retained",
+          "evidence": "ac2/pre-reservation"
+        },
+        {
+          "old_row": "ac2/before-reservation",
+          "line": 208,
+          "label": "'no dispatch, deadline or active index'",
+          "assertion": "f.no_dispatch()",
+          "disposition": "retained",
+          "evidence": "ac2/pre-reservation"
+        },
+        {
+          "old_row": "ac2/before-reservation",
+          "line": 209,
+          "label": "'no slot or reservation'",
+          "assertion": "not f.slots()",
+          "disposition": "retained",
+          "evidence": "ac2/pre-reservation"
+        },
+        {
+          "old_row": "ac2/before-reservation",
+          "line": 210,
+          "label": "'no command started'",
+          "assertion": "not f.started",
+          "disposition": "retained",
+          "evidence": "ac2/pre-reservation"
+        },
+        {
+          "old_row": "ac2/recorded-wait",
+          "line": 215,
+          "label": "'no ledger writes'",
+          "assertion": "count == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]",
+          "disposition": "retained",
+          "evidence": "ac2/stable-hold"
+        },
+        {
+          "old_row": "ac2/recorded-wait",
+          "line": 217,
+          "label": "'no free-space polling'",
+          "assertion": "len(f.reads) == reads",
+          "disposition": "retained",
+          "evidence": "ac2/stable-hold"
+        },
+        {
+          "old_row": "ac2/recorded-wait",
+          "line": 218,
+          "label": "'one hold only'",
+          "assertion": "len(f.ledger.holds()) == 1",
+          "disposition": "retained",
+          "evidence": "ac2/stable-hold"
+        },
+        {
+          "old_row": "ac2/factory-waiting",
+          "line": 227,
+          "label": "'only waiting'",
+          "assertion": "len(report['waiting']) == 1 and (not report['refused'])",
+          "disposition": "retained",
+          "evidence": "ac2/waiting-pass"
+        },
+        {
+          "old_row": "ac2/factory-waiting",
+          "line": 228,
+          "label": "'numbers preserved'",
+          "assertion": "report['waiting'] and report['waiting'][0].get('numbers') == dict(pool='host', need=100, free=119, held=0, floor=20)",
+          "disposition": "retained",
+          "evidence": "ac2/waiting-pass"
+        },
+        {
+          "old_row": "ac3/report-starts",
+          "line": 233,
+          "label": "'prepared and started'",
+          "assertion": "launch is not None and f.started == [b'started\\n']",
+          "disposition": "retained",
+          "evidence": "ac3/started-advised"
+        },
+        {
+          "old_row": "ac3/report-starts",
+          "line": 235,
+          "label": "'advised with numbers'",
+          "assertion": "len(holds) == 1 and holds[0]['state'] == 'advised' and (holds[0]['reason'] == dict(pool='host', need=100, free=119, held=0, floor=20))",
+          "disposition": "retained",
+          "evidence": "ac3/started-advised"
+        },
+        {
+          "old_row": "ac3/report-starts",
+          "line": 237,
+          "label": "'reservation exists'",
+          "assertion": "len(f.slots()) == 1",
+          "disposition": "retained",
+          "evidence": "ac3/started-advised"
+        },
+        {
+          "old_row": "ac4/contract-digest",
+          "line": 245,
+          "label": "'needs change digest'",
+          "assertion": "D.digest(changed) != original['contract_digest']",
+          "disposition": "retained",
+          "evidence": "ac4/digest"
+        },
+        {
+          "old_row": "ac4/contract-digest",
+          "line": 248,
+          "label": "'identity changes digest'",
+          "assertion": "D.digest(changed) != original['contract_digest']",
+          "disposition": "retained",
+          "evidence": "ac4/digest"
+        },
+        {
+          "old_row": "ac4/contract-digest",
+          "line": 249,
+          "label": "'stored unchanged'",
+          "assertion": "original['contract_digest'] == D.digest(launch.contract)",
+          "disposition": "retained",
+          "evidence": "ac4/digest"
+        },
+        {
+          "old_row": "ac2/acceptance-rechecks",
+          "line": 256,
+          "label": "'released promise stops start'",
+          "assertion": "str(getattr(error, 'code', '')).startswith('space_hold_unavailable:') and (not f.started)",
+          "disposition": "retained",
+          "evidence": "accept/released-hold"
+        },
+        {
+          "old_row": "ac2/cancel-releases",
+          "line": 259,
+          "label": "'cancelled hold released'",
+          "assertion": "f.ledger.hold(contract['space']['hold'])['state'] == 'released'",
+          "disposition": "retained",
+          "evidence": "release/cancelled"
+        },
+        {
+          "old_row": "ac2/cancel-releases",
+          "line": 265,
+          "label": "'fresh promise released on refusal'",
+          "assertion": "f.ledger.hold(contract['space']['hold'])['state'] == 'released'",
+          "disposition": "retained",
+          "evidence": "release/cancelled"
+        },
+        {
+          "old_row": "ac2/cancel-releases",
+          "line": 268,
+          "label": "'later attempt new promise'",
+          "assertion": "again['space']['hold'] != contract['space']['hold']",
+          "disposition": "retained",
+          "evidence": "release/cancelled"
+        },
+        {
+          "old_row": "ac4/one-run-default",
+          "line": 283,
+          "label": "'single small run does not admit'",
+          "assertion": "not result['ok']",
+          "disposition": "retained",
+          "evidence": "ac4/five-before-measured"
+        },
+        {
+          "old_row": "ac4/one-run-default",
+          "line": 284,
+          "label": "'default source and need'",
+          "assertion": "result['source']['host'] == 'default' and result['space']['needs']['host'] == 100",
+          "disposition": "retained",
+          "evidence": "ac4/five-before-measured"
+        },
+        {
+          "old_row": "ac4/last-five",
+          "line": 292,
+          "label": "'largest of last five for same project and station'",
+          "assertion": "needs == {'host': 40, 'image': 40} and sources == {'host': 'measured', 'image': 'measured'}",
+          "disposition": "retained",
+          "evidence": "ac4/last-five"
+        },
+        {
+          "old_row": "ac4/project-file",
+          "line": 296,
+          "label": "'declared wins per pool'",
+          "assertion": "needs == {'host': 7, 'image': 40} and sources == {'host': 'declared', 'image': 'measured'}",
+          "disposition": "retained",
+          "evidence": "ac4/declared-first"
+        },
+        {
+          "old_row": "ac4/project-file",
+          "line": 299,
+          "label": "'zero is declared'",
+          "assertion": "A.needs_of(f.ledger, 'project', 'build')[0]['host'] == 0",
+          "disposition": "retained",
+          "evidence": "ac4/declared-first"
+        },
+        {
+          "old_row": "ac4/unmeasured-default",
+          "line": 302,
+          "label": "'missing measurement is not zero'",
+          "assertion": "A.needs_of(f.ledger, 'project', 'build')[1] == {'host': 'default', 'image': 'default'}",
+          "disposition": "retained",
+          "evidence": "ac4/five-before-measured"
+        },
+        {
+          "old_row": "ac4/off-and-legacy",
+          "line": 307,
+          "label": "'off reads no pool'",
+          "assertion": "contract['space'] is None and (not f.reads)",
+          "disposition": "retained",
+          "evidence": "disabled/no-hold; ac4/legacy-history"
+        },
+        {
+          "old_row": "ac4/off-and-legacy",
+          "line": 310,
+          "label": "'old contract shape accepted'",
+          "assertion": "not D.contract_problems(legacy)",
+          "disposition": "retained",
+          "evidence": "disabled/no-hold; ac4/legacy-history"
+        },
+        {
+          "old_row": "ac4/off-and-legacy",
+          "line": 316,
+          "label": "'stored legacy accepts with original digest'",
+          "assertion": "f.dispatches.record(contract['dispatch_id'])['state'] == 'accepted' and f.dispatches.record(contract['dispatch_id'])['contract_digest'] == D.digest(legacy)",
+          "disposition": "retained",
+          "evidence": "disabled/no-hold; ac4/legacy-history"
+        },
+        {
+          "old_row": "ac4/finished-measurement",
+          "line": 330,
+          "label": "'measured run stored on released hold'",
+          "assertion": "released['released'] and f.ledger.hold(contract['space']['hold'])['used'] == {'host': 37, 'image': 0}",
+          "disposition": "retained",
+          "evidence": "release/measurements"
+        },
+        {
+          "old_row": "ac1/metrics",
+          "line": 336,
+          "label": "'free floor and held'",
+          "assertion": "snapshot['pools']['host'] == dict(free=119, floor=20, held=100)",
+          "disposition": "retained",
+          "evidence": "ac1/metrics"
+        },
+        {
+          "old_row": "ac1/metrics",
+          "line": 338,
+          "label": "'hold states'",
+          "assertion": "snapshot['holds'] == dict(admitted=0, waiting=0, advised=1)",
+          "disposition": "retained",
+          "evidence": "ac1/metrics"
+        },
+        {
+          "old_row": "ac1/unread-pool",
+          "line": 342,
+          "label": "'negative free never admits'",
+          "assertion": "result.get('code') == 'space_free_unread:host'",
+          "disposition": "retained",
+          "evidence": "ac1/unread-pool"
+        },
+        {
+          "old_row": "ac4/unread-declaration",
+          "line": 346,
+          "label": "'bad declaration no hold'",
+          "assertion": "not result['ok'] and (not f.ledger.holds())",
+          "disposition": "retained",
+          "evidence": "ac4/unread-declaration"
+        },
+        {
+          "old_row": "ac2/reservation-failure",
+          "line": 352,
+          "label": "'promise released'",
+          "assertion": "getattr(error, 'code', None) == 'capacity_exceeded' and [h['state'] for h in f.ledger.holds().values()] == ['released'] and (not f.slots())",
+          "disposition": "retained",
+          "evidence": "release/preparation-failed"
+        },
+        {
+          "old_row": "ac2/reservation-failure",
+          "line": 355,
+          "label": "'retry fresh promise same dispatch attempt'",
+          "assertion": "contract['attempt'] == 1 and f.ledger.hold(contract['space']['hold'])['state'] == 'admitted'",
+          "disposition": "retained",
+          "evidence": "release/preparation-failed"
+        },
+        {
+          "old_row": "fix4/no-account-keeps-hold",
+          "line": 368,
+          "label": "code + ' refusal named'",
+          "assertion": "getattr(error, 'code', None) == code and all((getattr(one, 'code', None) == code for one in errors))",
+          "disposition": "retained",
+          "evidence": "fix4/no-account-keeps-hold"
+        },
+        {
+          "old_row": "fix4/no-account-keeps-hold",
+          "line": 370,
+          "label": "code + ' one admitted hold'",
+          "assertion": "len(kept) == 1 and f.ledger.holds() == kept and (list(kept.values())[0]['state'] == 'admitted')",
+          "disposition": "retained",
+          "evidence": "fix4/no-account-keeps-hold"
+        },
+        {
+          "old_row": "fix4/no-account-keeps-hold",
+          "line": 372,
+          "label": "code + ' no ledger write or free read on later passes'",
+          "assertion": "count == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0] and len(f.reads) == reads and f.no_dispatch() and (not f.slots())",
+          "disposition": "retained",
+          "evidence": "fix4/no-account-keeps-hold"
+        },
+        {
+          "old_row": "fix4/no-account-keeps-hold",
+          "line": 376,
+          "label": "code + ' the kept hold is the one the dispatch carries'",
+          "assertion": "[contract['space']['hold']] == list(kept) and len(f.ledger.holds()) == 1",
+          "disposition": "retained",
+          "evidence": "fix4/no-account-keeps-hold"
+        },
+        {
+          "old_row": "ac2/racing-prepare",
+          "line": 395,
+          "label": "'loser does not release winner promise'",
+          "assertion": "winner and str(getattr(error, 'code', '')).startswith('active_dispatch:') and (f.ledger.hold(winner[0]['space']['hold'])['state'] == 'admitted')",
+          "disposition": "retained",
+          "evidence": "ac2/racing-prepare"
+        },
+        {
+          "old_row": "ac1/concurrent",
+          "line": 452,
+          "label": "'child completed'",
+          "assertion": "status == 0",
+          "disposition": "retained",
+          "evidence": "ac1/concurrent"
+        },
+        {
+          "old_row": "ac1/concurrent",
+          "line": 453,
+          "label": "'one promise at exact capacity'",
+          "assertion": "sorted((a.get('answer') for a in answers)) == ['admitted', 'waiting']",
+          "disposition": "retained",
+          "evidence": "ac1/concurrent"
+        },
+        {
+          "old_row": "ac1/concurrent",
+          "line": 455,
+          "label": "'never two children inside judge'",
+          "assertion": "broken.exists()",
+          "disposition": "retained",
+          "evidence": "ac1/concurrent"
+        },
+        {
+          "old_row": "ac2/service-wiring",
+          "line": 487,
+          "label": "'production line uses worker admission'",
+          "assertion": "actual_line.runner.admission.__self__ is actual_line.space_admission and actual_line.runner.space is f.space",
+          "disposition": "retained",
+          "evidence": "ac2/service-wiring"
+        },
+        {
+          "old_row": "ac2/worker-responsive",
+          "line": 492,
+          "label": "'returns pending without reader wait'",
+          "assertion": "answer.get('code') == 'space_pending' and time.monotonic() - before < 1",
+          "disposition": "retained",
+          "evidence": "ac2/worker-responsive"
+        },
+        {
+          "old_row": "ac2/worker-responsive",
+          "line": 495,
+          "label": "'coalesced task'",
+          "assertion": "len(consumer.tasks) == 1",
+          "disposition": "retained",
+          "evidence": "ac2/worker-responsive"
+        },
+        {
+          "old_row": "ac2/worker-responsive",
+          "line": 504,
+          "label": "'reader ran in child'",
+          "assertion": "seen.exists() and int(seen.read_text()) == pid",
+          "disposition": "retained",
+          "evidence": "ac2/worker-responsive"
+        },
+        {
+          "old_row": "ac2/completion-wakes",
+          "line": 505,
+          "label": "'one completion wake'",
+          "assertion": "len(wakes) == 1",
+          "disposition": "retained",
+          "evidence": "ac2/completion-wakes"
+        },
+        {
+          "old_row": "ac2/completion-wakes",
+          "line": 507,
+          "label": "'actual waiting answer with numbers'",
+          "assertion": "answer.get('code') == 'space_wait:host' and answer.get('reason', {}).get('free') == 119 and (consumer.active is None)",
+          "disposition": "retained",
+          "evidence": "ac2/completion-wakes"
+        },
+        {
+          "old_row": "ac2/completion-wakes",
+          "line": 509,
+          "label": "'worker reaped'",
+          "assertion": "not Path('/proc/%d' % pid).exists()",
+          "disposition": "retained",
+          "evidence": "ac2/completion-wakes"
+        },
+        {
+          "old_row": "ac2/recorded-wait",
+          "line": 512,
+          "label": "'completed task not resubmitted'",
+          "assertion": "consumer.active is None and before == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]",
+          "disposition": "retained",
+          "evidence": "ac2/stable-hold"
+        },
+        {
+          "old_row": "fix1/failed-judgment",
+          "line": 541,
+          "label": "mode + ' failure reported once'",
+          "assertion": "first.get('code') == 'space_pending' and failed.get('code') == 'space_free_unread:host' and (consumer.active is None)",
+          "disposition": "retained",
+          "evidence": "fix1/failed-judgment"
+        },
+        {
+          "old_row": "fix1/failed-judgment",
+          "line": 545,
+          "label": "mode + ' second pass submits again'",
+          "assertion": "again.get('code') == 'space_pending' and consumer.active is not None",
+          "disposition": "retained",
+          "evidence": "fix1/failed-judgment"
+        },
+        {
+          "old_row": "fix1/failed-judgment",
+          "line": 549,
+          "label": "mode + ' healthy reader judged afresh'",
+          "assertion": "healthy.get('ok') is True and healthy.get('answer') == 'admitted' and (len(wakes) == 2) and ([h['state'] for h in f.ledger.holds().values()] == ['admitted'])",
+          "disposition": "retained",
+          "evidence": "fix1/failed-judgment"
+        },
+        {
+          "old_row": "fix1/failed-judgment",
+          "line": 553,
+          "label": "mode + ' answer with a hold is kept'",
+          "assertion": "kept == healthy and consumer.active is None and (not consumer.tasks)",
+          "disposition": "retained",
+          "evidence": "fix1/failed-judgment"
+        },
+        {
+          "old_row": "fix2/withdrawn-restart",
+          "line": 581,
+          "label": "'admitted hold with no dispatch before the restart'",
+          "assertion": "admitted.get('answer') == 'admitted' and f.ledger.hold(hold)['state'] == 'admitted' and (waits.get('code') == 'space_wait:host')",
+          "disposition": "retained",
+          "evidence": "recovery/orphan-released; recovery/next-offer"
+        },
+        {
+          "old_row": "fix2/withdrawn-restart",
+          "line": 587,
+          "label": "'start queues one worker task and writes nothing itself'",
+          "assertion": "ticket is not None and list(consumer.tasks) == [('admission_start',)] and (time.monotonic() - before < 1) and (journal == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0])",
+          "disposition": "retained",
+          "evidence": "recovery/orphan-released; recovery/next-offer"
+        },
+        {
+          "old_row": "fix2/withdrawn-restart",
+          "line": 592,
+          "label": "'hold released in the worker'",
+          "assertion": "ticket['answer'] == {'ok': True, 'released': [hold]} and f.ledger.hold(hold)['state'] == 'released'",
+          "disposition": "retained",
+          "evidence": "recovery/orphan-released; recovery/next-offer"
+        },
+        {
+          "old_row": "fix2/withdrawn-restart",
+          "line": 594,
+          "label": "'carried, foreign and waiting holds untouched'",
+          "assertion": "f.ledger.hold(contract['space']['hold'])['state'] == 'admitted' and f.ledger.hold('other')['state'] == 'admitted' and (f.ledger.hold(waits['space']['hold'])['state'] == 'waiting')",
+          "disposition": "retained",
+          "evidence": "recovery/orphan-released; recovery/next-offer"
+        },
+        {
+          "old_row": "fix2/withdrawn-restart",
+          "line": 601,
+          "label": "'a second start releases nothing more'",
+          "assertion": "ticket['answer'] == {'ok': True, 'released': []}",
+          "disposition": "retained",
+          "evidence": "recovery/orphan-released; recovery/next-offer"
+        },
+        {
+          "old_row": "fix2/withdrawn-restart",
+          "line": 612,
+          "label": "'advised hold released too'",
+          "assertion": "advised.get('answer') == 'advised' and f.ledger.hold(advised['space']['hold'])['state'] == 'released'",
+          "disposition": "retained",
+          "evidence": "recovery/orphan-released; recovery/next-offer"
+        },
+        {
+          "old_row": "fix2/left-backlog",
+          "line": 622,
+          "label": "'a pass that asked both keeps both'",
+          "assertion": "requests.passed() == [] and (not consumer.tasks)",
+          "disposition": "retained",
+          "evidence": "fix2/left-backlog"
+        },
+        {
+          "old_row": "fix2/left-backlog",
+          "line": 630,
+          "label": "'the line pass sends the leaving to the worker'",
+          "assertion": "len(consumer.tasks) == 1 and journal == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]",
+          "disposition": "retained",
+          "evidence": "fix2/left-backlog"
+        },
+        {
+          "old_row": "fix2/left-backlog",
+          "line": 633,
+          "label": "'left unit released, offered unit kept'",
+          "assertion": "f.ledger.hold(leaves['space']['hold'])['state'] == 'released' and f.ledger.hold(stays['space']['hold'])['state'] == 'admitted'",
+          "disposition": "retained",
+          "evidence": "fix2/left-backlog"
+        },
+        {
+          "old_row": "fix2/left-backlog",
+          "line": 637,
+          "label": "'a unit that returns is judged afresh'",
+          "assertion": "back.get('answer') == 'admitted' and back['space']['hold'] == leaves['space']['hold'] + '/1'",
+          "disposition": "retained",
+          "evidence": "fix2/left-backlog"
+        },
+        {
+          "old_row": "setup",
+          "line": 642,
+          "label": "traceback.format_exc()",
+          "assertion": "False",
+          "disposition": "retained",
+          "evidence": "Current fixture setup, no behavioral assertion retired"
+        }
+      ],
+      "infrastructure_guards": [],
+      "unresolved": []
+    },
+    {
+      "finding": 317,
+      "source": "proof/VELDO-0317/historical-space-v1/150_veldo_0317_full_pool.py.txt",
+      "source_sha256": "f6a73a552d0a510b462abc800806ccb1eed7076dba0b8ef2e071d9baee16a2c9",
+      "mapping": "proof/VELDO-0317/historical-space-v1/retirement.md",
+      "assertions": [
+        {
+          "old_row": "ac1/refunded",
+          "line": 277,
+          "label": "'confirmed classification and taxon'",
+          "assertion": "end.get('classification') == 'environment_failure:no_space' and end.get('class') == 'unavailable_service'",
+          "disposition": "retained",
+          "evidence": "ac1/not-charged (charged count zero; attempt IDs remain distinct)"
+        },
+        {
+          "old_row": "ac1/refunded",
+          "line": 279,
+          "label": "'no failed attempt charged'",
+          "assertion": "f.dispatches.attempts('unit', 'review') == 0",
+          "disposition": "retained",
+          "evidence": "ac1/not-charged (charged count zero; attempt IDs remain distinct)"
+        },
+        {
+          "old_row": "ac1/refunded",
+          "line": 280,
+          "label": "'environment failure is not a measured finished run'",
+          "assertion": "A.finished(f.ledger, 'project', 'review') == []",
+          "disposition": "retained",
+          "evidence": "ac1/not-charged (charged count zero; attempt IDs remain distinct)"
+        },
+        {
+          "old_row": "ac1/order",
+          "line": 282,
+          "label": "'snapshot before exit and cleanup'",
+          "assertion": "order[:2] == [('free', 'running')] * 2",
+          "disposition": "retained",
+          "evidence": "ac1/numbers-before-cleanup"
+        },
+        {
+          "old_row": "ac1/order",
+          "line": 283,
+          "label": "'snapshot keeps both pools'",
+          "assertion": "end.get('pools') == [{'pool': 'host', 'free': 19, 'floor': 20}, {'pool': 'image', 'free': 1000, 'floor': 10}]",
+          "disposition": "retained",
+          "evidence": "ac1/numbers-before-cleanup"
+        },
+        {
+          "old_row": "ac1/order",
+          "line": 285,
+          "label": "'end conclusive and hold released'",
+          "assertion": "record['state'] == 'exited' and f.dispatches.active('unit', 'review') is None and (f.ledger.hold(record['contract']['space']['hold'])['state'] == 'released')",
+          "disposition": "retained",
+          "evidence": "ac1/numbers-before-cleanup"
+        },
+        {
+          "old_row": "ac1/replayed-end",
+          "line": 291,
+          "label": "'replayed exit never refunds twice'",
+          "assertion": "f.dispatches.attempts('unit', 'review') == 0 and f.dispatches.record(record['dispatch_id']) == record",
+          "disposition": "retained",
+          "evidence": "ac1/replayed-end"
+        },
+        {
+          "old_row": "ac1/behind-admission",
+          "line": 299,
+          "label": "'repeat waits before new record'",
+          "assertion": "len(calls) == 1 and calls[0][0] is None and (getattr(calls[0][1], 'code', '') == 'space_wait:host') and (len(one._rows('dispatch')) == 1) and (f.dispatches.attempts('unit', 'review') == 0)",
+          "disposition": "retained",
+          "evidence": "ac1/behind-admission"
+        },
+        {
+          "old_row": "ac1/behind-admission",
+          "line": 305,
+          "label": "'manual free does not poll'",
+          "assertion": "len(f.reads) == before",
+          "disposition": "retained",
+          "evidence": "ac1/behind-admission"
+        },
+        {
+          "old_row": "ac1/behind-admission",
+          "line": 308,
+          "label": "'marked retry keeps attempt number'",
+          "assertion": "next_contract['attempt'] == 1",
+          "disposition": "retained",
+          "evidence": "ac1/behind-admission"
+        },
+        {
+          "old_row": "ac2/repeat-once",
+          "line": 319,
+          "label": "'first unknown and repeated once'",
+          "assertion": "(first.get('space_end') or {}).get('classification') == 'unknown_outcome:no_space_unconfirmed' and len(offers) == 1 and (first['artifact'] is None)",
+          "disposition": "retained",
+          "evidence": "ac2/repeated-once; ac2/repeat-red"
+        },
+        {
+          "old_row": "ac2/repeat-once",
+          "line": 324,
+          "label": "'second records the red without a third run'",
+          "assertion": "len(offers) == 1 and second['termination']['returncode'] == 1 and (not D.completed(second)) and (not (second.get('space_end') or {}).get('retry')) and (f.dispatches.attempts('unit', 'review') == 2) and ((second.get('artifact') or {}).get('verdict') == 'failed')",
+          "disposition": "retained",
+          "evidence": "ac2/repeated-once; ac2/repeat-red"
+        },
+        {
+          "old_row": "ac2/restart",
+          "line": 328,
+          "label": "'latest finds repeat'",
+          "assertion": "one.latest()['unit', 'review']['dispatch_id'] == second['dispatch_id']",
+          "disposition": "retained",
+          "evidence": "ac4/restart-stop"
+        },
+        {
+          "old_row": "classification/floor",
+          "line": 337,
+          "label": "'result'",
+          "assertion": "(record.get('space_end') or {}).get('classification') == classification",
+          "disposition": "retained",
+          "evidence": "classify/controls: equality with the floor is unconfirmed"
+        },
+        {
+          "old_row": "classification/success",
+          "line": 337,
+          "label": "'result'",
+          "assertion": "(record.get('space_end') or {}).get('classification') == classification",
+          "disposition": "retained",
+          "evidence": "classify/controls: successful process is not classified as no-space"
+        },
+        {
+          "old_row": "classification/ordinary",
+          "line": 337,
+          "label": "'result'",
+          "assertion": "(record.get('space_end') or {}).get('classification') == classification",
+          "disposition": "retained",
+          "evidence": "classify/controls: failure without a no-space token is not classified as no-space"
+        },
+        {
+          "old_row": "classification/incomplete",
+          "line": 341,
+          "label": "'failed artifact is not a successful end'",
+          "assertion": "(record.get('space_end') or {}).get('classification') == 'environment_failure:no_space' and (not D.completed(record)) and (not any((e['event'] == 'artifact' for e in receiver.events)))",
+          "disposition": "retained",
+          "evidence": "artifact/no-verdict"
+        },
+        {
+          "old_row": "classification/streams",
+          "line": 347,
+          "label": "'streams cannot fabricate a token'",
+          "assertion": "not scanner.found",
+          "disposition": "retained",
+          "evidence": "classify/streams"
+        },
+        {
+          "old_row": "classification/streams",
+          "line": 349,
+          "label": "'split token retained'",
+          "assertion": "scanner.found",
+          "disposition": "retained",
+          "evidence": "classify/streams"
+        },
+        {
+          "old_row": "classification/unread",
+          "line": 352,
+          "label": "'unread never confirms'",
+          "assertion": "outcome['classification'] == 'unknown_outcome:no_space_unconfirmed'",
+          "disposition": "retained",
+          "evidence": "classify/unread"
+        },
+        {
+          "old_row": "ac3/work-retained",
+          "line": 358,
+          "label": "'review scratch stays with exact edit'",
+          "assertion": "(tree / 'notes').is_file() and (tree / 'notes').read_text() == 'unfinished work' and (f.ledger.item(item)['state'] == 'deferred') and ((f.ledger.item(item).get('deferral') or {}).get('rule') == 'unique_work')",
+          "disposition": "retained",
+          "evidence": "ac3/edit-kept"
+        },
+        {
+          "old_row": "ac3/reconnect",
+          "line": 365,
+          "label": "'later removal retains edit'",
+          "assertion": "answer['ok'] and (tree / 'notes').is_file()",
+          "disposition": "retained",
+          "evidence": "ac3/reconnect"
+        },
+        {
+          "old_row": "ac3/next-brief",
+          "line": 369,
+          "label": "'prepared brief identifies kept work'",
+          "assertion": "str(tree) in recovery.get('worktrees', []) and 'uncommitted changes' in recovery.get('brief', '') and (str(tree) in recovery.get('brief', ''))",
+          "disposition": "retained",
+          "evidence": "ac3/next-brief"
+        },
+        {
+          "old_row": "ac3/next-brief",
+          "line": 371,
+          "label": "'brief covered by payload digest'",
+          "assertion": "D.digest(contract['input']['payload']) == contract['input']['payload_digest']",
+          "disposition": "retained",
+          "evidence": "ac3/next-brief"
+        },
+        {
+          "old_row": "ac4/two-stop",
+          "line": 379,
+          "label": "'two uncharged ends'",
+          "assertion": "f.dispatches.attempts('unit', 'review') == 0",
+          "disposition": "retained",
+          "evidence": "ac4/two-stop"
+        },
+        {
+          "old_row": "ac4/two-stop",
+          "line": 380,
+          "label": "'durable andon'",
+          "assertion": "(second.get('space_end') or {}).get('andon') is True and (second.get('space_end') or {}).get('consecutive') == 2",
+          "disposition": "retained",
+          "evidence": "ac4/two-stop"
+        },
+        {
+          "old_row": "ac4/two-stop",
+          "line": 382,
+          "label": "'equal attempt latest is newest'",
+          "assertion": "one.latest()['unit', 'review']['dispatch_id'] == second['dispatch_id']",
+          "disposition": "retained",
+          "evidence": "ac4/two-stop"
+        },
+        {
+          "old_row": "ac4/two-stop",
+          "line": 414,
+          "label": "'one owner notice and no third repeat'",
+          "assertion": "len(notices) == 1 and (not repeated)",
+          "disposition": "retained",
+          "evidence": "ac4/two-stop"
+        },
+        {
+          "old_row": "ac4/off-loop",
+          "line": 415,
+          "label": "'delivery in worker and completion wakes'",
+          "assertion": "len(notices) == 1 and notices[0]['pid'] != os.getpid() and (len(wakes) == 1)",
+          "disposition": "retained",
+          "evidence": "ac4/off-loop"
+        },
+        {
+          "old_row": "ac4/two-stop",
+          "line": 421,
+          "label": "'direct prepare also stops before reservation'",
+          "assertion": "contract is None and getattr(error, 'code', '') == 'environment_failure:no_space:andon'",
+          "disposition": "retained",
+          "evidence": "ac4/two-stop"
+        },
+        {
+          "old_row": "ac4/two-stop",
+          "line": 423,
+          "label": "'only two dispatch records exist'",
+          "assertion": "len(one._rows('dispatch')) == 2",
+          "disposition": "retained",
+          "evidence": "ac4/two-stop"
+        },
+        {
+          "old_row": "ac4/reset",
+          "line": 432,
+          "label": "'ordinary end breaks consecutive failures'",
+          "assertion": "(third.get('space_end') or {}).get('consecutive') == 1 and (not (third.get('space_end') or {}).get('andon'))",
+          "disposition": "retained",
+          "evidence": "history/reset"
+        },
+        {
+          "old_row": "fix1/rerun-before-release",
+          "line": 453,
+          "label": "'refunded rerun waits and is never admitted on the old hold'",
+          "assertion": "f.dispatches.attempts('unit', 'review') == 0 and again is None and (getattr(error, 'code', '') == 'space_wait:host') and (f.ledger.hold(old_hold)['state'] == 'admitted') and (len(waiting) == 1) and (waiting[0] != old_hold)",
+          "disposition": "retained",
+          "evidence": "ac1/behind-admission; accept/released-hold (157)"
+        },
+        {
+          "old_row": "fix1/rerun-before-release",
+          "line": 459,
+          "label": "'the rerun is judged with a free read'",
+          "assertion": "len(f.reads) > reads",
+          "disposition": "retained",
+          "evidence": "ac1/behind-admission; accept/released-hold (157)"
+        },
+        {
+          "old_row": "fix1/rerun-before-release",
+          "line": 460,
+          "label": "'no second dispatch record'",
+          "assertion": "len(line(f)._rows('dispatch')) == 1",
+          "disposition": "retained",
+          "evidence": "ac1/behind-admission; accept/released-hold (157)"
+        },
+        {
+          "old_row": "fix1/rerun-before-release",
+          "line": 465,
+          "label": "'after the release the rerun holds its own admitted hold'",
+          "assertion": "rerun is not None and fresh is not None and (rerun['attempt'] == 1) and (rerun['space']['hold'] == fresh) and (f.ledger.hold(fresh)['state'] == 'admitted') and (f.ledger.hold(old_hold)['state'] == 'released')",
+          "disposition": "retained",
+          "evidence": "ac1/behind-admission; accept/released-hold (157)"
+        },
+        {
+          "old_row": "fix1/spent-answer",
+          "line": 482,
+          "label": "'a carried hold is not answered from the kept answer'",
+          "assertion": "kept.get('answer') == 'admitted' and (not submitted[:-1]) and (spent == {'ok': False, 'code': 'space_pending'}) and (submitted == [('admission',) + key])",
+          "disposition": "retained",
+          "evidence": "fix1/spent-answer (157)"
+        },
+        {
+          "old_row": "fix1/spent-answer",
+          "line": 494,
+          "label": "'the factory line spends the answer when it offers'",
+          "assertion": "key not in requests.answers",
+          "disposition": "retained",
+          "evidence": "fix1/spent-answer (157)"
+        },
+        {
+          "old_row": "fix2/andon-redelivery",
+          "line": 542,
+          "label": "'a failed delivery is reported once and sent again'",
+          "assertion": "failed_once and (not reports[2]['asked']) and (after == 1)",
+          "disposition": "retained",
+          "evidence": "fix2/andon-redelivery"
+        },
+        {
+          "old_row": "fix2/andon-redelivery",
+          "line": 544,
+          "label": "'exactly one notice, no further delivery and no third run'",
+          "assertion": "delivered() == 1 and len(wakes) == 2 and (not reran) and all((len(rep['stopped']) == 1 for rep in reports))",
+          "disposition": "retained",
+          "evidence": "fix2/andon-redelivery"
+        },
+        {
+          "old_row": "fix3/brief-ends",
+          "line": 560,
+          "label": "'the run after the no-space end is told, the run after a successful end is not'",
+          "assertion": "(lost.get('space_end') or {}).get('worktree') == str(tree) and told.get('worktrees') == [str(tree)] and D.completed(recovered) and ('space_recovery' not in later['input']['payload'])",
+          "disposition": "retained",
+          "evidence": "ac3/brief-no-space-only; history/reset"
+        },
+        {
+          "old_row": "fix3/brief-ends",
+          "line": 563,
+          "label": "'the worktree stays pinned after recovery'",
+          "assertion": "(tree / 'notes').is_file() and f.ledger.item(item)['state'] == 'deferred'",
+          "disposition": "retained",
+          "evidence": "ac3/brief-no-space-only; history/reset"
+        },
+        {
+          "old_row": "fix3/bounded-scan",
+          "line": 565,
+          "label": "'only the records of the unit are read'",
+          "assertion": "len(A.ends(f.conn, unit_key)) == 2 and A.ends(f.conn, dict(unit_key, unit='uni')) == [] and (A.ends(f.conn, dict(unit_key, unit='unit2')) == []) and (A.ends(f.conn, dict(unit_key, repository='other')) == [])",
+          "disposition": "retained",
+          "evidence": "history/bounded-read"
+        },
+        {
+          "old_row": "setup",
+          "line": 569,
+          "label": "traceback.format_exc()",
+          "assertion": "False",
+          "disposition": "retained",
+          "evidence": "Current fixture setup, no behavioral assertion retired"
+        }
+      ],
+      "infrastructure_guards": [],
+      "unresolved": []
+    },
+    {
+      "finding": 334,
+      "source": "proof/VELDO-0334/historical-space-v1/150_veldo_0334_space_wait.py.txt",
+      "source_sha256": "1ab74773ca4d7ed9f826d4b958fef38dbfe353b0e4917829de855dced9335221",
+      "mapping": "proof/VELDO-0334/historical-space-v1/retirement.md",
+      "assertions": [
+        {
+          "old_row": "ac1/one-signal",
+          "line": 261,
+          "label": "'timer is due'",
+          "assertion": "loop.due(0)",
+          "disposition": "retained",
+          "evidence": "ac1/one-signal"
+        },
+        {
+          "old_row": "ac1/one-signal",
+          "line": 264,
+          "label": "source + ' recorded answer'",
+          "assertion": "reports[-1] == first and source in report['sources']",
+          "disposition": "retained",
+          "evidence": "ac1/one-signal"
+        },
+        {
+          "old_row": "ac1/one-signal",
+          "line": 267,
+          "label": "'four offers one Signal'",
+          "assertion": "calls == [('admission_requested', {'pool': 'host'})]",
+          "disposition": "retained",
+          "evidence": "ac1/one-signal"
+        },
+        {
+          "old_row": "ac1/one-signal",
+          "line": 268,
+          "label": "'asked persisted'",
+          "assertion": "f.ledger.hold(identity)['retry_asked']",
+          "disposition": "retained",
+          "evidence": "ac1/one-signal"
+        },
+        {
+          "old_row": "ac2/no-read-or-write",
+          "line": 269,
+          "label": "'no free reads or writes on three passes'",
+          "assertion": "len(f.reads) == nreads and journal == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0]",
+          "disposition": "retained",
+          "evidence": "ac2/no-read-write"
+        },
+        {
+          "old_row": "ac2/manual-free-timer",
+          "line": 274,
+          "label": "'manual freeing does not admit'",
+          "assertion": "reports[-1] == first and len(f.reads) == nreads",
+          "disposition": "retained",
+          "evidence": "ac2/timer-still-waits"
+        },
+        {
+          "old_row": "ac2/public-admit",
+          "line": 278,
+          "label": "'cached waiting answer'",
+          "assertion": "direct['answer'] == 'waiting' and len(f.reads) == nreads",
+          "disposition": "retained",
+          "evidence": "ac2/no-read-write"
+        },
+        {
+          "old_row": "ac3/outcome",
+          "line": 287,
+          "label": "'mark set by commit'",
+          "assertion": "f.ledger.hold(identity)['freed']",
+          "disposition": "retained",
+          "evidence": "ac3/removal-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/release",
+          "line": 287,
+          "label": "'mark set by commit'",
+          "assertion": "f.ledger.hold(identity)['freed']",
+          "disposition": "retained",
+          "evidence": "ac3/release-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/reconcile",
+          "line": 287,
+          "label": "'mark set by commit'",
+          "assertion": "f.ledger.hold(identity)['freed']",
+          "disposition": "retained",
+          "evidence": "ac3/reconcile-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/outcome",
+          "line": 289,
+          "label": "'space wake source'",
+          "assertion": "any((w['source'] == 'space' for w in loop.wakes))",
+          "disposition": "retained",
+          "evidence": "ac3/removal-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/release",
+          "line": 289,
+          "label": "'space wake source'",
+          "assertion": "any((w['source'] == 'space' for w in loop.wakes))",
+          "disposition": "retained",
+          "evidence": "ac3/release-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/reconcile",
+          "line": 289,
+          "label": "'space wake source'",
+          "assertion": "any((w['source'] == 'space' for w in loop.wakes))",
+          "disposition": "retained",
+          "evidence": "ac3/reconcile-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/outcome",
+          "line": 292,
+          "label": "'notification read once'",
+          "assertion": "not any((w['source'] == 'space' for w in loop.wakes))",
+          "disposition": "retained",
+          "evidence": "ac3/removal-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/release",
+          "line": 292,
+          "label": "'notification read once'",
+          "assertion": "not any((w['source'] == 'space' for w in loop.wakes))",
+          "disposition": "retained",
+          "evidence": "ac3/release-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/reconcile",
+          "line": 292,
+          "label": "'notification read once'",
+          "assertion": "not any((w['source'] == 'space' for w in loop.wakes))",
+          "disposition": "retained",
+          "evidence": "ac3/reconcile-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/outcome",
+          "line": 295,
+          "label": "'short pool clears mark after judging'",
+          "assertion": "not f.ledger.hold(identity)['freed'] and len(calls) == before_calls",
+          "disposition": "retained",
+          "evidence": "ac3/removal-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/release",
+          "line": 295,
+          "label": "'short pool clears mark after judging'",
+          "assertion": "not f.ledger.hold(identity)['freed'] and len(calls) == before_calls",
+          "disposition": "retained",
+          "evidence": "ac3/release-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/reconcile",
+          "line": 295,
+          "label": "'short pool clears mark after judging'",
+          "assertion": "not f.ledger.hold(identity)['freed'] and len(calls) == before_calls",
+          "disposition": "retained",
+          "evidence": "ac3/reconcile-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake."
+        },
+        {
+          "old_row": "ac3/nonfreeing",
+          "line": 305,
+          "label": "str(amount)",
+          "assertion": "not f.ledger.hold(host)['freed']",
+          "disposition": "retained",
+          "evidence": "ac3/nonfreeing-no-mark"
+        },
+        {
+          "old_row": "ac3/pool-isolation",
+          "line": 307,
+          "label": "'unrelated pool stays clear'",
+          "assertion": "f.ledger.hold(host)['freed'] and (not f.ledger.hold('image-only')['freed'])",
+          "disposition": "retained",
+          "evidence": "ac3/pool-only"
+        },
+        {
+          "old_row": "ac3/refusal-atomic",
+          "line": 313,
+          "label": "'no mark on refused write'",
+          "assertion": "not refusal['ok'] and (not f.ledger.hold(host)['freed']) and (before == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0])",
+          "disposition": "retained",
+          "evidence": "race/own-version-refused"
+        },
+        {
+          "old_row": "ac3/waiting-set-race",
+          "line": 327,
+          "label": "'new hold marked with the freeing transaction'",
+          "assertion": "f.ledger.hold(identity)['freed'] and f.ledger.hold('arrived')['freed']",
+          "disposition": "retained",
+          "evidence": "race/release-resent; race/resend-bounded"
+        },
+        {
+          "old_row": "ac3/waiting-set-race",
+          "line": 330,
+          "label": "'cause and both marks in one record'",
+          "assertion": "sum((v['kind'] == SP.HOLD_KIND for v in transition.values())) == 2 and any((v['kind'] == SP.RECONCILE_KIND for v in transition.values()))",
+          "disposition": "retained",
+          "evidence": "race/release-resent; race/resend-bounded"
+        },
+        {
+          "old_row": "ac3/backing-pool",
+          "line": 341,
+          "label": "'positive host delta marks host waiter'",
+          "assertion": "f.ledger.hold(identity)['freed']",
+          "disposition": "retained",
+          "evidence": "ac3/pool-only"
+        },
+        {
+          "old_row": "ac3/free-during-judgment",
+          "line": 356,
+          "label": "'new mark not lost by old judgment'",
+          "assertion": "result['ok'] and f.ledger.hold(identity)['state'] == 'admitted' and (not f.ledger.hold(identity)['freed'])",
+          "disposition": "retained",
+          "evidence": "race/freeing-during-judgment"
+        },
+        {
+          "old_row": "ac1/signal-can-admit",
+          "line": 374,
+          "label": "'retry goes through real remover: ' + repr((result, f.ledger.item(item)))",
+          "assertion": "result['ok'] and (not path.exists()) and (f.ledger.item(item)['state'] == 'removed')",
+          "disposition": "retained",
+          "evidence": "ac1/retry-removes"
+        },
+        {
+          "old_row": "ac1/signal-can-admit",
+          "line": 376,
+          "label": "'present scratch untouched'",
+          "assertion": "keep_path.exists() and f.ledger.item(keep_item)['state'] == 'present'",
+          "disposition": "retained",
+          "evidence": "ac1/retry-removes"
+        },
+        {
+          "old_row": "ac3/stopped-clock",
+          "line": 402,
+          "label": "'worker outcome: ' + repr(svc.space_consumer.last_answer)",
+          "assertion": "svc.space_consumer.last_answer.get('ok') and (not path.exists())",
+          "disposition": "retained",
+          "evidence": "ac3/release-wakes"
+        },
+        {
+          "old_row": "ac3/stopped-clock",
+          "line": 408,
+          "label": "'retry queued off loop'",
+          "assertion": "getattr(offered[-1][1], 'code', '') == 'space_pending'",
+          "disposition": "retained",
+          "evidence": "ac3/release-wakes"
+        },
+        {
+          "old_row": "ac3/stopped-clock",
+          "line": 412,
+          "label": "'removal alone prepares with clock stopped'",
+          "assertion": "prepared is not None and f.ledger.hold(identity)['state'] == 'admitted' and (len(f.slots()) == 1)",
+          "disposition": "retained",
+          "evidence": "ac3/release-wakes"
+        },
+        {
+          "old_row": "compat/one-shot-adapter",
+          "line": 424,
+          "label": "'existing report adapter remains advised'",
+          "assertion": "result['answer'] == 'advised'",
+          "disposition": "retired",
+          "evidence": "SUPERSEDED fixture-only adapter lacking expected_version; candidate gate/wrapper adapters use the versioned Ledger API (suites 151/153_0309). The externally visible advised behavior remains ac1/retry-removes and report/signal-refused-advised."
+        },
+        {
+          "old_row": "ac3/release-replay",
+          "line": 428,
+          "label": "'release replay answers the target hold'",
+          "assertion": "result['state'] == 'released'",
+          "disposition": "retained",
+          "evidence": "ac3/release-replay"
+        },
+        {
+          "old_row": "fix1/report-refused-signal",
+          "line": 445,
+          "label": "name + ': the hold is advised with its one request claimed: ' + repr((first, hold['state']))",
+          "assertion": "hold['state'] == 'advised' and hold['retry_asked'] and (hold['reason']['pool'] == 'host') and (first['ok'] or name == 'lost')",
+          "disposition": "retained",
+          "evidence": "report/signal-refused-advised"
+        },
+        {
+          "old_row": "fix1/report-refused-signal",
+          "line": 450,
+          "label": "name + ': the next offer is advised and asks nothing'",
+          "assertion": "second['ok'] and second['answer'] == 'advised' and (second['space']['hold'] == identity) and (len(calls) == before_calls)",
+          "disposition": "retained",
+          "evidence": "report/signal-refused-advised"
+        },
+        {
+          "old_row": "fix1/act-refused-signal",
+          "line": 460,
+          "label": "'a refused Signal still answers waiting, by numbers: ' + repr(first)",
+          "assertion": "first.get('code') == 'space_wait:host' and hold.get('state') == 'waiting' and hold.get('retry_asked') and (hold['reason']['pool'] == 'host')",
+          "disposition": "retained",
+          "evidence": "act/signal-refused-waits"
+        },
+        {
+          "old_row": "fix2/waiting-release-no-mark",
+          "line": 476,
+          "label": "'a waiting hold released marks no hold: ' + repr(marks())",
+          "assertion": "marks() == (False, False) and list(transition) == [SP.hold_id('other')] and (f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0] == journal + 1)",
+          "disposition": "retained",
+          "evidence": "fix2/waiting-release-no-mark"
+        },
+        {
+          "old_row": "fix2/waiting-release-no-mark",
+          "line": 482,
+          "label": "'an admitted hold that held no bytes marks no hold: ' + repr(marks())",
+          "assertion": "marks() == (False, False)",
+          "disposition": "retained",
+          "evidence": "fix2/waiting-release-no-mark"
+        },
+        {
+          "old_row": "fix2/release-marks-per-pool",
+          "line": 487,
+          "label": "'only the pool it still held bytes on is marked: ' + repr(marks())",
+          "assertion": "marks() == (False, True)",
+          "disposition": "retained",
+          "evidence": "fix2/release-marks-per-pool"
+        },
+        {
+          "old_row": "fix3/requests-unrelated-passes",
+          "line": 512,
+          "label": "source + ' pass returns the recorded answer'",
+          "assertion": "len(offered) and offered[-1] == first and (source in report['sources'])",
+          "disposition": "retained",
+          "evidence": "fix3/requests-unrelated-passes (157)"
+        },
+        {
+          "old_row": "fix3/requests-unrelated-passes",
+          "line": 514,
+          "label": "'three passes: ' + repr((len(offered), submits, f.read_count() - nreads))",
+          "assertion": "len(offered) == 3 and submits == [] and (not svc.space_consumer.active) and (f.read_count() == nreads) and (journal == f.conn.execute('SELECT COUNT(*) FROM journal').fetchone()[0])",
+          "disposition": "retained",
+          "evidence": "fix3/requests-unrelated-passes (157)"
+        },
+        {
+          "old_row": "fix4/failed-read-rejudges",
+          "line": 534,
+          "label": "'the failed read is reported by name and the mark stays: ' + repr((queued, failed))",
+          "assertion": "queued.get('code') == 'space_pending' and failed.get('code') == 'space_free_unread:host' and (not failed.get('space')) and (f.ledger.hold(identity)['state'] == 'waiting') and f.ledger.hold(identity)['freed']",
+          "disposition": "retained",
+          "evidence": "fix1/failed-judgment (157)"
+        },
+        {
+          "old_row": "fix4/failed-read-rejudges",
+          "line": 544,
+          "label": "'the next offer judges again and clears the mark: ' + repr((again, judged))",
+          "assertion": "again.get('code') == 'space_pending' and judged.get('ok') and (judged.get('answer') == 'admitted') and (f.read_count() > nreads) and (f.ledger.hold(identity)['state'] == 'admitted') and (not f.ledger.hold(identity)['freed'])",
+          "disposition": "retained",
+          "evidence": "fix1/failed-judgment (157)"
+        },
+        {
+          "old_row": "ac3/completion-race",
+          "line": 553,
+          "label": "'initial request queued'",
+          "assertion": "result['code'] == 'space_pending'",
+          "disposition": "retained",
+          "evidence": "ac3/completion-race (157)"
+        },
+        {
+          "old_row": "ac3/completion-race",
+          "line": 568,
+          "label": "'old answer cannot hide newer mark'",
+          "assertion": "result['code'] == 'space_pending'",
+          "disposition": "retained",
+          "evidence": "ac3/completion-race (157)"
+        },
+        {
+          "old_row": "ac3/completion-race",
+          "line": 570,
+          "label": "'retry admitted'",
+          "assertion": "requests.prepare(**given)['ok']",
+          "disposition": "retained",
+          "evidence": "ac3/completion-race (157)"
+        },
+        {
+          "old_row": "setup",
+          "line": 573,
+          "label": "traceback.format_exc()",
+          "assertion": "False",
+          "disposition": "retained",
+          "evidence": "Current fixture setup, no behavioral assertion retired"
+        }
+      ],
+      "infrastructure_guards": [],
+      "unresolved": []
+    },
+    {
+      "finding": 347,
+      "source": "proof/VELDO-0347/historical-space-v1/150_veldo_0347_unseen_work.py.txt",
+      "source_sha256": "44389efa917290c90c35020be983b827bdfafdf975876c5b61c4f268bc04f0dc",
+      "mapping": "proof/VELDO-0347/historical-space-v1/retirement.md",
+      "assertions": [
+        {
+          "old_row": "ac1/loose-ignored-file",
+          "line": 453,
+          "label": "'git sees the worktree as clean: a committed rule ignores the file [%r]' % git(tree_path, 'status', '--porcelain')",
+          "assertion": "git(tree_path, 'status', '--porcelain') == ''",
+          "disposition": "retained",
+          "evidence": "ac1/loose-ignored-file"
+        },
+        {
+          "old_row": "ac1/loose-ignored-file",
+          "line": 458,
+          "label": "'rule 5 refuses the worktree, as unique work [%s]' % (named(done, tree),)",
+          "assertion": "named(done, tree) == ('deferred', 'unique_work', 'unique_work') and state_of(tree) == 'deferred'",
+          "disposition": "retained",
+          "evidence": "ac1/loose-ignored-file"
+        },
+        {
+          "old_row": "ac1/loose-ignored-file",
+          "line": 460,
+          "label": "'the deferral names the ignored path and the rule that covers it [%s %s]' % (found.get('ignored'), found.get('ignored_rules'))",
+          "assertion": "found.get('ignored') == ['settings.local'] and 3 in (found.get('cases') or ()) and (found.get('ignored_rules') == {'settings.local': '.gitignore:2:*.local'})",
+          "disposition": "retained",
+          "evidence": "ac1/loose-ignored-file"
+        },
+        {
+          "old_row": "ac1/loose-ignored-file",
+          "line": 464,
+          "label": "'no remover was handed the worktree and the file is there byte for byte [%s]' % (handed,)",
+          "assertion": "handed == [] and text_of(tree_path / 'settings.local') == 'key = only on this disk\\n' and listed(tree_path)",
+          "disposition": "retained",
+          "evidence": "ac1/loose-ignored-file"
+        },
+        {
+          "old_row": "ac1/loose-ignored-file",
+          "line": 471,
+          "label": "\"what the rule is for: git's non-forced remove takes such a file without a word [%s]\" % code",
+          "assertion": "code == 0 and (not os.path.lexists(str(plain)))",
+          "disposition": "retained",
+          "evidence": "ac1/loose-ignored-file"
+        },
+        {
+          "old_row": "ac1/personal-rule",
+          "line": 487,
+          "label": "'git sees the worktree as clean'",
+          "assertion": "git(tree_path, 'status', '--porcelain') == ''",
+          "disposition": "retained",
+          "evidence": "ac1/personal-rule"
+        },
+        {
+          "old_row": "ac1/personal-rule",
+          "line": 491,
+          "label": "'rule 5 refuses, as unique work [%s]' % (named(done, tree),)",
+          "assertion": "named(done, tree) == ('deferred', 'unique_work', 'unique_work') and handed == []",
+          "disposition": "retained",
+          "evidence": "ac1/personal-rule"
+        },
+        {
+          "old_row": "ac1/personal-rule",
+          "line": 494,
+          "label": "'it names the file and the folder a personal rule covers, with that rule, and not the build output [%s %s]' % (found.get('ignored'), rules)",
+          "assertion": "sorted(found.get('ignored') or ()) == ['notes-private.md', 'private/'] and all(('info/exclude:' in str(rules.get(name)) for name in ('notes-private.md', 'private/')))",
+          "disposition": "retained",
+          "evidence": "ac1/personal-rule"
+        },
+        {
+          "old_row": "ac1/personal-rule",
+          "line": 498,
+          "label": "'both are in place, byte for byte'",
+          "assertion": "text_of(tree_path / 'notes-private.md') == 'notes only info/exclude ignores\\n' and text_of(tree_path / 'private' / 'plan.txt') == 'a plan\\n'",
+          "disposition": "retained",
+          "evidence": "ac1/personal-rule"
+        },
+        {
+          "old_row": "ac1/untraced-rule",
+          "line": 516,
+          "label": "'a folder whose rule cannot be traced is counted as work, with no rule named [%s %s]' % (facts.get('ignored'), facts.get('ignored_rules'))",
+          "assertion": "facts['read'] is True and facts['cases'] == [3] and (facts['ignored'] == ['build/']) and (facts['ignored_rules'] == {'build/': None})",
+          "disposition": "retained",
+          "evidence": "ac1/untraced-rule"
+        },
+        {
+          "old_row": "ac1/untraced-rule",
+          "line": 520,
+          "label": "'the same folder, its rule traced to the committed ignore file, is build output'",
+          "assertion": "P.unique_work(str(tree_path), run=client)['cases'] == []",
+          "disposition": "retained",
+          "evidence": "ac1/untraced-rule"
+        },
+        {
+          "old_row": "ac1/untraced-rule",
+          "line": 524,
+          "label": "'rule 5 refuses the worktree and the deferral says no rule could be traced [%s %s]' % (named(done, tree), found_of(tree).get('ignored_rules'))",
+          "assertion": "named(done, tree) == ('deferred', 'unique_work', 'unique_work') and handed == [] and (found_of(tree).get('ignored_rules') == {'build/': None}) and (tree_path / 'build' / 'out.bin').is_file()",
+          "disposition": "retained",
+          "evidence": "ac1/untraced-rule"
+        },
+        {
+          "old_row": "ac1/build-output-is-not-work",
+          "line": 544,
+          "label": "'a folder only a personal rule covers is work; an empty one holds none [%s]' % (facts['ignored'],)",
+          "assertion": "facts['cases'] == [3] and facts['ignored'] == ['target/']",
+          "disposition": "retained",
+          "evidence": "ac1/build-output-passes"
+        },
+        {
+          "old_row": "ac1/build-output-is-not-work",
+          "line": 547,
+          "label": "'with the pattern declared it is build output, like the folder the committed rule covers [%s]' % (facts['ignored'],)",
+          "assertion": "facts['cases'] == [] and facts['ignored'] == []",
+          "disposition": "retained",
+          "evidence": "ac1/build-output-passes"
+        },
+        {
+          "old_row": "ac1/build-output-is-not-work",
+          "line": 550,
+          "label": "\"in an adopted worktree only the declared pattern counts: the committed rule's folder is work [%s]\" % (facts['ignored'],)",
+          "assertion": "facts['cases'] == [3] and facts['ignored'] == ['build/']",
+          "disposition": "retained",
+          "evidence": "ac1/build-output-passes"
+        },
+        {
+          "old_row": "ac1/build-output-is-not-work",
+          "line": 555,
+          "label": "'a worktree that holds build output and nothing else goes [%s]' % (named(done, tree),)",
+          "assertion": "named(done, tree)[0] == 'removed' and (not os.path.lexists(str(tree_path))) and (handed == [tree])",
+          "disposition": "retained",
+          "evidence": "ac1/build-output-passes"
+        },
+        {
+          "old_row": "ac2/clean-clone-goes",
+          "line": 564,
+          "label": "'the probe reads a fresh clone of a remote on this host as a clean clone [%s %s]' % (read.get('why'), read.get('said'))",
+          "assertion": "read['read'] is True and read['clean_clone'] is True and (read['why'] == [])",
+          "disposition": "retained",
+          "evidence": "ac2/clean-clone-reading"
+        },
+        {
+          "old_row": "ac2/clean-clone-goes",
+          "line": 568,
+          "label": "'the scratch goes, and the clean clone with it [%s %s]' % (named(done, item), deferral_of(item))",
+          "assertion": "named(done, item)[0] == 'removed' and (not os.path.lexists(str(path)))",
+          "disposition": "retained",
+          "evidence": "ac2/clean-clone-reading"
+        },
+        {
+          "old_row": "ac2/unpushed-commit",
+          "line": 577,
+          "label": "\"rule 6 holds the session's scratch, in_use by children [%s]\" % (named(done, item),)",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'children') and state_of(item) == 'deferred'",
+          "disposition": "retained",
+          "evidence": "ac2/unpushed-in-session-scratch"
+        },
+        {
+          "old_row": "ac2/unpushed-commit",
+          "line": 579,
+          "label": "'the deferral names the repository as unrecorded and the commit no remote ref reaches [%s %s]' % (found_of(item).get('states'), said_of(item, lib))",
+          "assertion": "found_of(item).get('states') == {'path:' + str(lib): 'unrecorded'} and said_of(item, lib).get('why') == ['commits_no_remote_ref_reaches'] and (unpushed in (said_of(item, lib).get('commits') or ()))",
+          "disposition": "retained",
+          "evidence": "ac2/unpushed-in-session-scratch"
+        },
+        {
+          "old_row": "ac2/unpushed-commit",
+          "line": 584,
+          "label": "'no remover was handed the item and the clone is whole, its commit checked out [%s]' % (handed,)",
+          "assertion": "handed == [] and git(lib, 'rev-parse', 'HEAD') == unpushed and (text_of(lib / 'fix.txt') == 'a fix nobody else has\\n') and (text_of(path / 'notes.tmp') == 'scratch\\n')",
+          "disposition": "retained",
+          "evidence": "ac2/unpushed-in-session-scratch"
+        },
+        {
+          "old_row": "ac2/unpushed-commit",
+          "line": 590,
+          "label": "'once the remote holds the commit, the next event removes the scratch [%s]' % (named(done, item),)",
+          "assertion": "named(done, item)[0] == 'removed' and (not os.path.lexists(str(path))) and (git(REMOTE, 'rev-parse', 'main') == unpushed)",
+          "disposition": "retained",
+          "evidence": "ac2/unpushed-in-session-scratch"
+        },
+        {
+          "old_row": "ac2/log-only-commit",
+          "line": 600,
+          "label": "\"after the reset the work tree is clean and every ref is at the remote's commit\"",
+          "assertion": "git(lib, 'status', '--porcelain') == '' and git(lib, 'rev-parse', 'HEAD') == git(lib, 'rev-parse', 'origin/main') and (git(lib, 'rev-list', '--count', '--all', '--not', '--remotes') == '0')",
+          "disposition": "retained",
+          "evidence": "ac2/reset-log"
+        },
+        {
+          "old_row": "ac2/log-only-commit",
+          "line": 604,
+          "label": "'the commit a log alone names holds the scratch [%s %s]' % (named(done, item), said_of(item, lib))",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'children') and handed == [] and (said_of(item, lib).get('why') == ['commits_no_remote_ref_reaches']) and (said_of(item, lib).get('commits') == [lost])",
+          "disposition": "retained",
+          "evidence": "ac2/reset-log"
+        },
+        {
+          "old_row": "ac2/log-only-commit",
+          "line": 608,
+          "label": "'the clone is in place and the commit can still be read from it'",
+          "assertion": "git(lib, 'cat-file', '-t', lost) == 'commit' and git(lib, 'show', lost + ':draft.txt') == 'a draft'",
+          "disposition": "retained",
+          "evidence": "ac2/reset-log"
+        },
+        {
+          "old_row": "ac2/hand-written-ref",
+          "line": 617,
+          "label": "\"by the clone's own refs everything is held, and its local remote does not hold the commit\"",
+          "assertion": "git(lib, 'rev-list', '--count', 'HEAD', '--branches', '--not', '--remotes') == '0' and git(REMOTE, 'cat-file', '-e', only + '^{commit}', ok=False) != 0",
+          "disposition": "retained",
+          "evidence": "ac2/forged-remote-ref"
+        },
+        {
+          "old_row": "ac2/hand-written-ref",
+          "line": 621,
+          "label": "'the ref is not taken at its word: the scratch is held [%s %s]' % (named(done, item), said_of(item, lib))",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'children') and handed == [] and (said_of(item, lib).get('why') == ['commits_the_local_remote_does_not_hold']) and (said_of(item, lib).get('commits') == [only])",
+          "disposition": "retained",
+          "evidence": "ac2/forged-remote-ref"
+        },
+        {
+          "old_row": "ac2/hand-written-ref",
+          "line": 625,
+          "label": "'the clone is in place with its commit'",
+          "assertion": "git(lib, 'rev-parse', 'HEAD') == only and text_of(lib / 'only.txt') == 'only in this clone\\n'",
+          "disposition": "retained",
+          "evidence": "ac2/forged-remote-ref"
+        },
+        {
+          "old_row": "ac2/work-tree-and-stash",
+          "line": 632,
+          "label": "'an untracked file: not a clean clone [%s]' % (P.clean_clone(str(lib))['why'],)",
+          "assertion": "P.clean_clone(str(lib))['why'] == ['files_in_no_commit']",
+          "disposition": "retained",
+          "evidence": "ac2/clean-clone-reading"
+        },
+        {
+          "old_row": "ac2/work-tree-and-stash",
+          "line": 636,
+          "label": "'an uncommitted edit: not a clean clone [%s]' % (P.clean_clone(str(lib))['why'],)",
+          "assertion": "P.clean_clone(str(lib))['why'] == ['files_in_no_commit']",
+          "disposition": "retained",
+          "evidence": "ac2/clean-clone-reading"
+        },
+        {
+          "old_row": "ac2/work-tree-and-stash",
+          "line": 640,
+          "label": "'a stash entry: not a clean clone, with a clean work tree [%s]' % (read['why'],)",
+          "assertion": "'stash' in read['why'] and 'files_in_no_commit' not in read['why'] and (read['clean_clone'] is False)",
+          "disposition": "retained",
+          "evidence": "ac2/clean-clone-reading"
+        },
+        {
+          "old_row": "ac2/work-tree-and-stash",
+          "line": 646,
+          "label": "'a branch and a tag at a commit the remote holds do not hold it [%s %s]' % (read['why'], read['said'])",
+          "assertion": "read['clean_clone'] is True",
+          "disposition": "retained",
+          "evidence": "ac2/clean-clone-reading"
+        },
+        {
+          "old_row": "ac2/work-tree-and-stash",
+          "line": 650,
+          "label": "'a remote whose address names no one place: not read, not clean [%s]' % (read['said'],)",
+          "assertion": "read['read'] is False and read['clean_clone'] is False",
+          "disposition": "retained",
+          "evidence": "ac2/clean-clone-reading"
+        },
+        {
+          "old_row": "ac2/work-tree-and-stash",
+          "line": 656,
+          "label": "'a clone with an untracked file holds its scratch [%s %s]' % (named(done, item), said_of(item, lib))",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'children') and handed == [] and (said_of(item, lib).get('why') == ['files_in_no_commit']) and (text_of(lib / 'new.txt') == 'new\\n')",
+          "disposition": "retained",
+          "evidence": "ac2/clean-clone-reading"
+        },
+        {
+          "old_row": "ac2/unreadable-holds",
+          "line": 666,
+          "label": "'a repository git cannot read holds the scratch, as unread [%s %s]' % (named(done, item), found_of(item).get('states'))",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'children') and handed == [] and (found_of(item).get('states') == {'path:' + str(lib): 'unread'}) and (lib / 'lib.txt').is_file()",
+          "disposition": "retained",
+          "evidence": "ac2/unreadable (candidate sandbox exception retained)"
+        },
+        {
+          "old_row": "ac2/unreadable-holds",
+          "line": 675,
+          "label": "'while its local remote is there the clone is clean'",
+          "assertion": "P.clean_clone(str(lib))['clean_clone'] is True",
+          "disposition": "retained",
+          "evidence": "ac2/unreadable (candidate sandbox exception retained)"
+        },
+        {
+          "old_row": "ac2/unreadable-holds",
+          "line": 678,
+          "label": "'a clone whose local remote cannot be read holds the scratch [%s %s]' % (named(done, item), said_of(item, lib).get('said'))",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'children') and handed == [] and (found_of(item).get('states') == {'path:' + str(lib): 'unread'}) and (lib / 'lib.txt').is_file()",
+          "disposition": "retained",
+          "evidence": "ac2/unreadable (candidate sandbox exception retained)"
+        },
+        {
+          "old_row": "ac2/unreadable-holds",
+          "line": 690,
+          "label": "'a folder beneath it that cannot be listed holds the scratch [%s %s]' % (named(done, item), found_of(item).get('states'))",
+          "assertion": "os.geteuid() == 0 or (named(done, item) == ('deferred', 'in_use', 'children') and handed == [] and (found_of(item).get('states') == {'path:' + str(path): 'unread'}) and (text_of(path / 'closed' / 'inside.txt') == 'inside\\n'))",
+          "disposition": "retained",
+          "evidence": "ac2/unreadable (candidate sandbox exception retained)"
+        },
+        {
+          "old_row": "ac2/build-output",
+          "line": 704,
+          "label": "'a repository with an unpushed commit beneath a build output item holds it [%s %s]' % (named(done, item), said_of(item, lib))",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'children') and handed == [] and (found_of(item).get('states') == {'path:' + str(lib): 'unrecorded'}) and (git(lib, 'rev-parse', 'HEAD') == local)",
+          "disposition": "retained",
+          "evidence": "ac2/build-output"
+        },
+        {
+          "old_row": "ac2/last-look",
+          "line": 726,
+          "label": "\"the remover's own look under the marked name finds the commit and refuses, in_use [%s]\" % (named(done, item),)",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'tool') and len(late) == 1",
+          "disposition": "retained",
+          "evidence": "ac2/clean-clone-reading; remover suite 138 final descriptor guard"
+        },
+        {
+          "old_row": "ac2/last-look",
+          "line": 728,
+          "label": "'the folder is back at its path with the clone and its commit'",
+          "assertion": "not os.path.lexists(RM.marked(str(path), item)) and git(lib, 'rev-parse', 'HEAD') == late[0] and (text_of(lib / 'late.txt') == 'made after rule 6 looked\\n')",
+          "disposition": "retained",
+          "evidence": "ac2/clean-clone-reading; remover suite 138 final descriptor guard"
+        },
+        {
+          "old_row": "ac3/creators-declare-the-form",
+          "line": 740,
+          "label": "'%s declares its repository as an agent repository with the form %s' % (name, form)",
+          "assertion": "len(calls) == 1 and calls[0].startswith(\"'agent_repository'\")",
+          "disposition": "retained",
+          "evidence": "ac3/kind-and-form"
+        },
+        {
+          "old_row": "ac3/creators-declare-the-form",
+          "line": 745,
+          "label": "'a %s is an item of the kind agent repository with its form, ending at run finished [%s]' % (form, (record.get('ends_on') or {}).get('events'))",
+          "assertion": "record.get('kind') == 'agent_repository' and record.get('form') == form and ('run_finished' in ((record.get('ends_on') or {}).get('events') or ()))",
+          "disposition": "retained",
+          "evidence": "ac3/kind-and-form"
+        },
+        {
+          "old_row": "ac3/creators-declare-the-form",
+          "line": 751,
+          "label": "'the Ledger takes a form for an agent repository only: scratch with one is refused [%s]' % (refused.get('reason'),)",
+          "assertion": "refused.get('ok') is False",
+          "disposition": "retained",
+          "evidence": "ac3/kind-and-form"
+        },
+        {
+          "old_row": "ac3/keep-first",
+          "line": 762,
+          "label": "'%s: before, no repository but the clone held its commit; it is removed, keep step first [%s %s]' % (form, named(done, item), removal_of(item).get('method'))",
+          "assertion": "before != 0 and named(done, item)[0] == 'removed' and (not os.path.lexists(str(work))) and (removal_of(item).get('method') == METHOD.get(form, 'keep_then_rename_probe_delete'))",
+          "disposition": "retained",
+          "evidence": "ac3/commit-kept"
+        },
+        {
+          "old_row": "ac3/keep-first",
+          "line": 766,
+          "label": "'%s: the commit is on a kept ref of the main repository, its file readable there' % form",
+          "assertion": "held_in_main(own) and git(REPOSITORY, 'show', own + ':own.txt', ok=False) == 0 and (git(REPOSITORY, 'show', own + ':own.txt') == 'made in the clone and never brought across')",
+          "disposition": "retained",
+          "evidence": "ac3/commit-kept"
+        },
+        {
+          "old_row": "ac3/clone-request",
+          "line": 781,
+          "label": "'%s: deferred as unique work by rule 5, no remover handed it [%s]' % (form, named(done, item))",
+          "assertion": "named(done, item) == ('deferred', 'unique_work', 'unique_work') and handed == [] and (found_of(item).get('files') == [edited])",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/clone-request",
+          "line": 784,
+          "label": "'%s: one request is raised on the space disposition touchpoint [%s %s]' % (form, entry.get('decision_request'), entry.get('request_refusal'))",
+          "assertion": "(entry.get('decision_request') or {}).get('ok') is True and asked.get('state') == 'requested' and (asked.get('number') == 1) and (deferral_of(item).get('decision_request') == asked.get('alias'))",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/clone-request",
+          "line": 788,
+          "label": "'%s: its terms name the clone as a clone, with its form and the file, and no worktree [%s]' % (form, proposal)",
+          "assertion": "proposal == {'keep': ST.SPACE_CLONE_KEEP, 'clones': [{'item': item, 'path': str(work), 'form': form, 'files': [edited]}]}",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/clone-request",
+          "line": 794,
+          "label": "'%s: it is shown as a clone and offers Keep alone, the one answer that can be carried [%s]' % (form, shown.get('choices'))",
+          "assertion": "shown.get('choices') == ['accept keep'] and 'Clone: ' + json.dumps(str(work)) in brief and ('Form: ' + json.dumps(form) in brief) and (json.dumps(edited) in brief) and ('Worktree' not in brief) and ('Discard' not in brief.replace('no Discard', ''))",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/clone-request",
+          "line": 801,
+          "label": "'%s: the next event raises no second request, and the file is in place [%s]' % (form, (outcome_of(done, item).get('decision_request') or {}).get('reason'))",
+          "assertion": "again == asked and (not (L.item(item) or {}).get('disposition_history')) and (text_of(work / edited) == content) and (state_of(item) == 'deferred')",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/clone-request",
+          "line": 808,
+          "label": "'terms that list the clone as a worktree are refused [%s]' % (refused.get('reason'),)",
+          "assertion": "refused.get('ok') is False and (L.item(item) or {}).get('disposition') == again",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/clone-request",
+          "line": 816,
+          "label": "\"the Ledger refuses a worktree's terms for a deferred clone: it is asked about as a clone [%s %s %s]\" % (wrote.get('reason'), sorted(shaped), refused.get('reason'))",
+          "assertion": "state_of(fresh) == 'deferred' and 'worktrees' in shaped and (refused.get('ok') is False) and (refused.get('reason') == 'space_disposition_item') and (not (L.item(fresh) or {}).get('disposition'))",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/worker-clone-saved",
+          "line": 840,
+          "label": "'an ended worker clone with uncommitted files is removed, not deferred [%s %s]' % (named(done, item), deferral_of(item))",
+          "assertion": "named(done, item)[0] == 'removed' and (not os.path.lexists(str(work))) and (removal_of(item).get('method') == 'keep_snapshot_then_rename_probe_compare_delete')",
+          "disposition": "retained",
+          "evidence": "ac3/worker-snapshot"
+        },
+        {
+          "old_row": "ac3/worker-clone-saved",
+          "line": 844,
+          "label": "'no request was raised for it'",
+          "assertion": "not (L.item(item) or {}).get('disposition') and 'decision_request' not in outcome_of(done, item)",
+          "disposition": "retained",
+          "evidence": "ac3/worker-snapshot"
+        },
+        {
+          "old_row": "ac3/worker-clone-saved",
+          "line": 846,
+          "label": "'each file that was work is in the snapshot store, byte for byte [%s]' % (saved,)",
+          "assertion": "len(attempts) == 1 and str(saved).startswith(str(STATE / 'space-saved') + os.sep) and (text_of(saved / 'tracked.txt') == 'edited by the worker\\n') and (text_of(saved / 'draft.txt') == 'a draft the worker never committed\\n') and (text_of(saved / 'notes-private.md') == 'notes a personal rule hides\\n') and (text_of(saved / 'settings.local') == 'key = local\\n')",
+          "disposition": "retained",
+          "evidence": "ac3/worker-snapshot"
+        },
+        {
+          "old_row": "ac3/worker-clone-saved",
+          "line": 852,
+          "label": "'a file in an untracked folder is saved at its own path, and a link as a link'",
+          "assertion": "text_of(saved / 'sketches' / 'deep' / 'idea.txt') == 'an idea in an untracked folder\\n' and os.path.islink(str(saved / 'latest')) and (os.readlink(str(saved / 'latest')) == 'draft.txt')",
+          "disposition": "retained",
+          "evidence": "ac3/worker-snapshot"
+        },
+        {
+          "old_row": "ac3/worker-clone-saved",
+          "line": 855,
+          "label": "\"build output is not saved, and the clone's commit is on a kept ref of the main repository\"",
+          "assertion": "not os.path.lexists(str(saved / 'build')) and held_in_main(own)",
+          "disposition": "retained",
+          "evidence": "ac3/worker-snapshot"
+        },
+        {
+          "old_row": "ac3/changed-after-snapshot",
+          "line": 886,
+          "label": "'the comparison stops the delete: deferred keep_failed, by the remover [%s %s]' % (named(done, item), (found_of(item).get('said') or {}).get('said'))",
+          "assertion": "wrote == [True] and named(done, item) == ('deferred', 'keep_failed', 'tool') and (state_of(item) == 'deferred')",
+          "disposition": "retained",
+          "evidence": "ac3/compare-before-delete"
+        },
+        {
+          "old_row": "ac3/changed-after-snapshot",
+          "line": 890,
+          "label": "\"the rewritten file is in place with its new content, at the clone's own path [%s]\" % (text_of(work / 'draft.txt'),)",
+          "assertion": "text_of(work / 'draft.txt') == 'rewritten after the snapshot\\n'",
+          "disposition": "retained",
+          "evidence": "ac3/compare-before-delete"
+        },
+        {
+          "old_row": "ac3/changed-after-snapshot",
+          "line": 892,
+          "label": "'the first snapshot holds what the file was when it was saved'",
+          "assertion": "len(first) == 1 and text_of(Path(first[0]['path']) / 'work' / 'draft.txt') == 'the first draft\\n'",
+          "disposition": "retained",
+          "evidence": "ac3/compare-before-delete"
+        },
+        {
+          "old_row": "ac3/renamed-back",
+          "line": 898,
+          "label": "\"the comparison stopped this clone's removal too [%s]\" % (named(done, item),)",
+          "assertion": "wrote == [True] and named(done, item) == ('deferred', 'keep_failed', 'tool')",
+          "disposition": "retained",
+          "evidence": "ac3/put-back-at-stop"
+        },
+        {
+          "old_row": "ac3/renamed-back",
+          "line": 900,
+          "label": "'the folder is back at its locator, a repository git reads, and nothing is at the marked name'",
+          "assertion": "(work / '.git').is_dir() and git(work, 'rev-parse', 'HEAD') == head and (not os.path.lexists(mark))",
+          "disposition": "retained",
+          "evidence": "ac3/put-back-at-stop"
+        },
+        {
+          "old_row": "ac3/renamed-back",
+          "line": 902,
+          "label": "'the item keeps its id and its locator, deferred and not left removing [%s %s]' % (state_of(item), deferral_of(item).get('left_at'))",
+          "assertion": "((L.item(item) or {}).get('locator') or {}).get('path') == str(work) and state_of(item) == 'deferred' and ('left_at' not in deferral_of(item))",
+          "disposition": "retained",
+          "evidence": "ac3/put-back-at-stop"
+        },
+        {
+          "old_row": "ac3/renamed-back",
+          "line": 906,
+          "label": "'reconcile reads the item as there, with nothing under its marked name: it is not gone [%s]' % (REC.places(str(work), item, RM),)",
+          "assertion": "REC.places(str(work), item, RM) == (True, False)",
+          "disposition": "retained",
+          "evidence": "ac3/put-back-at-stop"
+        },
+        {
+          "old_row": "ac3/renamed-back",
+          "line": 910,
+          "label": "'the next attempt saves what is left under the next number and removes the clone [%s %s]' % (named(done, item), [attempt.get('number') for attempt in second])",
+          "assertion": "named(done, item)[0] == 'removed' and (not os.path.lexists(str(work))) and (len(second) == 2) and ([attempt.get('number') for attempt in second] == [1, 2]) and (text_of(Path(second[1]['path']) / 'work' / 'draft.txt') == 'rewritten after the snapshot\\n') and (text_of(Path(second[0]['path']) / 'work' / 'draft.txt') == 'the first draft\\n')",
+          "disposition": "retained",
+          "evidence": "ac3/put-back-at-stop"
+        },
+        {
+          "old_row": "ac3/not-shown",
+          "line": 922,
+          "label": "'a worker clone no manifest shows to be one waits, as unique work [%s %s]' % (named(done, item), found_of(item).get('not_shown_a_worker_clone'))",
+          "assertion": "named(done, item) == ('deferred', 'unique_work', 'unique_work') and handed == [] and bool(found_of(item).get('not_shown_a_worker_clone')) and (text_of(work / 'draft.txt') == 'a draft\\n') and (snapshots_of(item) == [])",
+          "disposition": "retired",
+          "evidence": "SUPERSEDED: candidate 7808cb3da declares form in the signed ledger, not a second worker-manifest authority. ac3/kind-and-form; snapshot and comparison remain mandatory"
+        },
+        {
+          "old_row": "ac3/table-1-clone",
+          "line": 952,
+          "label": "'fixture: both clones have their form and were declared under table 1, which ends them at no run finished [%s %s]' % (versions, events)",
+          "assertion": "versions == ['1', '1'] and 'run_finished' not in events and ('ticket_ended' in events) and ((L.item(batch) or {}).get('form') == 'batch_clone') and ((L.item(worker) or {}).get('form') == 'worker_clone')",
+          "disposition": "retained",
+          "evidence": "ac3/table-1-keeps-its-handling"
+        },
+        {
+          "old_row": "ac3/table-1-clone",
+          "line": 959,
+          "label": "'a table 1 batch clone with a file in no commit: rule 5 does not read its work tree, the remover is handed it and refuses, keep_failed [%s %s]' % (named(done, batch), handed)",
+          "assertion": "named(done, batch) == ('deferred', 'keep_failed', 'tool') and handed == [batch] and ('work_tree' not in found_of(batch))",
+          "disposition": "retained",
+          "evidence": "ac3/table-1-keeps-its-handling"
+        },
+        {
+          "old_row": "ac3/table-1-clone",
+          "line": 963,
+          "label": "'no request is raised for it: table 1 names none [%s]' % (entry.get('decision_request'),)",
+          "assertion": "'decision_request' not in entry and 'request_refusal' not in entry and (not (L.item(batch) or {}).get('disposition')) and ('decision_request' not in deferral_of(batch))",
+          "disposition": "retained",
+          "evidence": "ac3/table-1-keeps-its-handling"
+        },
+        {
+          "old_row": "ac3/table-1-clone",
+          "line": 967,
+          "label": "'the clone is at its locator with its file, byte for byte'",
+          "assertion": "text_of(batch_work / 'notes.txt') == 'notes nobody committed\\n' and (batch_work / '.git').is_dir() and (not os.path.lexists(RM.marked(str(batch_work), batch)))",
+          "disposition": "retained",
+          "evidence": "ac3/table-1-keeps-its-handling"
+        },
+        {
+          "old_row": "ac3/table-1-clone",
+          "line": 972,
+          "label": "\"the Ledger takes no clone's request for an item of table 1 [%s]\" % (asked.get('reason'),)",
+          "assertion": "asked.get('ok') is False and asked.get('reason') == 'space_disposition_state' and (not (L.item(batch) or {}).get('disposition')) and (state_of(batch) == 'deferred')",
+          "disposition": "retained",
+          "evidence": "ac3/table-1-keeps-its-handling"
+        },
+        {
+          "old_row": "ac3/table-1-clone",
+          "line": 976,
+          "label": "'a table 1 worker clone with uncommitted files is not saved and removed: the remover refuses, keep_failed, and nothing is in the snapshot store [%s %s]' % (named(done, worker), snapshots_of(worker))",
+          "assertion": "named(done, worker) == ('deferred', 'keep_failed', 'tool') and handed == [worker] and (snapshots_of(worker) == []) and ('work_tree' not in found_of(worker))",
+          "disposition": "retained",
+          "evidence": "ac3/table-1-keeps-its-handling"
+        },
+        {
+          "old_row": "ac3/table-1-clone",
+          "line": 981,
+          "label": "'its files are in place, byte for byte, at its locator'",
+          "assertion": "text_of(worker_work / 'tracked.txt') == 'edited by the worker\\n' and text_of(worker_work / 'draft.txt') == 'a draft the worker never committed\\n' and (not os.path.lexists(RM.marked(str(worker_work), worker)))",
+          "disposition": "retained",
+          "evidence": "ac3/table-1-keeps-its-handling"
+        },
+        {
+          "old_row": "ac3/table-1-clone",
+          "line": 988,
+          "label": "'a table 1 clone with nothing uncommitted goes as an agent repository goes, keep step first [%s %s]' % (named(done, clean), removal_of(clean).get('method'))",
+          "assertion": "named(done, clean)[0] == 'removed' and (not os.path.lexists(str(clean_work))) and (removal_of(clean).get('method') == 'keep_then_rename_probe_delete') and held_in_main(own)",
+          "disposition": "retained",
+          "evidence": "ac3/table-1-keeps-its-handling"
+        },
+        {
+          "old_row": "ac3/table-2-clone",
+          "line": 997,
+          "label": "'fixture: the same two clones, declared under table 2 [%s]' % (versions,)",
+          "assertion": "versions == ['2', '2']",
+          "disposition": "retained",
+          "evidence": "ac3/worker-snapshot"
+        },
+        {
+          "old_row": "ac3/table-2-clone",
+          "line": 1002,
+          "label": "'a table 2 batch clone with a file in no commit, at the same event: rule 5 reads its work tree and defers it as unique work, no remover handed it [%s %s]' % (named(done, batch), handed)",
+          "assertion": "named(done, batch) == ('deferred', 'unique_work', 'unique_work') and handed == [] and (found_of(batch).get('work_tree') is True) and (found_of(batch).get('files') == ['notes.txt'])",
+          "disposition": "retained",
+          "evidence": "ac3/worker-snapshot"
+        },
+        {
+          "old_row": "ac3/table-2-clone",
+          "line": 1006,
+          "label": "'one request is raised, naming it as a clone [%s]' % (entry.get('decision_request'),)",
+          "assertion": "(entry.get('decision_request') or {}).get('ok') is True and asked.get('state') == 'requested' and ([clone.get('item') for clone in (asked.get('proposal') or {}).get('clones') or ()] == [batch]) and (text_of(batch_work / 'notes.txt') == 'notes nobody committed\\n')",
+          "disposition": "retained",
+          "evidence": "ac3/worker-snapshot"
+        },
+        {
+          "old_row": "ac3/table-2-clone",
+          "line": 1013,
+          "label": "'a table 2 worker clone with uncommitted files, at the same event: saved in the snapshot store and removed, with no request [%s %s]' % (named(done, worker), removal_of(worker).get('method'))",
+          "assertion": "named(done, worker)[0] == 'removed' and (not os.path.lexists(str(worker_work))) and (removal_of(worker).get('method') == 'keep_snapshot_then_rename_probe_compare_delete') and (not (L.item(worker) or {}).get('disposition'))",
+          "disposition": "retained",
+          "evidence": "ac3/worker-snapshot"
+        },
+        {
+          "old_row": "ac3/table-2-clone",
+          "line": 1018,
+          "label": "'both files are in its snapshot, byte for byte'",
+          "assertion": "len(attempts) == 1 and text_of(saved / 'tracked.txt') == 'edited by the worker\\n' and (text_of(saved / 'draft.txt') == 'a draft the worker never committed\\n')",
+          "disposition": "retained",
+          "evidence": "ac3/worker-snapshot"
+        },
+        {
+          "old_row": "ac3/ledger-keep-only",
+          "line": 1053,
+          "label": "'%s: fixture: the clone is deferred with its request' % choice",
+          "assertion": "before.get('state') == 'deferred' and (before.get('disposition') or {}).get('state') == 'requested'",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/ledger-keep-only",
+          "line": 1057,
+          "label": "\"%s: fixture: the store holds a settled answer the Ledger reads as this request's [%s]\" % (choice, effect.get('choice'))",
+          "assertion": "effect.get('choice') == 'accept ' + choice",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/ledger-keep-only",
+          "line": 1061,
+          "label": "'a settled %s of a clone is refused by the Ledger: a clone is kept, nothing saves or discards one [%s]' % (choice, applied.get('reason'))",
+          "assertion": "applied.get('ok') is False and applied.get('reason') == 'space_disposition_choice'",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/ledger-keep-only",
+          "line": 1064,
+          "label": "'%s: the item is as it was, deferred with its request, not due and not authorized [%s %s]' % (choice, after.get('state'), (after.get('disposition') or {}).get('state'))",
+          "assertion": "after.get('state') == 'deferred' and after.get('disposition') == before.get('disposition') and (text_of(work / 'notes.txt') == 'notes nobody committed\\n') and (work / '.git').is_dir()",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac3/ledger-keep-only",
+          "line": 1075,
+          "label": "'what the guard is not: the same planted Discard of a worktree is taken, and the worktree is due again [%s %s %s]' % (asked, applied.get('reason'), state_of(tree))",
+          "assertion": "asked == 'requested' and applied.get('ok') is True and (state_of(tree) == 'due') and (((L.item(tree) or {}).get('disposition') or {}).get('choice') == 'discard') and (text_of(tree_path / 'draft.txt') == 'a draft\\n')",
+          "disposition": "retained",
+          "evidence": "ac3/unique-work-request"
+        },
+        {
+          "old_row": "ac4/held-files-go",
+          "line": 1133,
+          "label": "'fixture: the store holds a blob whose digest is the digest of these bytes'",
+          "assertion": "'sha256:' + hashlib.sha256(blob).hexdigest() == stored[3]",
+          "disposition": "retained",
+          "evidence": "ac4/digest-at-removal"
+        },
+        {
+          "old_row": "ac4/held-files-go",
+          "line": 1154,
+          "label": "'the evidence remover ran and the item stays, kept [%s %s]' % (named(done, item), handed)",
+          "assertion": "named(done, item)[0] == 'kept' and outcome_of(done, item).get('action') == 'remove_held' and (handed == [item]) and path.is_dir()",
+          "disposition": "retained",
+          "evidence": "ac4/digest-at-removal"
+        },
+        {
+          "old_row": "ac4/held-files-go",
+          "line": 1157,
+          "label": "'the files a copy holds are gone: store, trunk commit, kept ref [%s]' % (sorted(os.listdir(str(path))),)",
+          "assertion": "sorted(os.listdir(str(path))) == ['deep', 'link', 'only-here.log'] and os.listdir(str(path / 'deep')) == []",
+          "disposition": "retained",
+          "evidence": "ac4/digest-at-removal"
+        },
+        {
+          "old_row": "ac4/held-files-go",
+          "line": 1159,
+          "label": "'the file with no copy and the link are as they were'",
+          "assertion": "(path / 'only-here.log').read_bytes() == b'the only copy\\n' and os.readlink(str(path / 'link')) == 'only-here.log'",
+          "disposition": "retained",
+          "evidence": "ac4/digest-at-removal"
+        },
+        {
+          "old_row": "ac4/held-files-go",
+          "line": 1161,
+          "label": "'the outcome says what went, what stayed and where the copies are [%s]' % (facts,)",
+          "assertion": "facts.get('removed_files') == 4 and facts.get('kept_files') == 2 and (facts.get('copies') == {'store': 1, 'commit': 3}) and (sorted(facts.get('kept') or ()) == ['link', 'only-here.log'])",
+          "disposition": "retained",
+          "evidence": "ac4/digest-at-removal"
+        },
+        {
+          "old_row": "ac4/changed-after-measure",
+          "line": 1173,
+          "label": "'measured while no copy is held: the file stays [%s]' % (said.get('kept'),)",
+          "assertion": "said.get('ok') is True and said.get('kept') == ['receipt.json'] and (said.get('removed_files') == 0) and ((path / 'receipt.json').read_bytes() == receipt)",
+          "disposition": "retained",
+          "evidence": "ac4/digest-at-removal"
+        },
+        {
+          "old_row": "ac4/changed-after-measure",
+          "line": 1181,
+          "label": "'the store now holds what was measured, and the file has changed since: it stays [%s %s]' % (said.get('removed'), said.get('kept'))",
+          "assertion": "said.get('ok') is True and said.get('removed_files') == 0 and (said.get('kept') == ['receipt.json']) and ((path / 'receipt.json').read_bytes() == b'changed after it was measured\\n')",
+          "disposition": "retained",
+          "evidence": "ac4/digest-at-removal"
+        },
+        {
+          "old_row": "ac4/changed-after-measure",
+          "line": 1187,
+          "label": "'with the content the store holds, read now, it goes [%s]' % (said.get('removed'),)",
+          "assertion": "said.get('removed') == ['receipt.json'] and (not os.path.lexists(str(path / 'receipt.json')))",
+          "disposition": "retained",
+          "evidence": "ac4/digest-at-removal"
+        },
+        {
+          "old_row": "ac4/changed-after-measure",
+          "line": 1205,
+          "label": "'a file written between the read of its digest and its delete stays [%s %s]' % (swapped, said.get('kept'))",
+          "assertion": "swapped == ['commit'] and said.get('removed_files') == 0 and ((path / 'gate.log').read_bytes() == b'written while it was read\\n')",
+          "disposition": "retained",
+          "evidence": "ac4/digest-at-removal"
+        },
+        {
+          "old_row": "ac4/unreadable-is-no-copy",
+          "line": 1225,
+          "label": "'a store and a trunk that cannot be read are no copy: both files stay [%s %s]' % (said.get('kept'), said.get('unread'))",
+          "assertion": "said.get('ok') is True and said.get('removed_files') == 0 and (sorted(said.get('kept') or ()) == ['entity.json', 'tracked-copy.txt']) and ((path / 'entity.json').read_bytes() == blob) and ((path / 'tracked-copy.txt').read_bytes() == LANDED)",
+          "disposition": "retained",
+          "evidence": "ac4/no-copy-unread"
+        },
+        {
+          "old_row": "ac4/unreadable-is-no-copy",
+          "line": 1230,
+          "label": "'the answer says what could not be read [%s]' % (said.get('unread'),)",
+          "assertion": "any(('store' in str(what) for what in said.get('unread') or ())) and any(('trunk' in str(what) for what in said.get('unread') or ()))",
+          "disposition": "retained",
+          "evidence": "ac4/no-copy-unread"
+        },
+        {
+          "old_row": "ac4/unreadable-is-no-copy",
+          "line": 1235,
+          "label": "'with the store read again its copy goes, and the file only the unread trunk holds stays [%s %s]' % (said.get('removed'), said.get('kept'))",
+          "assertion": "said.get('removed') == ['entity.json'] and said.get('kept') == ['tracked-copy.txt'] and ((path / 'tracked-copy.txt').read_bytes() == LANDED)",
+          "disposition": "retained",
+          "evidence": "ac4/no-copy-unread"
+        },
+        {
+          "old_row": "ac4/unreadable-is-no-copy",
+          "line": 1240,
+          "label": "'and with the trunk read it goes [%s]' % (said.get('removed'),)",
+          "assertion": "said.get('removed') == ['tracked-copy.txt']",
+          "disposition": "retained",
+          "evidence": "ac4/no-copy-unread"
+        },
+        {
+          "old_row": "ac4/trunk-never-guessed",
+          "line": 1248,
+          "label": "\"with no trunk named only the kept refs are read: the trunk's file stays [%s]\" % (sorted(os.listdir(str(path))),)",
+          "assertion": "named(done, item)[0] == 'kept' and sorted(os.listdir(str(path))) == ['tracked-copy.txt']",
+          "disposition": "retained",
+          "evidence": "ac4/declared-trunk"
+        },
+        {
+          "old_row": "ac5/own-folder-holds",
+          "line": 1259,
+          "label": "'a scratch item whose own folder is a repository holds itself, in_use by children [%s]' % (named(done, item),)",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'children') and handed == []",
+          "disposition": "retained",
+          "evidence": "ac5/own-folder"
+        },
+        {
+          "old_row": "ac5/own-folder-holds",
+          "line": 1261,
+          "label": "'the deferral names its own path as unrecorded and says why [%s %s]' % (found_of(item).get('states'), said_of(item, path))",
+          "assertion": "found_of(item).get('states') == {'path:' + str(path): 'unrecorded'} and said_of(item, path).get('why') == ['the_item_is_a_repository']",
+          "disposition": "retained",
+          "evidence": "ac5/own-folder"
+        },
+        {
+          "old_row": "ac5/own-folder-holds",
+          "line": 1265,
+          "label": "'the clone is in place with its unpushed commit'",
+          "assertion": "git(path, 'rev-parse', 'HEAD') == unpushed and (path / '.git').is_dir()",
+          "disposition": "retained",
+          "evidence": "ac5/own-folder"
+        },
+        {
+          "old_row": "ac5/own-folder-holds",
+          "line": 1270,
+          "label": "'so does one that is a clean clone: only one beneath an item goes with it [%s]' % (named(done, item),)",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'children') and handed == [] and (path / '.git').is_dir()",
+          "disposition": "retained",
+          "evidence": "ac5/own-folder"
+        },
+        {
+          "old_row": "ac5/own-folder-holds",
+          "line": 1276,
+          "label": "'and a build output item whose own folder is a repository [%s]' % (named(done, item),)",
+          "assertion": "named(done, item) == ('deferred', 'in_use', 'children') and handed == [] and (path / '.git').is_dir()",
+          "disposition": "retained",
+          "evidence": "ac5/own-folder"
+        },
+        {
+          "old_row": "ac5/own-folder-holds",
+          "line": 1278,
+          "label": "'the probe: a folder with a .git entry and a bare git folder are repositories, a plain folder is not'",
+          "assertion": "P.is_repository(str(path)) is True and P.is_repository(str(REMOTE)) is True and (P.is_repository(str(SCRATCH)) is False) and (P.is_repository(str(temp / 'nothing-here')) is False)",
+          "disposition": "retained",
+          "evidence": "ac5/own-folder"
+        },
+        {
+          "old_row": "ac5/registry-row",
+          "line": 1285,
+          "label": "'table 1 is as it was issued, to the byte of its canonical form'",
+          "assertion": "hashlib.sha256(json.dumps(first_table, sort_keys=True).encode()).hexdigest() == '31d2ce87d3e45137b63cea3f1f0cb3f314fef44535b7c0cb493553d1c59830ec'",
+          "disposition": "retained",
+          "evidence": "ac5/clone-row"
+        },
+        {
+          "old_row": "ac5/registry-row",
+          "line": 1288,
+          "label": "'table 2, the current one, has the row for an agent repository that is a clone; table 1 has not'",
+          "assertion": "K.REGISTRY['version'] == '2' and 'agent_repository_clone' in second_table['rows'] and ('agent_repository_clone' not in first_table['rows']) and (L.lifecycle['version'] == '2')",
+          "disposition": "retained",
+          "evidence": "ac5/clone-row"
+        },
+        {
+          "old_row": "ac5/registry-row",
+          "line": 1294,
+          "label": "'an item with a clone form reads that row at run finished [%s]' % (got,)",
+          "assertion": "len(got) == 1 and got[0]['row'] == 'agent_repository_clone' and (got[0]['action'] == 'remove') and (got[0]['version'] == '2')",
+          "disposition": "retained",
+          "evidence": "ac5/clone-row"
+        },
+        {
+          "old_row": "ac5/registry-row",
+          "line": 1299,
+          "label": "\"the same item declared under table 1 reads the agent repository's row, as before [%s]\" % (got,)",
+          "assertion": "len(got) == 1 and got[0]['row'] == 'agent_repository' and (got[0]['version'] == '1') and (K.due('run_finished', [(item, old)], look=lambda identity, found: {}) == [])",
+          "disposition": "retained",
+          "evidence": "ac5/clone-row"
+        },
+        {
+          "old_row": "ac5/registry-row",
+          "line": 1305,
+          "label": "\"an item with no form reads the agent repository's own row under table 2 [%s]\" % (got,)",
+          "assertion": "len(got) == 1 and got[0]['row'] == 'agent_repository' and (got[0].get('requires') == 'branches_in_shared_repository')",
+          "disposition": "retained",
+          "evidence": "ac5/clone-row"
+        },
+        {
+          "old_row": "ac5/no-form",
+          "line": 1319,
+          "label": "\"an agent repository item with no form ends on the agent repository's own events [%s]\" % (events,)",
+          "assertion": "events == OWN and 'run_finished' not in OWN",
+          "disposition": "retained",
+          "evidence": "ac5/clone-row"
+        },
+        {
+          "old_row": "ac5/no-form",
+          "line": 1322,
+          "label": "'run finished does not make it due, its worktree still in place [%s %s]' % (state_of(home), outcome_of(done, home))",
+          "assertion": "state_of(home) == 'present' and outcome_of(done, home) == {} and (home not in handed) and (home_path / '.git').is_dir() and (inner_path / 'tracked.txt').is_file()",
+          "disposition": "retained",
+          "evidence": "ac5/clone-row"
+        },
+        {
+          "old_row": "ac5/no-form",
+          "line": 1328,
+          "label": "'the form agent reads the same events, and a clone form the events of its own row'",
+          "assertion": "((L.item(agent) or {}).get('ends_on') or {}).get('events') == OWN and ((L.item(clone) or {}).get('ends_on') or {}).get('events') == [event for event in K.EVENTS if event in second_table['rows'].get('agent_repository_clone', {})] and ('run_finished' in ((L.item(clone) or {}).get('ends_on') or {}).get('events'))",
+          "disposition": "retained",
+          "evidence": "ac5/clone-row"
+        },
+        {
+          "old_row": "unseen/canon",
+          "line": 1335,
+          "label": "'the engine canon engine/.veldo/%s equals this repository copy' % name",
+          "assertion": "(ROOT / 'engine' / '.veldo' / name).is_file() and (ROOT / 'engine' / '.veldo' / name).read_bytes() == (ROOT / '.veldo' / name).read_bytes()",
+          "disposition": "retained",
+          "evidence": "canon"
+        }
+      ],
+      "infrastructure_guards": [
+        {
+          "line": 442,
+          "assertion": "check(name, 'raised ' + type(error).__name__ + ': ' + str(error)[:300] + ' ' + ' | '.join(traceback.format_exc().splitlines()[-4:])[:400], False)",
+          "disposition": "retained",
+          "evidence": "Replacement suite catches fixture/row exceptions and requires nonempty successful row results."
+        },
+        {
+          "line": 1344,
+          "assertion": "check(name, said, False)",
+          "disposition": "retained",
+          "evidence": "Replacement suite catches fixture/row exceptions and requires nonempty successful row results."
+        }
+      ],
+      "unresolved": []
+    }
+  ],
+  "distinct_mutations": {
+    "space334-signal-refusal-leaves-waiting": {
+      "finding": 334,
+      "name": "space334-signal-refusal-leaves-waiting",
+      "suite": "158_veldo_0334_space_freed.py",
+      "rows": [
+        "space334/report/signal-refused-advised"
+      ],
+      "status": "passed",
+      "receipts": [
+        {
+          "path": "remaining-7bc0be301/validation-teeth/space334-signal-refusal-leaves-waiting.log",
+          "sha256": "2f02f1987cfc609658d7018ca83d283b955c9365743c879f0f0f3ad5b04b8f1d",
+          "registered": 1,
+          "executed": 1,
+          "rejected": 1,
+          "invalid_results": []
+        }
+      ]
+    },
+    "space316-lost-completion-wake": {
+      "finding": 316,
+      "name": "space316-lost-completion-wake",
+      "suite": "157_veldo_0316_space_admission.py",
+      "rows": [
+        "space316/ac2/completion-wakes"
+      ],
+      "status": "passed",
+      "receipts": [
+        {
+          "path": "remaining-7bc0be301/validation-teeth/space316-lost-completion-wake.log",
+          "sha256": "f95e779b2b55bfd11f787cb234000c55dbedd7aa715ea0227f0f1d423064a8b5",
+          "registered": 1,
+          "executed": 1,
+          "rejected": 1,
+          "invalid_results": []
+        }
+      ]
+    },
+    "space316-release-winning-promise": {
+      "finding": 316,
+      "name": "space316-release-winning-promise",
+      "suite": "157_veldo_0316_space_admission.py",
+      "rows": [
+        "space316/ac2/racing-prepare"
+      ],
+      "status": "passed",
+      "receipts": [
+        {
+          "path": "remaining-7bc0be301/validation-teeth/space316-release-winning-promise.log",
+          "sha256": "2c8842e9a26f4b76c7862af01c541803c2a4e77f7bb898eb666e47eeec8b1f22",
+          "registered": 1,
+          "executed": 1,
+          "rejected": 1,
+          "invalid_results": []
+        }
+      ]
+    },
+    "space316-no-account-loses-hold": {
+      "finding": 316,
+      "name": "space316-no-account-loses-hold",
+      "suite": "157_veldo_0316_space_admission.py",
+      "rows": [
+        "space316/fix4/no-account-keeps-hold"
+      ],
+      "status": "passed",
+      "receipts": [
+        {
+          "path": "remaining-7bc0be301/validation-teeth/space316-no-account-loses-hold.log",
+          "sha256": "172af1f6a83255dff8e4ad9118f7423da098ab5f3d8d846b24a4379f0c0cccbe",
+          "registered": 1,
+          "executed": 1,
+          "rejected": 1,
+          "invalid_results": []
+        }
+      ]
+    },
+    "space334-cache-hides-freed": {
+      "finding": 334,
+      "name": "space334-cache-hides-freed",
+      "suite": "157_veldo_0316_space_admission.py",
+      "rows": [
+        "space316/ac3/completion-race"
+      ],
+      "status": "passed",
+      "receipts": [
+        {
+          "path": "remaining-a50245fb8/validation-teeth/space334-cache-hides-freed.log",
+          "sha256": "8c3b0b4e3fd5e4e56032072d59490b5409032314de3599d168a48ebf3c620525",
+          "registered": 1,
+          "executed": 1,
+          "rejected": 1,
+          "invalid_results": []
+        }
+      ]
+    },
+    "space334-failed-judgment-kept": {
+      "finding": 334,
+      "name": "space334-failed-judgment-kept",
+      "suite": "157_veldo_0316_space_admission.py",
+      "rows": [
+        "space316/fix1/failed-judgment"
+      ],
+      "status": "passed",
+      "receipts": [
+        {
+          "path": "remaining-a50245fb8/validation-teeth/space334-failed-judgment-kept.log",
+          "sha256": "ced763ed5cf876c83804682dba147c868dff20515afaefbc77eeff8133437d40",
+          "registered": 1,
+          "executed": 1,
+          "rejected": 1,
+          "invalid_results": []
+        }
+      ]
+    },
+    "space334-requests-resubmit-every-pass": {
+      "finding": 334,
+      "name": "space334-requests-resubmit-every-pass",
+      "suite": "157_veldo_0316_space_admission.py",
+      "rows": [
+        "space316/fix3/requests-unrelated-passes"
+      ],
+      "status": "passed",
+      "receipts": [
+        {
+          "path": "remaining-a50245fb8/validation-teeth/space334-requests-resubmit-every-pass.log",
+          "sha256": "34de21668356f28301026fbabfd466d0027dadd2cfd6672ecf8d2174052d21cd",
+          "registered": 1,
+          "executed": 1,
+          "rejected": 1,
+          "invalid_results": []
+        }
+      ]
+    },
+    "space334-waiting-release-marks": {
+      "finding": 334,
+      "name": "space334-waiting-release-marks",
+      "suite": "158_veldo_0334_space_freed.py",
+      "rows": [
+        "space334/fix2/waiting-release-no-mark"
+      ],
+      "status": "passed",
+      "receipts": [
+        {
+          "path": "remaining-7bc0be301/validation-teeth/space334-waiting-release-marks.log",
+          "sha256": "1dc3788839ab815059735fdbaf71862f5bd0c808d948d3d7bb17aa49c323d941",
+          "registered": 1,
+          "executed": 1,
+          "rejected": 1,
+          "invalid_results": []
+        }
+      ]
+    },
+    "space317-failed-andon-notice-kept": {
+      "finding": 317,
+      "name": "space317-failed-andon-notice-kept",
+      "suite": "159_veldo_0317_no_space.py",
+      "rows": [
+        "space317/fix2/andon-redelivery"
+      ],
+      "status": "passed",
+      "receipts": [
+        {
+          "path": "remaining-7bc0be301/validation-teeth/space317-failed-andon-notice-kept.log",
+          "sha256": "7ede93b55fa0cccdf92d667799e21d23905766bb8c1fa1f802562a249b213585",
+          "registered": 1,
+          "executed": 1,
+          "rejected": 1,
+          "invalid_results": []
+        }
+      ]
+    }
+  },
+  "additional": {
+    "run_worktree": "Incoming 0319 suite assertions retained; 0347 owner-kept evidence child ported as space336/loss/owner-kept-evidence. Signed owner desk substitutes fixture infrastructure only.",
+    "representation_retirements": "Monotonically distinct attempts/space_failure replace decremented attempts/space_end; forms/FORM_ROWS replace composite ends_on and worker-manifest authority; versioned bounded CAS replaces unbounded/one-shot adapters. See per-row retirement maps."
+  }
+}
