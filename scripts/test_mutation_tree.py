@@ -7,6 +7,7 @@ from pathlib import Path
 import signal
 import sys
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('mutation_tree_observer', ROOT / 'scripts/mutation_observer.py')
@@ -116,6 +117,41 @@ class MutationTree(unittest.TestCase):
 
     def test_failed_worker_kills_and_reaps_live_orphans(self):
         self.run_worker(True)
+
+
+class MutationRuntime(unittest.TestCase):
+    def test_query_endpoint_stays_private_on_completion_and_exception(self):
+        for abort in (False, True):
+            with self.subTest(abort=abort), ALLOCATOR.directory() as root:
+                suites = root / 'scripts/suites'
+                suites.mkdir(parents=True)
+                host = root / 'host'
+                host.mkdir(mode=0o700)
+                (suites / 'shared.py').write_text('def expect(name, condition): pass\n')
+                # Leave a real endpoint behind, like a receiver killed before its finally.
+                # The observer must own its directory even when the suite raises.
+                (suites / 'fixture.py').write_text(
+                    'import importlib.util, socket\nfrom pathlib import Path\n'
+                    's = importlib.util.spec_from_file_location("query", %r)\n'
+                    'q = importlib.util.module_from_spec(s); s.loader.exec_module(q)\n'
+                    'path = q.endpoint("observer-runtime-regression")\n'
+                    'path.parent.mkdir(mode=0o700)\n'
+                    'with socket.socket(socket.AF_UNIX) as sock: sock.bind(str(path))\n'
+                    'Path(%r).write_text(str(path))\n'
+                    'if %r: raise RuntimeError("fixture early exit")\n'
+                    'expect("endpoint", True)\n'
+                    % (str(ROOT / '.veldo/control_run_query.py'), str(root / 'endpoint'), abort))
+                with patch.object(OBSERVER, 'ROOT', root), patch.dict(os.environ, {'XDG_RUNTIME_DIR': str(host)}):
+                    if abort:
+                        with self.assertRaisesRegex(RuntimeError, 'fixture early exit'):
+                            OBSERVER.worker(dict(suite='fixture.py', rows=['endpoint']))
+                    else:
+                        self.assertEqual(OBSERVER.worker(dict(suite='fixture.py', rows=['endpoint']))['failed_rows'], [])
+                    self.assertEqual(os.environ['XDG_RUNTIME_DIR'], str(host))
+                endpoint = Path((root / 'endpoint').read_text())
+                self.assertNotEqual(endpoint.parent.parent, host)
+                self.assertFalse(endpoint.parent.exists())
+                self.assertEqual(list(host.iterdir()), [])
 
 
 if __name__ == '__main__':

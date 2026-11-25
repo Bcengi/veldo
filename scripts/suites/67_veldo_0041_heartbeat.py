@@ -1152,6 +1152,7 @@ sys.exit(payload.get('code', 0))
                     if launch.child.poll() is None:
                         launch.child.kill()
                     launch.child.wait(timeout=WAITS.WAIT_HANG_SECONDS)
+                    launch._end_receiver()  # SIGKILL bypassed the receiver's own endpoint cleanup
                     launch.child.stdout.close()
                     launch.child.stdin.close()
             with contextlib.suppress(Exception):

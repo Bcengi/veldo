@@ -1459,6 +1459,7 @@ sys.exit(payload.get('code', 0))
                     if launch.child.poll() is None:
                         launch.child.kill()
                     launch.child.wait()  # killed above, or already ended
+                    launch._end_receiver()  # drain creation notices and remove this dispatch's endpoint
                     launch.child.stdout.close()
                     launch.child.stdin.close()
             for name in slices:

@@ -18,6 +18,8 @@ from pathlib import Path
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
+# Loaded before the worker enters confinement; authority paths are then unreadable.
+FIXTURES = runpy.run_path(str(Path(__file__).with_name('gate_fixtures.py')))
 
 # Brief A supplies these from suites/support/waits.py after integration. The
 # authority observer also ships without the repository-only suites directory.
@@ -277,7 +279,40 @@ def suite_imports():
         sys.path[:] = previous
 
 
-def worker(case, mutant=None):
+@contextlib.contextmanager
+def private_runtime():
+    """A single-case worker owns its runtime, just as a dispatcher shard does.
+
+    Never inherit the login session's write directory. Keep the socket path short
+    enough that run-query cannot fall back out of this allocation. Only the user
+    manager's sockets and unit directory are linked into it.
+    """
+    with FIXTURES['directory']() as runtime:
+        FIXTURES['socket_paths']({'run query': runtime / ('vq-' + '0' * 32) / 'query.sock'})
+        real = Path('/run/user/%d' % os.getuid())
+        for relative in ('bus', 'systemd/private', 'systemd/user'):
+            source = real / relative
+            if source.is_dir() if relative == 'systemd/user' else source.is_socket():
+                target = runtime / relative
+                target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                target.symlink_to(source)
+        names = ('XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS')
+        previous = {name: os.environ.get(name) for name in names}
+        os.environ['XDG_RUNTIME_DIR'] = str(runtime)
+        os.environ.pop('DBUS_SESSION_BUS_ADDRESS', None)
+        if (runtime / 'bus').is_socket():
+            os.environ['DBUS_SESSION_BUS_ADDRESS'] = 'unix:path=%s/bus' % runtime
+        try:
+            yield runtime
+        finally:
+            for name, value in previous.items():
+                if value is None:
+                    os.environ.pop(name, None)
+                else:
+                    os.environ[name] = value
+
+
+def worker(case, mutant=None, *, isolate_runtime=True):
     """Capture every assertion, including the shared preamble, with exact row identities."""
     shared = ROOT / 'scripts/suites/shared.py'
     rows = []
@@ -356,7 +391,11 @@ def worker(case, mutant=None):
                 raise RuntimeError('suite production-copy anchor moved')
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
         ns['__suite_file__'] = str(suite)
-        exec(compile(source, str(suite), 'exec'), ns)
+        # Declared workers have only their keyed scratch grant and cannot reach the
+        # host runtime. Fresh workers, including direct single-case drives, own a
+        # fixture allocation and must never inherit the login session's directory.
+        with private_runtime() if isolate_runtime else contextlib.nullcontext():
+            exec(compile(source, str(suite), 'exec'), ns)
         if waits is not None:
             waits.run_ended()
     faulthandler.cancel_dump_traceback_later()

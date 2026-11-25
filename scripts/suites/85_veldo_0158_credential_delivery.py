@@ -1395,6 +1395,7 @@ err.close()
                 if launch.child is not None and launch.child.poll() is None:
                     launch.child.kill()
                     launch.child.wait(timeout=10)
+                launch._end_receiver()  # also clean endpoints of receivers already killed by a row
         for conn in connections:
             with contextlib.suppress(Exception):
                 conn.close()
