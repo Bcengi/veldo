@@ -44,7 +44,8 @@ def _v323_suite():
         spec.loader.exec_module(module)
         return module
 
-    with tempfile.TemporaryDirectory(prefix='veldo-0323-') as directory:
+    # The real spool listener needs a short, private path in mutation workers too.
+    with load('v323_gate_fixtures', ROOT / 'scripts' / 'gate_fixtures.py').directory() as directory:
         base = Path(directory).resolve()
         mods = base / '.veldo'
         mods.mkdir()

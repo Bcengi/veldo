@@ -19764,7 +19764,7 @@ def cases():
         'control_space_signal.py',
         "            and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n",
         "            and False and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n",
-        ['space347/ac3/unique-work-request'])
+        ['ac3/unique-work-request'])
 
     return result
 
