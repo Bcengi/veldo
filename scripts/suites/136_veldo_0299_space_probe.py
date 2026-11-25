@@ -990,11 +990,18 @@ def _v299_space_probe_suite():
             check(ROW, 'closed to other users and open to its group, it lets a process of that group through',
                   P.reach(reached, OTHER, [OTHER, group]) == 'permissions' and P.reach(reached, OTHER, [OTHER]) is None)
         else:
+            # TMPDIR may deny the other class yet allow this group through its ancestors.
+            # Own the closed ancestor so both denials below have the stated fixture premise.
+            closed_way = reached / 'closed-way'
+            closed_way.mkdir(mode=0o700)
+            group_folder = closed_way / 'group-folder'
+            group_folder.mkdir(mode=0o750)
             check(ROW, 'closed to other users and open to its group, the folder lets a process of that group '
                   'through and no other, while the closed way above it shuts out both',
-                  P._lets_through(str(reached), OTHER, [OTHER, group], True) is True
-                  and P._lets_through(str(reached), OTHER, [OTHER], True) is False
-                  and P.reach(reached, OTHER, [OTHER, group]) is None)
+                  P._lets_through(str(group_folder), OTHER, [OTHER, group], True) is True
+                  and P._lets_through(str(group_folder), OTHER, [OTHER], True) is False
+                  and P.reach(group_folder, OTHER, [OTHER, group]) is None
+                  and P.reach(group_folder, OTHER, [OTHER]) is None)
         fresh()
         entry(33, uid=OTHER, gids=[OTHER, group])
         entry(34, uid=OTHER, gids=[OTHER])
