@@ -1,0 +1,549 @@
+{
+  "kind": "unit single-case controls; not a native gate receipt",
+  "source_sha256": "c00a5491ee7abb374b14f8066baa8207b682a09522769e04d82d9c052c6bb8f2",
+  "registered": 36,
+  "killed": 36,
+  "results": [
+    {
+      "name": "early363-failure-order",
+      "rows": [
+        "early/ordering"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/ordering",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-tail-order",
+      "rows": [
+        "early/ordering"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/ordering",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-ready-tie",
+      "rows": [
+        "early/release"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/release",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-dependencies",
+      "rows": [
+        "early/both-controls"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/both-controls",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-global-barrier",
+      "rows": [
+        "early/release"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/release",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-blocked-group",
+      "rows": [
+        "early/collect-baseline"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/collect-baseline",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-missing-dependency",
+      "rows": [
+        "early/missing-dependency"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/missing-dependency",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-collect-switch",
+      "rows": [
+        "early/explicit-collect"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/explicit-collect",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-mutant-abort",
+      "rows": [
+        "early/abort-survivor"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/abort-survivor",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-control-abort",
+      "rows": [
+        "early/abort-baseline"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/abort-baseline",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-control-red",
+      "rows": [
+        "early/abort-baseline"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/abort-baseline",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-control-watchdog",
+      "rows": [
+        "early/collect-watchdog"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/collect-watchdog",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-control-pair",
+      "rows": [
+        "early/release"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/release",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-control-equality",
+      "rows": [
+        "early/collect-mismatch"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/collect-mismatch",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-control-target",
+      "rows": [
+        "early/collect-missing-target"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/collect-missing-target",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-dispatch",
+      "rows": [
+        "early/release"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/release",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-audit-control",
+      "rows": [
+        "early/audit-control"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/audit-control",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-audit-observed",
+      "rows": [
+        "early/audit-control"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/audit-control",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-audit-differences",
+      "rows": [
+        "early/audit-control"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/audit-control",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-stale-ready",
+      "rows": [
+        "early/stale-rerun"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/stale-rerun",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-stale-pair",
+      "rows": [
+        "early/stale-rerun"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/stale-rerun",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-control-stale",
+      "rows": [
+        "stale-declarations/runs-fresh"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0224 stale-declarations/runs-fresh",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 10,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-group-failure-priority",
+      "rows": [
+        "early/ordering"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/ordering",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-authority",
+      "rows": [
+        "early/authority-only"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/authority-only",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-setup",
+      "rows": [
+        "early/setup-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/setup-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-dict",
+      "rows": [
+        "early/corrupt-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/corrupt-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-bool",
+      "rows": [
+        "early/corrupt-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/corrupt-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-number",
+      "rows": [
+        "early/corrupt-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/corrupt-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-finite",
+      "rows": [
+        "early/corrupt-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/corrupt-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-positive",
+      "rows": [
+        "early/corrupt-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/corrupt-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-invalid",
+      "rows": [
+        "early/red-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/red-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-completed",
+      "rows": [
+        "early/red-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/red-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-worker",
+      "rows": [
+        "early/worker-error-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/worker-error-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-cancelled",
+      "rows": [
+        "early/worker-error-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/worker-error-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-clear",
+      "rows": [
+        "early/clear-failure"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/clear-failure",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    },
+    {
+      "name": "early363-history-pending",
+      "rows": [
+        "early/pending-history"
+      ],
+      "status": "killed",
+      "kills": [
+        {
+          "row": "VELDO-0363 early/pending-history",
+          "kill_by": "assertion"
+        }
+      ],
+      "baseline_rows": 32,
+      "noop_agrees": true
+    }
+  ],
+  "rerun": "guards-selected.json"
+}

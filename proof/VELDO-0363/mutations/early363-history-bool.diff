@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -51 +51 @@
+-                and type(item.get('failed')) is bool
++                and True

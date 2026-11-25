@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -75 +75 @@
+-        failed = identity in invalid or any(o.get('error') not in (None, 'worker_cancelled') for o in own)
++        failed = identity in invalid or any(o.get('error') is not None for o in own)
