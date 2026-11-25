@@ -277,7 +277,12 @@ def _v317_suite():
                 f.space['free'] = lambda pool: (f.free[pool['name']] if pool['name'] != 'host' or run.exists() else 1000)
                 if edits:
                     assert (work / 'unfinished.txt').exists()
-                r._finish(termination, contract, digest, process, False)
+                original_exit = f.dispatches.exit
+                def remember_exit(*args, **kwargs):
+                    r.exit_delivery = (copy.deepcopy(args), copy.deepcopy(kwargs))
+                    return original_exit(*args, **kwargs)
+                with patch.object(f.dispatches, 'exit', side_effect=remember_exit):
+                    r._finish(termination, contract, digest, process, False)
                 f.space['free'] = lambda pool: f.free[pool['name']]
                 return f.dispatches.record(did), work, run, r
 
@@ -301,9 +306,9 @@ def _v317_suite():
                               and failure.get('pools') == [{'pool': 'host', 'free': 0, 'floor': 20},
                                                          {'pool': 'image', 'free': 1000, 'floor': 5}]
                               and f.ledger.hold(rec['contract']['space']['hold'])['state'] == 'released')
-                        raw_failure = copy.deepcopy(receiver.space_failure)  # replay the exact observation the receiver sent
-                        f.dispatches.exit(rec['dispatch_id'], D.digest(rec['contract']), rec['process'],
-                            rec['termination'], now=rec['history'][-1]['at'], space_failure=raw_failure)
+                        # Replay the exact delivery, including its timestamp and complete observation.
+                        args, kwargs = receiver.exit_delivery
+                        f.dispatches.exit(*args, **kwargs)
                         check('ac1/replayed-end', f.dispatches.charged('unit', 'build') == 0
                               and f.dispatches.attempts('unit', 'build') == 1
                               and f.dispatches.record(rec['dispatch_id']) == rec)
