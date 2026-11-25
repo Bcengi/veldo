@@ -360,6 +360,8 @@ def _v130_checks(base):
         'control_client_api.py': ROOT / ".veldo" / "control_client_api.py",
         'control_event_projection.py': ROOT / ".veldo" / "control_event_projection.py",
     }
+    PRODUCTION.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in PRODUCTION})
     API_MODULES = ('control_api.py', 'control_api_assertion.py', 'control_api_authority.py', 'control_api_credentials.py',
                    'control_api_signer.py', 'control_api_webauthn.py')
     scaffold_path = ROOT / ".veldo" / "init_scaffold.py"
@@ -2966,6 +2968,8 @@ def _v130_service_checks(base):
         'control_api_assertion.py': ROOT / ".veldo" / "control_api_assertion.py",
         'init_scaffold.py': ROOT / ".veldo" / "init_scaffold.py",
     }
+    PRODUCTION.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in PRODUCTION})
     mods = base / 'src' / '.veldo'
     (mods / 'services').mkdir(parents=True)
     _v130_shutil.copytree(ROOT / '.veldo' / 'runtime', mods / 'runtime')
@@ -3561,14 +3565,14 @@ def _v130_report(observed_rows):
 
 
 _v130_compiler = _v130_load('v130_compiler', ROOT / 'scripts/suites/support/compiled_sources.py')
-with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), _v130_temp.TemporaryDirectory(prefix='v130-', dir=_v130_fast) as _v130_dir, \
-        _v130_compiler.compiled_sources(_v130_dir, _v130_Path(_v130_dir) / 'compiled'):
-    _v130_rows = _v130_checks(_v130_Path(_v130_dir))
-_v130_report(_v130_rows)
-# Report completed API assertions before a service setup exception can hide them.
-with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), _v130_temp.TemporaryDirectory(prefix='v130s-', dir=_v130_fast) as _v130_dir, \
-        _v130_compiler.compiled_sources(_v130_dir, _v130_Path(_v130_dir) / 'compiled'):
-    _v130_service_rows = _v130_service_checks(_v130_Path(_v130_dir))
-_v130_report(_v130_service_rows)
-_v130_rows.update(_v130_service_rows)
+if globals().get('__speed_closure__') != 'service':
+    with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), _v130_temp.TemporaryDirectory(prefix='v130-', dir=_v130_fast) as _v130_dir, \
+            _v130_compiler.compiled_sources(_v130_dir, _v130_Path(_v130_dir) / 'compiled'):
+        _v130_rows = _v130_checks(_v130_Path(_v130_dir))
+    _v130_report(_v130_rows)
+else:
+    with __import__('runpy').run_path(str(ROOT / 'scripts/suites/support/outside_fixture.py'))['service'](ROOT), _v130_temp.TemporaryDirectory(prefix='v130s-', dir=_v130_fast) as _v130_dir, \
+            _v130_compiler.compiled_sources(_v130_dir, _v130_Path(_v130_dir) / 'compiled'):
+        _v130_service_rows = _v130_service_checks(_v130_Path(_v130_dir))
+    _v130_report(_v130_service_rows)
 print('VELDO-0130 suite seconds: %.3f' % (_v130_time.monotonic() - _v130_started))

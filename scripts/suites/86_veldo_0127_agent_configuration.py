@@ -31,6 +31,8 @@ def _v127_suite():
         'control_engine_claude.py': ROOT / ".veldo" / "control_engine_claude.py",
         'control_engine_codex.py': ROOT / ".veldo" / "control_engine_codex.py",
     }
+    PRODUCTION.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in PRODUCTION})
     EVIDENCE_PATH = ROOT / "." / "proof/VELDO-0127/evidence.py"
     LIVE_PATH = ROOT / "." / "proof/VELDO-0127/live.py"
     ROWS = ('revision/history', 'handoff/claude', 'handoff/codex', 'dispatch/binding', 'dispatch/refusal',
@@ -39,6 +41,8 @@ def _v127_suite():
             'review/marker-debug', 'review/codex-tools', 'review/codex-mode', 'review/codex-capture',
             'catalog/fields', 'catalog/grants', 'catalog/integrity', 'wire/normalization', 'wire/resources', 'wire/no-server',
             'wire/later-requests')
+    init_only = globals().get('__speed_closure__') == 'init-bound'
+    ROWS = tuple(row for row in ROWS if (row == 'review/init-bound') == init_only)
     rows = {name: [] for name in ROWS}
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -293,439 +297,444 @@ for step in (packet.get('payload') or {}).get('script',[]):
                 own = next((json.loads(p.read_text()) for p in markers.glob('*.json')
                             if json.loads(p.read_text()).get('dispatch') == contract['dispatch_id']), {})
                 return work, record or {}, own, error
-            a = f.save(f.role('claude'))
-            before = copy.deepcopy(a)
-            b = f.save(dict(f.role('claude'), settings={'model': 'fixture-model'}), 1)
-            old = C.read(f.writer, f.DOMAIN, f.REPOSITORY, 'claude', 1)
-            _, stale = attempt(lambda: f.save(f.role('claude'), 0))
-            _, unauthorized = attempt(lambda: f.save(f.role('claude'), 2, 'runner'))
-            embedded = f.role('claude'); embedded['mcp'][0]['environment'] = {}
-            _, invalid = attempt(lambda: f.save(embedded, 2))
-            check('revision/history', 'accepted revisions remain immutable, linked and digest-bound',
-                  old == before and a['revision'] == 1 and b['revision'] == 2 and b['previous'] == a['digest']
-                  and b['digest'] != a['digest'] and bool(stale) and unauthorized == 'unauthorized:agent_owner'
-                  and invalid == 'invalid_input:agent_mcp')
-            for engine in ('claude','codex'):
-                if engine == 'codex':
-                    direct_role = f.role(engine)
-                    direct_role['settings']['model'] = DIRECT_MODEL
-                    f.save(direct_role)
-                    accepted = C.bind(f.writer, f.DOMAIN, f.REPOSITORY,
-                                      {'role': 'codex', 'revision': 1})['role_revision']
-                    capability = L.HANDOFF.materialize(f.writer, f.DOMAIN, f.REPOSITORY, accepted,
-                                                      {'project': f.src, 'factory': base})
-                    foreign = base / 'foreign'
-                    f.GP.run(['git', 'init', '-q', str(foreign)], check=True, capture_output=True)
-                    prior_git_dir = os.environ.get('GIT_DIR')
-                    try:
-                        os.environ['GIT_DIR'] = str(foreign / '.git')
-                        links, stage_error = attempt(lambda: L.HANDOFF.stage_skills(capability, base))
-                    finally:
-                        if prior_git_dir is None:
-                            os.environ.pop('GIT_DIR', None)
-                        else:
-                            os.environ['GIT_DIR'] = prior_git_dir
-                    rule = '/.agents/skills/inspect'
-                    check('review/skill-git-boundary', 'skill exclusion stays in the project despite ambient Git selectors',
-                          stage_error is None and bool(links)
-                          and rule in (f.src / '.git/info/exclude').read_text()
-                          and rule not in (foreign / '.git/info/exclude').read_text())
-                    for link in links or []:
-                        link.unlink()
-                    # The account profile's own MCP server, which exec never loads (--ignore-user-config): the
-                    # listing must read exactly the table exec is handed, never this profile's config.toml.
-                    profile = Path(f.HELPER.resolve('acct-x1', root=str(f.helper_root)))
-                    (profile / 'config.toml').write_text('[mcp_servers.profile_only]\ncommand = "/bin/false"\n')
-                work, record, own, error = run(engine, 'handoff-' + engine, {'role': engine})
-                check('handoff/' + engine, 'the Runner and receiver complete the accepted role',
-                      record.get('state') == 'exited' and f.D.completed(record) and bool(own))
-                contract = record.get('contract') or {}
-                bound = ((contract.get('capability') or {}).get('configuration') or {}).get('role_revision', {})
-                check('handoff/' + engine, 'dispatch records accepted revision and model',
-                      bound.get('digest') and bound.get('settings') == {'model':'fixture-model' if engine == 'claude' else DIRECT_MODEL})
-                reports = [m.get('credentials') for m in (work.messages if work else []) if m.get('event') == 'credentials']
-                check('handoff/' + engine, 'only selected catalog credential source reaches this run',
-                      bool(reports) and reports[0].get('credentials') == ['jira'])
-                artifact = next((m['artifact'] for m in (work.messages if work else []) if m.get('event') == 'artifact'), {})
-                document = json.loads(Path(artifact['path']).read_text()) if artifact.get('path') else {}
-                # A run refused before its engine started has no execution record: its rows red by assertion.
-                page = (attempt(lambda: f.L.ER.read(f.state / 'records', work.dispatch_id, 0, 10000,
-                                                    record.get('execution_record')))[0] if work else None) or {}
-                contexts = [json.loads(r['payload']).get('first_turn_context') for r in page.get('lines', [])
-                            if r['stream'] == 'wrapper' and 'first_turn_context' in r['payload']]
-                check('launch/instructions', engine + ': first turn context retained in the bound execution record',
-                      isinstance(document.get('first_turn_context'), int) and document['first_turn_context'] > 0 and contexts == [document.get('first_turn_context')])
-                if engine == 'claude':
-                    check('launch/instructions', 'Claude debug evidence survives run-directory teardown',
-                          any('Role instruction discovery disabled' in r['payload'] for r in page.get('lines',[])
-                              if r['stream'] == 'stderr'))
-                    init = own.get('init', {})
-                    check('handoff/claude', 'exact native and selected Jira MCP tools',
-                          set(init.get('tools',[])) == {'Read','PushNotification','Skill','mcp__jira__jira_search'}
-                          and init.get('mcp_servers') == [{'name':'jira','status':'connected'}])
-                    denied = next((v.split('=',1)[1].split(',') for v in own.get('argv',[])
-                                   if v.startswith('-'*2+'disallowedTools=')), [])
-                    check('launch/push', 'PushNotification is offered and never disallowed',
-                          'PushNotification' in init.get('tools',[]) and 'PushNotification' not in denied)
-                    pid = next((p.stem for p in markers.glob('*.json')
-                                if json.loads(p.read_text()).get('dispatch') == (work.dispatch_id if work else '')), '')
-                    received = json.loads((markers / (pid + '.input')).read_text()) if (markers / (pid + '.input')).is_file() else []
-                    users = [m for m in received if m['type'] == 'user']
-                    check('handoff/claude', 'an empty no-turn probe draws init before the prompt is written',
-                          [m['type'] for m in received] == ['control_request', 'user', 'user']
-                          and users[0] == {'type': 'user', 'shouldQuery': False, 'content': []}
-                          and users[1].get('shouldQuery') is None and bool(users[1].get('content')))
-                    claude_blocked = not users
-                    check('handoff/claude', 'engine plugins, bundled and built-in skills stay off; built-in commands only typed',
-                          [p['name'] for p in init.get('plugins', [])] == ['veldo-role'] and init.get('skills') == ['veldo-role:inspect']
-                          and set(init.get('slash_commands', [])) - {'veldo-role:inspect'} == {'clear', 'compact', 'init'})
-                    check('launch/instructions', 'both listed instruction sources reach generated Claude file',
-                          own.get('instructions') == 'Use the listed role instruction.\n\n\nUse the project role instruction.\n')
-                else:
-                    check('review/skill-commit', 'a commit of everything includes delivery and no staged skill link',
-                          'delivered.txt' in own.get('committed_paths', [])
-                          and not any(p.startswith('.agents/skills/') for p in own.get('committed_paths', [])))
-                    wire = own.get('wire', {'tools':[]})
-                    wanted = L.HANDOFF.expected({'revision':bound, 'skills':[]}, {'jira':{'tools':['jira_search']}})
-                    compare = getattr(L.HANDOFF, 'codex_tool_difference', None)
-                    evidence = load('v127_wire_evidence', EVIDENCE_PATH)
-                    observe = getattr(evidence, 'wire_observation', None)
-                    observed, obs_error = attempt(lambda: observe(wire, wanted, L.HANDOFF))
-                    observed = observed or {}
-                    resources = ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
-                    granted = wanted
-                    good = compare(wire, granted) if compare else 'absent comparison'
-                    extra = copy.deepcopy(wire); extra['tools'].append({'type':'function','name':'ungranted'})
-                    missing = {'tools':[{'type':'function','name':'exec_command'}, {'type':'function','name':'update_plan'}]}
-                    check('review/codex-tools', 'both directions compare effective definitions with mapped grants',
-                          compare is not None and good is None
-                          and compare(extra, granted) == 'configuration_stop:codex_unexpected_tool'
-                          and observe(extra, wanted, L.HANDOFF).get('unexpected') == ['ungranted']
-                          and compare(missing, wanted) == 'configuration_stop:codex_missing_tool')
-                    check('review/codex-tools', 'qualification writer and comparator share the shell and plan vocabulary',
-                          observed.get('native_tool_mapping', {}).get('shell') == ['exec_command','write_stdin']
-                          and json.loads((base / 'codex-qualification.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
-                          and observed.get('missing') == [] and observed.get('unexpected') == []
-                          and observe(missing, wanted, L.HANDOFF).get('missing') == sorted(resources + ['mcp__jira__jira_search', 'write_stdin']))
-                    check('wire/resources', 'selected server grants exactly its three resource readers',
-                          observed.get('unexpected') == [] and observed.get('missing') == []
-                          and observed.get('stop') is None and good is None
-                          and set(resources) <= set(observed.get('actual', [])))
-                    for resource in resources:
-                        reduced = copy.deepcopy(wire)
-                        reduced['tools'] = [t for t in reduced['tools']
-                            if t.get('function', t).get('name') != resource]
-                        check('wire/resources', resource + ': missing reader fails equality',
-                              compare(reduced, wanted) == 'configuration_stop:codex_missing_tool')
-                    aliases = copy.deepcopy(wire)
-                    for tool in aliases['tools']:
-                        if 'function' in tool:
-                            tool['function']['name'] = 'functions.' + tool['function']['name'].replace('mcp__jira.', 'mcp__jira__')
-                    check('wire/normalization', 'direct namespaces and MCP spellings compare to the same grants',
-                          good is None and compare(aliases, granted) is None)
-                    cfg = own.get('configuration', {})
-                    check('handoff/codex', 'generated settings, native features and filtered MCP list match',
-                          own.get('mcp_tools') == {'jira':['jira_search']} and cfg.get('model') == DIRECT_MODEL
-                          and cfg.get('features',{}).get('shell_tool') is True
-                          and cfg.get('features',{}).get('multi_agent') is False)
-                    listings = [m.get('listing') for m in (work.messages if work else []) if m.get('event') == 'capability_listing']
-                    check('handoff/codex', "Codex's own listing names exactly the generated table, not the profile's",
-                          listings == [[{'name': 'jira', 'enabled': True, 'enabled_tools': ['jira_search']}]])
-                    # The fake loads model_catalog_json for `mcp` as the real binary does: the per-run catalog must
-                    # exist before the listing runs, or the launch stops as configuration_stop:mcp_servers.
-                    check('handoff/codex', 'the per-run model catalog is written before Codex lists its MCP table',
-                          bool(listings) and record.get('refusal') is None
-                          and Path(cfg.get('model_catalog_json', '/nonexistent')).name == 'model-catalog.json')
-                    check('launch/instructions', 'Codex gets both sources through developer instructions',
-                          'project role instruction' in cfg.get('developer_instructions',''))
-            for mode, model in [('code', CODE_MODEL), ('direct', DIRECT_MODEL)]:
-                # The qualified binary's own request with the jira server selected (qualify.py's loopback capture).
-                body = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-selected.json')).read_text())[
-                    'requests'][0]['body']
-                wanted = L.HANDOFF.expected({'revision':dict(bound, settings={'model':model}), 'skills':[]},
-                                            {'jira':{'tools':['jira_search']}})
-                facts, _ = attempt(lambda: evidence.wire_observation(body, wanted, L.HANDOFF))
-                check('wire/resources', mode + ': retained binary request equals grants including configured-server readers',
-                      facts is not None and facts.get('missing') == [] and facts.get('unexpected') == [] and facts.get('stop') is None)
-            # VELDO-0230 fix round 3 (Telegram 38895-38896): incremental_tools is granted, so the comparison reads every
-            # request of a run with the tools declared by then. The later forms are Codex 0.166.0's own on loopback
-            # (proof/VELDO-0230/fix3-incremental-capture.json): the developer message that introduces an incremental
-            # tools update with its additional_tools item (a Code Mode model's runner redeclared with goals' tools,
-            # which no role is granted), and the tool_search_output a search loads an MCP definition with. A run's
-            # first request is the qualified binary's own (resources-<model>-selected.json). Without a run comparison
-            # (before fix round 3) each request was compared alone, as the launch check and the evidence did.
-            sessions = json.loads((TREE / 'proof/VELDO-0230/fix3-incremental-capture.json').read_text())['sessions']
-            later = sessions['adds goals, incremental_tools default']['requests'][1]['input']
-            notice = next(i for i in later if i.get('type') == 'message' and not i.get('dropped'))
-            update = [i for i in later if i.get('type') == 'additional_tools'][-1]
-            searched = next(i for i in sessions['tool search loads an MCP definition, direct model']['requests'][1]['input']
-                            if i.get('type') == 'tool_search_output')
-            run_compare = getattr(L.HANDOFF, 'codex_run_tool_difference', None) or (
-                lambda bodies, w: next((d for d in (L.HANDOFF.codex_tool_difference(b, w) for b in bodies) if d), None))
-            run_observe = getattr(evidence, 'wire_observations', None) or (
-                lambda bodies, w, h: [evidence.wire_observation(b, w, h) for b in bodies])
-            unexpected = 'configuration_stop:codex_unexpected_tool'
-            def declared_before(body):
-                # The observation endpoint before fix round 3: a request's tools, else nothing.
-                tools, _ = attempt(lambda: L.HANDOFF.codex_request_tools(body))
-                return {'tools': tools} if tools else {}
-            declarations = getattr(L.HANDOFF, 'codex_declarations', declared_before)
-            for mode, model in [('code', CODE_MODEL), ('direct', DIRECT_MODEL)]:
-                first = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-selected.json')).read_text())[
-                    'requests'][0]['body']
-                wanted = L.HANDOFF.expected({'revision':dict(bound, settings={'model':model}), 'skills':[]},
-                                            {'jira':{'tools':['jira_search']}})
-                def after(items, history=True):
-                    # A later request: the whole history and its new items, or only its new items.
-                    body = copy.deepcopy(first) if history else {}
-                    body['input'] = (copy.deepcopy(first['input']) if history else []) + copy.deepcopy(items)
-                    return body
-                own = (copy.deepcopy(next(i for i in first['input'] if i.get('type') == 'additional_tools'))
-                       if mode == 'code' else {'type': 'additional_tools', 'role': 'developer',
-                                               'tools': copy.deepcopy(first['tools'])})
-                own['id'] = update['id']
-                runs = {'unlisted update': [first, after([notice, update])],
-                        'unlisted update alone': [first, after([notice, update], False)],
-                        'unlisted search result': [first, after([searched])]} if mode == 'code' else {
-                        'unlisted search result': [first, after([searched])],
-                        'unlisted search result alone': [first, after([searched], False)]}
-                for name, bodies in runs.items():
-                    stop, _ = attempt(lambda: run_compare(bodies, wanted))
-                    observed, _ = attempt(lambda: run_observe(bodies, wanted, L.HANDOFF))
-                    check('wire/later-requests', mode + ': ' + name + ' in a later request is refused, the first accepted',
-                          stop == unexpected and run_compare(bodies[:1], wanted) is None and observed is not None
-                          and observed[0]['stop'] is None and observed[-1]['stop'] == unexpected
-                          and bool(observed[-1]['unexpected']) and observed[-1]['missing'] == [])
-                    added, _ = attempt(lambda: set(L.HANDOFF.codex_tool_names(L.HANDOFF.codex_request_tools(
-                        {'input': bodies[-1]['input'][-1:]}))))
-                    check('wire/later-requests', mode + ': ' + name + ' names exactly the tools it adds',
-                          observed is not None and bool(added) and observed[-1]['unexpected']
-                          == sorted(added - set(L.HANDOFF.codex_expected_tools(wanted, {}))))
-                    # The production launch check reads every observed request, as the observation endpoint keeps it.
-                    observations = [declarations(b) for b in bodies]
-                    original = L.HANDOFF.codex_observe
-                    L.HANDOFF.codex_observe = lambda *a: observations
-                    try:
-                        _, launch_stop = attempt(lambda: L.HANDOFF.codex_check_launch(None, {'expected': wanted}, {}, None))
-                    finally:
-                        L.HANDOFF.codex_observe = original
-                    check('wire/later-requests', mode + ': ' + name + ': the launch check refuses the run',
-                          launch_stop == unexpected)
-                within = {'update within the role': [first, after([notice, own])],
-                          'update within the role alone': [first, after([notice, own], False)],
-                          'request with nothing new': [first, after([], False)]}
-                if mode == 'code':
-                    # As the captured update redeclares only the runner, one that redeclares only `wait`, a role tool.
-                    part = copy.deepcopy(own)
-                    part['tools'] = [dict(n, tools=[t for t in n['tools'] if t.get('name') == 'wait'])
-                                     for n in part['tools'] if n.get('type') == 'namespace' and n.get('name') == 'functions']
-                    within['partial update within the role alone'] = [first, after([notice, part], False)]
-                    within['partial update within the role'] = [first, after([notice, part])]
-                for name, bodies in within.items():
-                    stop, _ = attempt(lambda: run_compare(bodies, wanted))
-                    observed, _ = attempt(lambda: run_observe(bodies, wanted, L.HANDOFF))
-                    observations, _ = attempt(lambda: [declarations(b) for b in bodies])
-                    original = L.HANDOFF.codex_observe
-                    L.HANDOFF.codex_observe = lambda *a: observations
-                    try:
-                        tools, launch_stop = attempt(lambda: L.HANDOFF.codex_check_launch(None, {'expected': wanted}, {}, None))
-                    finally:
-                        L.HANDOFF.codex_observe = original
-                    check('wire/later-requests', mode + ': ' + name + ' passes at every request and at launch',
-                          stop is None and observed is not None and all(o['stop'] is None and o['unexpected'] == []
-                          and o['missing'] == [] for o in observed) and launch_stop is None
-                          and set(tools or []) == set(L.HANDOFF.codex_expected_tools(wanted, {})))
-                # An unreadable later request is never taken for one that declares nothing.
-                empty, _ = attempt(lambda: run_compare([], wanted))
-                unreadable, _ = attempt(lambda: run_compare([first, {}], wanted))
-                check('wire/later-requests', mode + ': an empty run and an unreadable later request are refused by name',
-                      empty == unreadable == 'missing_evidence:codex_request_tools')
-            qualified = json.loads((base / 'codex-qualification.json').read_text())
-            # VELDO-0230 (Telegram 38878): without a server, none is granted; the readers the qualified binary
-            # offers a model of its tool mode anyway (nothing to list or read) are recorded and accepted, no other.
-            shipped_offered = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text())[
-                'mcp_resource_rule'].get('offered_without_server')
-            check('wire/no-server', 'qualification records the conditional MCP server grant and the readers the '
-                  'binary offers without a server [%s]' % shipped_offered,
-                  qualified.get('native_tool_mapping', {}).get('mcp_server') == resources
-                  and {k: v for k, v in (qualified.get('mcp_resource_rule') or {}).items() if k != 'offered_without_server'}
-                  == {'when':'nonempty_mcp_servers', 'mapping':'mcp_server', 'otherwise':[]}
-                  and isinstance(shipped_offered, dict)
-                  and all(set(v) <= set(resources) and k in ('code_mode_only', 'direct') for k, v in shipped_offered.items())
-                  and (qualified.get('mcp_resource_rule') or {}).get('offered_without_server') == shipped_offered)
-            for model in FIXTURE_MODELS:
-                offered = set((shipped_offered or {}).get(
-                    dict(_V127_MODES).get(model) or 'direct', []))
-                definition = f.role('codex', 'no-server-' + model)
-                definition['settings']['model'] = model
-                definition['mcp'] = []
-                f.save(definition)
-                _, rec, own, _ = run('codex', 'no-server-' + model, {'role':definition['role']})
-                revision = rec.get('contract', {}).get('capability', {}).get('configuration', {}).get('role_revision', {})
-                wanted = L.HANDOFF.expected({'revision':revision, 'skills':[]}, {})
-                wire = own.get('wire', {})
-                observed = evidence.wire_observation(wire, wanted, L.HANDOFF)
-                check('wire/no-server', model + ': accepted empty server selection exposes no resource reader but '
-                      'those the binary offers without one [%s]' % sorted(offered),
-                      f.D.completed(rec) and own.get('configuration', {}).get('mcp_servers', {}) == {}
-                      and observed['actual'] == observed['expected'] and observed['stop'] is None
-                      and set(resources) & set(observed['actual']) == offered)
-                captured = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-none.json')).read_text())
-                observations = [evidence.wire_observation(r['body'], wanted, L.HANDOFF)
-                                for r in captured.get('requests', [])]
-                check('wire/no-server', model + ': real loopback capture confirms absence without a server',
-                      captured.get('returncode') == 0 and bool(observations)
-                      and captured.get('configuration', {}).get('mcp_servers') == {}
-                      and all(o['actual'] == o['expected'] and set(resources) & set(o['actual']) == offered
-                              and o['stop'] is None for o in observations))
-                for resource in sorted(set(resources) - offered):
-                    extra = copy.deepcopy(wire)
-                    extra.setdefault('tools', []).append({'type':'function', 'name':resource})
-                    check('wire/no-server', model + ': unselected reader ' + resource + ' fails closed',
-                          compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool')
-            modes = {m['slug']: m.get('tool_mode') for m in json.loads(
-                (TREE / 'proof/VELDO-0127/catalog-fixture.json').read_text())['models']}
-            check('review/codex-mode', 'qualification writer retains the empty-profile binary model modes',
-                  bool(modes) and qualified.get('model_tool_modes') == modes)
-            absent_modes = dict(qualified); absent_modes.pop('model_tool_modes', None)
-            _, absent_stop = attempt(lambda: L.HANDOFF.X.qualified_baseline(None, absent_modes))
-            check('review/codex-mode', 'a qualification without model modes cannot bind',
-                  absent_stop == 'missing_evidence:codex_model_tool_modes')
-            catalog = qualified.get('model_catalog') or {}
-            check('catalog/integrity', 'qualification captures the fake binary bundled catalog with its digest',
-                  catalog == json.loads((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_text())
-                  and qualified.get('model_catalog_digest') == f.config_api.digest(catalog))
-            role_model = getattr(L.HANDOFF, 'codex_model', None)
-            for model in CODE_MODE_MODELS:
-                definition = f.role('codex', 'restricted-' + model)
-                definition['settings']['model'] = model
-                accepted = f.save(definition)
-                work, rec, own, error = run('codex', 'mode-' + model, {'role':definition['role']})
-                check('review/codex-mode', model + ': Code Mode runs with unchanged model and generated catalog',
-                      rec.get('state') == 'exited' and f.D.completed(rec) and bool(own.get('model_catalog'))
-                      and own.get('configuration', {}).get('model') == accepted['settings']['model'] == model)
-                original = next((m for m in catalog.get('models', []) if m['slug'] == model), {})
-                expected_entry = copy.deepcopy(original)
-                expected_entry.pop('multi_agent_version', None)
-                expected_entry.update(experimental_supported_tools=[], apply_patch_tool_type=None, supports_search_tool=False)
-                check('catalog/fields', model + ': exactly four permitted fields change',
-                      bool(original) and own.get('model_catalog') == dict(catalog, models=[expected_entry]))
-                wanted = L.HANDOFF.expected({'revision':rec.get('contract', {}).get('capability', {}).get('configuration', {}).get('role_revision',
-                                                 dict(native_tools=['shell','update_plan'], settings={'model':model})), 'skills':[]},
-                                          {'jira':{'tools':['jira_search']}})
-                obs, _ = attempt(lambda: evidence.wire_observation(own.get('wire', {}), wanted, L.HANDOFF))
-                check('wire/normalization', model + ': runner and nested declarations expose every grant',
-                      obs is not None and obs.get('missing') == [] and obs.get('unexpected') == []
-                      and set(obs.get('actual', [])) == {'exec','wait','exec_command','write_stdin','update_plan','mcp__jira__jira_search', *resources})
-                if model == CODE_MODEL:
-                    granted_wire = wanted
-                    check('review/codex-tools', 'Code Mode equality includes runner and nested declarations',
-                          compare(own.get('wire', {}), granted_wire) is None)
-                    bound_revision = dict(native_tools=['shell','update_plan'], settings={'model':model})
-                    for label, altered in [('absent', dict(qualified, model_catalog=None)),
-                                           ('digest', dict(qualified, model_catalog_digest='changed'))]:
-                        _, stop = attempt(lambda: role_model(altered, bound_revision))
-                        check('catalog/integrity', label + ': unusable override retains named Code Mode stop',
-                              stop == 'configuration_stop:codex_code_mode_model')
-                        check('review/codex-mode', label + ': override failure stops closed',
-                              stop == 'configuration_stop:codex_code_mode_model')
-            for grants in (['sub_agents'], ['apply_patch'], ['clock'], ['request_user_input_async'], ['tool_search'],
-                           ['sub_agents','apply_patch','clock','request_user_input_async','tool_search']):
-                name = 'grants-' + '-'.join(grants)
-                definition = f.role('codex', name)
-                definition['settings']['model'] = EXPERIMENTAL_MODEL
-                definition['native_tools'] += [{'name':n, 'load':'always'} for n in grants]
-                _, save_error = attempt(lambda: f.save(definition))
-                _, rec, own, _ = run('codex', name, {'role':name}) if save_error is None else (None, {}, {}, None)
-                if 'tool_search' in grants:
-                    check('catalog/grants', name + ': undeliverable search grant is refused at save',
-                          save_error == 'unsupported_configuration:codex_tool:' + EXPERIMENTAL_MODEL + ':tool_search')
-                    continue
-                # VELDO-0231: the asynchronous flag holds only where the qualified binary's probe shows its call in the
-                # stream and an immediate, empty answer to the synchronous question; else it is refused at save.
-                flag_held = f.X.flag_grant(base / 'codex-qualification.json') is None if hasattr(f.X, 'flag_grant') else True
-                if 'request_user_input_async' in grants and not flag_held:
-                    check('catalog/grants', name + ': a flag grant the qualified binary does not hold is refused at save',
-                          save_error == 'unsupported_configuration:codex_tool:' + EXPERIMENTAL_MODEL
-                          + ':request_user_input_async')
-                    continue
-                entry = next(iter(own.get('model_catalog', {}).get('models', [])), {})
-                original = next((m for m in catalog.get('models', []) if m['slug'] == EXPERIMENTAL_MODEL), {})
-                wanted_entry = copy.deepcopy(original)
-                if 'sub_agents' not in grants: wanted_entry.pop('multi_agent_version', None)
-                if 'apply_patch' not in grants: wanted_entry['apply_patch_tool_type'] = None
-                if 'tool_search' not in grants: wanted_entry['supports_search_tool'] = False
-                wanted_entry['experimental_supported_tools'] = [n for n in original.get('experimental_supported_tools', [])
-                    if {'send_user_message_async':'request_user_input_async','clock':'clock'}.get(n,n) in grants]
-                check('catalog/grants', name + ': accepted grants preserve only the requested catalog fields',
-                      rec.get('state') == 'exited' and f.D.completed(rec) and entry == wanted_entry and bool(original))
-            # A prepared A is launched after B has been saved, so the receiver must not reread the head.
-            pending = f.prepare('claude', 'bound-a', {'role':'claude','revision':1}, payload('claude'))
-            updated = f.role('claude'); updated['native_tools'] = [{'name':'Read','load':'always'}]
-            f.save(updated, 2)
-            work = f.launch('claude', pending) if not claude_blocked else None
-            record = f.finish('claude', work) if work else {}
-            _, later, later_own, _ = run('claude', 'bound-b', {'role':'claude'})
-            earlier = record.get('contract', {}).get('capability', {}).get('configuration', {}).get('role_revision', {})
-            next_revision = later.get('contract',{}).get('capability',{}).get('configuration',{}).get('role_revision',{})
-            check('dispatch/binding', 'a launch stays on A after B is saved and next dispatch uses B',
-                  earlier == pending['capability']['configuration']['role_revision'] and earlier['revision'] == 1
-                  and next_revision.get('revision') == 3 and later_own.get('init',{}).get('tools') == ['Read','mcp__jira__jira_search'])
-            deferred = f.role('claude','deferred',True)
-            deferred['skills'][0]['load'] = 'when assigned'
-            deferred['native_tools'].append({'name':'Bash', 'load':'when assigned'})
-            deferred['instructions'].append({'source':'factory','path':'not-present.md','load':'when assigned'})
-            f.save(deferred)
-            _, rec, own, _ = run('claude','deferred',{'role':'deferred'})
-            check('launch/unlisted', 'unassigned server, skill and instruction never load; the granted Skill tool stays',
-                  rec.get('state') == 'exited' and f.D.completed(rec) and 'Bash' not in own.get('init',{}).get('tools',[])
-                  and 'Skill' in own.get('init',{}).get('tools',[])
-                  and own.get('init',{}).get('skills') == []
-                  and own.get('init',{}).get('plugins') == []
-                  and own.get('init',{}).get('mcp_servers') == [{'name':'jira','status':'connected'}])
-            # The runner stops the receiver once it reads the end, so staged links go with the run directory,
-            # before the end is reported, never in close() alone (a race that left a dangling link in the clone).
-            unstage_run = base / 'unstage-run'
-            (unstage_run / 'config/role-skills/inspect').mkdir(parents=True)
-            unstage_link = base / 'unstage-link'
-            unstage_link.symlink_to(unstage_run / 'config/role-skills/inspect', target_is_directory=True)
-            receiver = object.__new__(f.L.Receiver)
-            receiver.run, receiver.supervision, receiver.role_skills = str(unstage_run), {'empty': True}, [unstage_link]
-            # As Receiver.__init__ leaves them with no space ledger wired in (VELDO-0303).
-            receiver.space, receiver.run_removal, receiver.run_dispatch = None, None, None
-            receiver._remove_run()
-            check('review/skill-commit', 'staged role skills are removed with the run, before its end is reported',
-                  not unstage_link.is_symlink() and not unstage_run.exists() and receiver.role_skills == [])
-            source_skill = f.src / '.agents/skills/inspect/SKILL.md'
-            source_skill.parent.mkdir(parents=True, exist_ok=True)
-            source_skill.write_text((base / 'SKILL.md').read_text())
-            f.configurations.save({'skill':'inspect','source':'project','path':'.agents/skills/inspect/SKILL.md'},
-                                  kind=C.KINDS[1], principal='owner', base=1, command_id='project-skill')
-            skill_role = f.role('codex', 'project-skill')
-            skill_role['skills'][0]['revision'] = 2
-            f.save(skill_role)
-            _, listed, _, _ = run('codex', 'listed-project-skill', {'role':'project-skill'})
-            check('launch/unlisted', 'a listed project skill is allowed and its source survives teardown',
-                  f.D.completed(listed) and source_skill.is_file())
-            no_skill = f.role('codex', 'no-project-skill'); no_skill['skills'] = []
-            f.save(no_skill)
-            _, rejected, _, _ = run('codex', 'unlisted-project-skill', {'role':'no-project-skill'})
-            check('launch/unlisted', 'an unlisted project skill is refused before the first turn',
-                  rejected.get('refusal','').startswith('invalid_input:engine_clone:'))
-            source_skill.unlink()
-            source_skill.parent.rmdir()
-            for fault, row in [('skill','launch/unlisted'),('tool','dispatch/refusal'),('missing','handoff/claude')]:
-                (markers / 'fault').write_text(fault)
-                work, rec, own, _ = run('claude','fault-'+fault,{'role':'claude','revision':1})
-                turns = [p for p in markers.glob('*.turn') if (markers / (p.stem+'.json')).exists()
-                         and json.loads((markers / (p.stem+'.json')).read_text()).get('dispatch') == (work.dispatch_id if work else '')]
-                check(row, fault + ': launch mismatch stops before prompt release',
-                      bool(work) and not f.D.completed(rec) and not turns
-                      and any(m.get('supervision',{}).get('cause') == 'configuration_stop'
-                              for m in work.messages))
+            if not init_only:
+                a = f.save(f.role('claude'))
+                before = copy.deepcopy(a)
+                b = f.save(dict(f.role('claude'), settings={'model': 'fixture-model'}), 1)
+                old = C.read(f.writer, f.DOMAIN, f.REPOSITORY, 'claude', 1)
+                _, stale = attempt(lambda: f.save(f.role('claude'), 0))
+                _, unauthorized = attempt(lambda: f.save(f.role('claude'), 2, 'runner'))
+                embedded = f.role('claude'); embedded['mcp'][0]['environment'] = {}
+                _, invalid = attempt(lambda: f.save(embedded, 2))
+                check('revision/history', 'accepted revisions remain immutable, linked and digest-bound',
+                      old == before and a['revision'] == 1 and b['revision'] == 2 and b['previous'] == a['digest']
+                      and b['digest'] != a['digest'] and bool(stale) and unauthorized == 'unauthorized:agent_owner'
+                      and invalid == 'invalid_input:agent_mcp')
+                for engine in ('claude','codex'):
+                    if engine == 'codex':
+                        direct_role = f.role(engine)
+                        direct_role['settings']['model'] = DIRECT_MODEL
+                        f.save(direct_role)
+                        accepted = C.bind(f.writer, f.DOMAIN, f.REPOSITORY,
+                                          {'role': 'codex', 'revision': 1})['role_revision']
+                        capability = L.HANDOFF.materialize(f.writer, f.DOMAIN, f.REPOSITORY, accepted,
+                                                          {'project': f.src, 'factory': base})
+                        foreign = base / 'foreign'
+                        f.GP.run(['git', 'init', '-q', str(foreign)], check=True, capture_output=True)
+                        prior_git_dir = os.environ.get('GIT_DIR')
+                        try:
+                            os.environ['GIT_DIR'] = str(foreign / '.git')
+                            links, stage_error = attempt(lambda: L.HANDOFF.stage_skills(capability, base))
+                        finally:
+                            if prior_git_dir is None:
+                                os.environ.pop('GIT_DIR', None)
+                            else:
+                                os.environ['GIT_DIR'] = prior_git_dir
+                        rule = '/.agents/skills/inspect'
+                        check('review/skill-git-boundary', 'skill exclusion stays in the project despite ambient Git selectors',
+                              stage_error is None and bool(links)
+                              and rule in (f.src / '.git/info/exclude').read_text()
+                              and rule not in (foreign / '.git/info/exclude').read_text())
+                        for link in links or []:
+                            link.unlink()
+                        # The account profile's own MCP server, which exec never loads (--ignore-user-config): the
+                        # listing must read exactly the table exec is handed, never this profile's config.toml.
+                        profile = Path(f.HELPER.resolve('acct-x1', root=str(f.helper_root)))
+                        (profile / 'config.toml').write_text('[mcp_servers.profile_only]\ncommand = "/bin/false"\n')
+                    work, record, own, error = run(engine, 'handoff-' + engine, {'role': engine})
+                    check('handoff/' + engine, 'the Runner and receiver complete the accepted role',
+                          record.get('state') == 'exited' and f.D.completed(record) and bool(own))
+                    contract = record.get('contract') or {}
+                    bound = ((contract.get('capability') or {}).get('configuration') or {}).get('role_revision', {})
+                    check('handoff/' + engine, 'dispatch records accepted revision and model',
+                          bound.get('digest') and bound.get('settings') == {'model':'fixture-model' if engine == 'claude' else DIRECT_MODEL})
+                    reports = [m.get('credentials') for m in (work.messages if work else []) if m.get('event') == 'credentials']
+                    check('handoff/' + engine, 'only selected catalog credential source reaches this run',
+                          bool(reports) and reports[0].get('credentials') == ['jira'])
+                    artifact = next((m['artifact'] for m in (work.messages if work else []) if m.get('event') == 'artifact'), {})
+                    document = json.loads(Path(artifact['path']).read_text()) if artifact.get('path') else {}
+                    # A run refused before its engine started has no execution record: its rows red by assertion.
+                    page = (attempt(lambda: f.L.ER.read(f.state / 'records', work.dispatch_id, 0, 10000,
+                                                        record.get('execution_record')))[0] if work else None) or {}
+                    contexts = [json.loads(r['payload']).get('first_turn_context') for r in page.get('lines', [])
+                                if r['stream'] == 'wrapper' and 'first_turn_context' in r['payload']]
+                    check('launch/instructions', engine + ': first turn context retained in the bound execution record',
+                          isinstance(document.get('first_turn_context'), int) and document['first_turn_context'] > 0 and contexts == [document.get('first_turn_context')])
+                    if engine == 'claude':
+                        check('launch/instructions', 'Claude debug evidence survives run-directory teardown',
+                              any('Role instruction discovery disabled' in r['payload'] for r in page.get('lines',[])
+                                  if r['stream'] == 'stderr'))
+                        init = own.get('init', {})
+                        check('handoff/claude', 'exact native and selected Jira MCP tools',
+                              set(init.get('tools',[])) == {'Read','PushNotification','Skill','mcp__jira__jira_search'}
+                              and init.get('mcp_servers') == [{'name':'jira','status':'connected'}])
+                        denied = next((v.split('=',1)[1].split(',') for v in own.get('argv',[])
+                                       if v.startswith('-'*2+'disallowedTools=')), [])
+                        check('launch/push', 'PushNotification is offered and never disallowed',
+                              'PushNotification' in init.get('tools',[]) and 'PushNotification' not in denied)
+                        pid = next((p.stem for p in markers.glob('*.json')
+                                    if json.loads(p.read_text()).get('dispatch') == (work.dispatch_id if work else '')), '')
+                        received = json.loads((markers / (pid + '.input')).read_text()) if (markers / (pid + '.input')).is_file() else []
+                        users = [m for m in received if m['type'] == 'user']
+                        check('handoff/claude', 'an empty no-turn probe draws init before the prompt is written',
+                              [m['type'] for m in received] == ['control_request', 'user', 'user']
+                              and users[0] == {'type': 'user', 'shouldQuery': False, 'content': []}
+                              and users[1].get('shouldQuery') is None and bool(users[1].get('content')))
+                        claude_blocked = not users
+                        check('handoff/claude', 'engine plugins, bundled and built-in skills stay off; built-in commands only typed',
+                              [p['name'] for p in init.get('plugins', [])] == ['veldo-role'] and init.get('skills') == ['veldo-role:inspect']
+                              and set(init.get('slash_commands', [])) - {'veldo-role:inspect'} == {'clear', 'compact', 'init'})
+                        check('launch/instructions', 'both listed instruction sources reach generated Claude file',
+                              own.get('instructions') == 'Use the listed role instruction.\n\n\nUse the project role instruction.\n')
+                    else:
+                        check('review/skill-commit', 'a commit of everything includes delivery and no staged skill link',
+                              'delivered.txt' in own.get('committed_paths', [])
+                              and not any(p.startswith('.agents/skills/') for p in own.get('committed_paths', [])))
+                        wire = own.get('wire', {'tools':[]})
+                        wanted = L.HANDOFF.expected({'revision':bound, 'skills':[]}, {'jira':{'tools':['jira_search']}})
+                        compare = getattr(L.HANDOFF, 'codex_tool_difference', None)
+                        evidence = load('v127_wire_evidence', EVIDENCE_PATH)
+                        observe = getattr(evidence, 'wire_observation', None)
+                        observed, obs_error = attempt(lambda: observe(wire, wanted, L.HANDOFF))
+                        observed = observed or {}
+                        resources = ['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource']
+                        granted = wanted
+                        good = compare(wire, granted) if compare else 'absent comparison'
+                        extra = copy.deepcopy(wire); extra['tools'].append({'type':'function','name':'ungranted'})
+                        missing = {'tools':[{'type':'function','name':'exec_command'}, {'type':'function','name':'update_plan'}]}
+                        check('review/codex-tools', 'both directions compare effective definitions with mapped grants',
+                              compare is not None and good is None
+                              and compare(extra, granted) == 'configuration_stop:codex_unexpected_tool'
+                              and observe(extra, wanted, L.HANDOFF).get('unexpected') == ['ungranted']
+                              and compare(missing, wanted) == 'configuration_stop:codex_missing_tool')
+                        check('review/codex-tools', 'qualification writer and comparator share the shell and plan vocabulary',
+                              observed.get('native_tool_mapping', {}).get('shell') == ['exec_command','write_stdin']
+                              and json.loads((base / 'codex-qualification.json').read_text()).get('native_tool_mapping') == observed.get('native_tool_mapping')
+                              and observed.get('missing') == [] and observed.get('unexpected') == []
+                              and observe(missing, wanted, L.HANDOFF).get('missing') == sorted(resources + ['mcp__jira__jira_search', 'write_stdin']))
+                        check('wire/resources', 'selected server grants exactly its three resource readers',
+                              observed.get('unexpected') == [] and observed.get('missing') == []
+                              and observed.get('stop') is None and good is None
+                              and set(resources) <= set(observed.get('actual', [])))
+                        for resource in resources:
+                            reduced = copy.deepcopy(wire)
+                            reduced['tools'] = [t for t in reduced['tools']
+                                if t.get('function', t).get('name') != resource]
+                            check('wire/resources', resource + ': missing reader fails equality',
+                                  compare(reduced, wanted) == 'configuration_stop:codex_missing_tool')
+                        aliases = copy.deepcopy(wire)
+                        for tool in aliases['tools']:
+                            if 'function' in tool:
+                                tool['function']['name'] = 'functions.' + tool['function']['name'].replace('mcp__jira.', 'mcp__jira__')
+                        check('wire/normalization', 'direct namespaces and MCP spellings compare to the same grants',
+                              good is None and compare(aliases, granted) is None)
+                        cfg = own.get('configuration', {})
+                        check('handoff/codex', 'generated settings, native features and filtered MCP list match',
+                              own.get('mcp_tools') == {'jira':['jira_search']} and cfg.get('model') == DIRECT_MODEL
+                              and cfg.get('features',{}).get('shell_tool') is True
+                              and cfg.get('features',{}).get('multi_agent') is False)
+                        listings = [m.get('listing') for m in (work.messages if work else []) if m.get('event') == 'capability_listing']
+                        check('handoff/codex', "Codex's own listing names exactly the generated table, not the profile's",
+                              listings == [[{'name': 'jira', 'enabled': True, 'enabled_tools': ['jira_search']}]])
+                        # The fake loads model_catalog_json for `mcp` as the real binary does: the per-run catalog must
+                        # exist before the listing runs, or the launch stops as configuration_stop:mcp_servers.
+                        check('handoff/codex', 'the per-run model catalog is written before Codex lists its MCP table',
+                              bool(listings) and record.get('refusal') is None
+                              and Path(cfg.get('model_catalog_json', '/nonexistent')).name == 'model-catalog.json')
+                        check('launch/instructions', 'Codex gets both sources through developer instructions',
+                              'project role instruction' in cfg.get('developer_instructions',''))
+                for mode, model in [('code', CODE_MODEL), ('direct', DIRECT_MODEL)]:
+                    # The qualified binary's own request with the jira server selected (qualify.py's loopback capture).
+                    body = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-selected.json')).read_text())[
+                        'requests'][0]['body']
+                    wanted = L.HANDOFF.expected({'revision':dict(bound, settings={'model':model}), 'skills':[]},
+                                                {'jira':{'tools':['jira_search']}})
+                    facts, _ = attempt(lambda: evidence.wire_observation(body, wanted, L.HANDOFF))
+                    check('wire/resources', mode + ': retained binary request equals grants including configured-server readers',
+                          facts is not None and facts.get('missing') == [] and facts.get('unexpected') == [] and facts.get('stop') is None)
+                # VELDO-0230 fix round 3 (Telegram 38895-38896): incremental_tools is granted, so the comparison reads every
+                # request of a run with the tools declared by then. The later forms are Codex 0.166.0's own on loopback
+                # (proof/VELDO-0230/fix3-incremental-capture.json): the developer message that introduces an incremental
+                # tools update with its additional_tools item (a Code Mode model's runner redeclared with goals' tools,
+                # which no role is granted), and the tool_search_output a search loads an MCP definition with. A run's
+                # first request is the qualified binary's own (resources-<model>-selected.json). Without a run comparison
+                # (before fix round 3) each request was compared alone, as the launch check and the evidence did.
+                sessions = json.loads((TREE / 'proof/VELDO-0230/fix3-incremental-capture.json').read_text())['sessions']
+                later = sessions['adds goals, incremental_tools default']['requests'][1]['input']
+                notice = next(i for i in later if i.get('type') == 'message' and not i.get('dropped'))
+                update = [i for i in later if i.get('type') == 'additional_tools'][-1]
+                searched = next(i for i in sessions['tool search loads an MCP definition, direct model']['requests'][1]['input']
+                                if i.get('type') == 'tool_search_output')
+                run_compare = getattr(L.HANDOFF, 'codex_run_tool_difference', None) or (
+                    lambda bodies, w: next((d for d in (L.HANDOFF.codex_tool_difference(b, w) for b in bodies) if d), None))
+                run_observe = getattr(evidence, 'wire_observations', None) or (
+                    lambda bodies, w, h: [evidence.wire_observation(b, w, h) for b in bodies])
+                unexpected = 'configuration_stop:codex_unexpected_tool'
+                def declared_before(body):
+                    # The observation endpoint before fix round 3: a request's tools, else nothing.
+                    tools, _ = attempt(lambda: L.HANDOFF.codex_request_tools(body))
+                    return {'tools': tools} if tools else {}
+                declarations = getattr(L.HANDOFF, 'codex_declarations', declared_before)
+                for mode, model in [('code', CODE_MODEL), ('direct', DIRECT_MODEL)]:
+                    first = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-selected.json')).read_text())[
+                        'requests'][0]['body']
+                    wanted = L.HANDOFF.expected({'revision':dict(bound, settings={'model':model}), 'skills':[]},
+                                                {'jira':{'tools':['jira_search']}})
+                    def after(items, history=True):
+                        # A later request: the whole history and its new items, or only its new items.
+                        body = copy.deepcopy(first) if history else {}
+                        body['input'] = (copy.deepcopy(first['input']) if history else []) + copy.deepcopy(items)
+                        return body
+                    own = (copy.deepcopy(next(i for i in first['input'] if i.get('type') == 'additional_tools'))
+                           if mode == 'code' else {'type': 'additional_tools', 'role': 'developer',
+                                                   'tools': copy.deepcopy(first['tools'])})
+                    own['id'] = update['id']
+                    runs = {'unlisted update': [first, after([notice, update])],
+                            'unlisted update alone': [first, after([notice, update], False)],
+                            'unlisted search result': [first, after([searched])]} if mode == 'code' else {
+                            'unlisted search result': [first, after([searched])],
+                            'unlisted search result alone': [first, after([searched], False)]}
+                    for name, bodies in runs.items():
+                        stop, _ = attempt(lambda: run_compare(bodies, wanted))
+                        observed, _ = attempt(lambda: run_observe(bodies, wanted, L.HANDOFF))
+                        check('wire/later-requests', mode + ': ' + name + ' in a later request is refused, the first accepted',
+                              stop == unexpected and run_compare(bodies[:1], wanted) is None and observed is not None
+                              and observed[0]['stop'] is None and observed[-1]['stop'] == unexpected
+                              and bool(observed[-1]['unexpected']) and observed[-1]['missing'] == [])
+                        added, _ = attempt(lambda: set(L.HANDOFF.codex_tool_names(L.HANDOFF.codex_request_tools(
+                            {'input': bodies[-1]['input'][-1:]}))))
+                        check('wire/later-requests', mode + ': ' + name + ' names exactly the tools it adds',
+                              observed is not None and bool(added) and observed[-1]['unexpected']
+                              == sorted(added - set(L.HANDOFF.codex_expected_tools(wanted, {}))))
+                        # The production launch check reads every observed request, as the observation endpoint keeps it.
+                        observations = [declarations(b) for b in bodies]
+                        original = L.HANDOFF.codex_observe
+                        L.HANDOFF.codex_observe = lambda *a: observations
+                        try:
+                            _, launch_stop = attempt(lambda: L.HANDOFF.codex_check_launch(None, {'expected': wanted}, {}, None))
+                        finally:
+                            L.HANDOFF.codex_observe = original
+                        check('wire/later-requests', mode + ': ' + name + ': the launch check refuses the run',
+                              launch_stop == unexpected)
+                    within = {'update within the role': [first, after([notice, own])],
+                              'update within the role alone': [first, after([notice, own], False)],
+                              'request with nothing new': [first, after([], False)]}
+                    if mode == 'code':
+                        # As the captured update redeclares only the runner, one that redeclares only `wait`, a role tool.
+                        part = copy.deepcopy(own)
+                        part['tools'] = [dict(n, tools=[t for t in n['tools'] if t.get('name') == 'wait'])
+                                         for n in part['tools'] if n.get('type') == 'namespace' and n.get('name') == 'functions']
+                        within['partial update within the role alone'] = [first, after([notice, part], False)]
+                        within['partial update within the role'] = [first, after([notice, part])]
+                    for name, bodies in within.items():
+                        stop, _ = attempt(lambda: run_compare(bodies, wanted))
+                        observed, _ = attempt(lambda: run_observe(bodies, wanted, L.HANDOFF))
+                        observations, _ = attempt(lambda: [declarations(b) for b in bodies])
+                        original = L.HANDOFF.codex_observe
+                        L.HANDOFF.codex_observe = lambda *a: observations
+                        try:
+                            tools, launch_stop = attempt(lambda: L.HANDOFF.codex_check_launch(None, {'expected': wanted}, {}, None))
+                        finally:
+                            L.HANDOFF.codex_observe = original
+                        check('wire/later-requests', mode + ': ' + name + ' passes at every request and at launch',
+                              stop is None and observed is not None and all(o['stop'] is None and o['unexpected'] == []
+                              and o['missing'] == [] for o in observed) and launch_stop is None
+                              and set(tools or []) == set(L.HANDOFF.codex_expected_tools(wanted, {})))
+                    # An unreadable later request is never taken for one that declares nothing.
+                    empty, _ = attempt(lambda: run_compare([], wanted))
+                    unreadable, _ = attempt(lambda: run_compare([first, {}], wanted))
+                    check('wire/later-requests', mode + ': an empty run and an unreadable later request are refused by name',
+                          empty == unreadable == 'missing_evidence:codex_request_tools')
+                qualified = json.loads((base / 'codex-qualification.json').read_text())
+                # VELDO-0230 (Telegram 38878): without a server, none is granted; the readers the qualified binary
+                # offers a model of its tool mode anyway (nothing to list or read) are recorded and accepted, no other.
+                shipped_offered = json.loads((ROOT / '.veldo/runtime/codex-qualification.json').read_text())[
+                    'mcp_resource_rule'].get('offered_without_server')
+                check('wire/no-server', 'qualification records the conditional MCP server grant and the readers the '
+                      'binary offers without a server [%s]' % shipped_offered,
+                      qualified.get('native_tool_mapping', {}).get('mcp_server') == resources
+                      and {k: v for k, v in (qualified.get('mcp_resource_rule') or {}).items() if k != 'offered_without_server'}
+                      == {'when':'nonempty_mcp_servers', 'mapping':'mcp_server', 'otherwise':[]}
+                      and isinstance(shipped_offered, dict)
+                      and all(set(v) <= set(resources) and k in ('code_mode_only', 'direct') for k, v in shipped_offered.items())
+                      and (qualified.get('mcp_resource_rule') or {}).get('offered_without_server') == shipped_offered)
+                for model in FIXTURE_MODELS:
+                    offered = set((shipped_offered or {}).get(
+                        dict(_V127_MODES).get(model) or 'direct', []))
+                    definition = f.role('codex', 'no-server-' + model)
+                    definition['settings']['model'] = model
+                    definition['mcp'] = []
+                    f.save(definition)
+                    _, rec, own, _ = run('codex', 'no-server-' + model, {'role':definition['role']})
+                    revision = rec.get('contract', {}).get('capability', {}).get('configuration', {}).get('role_revision', {})
+                    wanted = L.HANDOFF.expected({'revision':revision, 'skills':[]}, {})
+                    wire = own.get('wire', {})
+                    observed = evidence.wire_observation(wire, wanted, L.HANDOFF)
+                    check('wire/no-server', model + ': accepted empty server selection exposes no resource reader but '
+                          'those the binary offers without one [%s]' % sorted(offered),
+                          f.D.completed(rec) and own.get('configuration', {}).get('mcp_servers', {}) == {}
+                          and observed['actual'] == observed['expected'] and observed['stop'] is None
+                          and set(resources) & set(observed['actual']) == offered)
+                    captured = json.loads((TREE / ('proof/VELDO-0127/resources-' + model + '-none.json')).read_text())
+                    observations = [evidence.wire_observation(r['body'], wanted, L.HANDOFF)
+                                    for r in captured.get('requests', [])]
+                    check('wire/no-server', model + ': real loopback capture confirms absence without a server',
+                          captured.get('returncode') == 0 and bool(observations)
+                          and captured.get('configuration', {}).get('mcp_servers') == {}
+                          and all(o['actual'] == o['expected'] and set(resources) & set(o['actual']) == offered
+                                  and o['stop'] is None for o in observations))
+                    for resource in sorted(set(resources) - offered):
+                        extra = copy.deepcopy(wire)
+                        extra.setdefault('tools', []).append({'type':'function', 'name':resource})
+                        check('wire/no-server', model + ': unselected reader ' + resource + ' fails closed',
+                              compare(extra, wanted) == 'configuration_stop:codex_unexpected_tool')
+                modes = {m['slug']: m.get('tool_mode') for m in json.loads(
+                    (TREE / 'proof/VELDO-0127/catalog-fixture.json').read_text())['models']}
+                check('review/codex-mode', 'qualification writer retains the empty-profile binary model modes',
+                      bool(modes) and qualified.get('model_tool_modes') == modes)
+                absent_modes = dict(qualified); absent_modes.pop('model_tool_modes', None)
+                _, absent_stop = attempt(lambda: L.HANDOFF.X.qualified_baseline(None, absent_modes))
+                check('review/codex-mode', 'a qualification without model modes cannot bind',
+                      absent_stop == 'missing_evidence:codex_model_tool_modes')
+                catalog = qualified.get('model_catalog') or {}
+                check('catalog/integrity', 'qualification captures the fake binary bundled catalog with its digest',
+                      catalog == json.loads((TREE / 'proof/VELDO-0127/catalog-fixture.json').read_text())
+                      and qualified.get('model_catalog_digest') == f.config_api.digest(catalog))
+                role_model = getattr(L.HANDOFF, 'codex_model', None)
+                for model in CODE_MODE_MODELS:
+                    definition = f.role('codex', 'restricted-' + model)
+                    definition['settings']['model'] = model
+                    accepted = f.save(definition)
+                    work, rec, own, error = run('codex', 'mode-' + model, {'role':definition['role']})
+                    check('review/codex-mode', model + ': Code Mode runs with unchanged model and generated catalog',
+                          rec.get('state') == 'exited' and f.D.completed(rec) and bool(own.get('model_catalog'))
+                          and own.get('configuration', {}).get('model') == accepted['settings']['model'] == model)
+                    original = next((m for m in catalog.get('models', []) if m['slug'] == model), {})
+                    expected_entry = copy.deepcopy(original)
+                    expected_entry.pop('multi_agent_version', None)
+                    expected_entry.update(experimental_supported_tools=[], apply_patch_tool_type=None, supports_search_tool=False)
+                    check('catalog/fields', model + ': exactly four permitted fields change',
+                          bool(original) and own.get('model_catalog') == dict(catalog, models=[expected_entry]))
+                    wanted = L.HANDOFF.expected({'revision':rec.get('contract', {}).get('capability', {}).get('configuration', {}).get('role_revision',
+                                                     dict(native_tools=['shell','update_plan'], settings={'model':model})), 'skills':[]},
+                                              {'jira':{'tools':['jira_search']}})
+                    obs, _ = attempt(lambda: evidence.wire_observation(own.get('wire', {}), wanted, L.HANDOFF))
+                    check('wire/normalization', model + ': runner and nested declarations expose every grant',
+                          obs is not None and obs.get('missing') == [] and obs.get('unexpected') == []
+                          and set(obs.get('actual', [])) == {'exec','wait','exec_command','write_stdin','update_plan','mcp__jira__jira_search', *resources})
+                    if model == CODE_MODEL:
+                        granted_wire = wanted
+                        check('review/codex-tools', 'Code Mode equality includes runner and nested declarations',
+                              compare(own.get('wire', {}), granted_wire) is None)
+                        bound_revision = dict(native_tools=['shell','update_plan'], settings={'model':model})
+                        for label, altered in [('absent', dict(qualified, model_catalog=None)),
+                                               ('digest', dict(qualified, model_catalog_digest='changed'))]:
+                            _, stop = attempt(lambda: role_model(altered, bound_revision))
+                            check('catalog/integrity', label + ': unusable override retains named Code Mode stop',
+                                  stop == 'configuration_stop:codex_code_mode_model')
+                            check('review/codex-mode', label + ': override failure stops closed',
+                                  stop == 'configuration_stop:codex_code_mode_model')
+                for grants in (['sub_agents'], ['apply_patch'], ['clock'], ['request_user_input_async'], ['tool_search'],
+                               ['sub_agents','apply_patch','clock','request_user_input_async','tool_search']):
+                    name = 'grants-' + '-'.join(grants)
+                    definition = f.role('codex', name)
+                    definition['settings']['model'] = EXPERIMENTAL_MODEL
+                    definition['native_tools'] += [{'name':n, 'load':'always'} for n in grants]
+                    _, save_error = attempt(lambda: f.save(definition))
+                    _, rec, own, _ = run('codex', name, {'role':name}) if save_error is None else (None, {}, {}, None)
+                    if 'tool_search' in grants:
+                        check('catalog/grants', name + ': undeliverable search grant is refused at save',
+                              save_error == 'unsupported_configuration:codex_tool:' + EXPERIMENTAL_MODEL + ':tool_search')
+                        continue
+                    # VELDO-0231: the asynchronous flag holds only where the qualified binary's probe shows its call in the
+                    # stream and an immediate, empty answer to the synchronous question; else it is refused at save.
+                    flag_held = f.X.flag_grant(base / 'codex-qualification.json') is None if hasattr(f.X, 'flag_grant') else True
+                    if 'request_user_input_async' in grants and not flag_held:
+                        check('catalog/grants', name + ': a flag grant the qualified binary does not hold is refused at save',
+                              save_error == 'unsupported_configuration:codex_tool:' + EXPERIMENTAL_MODEL
+                              + ':request_user_input_async')
+                        continue
+                    entry = next(iter(own.get('model_catalog', {}).get('models', [])), {})
+                    original = next((m for m in catalog.get('models', []) if m['slug'] == EXPERIMENTAL_MODEL), {})
+                    wanted_entry = copy.deepcopy(original)
+                    if 'sub_agents' not in grants: wanted_entry.pop('multi_agent_version', None)
+                    if 'apply_patch' not in grants: wanted_entry['apply_patch_tool_type'] = None
+                    if 'tool_search' not in grants: wanted_entry['supports_search_tool'] = False
+                    wanted_entry['experimental_supported_tools'] = [n for n in original.get('experimental_supported_tools', [])
+                        if {'send_user_message_async':'request_user_input_async','clock':'clock'}.get(n,n) in grants]
+                    check('catalog/grants', name + ': accepted grants preserve only the requested catalog fields',
+                          rec.get('state') == 'exited' and f.D.completed(rec) and entry == wanted_entry and bool(original))
+                # A prepared A is launched after B has been saved, so the receiver must not reread the head.
+                pending = f.prepare('claude', 'bound-a', {'role':'claude','revision':1}, payload('claude'))
+                updated = f.role('claude'); updated['native_tools'] = [{'name':'Read','load':'always'}]
+                f.save(updated, 2)
+                work = f.launch('claude', pending) if not claude_blocked else None
+                record = f.finish('claude', work) if work else {}
+                _, later, later_own, _ = run('claude', 'bound-b', {'role':'claude'})
+                earlier = record.get('contract', {}).get('capability', {}).get('configuration', {}).get('role_revision', {})
+                next_revision = later.get('contract',{}).get('capability',{}).get('configuration',{}).get('role_revision',{})
+                check('dispatch/binding', 'a launch stays on A after B is saved and next dispatch uses B',
+                      earlier == pending['capability']['configuration']['role_revision'] and earlier['revision'] == 1
+                      and next_revision.get('revision') == 3 and later_own.get('init',{}).get('tools') == ['Read','mcp__jira__jira_search'])
+                deferred = f.role('claude','deferred',True)
+                deferred['skills'][0]['load'] = 'when assigned'
+                deferred['native_tools'].append({'name':'Bash', 'load':'when assigned'})
+                deferred['instructions'].append({'source':'factory','path':'not-present.md','load':'when assigned'})
+                f.save(deferred)
+                _, rec, own, _ = run('claude','deferred',{'role':'deferred'})
+                check('launch/unlisted', 'unassigned server, skill and instruction never load; the granted Skill tool stays',
+                      rec.get('state') == 'exited' and f.D.completed(rec) and 'Bash' not in own.get('init',{}).get('tools',[])
+                      and 'Skill' in own.get('init',{}).get('tools',[])
+                      and own.get('init',{}).get('skills') == []
+                      and own.get('init',{}).get('plugins') == []
+                      and own.get('init',{}).get('mcp_servers') == [{'name':'jira','status':'connected'}])
+                # The runner stops the receiver once it reads the end, so staged links go with the run directory,
+                # before the end is reported, never in close() alone (a race that left a dangling link in the clone).
+                unstage_run = base / 'unstage-run'
+                (unstage_run / 'config/role-skills/inspect').mkdir(parents=True)
+                unstage_link = base / 'unstage-link'
+                unstage_link.symlink_to(unstage_run / 'config/role-skills/inspect', target_is_directory=True)
+                receiver = object.__new__(f.L.Receiver)
+                receiver.run, receiver.supervision, receiver.role_skills = str(unstage_run), {'empty': True}, [unstage_link]
+                # As Receiver.__init__ leaves them with no space ledger wired in (VELDO-0303).
+                receiver.space, receiver.run_removal, receiver.run_dispatch = None, None, None
+                receiver._remove_run()
+                check('review/skill-commit', 'staged role skills are removed with the run, before its end is reported',
+                      not unstage_link.is_symlink() and not unstage_run.exists() and receiver.role_skills == [])
+                source_skill = f.src / '.agents/skills/inspect/SKILL.md'
+                source_skill.parent.mkdir(parents=True, exist_ok=True)
+                source_skill.write_text((base / 'SKILL.md').read_text())
+                f.configurations.save({'skill':'inspect','source':'project','path':'.agents/skills/inspect/SKILL.md'},
+                                      kind=C.KINDS[1], principal='owner', base=1, command_id='project-skill')
+                skill_role = f.role('codex', 'project-skill')
+                skill_role['skills'][0]['revision'] = 2
+                f.save(skill_role)
+                _, listed, _, _ = run('codex', 'listed-project-skill', {'role':'project-skill'})
+                check('launch/unlisted', 'a listed project skill is allowed and its source survives teardown',
+                      f.D.completed(listed) and source_skill.is_file())
+                no_skill = f.role('codex', 'no-project-skill'); no_skill['skills'] = []
+                f.save(no_skill)
+                _, rejected, _, _ = run('codex', 'unlisted-project-skill', {'role':'no-project-skill'})
+                check('launch/unlisted', 'an unlisted project skill is refused before the first turn',
+                      rejected.get('refusal','').startswith('invalid_input:engine_clone:'))
+                source_skill.unlink()
+                source_skill.parent.rmdir()
+                for fault, row in [('skill','launch/unlisted'),('tool','dispatch/refusal'),('missing','handoff/claude')]:
+                    (markers / 'fault').write_text(fault)
+                    work, rec, own, _ = run('claude','fault-'+fault,{'role':'claude','revision':1})
+                    turns = [p for p in markers.glob('*.turn') if (markers / (p.stem+'.json')).exists()
+                             and json.loads((markers / (p.stem+'.json')).read_text()).get('dispatch') == (work.dispatch_id if work else '')]
+                    check(row, fault + ': launch mismatch stops before prompt release',
+                          bool(work) and not f.D.completed(rec) and not turns
+                          and any(m.get('supervision',{}).get('cause') == 'configuration_stop'
+                                  for m in work.messages))
+            if init_only:
+                f.save(f.role('claude'))
             for fault, row, stop in [('probe-exit', 'review/probe-terminal', 'configuration_stop:prompt_write_failed'),
                                      ('no-init', 'review/init-bound', 'configuration_stop:init_missing'),
                                      ('slash', 'review/slash-collision', 'configuration_stop:slash_commands')]:
+                if (fault == 'no-init') != init_only:
+                    continue
                 (markers / 'fault').write_text(fault)
                 started = __import__('time').monotonic()
                 work, rec, own, _ = run('claude', 'review-' + fault, {'role':'claude','revision':1})
@@ -738,88 +747,89 @@ for step in (packet.get('payload') or {}).get('script',[]):
                     check(row, 'zero-turn probe never becomes the terminal record',
                           document.get('terminal') is None and (document.get('probe', {}).get('result') or {}).get('num_turns') == 0)
             (markers / 'fault').unlink()
-            for name, change in [('setting', lambda d: d['settings'].update(unsupported=True)),
-                                 ('tool', lambda d: d['mcp'][0].update(tools=['absent']))]:
-                definition = f.role('claude',name); change(definition); f.save(definition)
-                work, rec, own, error = run('claude','refused-'+name,{'role':name})
-                check('dispatch/refusal', name + ': required unsupported capability has a named stop',
-                      rec.get('state') == 'refused' and rec.get('refusal') == (
-                          'unsupported_configuration:engine_settings' if name == 'setting'
-                          else 'unavailable_service:mcp_tools:jira') and not own)
-            _, rejected, own, _ = run('claude', 'unaccepted-role', {'role_revision':{'role':'invented','revision':1,'native_tools':['Read']}})
-            check('revision/history', 'a caller cannot invent an accepted role revision',
-                  rejected.get('refusal') == 'invalid_input:role_revision' and not own)
-            for field in ('native_tools', 'mcp', 'skills', 'instructions'):
-                invalid_mode = f.role('claude', 'mode-' + field)
-                invalid_mode[field][0]['load'] = 'default'
-                _, error = attempt(lambda: f.save(invalid_mode))
-                check('revision/history', field + ': every item requires an explicit supported load mode', bool(error))
-            ordinary = json.dumps(list(f.writer.execute('SELECT * FROM journal')), default=str) + json.dumps(f.changes) + ''.join(r[0] for r in f.writer.execute('SELECT data FROM entities'))
-            check('revision/history', 'no resolved credential value enters ordinary views',
-                  all(v not in ordinary for v in f.values.values()))
-            check('format/fake-lines', 'shared constructors produce both completed stream protocols',
-                  bool(list(markers.glob('*.out'))))
-            evidence = load('v127_live_evidence', EVIDENCE_PATH)
-            # Exercise relocation and a semantic no-op even in the standalone suite. Keep
-            # the supplied driver (including mutations), but resolve its unchanged loopback
-            # dependency from this suite's tree: loopback itself needs the repository assets.
-            driver_copy = base / 'capture-driver' / 'live.py'
-            driver_copy.parent.mkdir()
-            driver_copy.write_bytes(LIVE_PATH.read_bytes() + b'\n# Capture relocation control.\n')
-            live = load('v127_live_driver', driver_copy)
-            live.HERE = TREE / 'proof/VELDO-0127'
-            capture_role = f.role('codex', 'codex-always')
-            capture_role['settings']['model'] = CODE_MODEL
-            f.save(capture_role)
-            direct, error = attempt(lambda: live.capture(f, 'codex', 'always', False, evidence))
-            check('review/codex-capture', 'lead driver records the loopback tools beside its production run (capture error=%s)' % error,
-                  direct is not None and bool(direct.get('wire_tools'))
-                  and direct.get('wire_tools') == [evidence.wire_observation(r['body'], direct['expected'], L.HANDOFF)
-                                                 for r in direct.get('wire_capture', {}).get('requests', [])]
-                  and direct['configuration']['model'] == direct['revision']['settings']['model'] == CODE_MODEL
-                  and direct.get('model_catalog', {}).get('models', [{}])[0].get('tool_mode') == 'code_mode_only')
-            select_model = getattr(live, 'codex_model', None)
-            accepted_models = []
-            for model in CODE_MODE_MODELS:
-                try:
-                    if select_model: select_model(model, L.HANDOFF.X)
-                    accepted_models.append(True)
-                except SystemExit:
-                    accepted_models.append(False)
-            # The lead's refusal is SystemExit: caught here so a refused model fails this row, never the suite.
-            try:
-                direct_selected = select_model(DIRECT_MODEL, L.HANDOFF.X) if select_model else None
-            except SystemExit:
-                direct_selected = None
-            check('review/codex-capture', 'lead accepts Code Mode models without substitution and rejects unknown models',
-                  select_model is not None and direct_selected == DIRECT_MODEL and all(accepted_models))
-            try:
-                if select_model: select_model('unknown-model', L.HANDOFF.X)
-                unknown_refused = False
-            except SystemExit:
-                unknown_refused = True
-            check('review/codex-capture', 'unknown model is refused', unknown_refused)
-            # The driver reads the same real writer's fake-engine execution record.
-            f.save(f.role('claude', 'claude-always'))
-            captured, error = attempt(lambda: live.capture(f, 'claude', 'always', True, evidence)) if not claude_blocked else (None, None)
-            check('review/marker-debug', 'planted debug instruction loads are rejected, with a discovery control recorded',
-                  captured is not None and hasattr(evidence, 'debug_problems')
-                  and bool(evidence.debug_problems(captured, {'ran':True, 'returncode':0, 'debug_lines':['Loaded CLAUDE.md']})))
-            if captured is not None and hasattr(evidence, 'debug_problems'):
-                clean = dict(captured, debug_lines=[])
-                check('review/marker-debug', 'no positive debug control is explicitly context-size-only',
-                      not evidence.debug_problems(clean, {'ran':True, 'returncode':0, 'debug_lines':[], 'qualification':'context-size-only'})
-                      and bool(evidence.debug_problems(clean, {'ran':True, 'returncode':0, 'debug_lines':[]})))
-                check('review/probe-terminal', 'live capture retains zero-turn result and assistant count before prompt',
-                      ((captured.get('probe') or {}).get('result') or {}).get('num_turns') == 0
-                      and (captured.get('probe') or {}).get('assistants_before_prompt') == 0)
-            for engine in ('claude','codex'):
-                path = TREE / ('proof/VELDO-0127/' + engine + '-live.json')
-                data, error = attempt(lambda: json.loads(path.read_text()))
-                data = data if isinstance(data, dict) else {}
+            if not init_only:
+                for name, change in [('setting', lambda d: d['settings'].update(unsupported=True)),
+                                     ('tool', lambda d: d['mcp'][0].update(tools=['absent']))]:
+                    definition = f.role('claude',name); change(definition); f.save(definition)
+                    work, rec, own, error = run('claude','refused-'+name,{'role':name})
+                    check('dispatch/refusal', name + ': required unsupported capability has a named stop',
+                          rec.get('state') == 'refused' and rec.get('refusal') == (
+                              'unsupported_configuration:engine_settings' if name == 'setting'
+                              else 'unavailable_service:mcp_tools:jira') and not own)
+                _, rejected, own, _ = run('claude', 'unaccepted-role', {'role_revision':{'role':'invented','revision':1,'native_tools':['Read']}})
+                check('revision/history', 'a caller cannot invent an accepted role revision',
+                      rejected.get('refusal') == 'invalid_input:role_revision' and not own)
+                for field in ('native_tools', 'mcp', 'skills', 'instructions'):
+                    invalid_mode = f.role('claude', 'mode-' + field)
+                    invalid_mode[field][0]['load'] = 'default'
+                    _, error = attempt(lambda: f.save(invalid_mode))
+                    check('revision/history', field + ': every item requires an explicit supported load mode', bool(error))
+                ordinary = json.dumps(list(f.writer.execute('SELECT * FROM journal')), default=str) + json.dumps(f.changes) + ''.join(r[0] for r in f.writer.execute('SELECT data FROM entities'))
+                check('revision/history', 'no resolved credential value enters ordinary views',
+                      all(v not in ordinary for v in f.values.values()))
+                check('format/fake-lines', 'shared constructors produce both completed stream protocols',
+                      bool(list(markers.glob('*.out'))))
                 evidence = load('v127_live_evidence', EVIDENCE_PATH)
-                problems = evidence.problems(TREE, engine, data, f.L.HANDOFF)
-                check('live/' + engine, '; '.join(problems), not problems)
+                # Exercise relocation and a semantic no-op even in the standalone suite. Keep
+                # the supplied driver (including mutations), but resolve its unchanged loopback
+                # dependency from this suite's tree: loopback itself needs the repository assets.
+                driver_copy = base / 'capture-driver' / 'live.py'
+                driver_copy.parent.mkdir()
+                driver_copy.write_bytes(LIVE_PATH.read_bytes() + b'\n# Capture relocation control.\n')
+                live = load('v127_live_driver', driver_copy)
+                live.HERE = TREE / 'proof/VELDO-0127'
+                capture_role = f.role('codex', 'codex-always')
+                capture_role['settings']['model'] = CODE_MODEL
+                f.save(capture_role)
+                direct, error = attempt(lambda: live.capture(f, 'codex', 'always', False, evidence))
+                check('review/codex-capture', 'lead driver records the loopback tools beside its production run (capture error=%s)' % error,
+                      direct is not None and bool(direct.get('wire_tools'))
+                      and direct.get('wire_tools') == [evidence.wire_observation(r['body'], direct['expected'], L.HANDOFF)
+                                                     for r in direct.get('wire_capture', {}).get('requests', [])]
+                      and direct['configuration']['model'] == direct['revision']['settings']['model'] == CODE_MODEL
+                      and direct.get('model_catalog', {}).get('models', [{}])[0].get('tool_mode') == 'code_mode_only')
+                select_model = getattr(live, 'codex_model', None)
+                accepted_models = []
+                for model in CODE_MODE_MODELS:
+                    try:
+                        if select_model: select_model(model, L.HANDOFF.X)
+                        accepted_models.append(True)
+                    except SystemExit:
+                        accepted_models.append(False)
+                # The lead's refusal is SystemExit: caught here so a refused model fails this row, never the suite.
+                try:
+                    direct_selected = select_model(DIRECT_MODEL, L.HANDOFF.X) if select_model else None
+                except SystemExit:
+                    direct_selected = None
+                check('review/codex-capture', 'lead accepts Code Mode models without substitution and rejects unknown models',
+                      select_model is not None and direct_selected == DIRECT_MODEL and all(accepted_models))
+                try:
+                    if select_model: select_model('unknown-model', L.HANDOFF.X)
+                    unknown_refused = False
+                except SystemExit:
+                    unknown_refused = True
+                check('review/codex-capture', 'unknown model is refused', unknown_refused)
+                # The driver reads the same real writer's fake-engine execution record.
+                f.save(f.role('claude', 'claude-always'))
+                captured, error = attempt(lambda: live.capture(f, 'claude', 'always', True, evidence)) if not claude_blocked else (None, None)
+                check('review/marker-debug', 'planted debug instruction loads are rejected, with a discovery control recorded',
+                      captured is not None and hasattr(evidence, 'debug_problems')
+                      and bool(evidence.debug_problems(captured, {'ran':True, 'returncode':0, 'debug_lines':['Loaded CLAUDE.md']})))
+                if captured is not None and hasattr(evidence, 'debug_problems'):
+                    clean = dict(captured, debug_lines=[])
+                    check('review/marker-debug', 'no positive debug control is explicitly context-size-only',
+                          not evidence.debug_problems(clean, {'ran':True, 'returncode':0, 'debug_lines':[], 'qualification':'context-size-only'})
+                          and bool(evidence.debug_problems(clean, {'ran':True, 'returncode':0, 'debug_lines':[]})))
+                    check('review/probe-terminal', 'live capture retains zero-turn result and assistant count before prompt',
+                          ((captured.get('probe') or {}).get('result') or {}).get('num_turns') == 0
+                          and (captured.get('probe') or {}).get('assistants_before_prompt') == 0)
+                for engine in ('claude','codex'):
+                    path = TREE / ('proof/VELDO-0127/' + engine + '-live.json')
+                    data, error = attempt(lambda: json.loads(path.read_text()))
+                    data = data if isinstance(data, dict) else {}
+                    evidence = load('v127_live_evidence', EVIDENCE_PATH)
+                    problems = evidence.problems(TREE, engine, data, f.L.HANDOFF)
+                    check('live/' + engine, '; '.join(problems), not problems)
     except Exception as error:
         for row in ROWS:
             check(row, 'the run ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:180]), False)

@@ -19045,6 +19045,26 @@ def cases():
         add(363, 'early363-' + name, suite, 'check_gate_mutations.py', old, new,
             [row if name == 'control-stale' else 'early/' + row])
         result[-1]['dir'] = 'scripts'
+    # Speed suites round 2: each closure independently drives all of the selected target rows.
+    closures = {'71_veldo_0130_api.py': {'71_veldo_0130_api_service.py': ['service/']},
+     '86_veldo_0189_engine_upgrade.py': {'86_veldo_0189_engine_records.py': ['upgrade/fresh-0186',
+                                                                             'engines/',
+                                                                             'upgrade/corrupt-runtime-record',
+                                                                             'upgrade/receiver-without-store']},
+     '124_veldo_0131_factory_reads_commands.py': {'124_veldo_0131_factory_commands.py': ['ac2/']},
+     '121_veldo_0131_factory_screens_narrow.py': {'121_veldo_0131_factory_census.py': ['wave1/no-sites'],
+                                                  '121_veldo_0131_factory_progress.py': ['browser/hang-by-progress']},
+     '110_veldo_0143_new_project.py': {'110_veldo_0143_corrections.py': ['proposal/correction-bound',
+                                                                         'proposal/correction-negated',
+                                                                         'proposal/correction-phrasings']},
+     '86_veldo_0127_agent_configuration.py': {'86_veldo_0127_init_bound.py': ['review/init-bound']},
+     '78_veldo_0160_account_pool.py': {'78_veldo_0160_account_assets.py': ['install/assets']}}
+    for case in result:
+        for suite, prefixes in closures.get(case['suite'], {}).items():
+            if case['rows'] and all(any(row == prefix or (prefix.endswith('/') and row.startswith(prefix))
+                                        for prefix in prefixes) for row in case['rows']):
+                case['suite'] = suite
+                break
     return result
 
 

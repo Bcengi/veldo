@@ -1,0 +1,36 @@
+"""Independently driven census closure of 121_veldo_0131_factory_screens_narrow.py."""
+
+_speed_inputs = {
+    'src/features/backlog/completion.ts': ROOT / "engine/ui/src/features/backlog" / "completion.ts",
+    'src/features/workflow/FlowProperties.vue': ROOT / "engine/ui/src/features/workflow" / "FlowProperties.vue",
+    'src/features/decisions/DecisionDetail.vue': ROOT / "engine/ui/src/features/decisions" / "DecisionDetail.vue",
+    'package-lock.json': ROOT / "engine/ui" / "package-lock.json",
+    'src/features/repositories/repositories.ts': ROOT / "engine/ui/src/features/repositories" / "repositories.ts",
+    'src/features/configuration/configuration.ts': ROOT / "engine/ui/src/features/configuration" / "configuration.ts",
+    'src/features/catalog/catalog.ts': ROOT / "engine/ui/src/features/catalog" / "catalog.ts",
+    'src/features/usage/usage.ts': ROOT / "engine/ui/src/features/usage" / "usage.ts",
+    'src/features/workers/workers.ts': ROOT / "engine/ui/src/features/workers" / "workers.ts",
+    'src/api/actions.ts': ROOT / "engine/ui/src/api" / "actions.ts",
+    'control_api_models.py': ROOT / ".veldo" / "control_api_models.py",
+    'timers.py': ROOT / "engine/.veldo" / "timers.py",
+    'playwright.config.ts': ROOT / "engine/ui" / "playwright.config.ts",
+    'e2e/fixtures.ts': ROOT / "engine/ui/e2e" / "fixtures.ts",
+    'e2e/factory-fixtures.ts': ROOT / "engine/ui/e2e" / "factory-fixtures.ts",
+    'e2e/team-fixtures.ts': ROOT / "engine/ui/e2e" / "team-fixtures.ts",
+    'e2e/factory.spec.ts': ROOT / "engine/ui/e2e" / "factory.spec.ts",
+    'e2e/layout.spec.ts': ROOT / "engine/ui/e2e" / "layout.spec.ts",
+    'e2e/screens.spec.ts': ROOT / "engine/ui/e2e" / "screens.spec.ts",
+    'e2e/run.spec.ts': ROOT / "engine/ui/e2e" / "run.spec.ts",
+    'e2e/harness.py': ROOT / "engine/ui/e2e" / "harness.py",
+    'e2e/decisions.spec.ts': ROOT / "engine/ui/e2e" / "decisions.spec.ts",
+    'e2e/factory_harness.py': ROOT / "engine/ui/e2e" / "factory_harness.py",
+    'e2e/team_harness.py': ROOT / "engine/ui/e2e" / "team_harness.py",
+    '120_veldo_0131_factory_ui.py': ROOT / "scripts/suites" / "120_veldo_0131_factory_ui.py",
+    '121_veldo_0131_factory_screens_narrow.py': ROOT / "scripts/suites" / "121_veldo_0131_factory_screens_narrow.py",
+    '122_veldo_0131_factory_screens_wide.py': ROOT / "scripts/suites" / "122_veldo_0131_factory_screens_wide.py",
+    '124_veldo_0131_factory_reads_commands.py': ROOT / "scripts/suites" / "124_veldo_0131_factory_reads_commands.py",
+}
+__import__('runpy').run_path(
+    str(ROOT / "scripts/suites" / "121_veldo_0131_factory_screens_narrow.py"),
+    init_globals=dict(globals(), __speed_closure__='census', __speed_inputs__=_speed_inputs),
+)

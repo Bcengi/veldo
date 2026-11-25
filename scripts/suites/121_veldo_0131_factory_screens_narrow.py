@@ -59,6 +59,8 @@ def _v131_screens_narrow():
         'src/features/workers/workers.ts': ROOT / "engine/ui/src/features/workers" / "workers.ts",
         'src/api/actions.ts': ROOT / "engine/ui/src/api" / "actions.ts",
     }
+    PRODUCTION.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in PRODUCTION})
     # The API organs the factory harness loads (VELDO_ORGANS): the checkout's .veldo, with these production copies
     # laid over a scratch copy of it (the registered mutation driver substitutes each of them here).
     ORGANS = {
@@ -67,6 +69,8 @@ def _v131_screens_narrow():
         # checkout's synced copy is the same file once it is laid down).
         'timers.py': ROOT / "engine/.veldo" / "timers.py",
     }
+    ORGANS.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in ORGANS})
     BROWSER = ('ac1/screens-360', 'ac1/screens-390')
     ROWS = BROWSER
     # VELDO-0358: the browser tests' own files (literal anchors: the registered mutation driver substitutes each of
@@ -86,15 +90,22 @@ def _v131_screens_narrow():
         'e2e/factory_harness.py': ROOT / "engine/ui/e2e" / "factory_harness.py",
         'e2e/team_harness.py': ROOT / "engine/ui/e2e" / "team_harness.py",
     }
+    E2E.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in E2E})
     SUITES = {
         '120_veldo_0131_factory_ui.py': ROOT / "scripts/suites" / "120_veldo_0131_factory_ui.py",
         '121_veldo_0131_factory_screens_narrow.py': ROOT / "scripts/suites" / "121_veldo_0131_factory_screens_narrow.py",
         '122_veldo_0131_factory_screens_wide.py': ROOT / "scripts/suites" / "122_veldo_0131_factory_screens_wide.py",
         '124_veldo_0131_factory_reads_commands.py': ROOT / "scripts/suites" / "124_veldo_0131_factory_reads_commands.py",
     }
+    SUITES.update({key: value for key, value in globals().get('__speed_inputs__', {}).items()
+                       if key in SUITES})
     WAVE = ('timers/profile-applied', 'wave1/no-sites')
     ROWS = ROWS + ('browser/hang-by-progress',)
     ROWS = ROWS + WAVE
+    closure = globals().get('__speed_closure__')
+    ROWS = (('wave1/no-sites',) if closure == 'census' else
+            ('browser/hang-by-progress',) if closure == 'progress' else BROWSER + ('timers/profile-applied',))
     BUILT = tuple(row for row in ROWS if row != 'wave1/no-sites')
     rows = {name: [] for name in ROWS}
     started = WAITS.stamp()
@@ -280,6 +291,9 @@ test('browser/hang-by-progress: the run is bounded from its last test or step ev
             if code != 0:
                 all_rows('the locked UI dependencies are installed (npm ci) [%s]' % tail(out), BUILT)
                 return
+        if closure == 'progress':
+            progress_row(ui, base)
+            return
         dist = base / 'dist'
         code, out = run(['npm', 'run', 'build', '--', '--outDir', str(dist), '--emptyOutDir'], ui,
                         'package install')  # the package's own build script, run by npm as its install is
@@ -316,12 +330,13 @@ test('browser/hang-by-progress: the run is bounded from its last test or step ev
                 outcomes or 'not run: ' + tail(out, 6), ('; ' + tail(errors[0], 6)) if errors else ''),
                 outcomes == ['passed'])
         timers_row(said)
-        progress_row(ui, base)
 
-    census_row()
+    if closure == 'census':
+        census_row()
     try:
         with tempfile.TemporaryDirectory(prefix='v131-') as directory:
-            exercise(Path(directory))
+            if closure != 'census':
+                exercise(Path(directory))
     except Exception as error:  # noqa: BLE001
         all_rows('ran to its end (raised %s: %s)' % (type(error).__name__, str(error)[:250]), BUILT)
     for name, observed in rows.items():
