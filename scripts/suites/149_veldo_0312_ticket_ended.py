@@ -244,6 +244,7 @@ def _v312_suite():
                                'repositories': {REPO: [str(repos['orchard'])]}, 'principal': 'authority',
                                'authority_generation': 1, 'enrollment_signers': str(base / 'signers'),
                                'observations': str(LOG), 'journal_key': str(private / 'journal')}, conn)
+        wired.callback(service.space_stop)
         sign = service.sign  # every journal record of this suite is signed by the service itself
         serial = [0]
 
@@ -1169,11 +1170,11 @@ def _v312_suite():
         L.outcome(plain['item'], 'kept', {})
         ledger_text = (mods / 'control_space.py').read_text()
         begin = ledger_text.index('    def _t_signal(self')
-        check(R, 'only Signal and the settled disposition transition write due; outcomes cannot',
-              ledger_text.count("record['state'] = 'due'") == 4 and "'due'" not in OUTCOMES_OF(SP)
-              and ledger_text[begin:ledger_text.index('    def _t_outcome(self')].count("record['state'] = 'due'") == 3
-              and ledger_text[ledger_text.index('    def _disposition_change('):
-                              ledger_text.index('    def publish_disposition(')].count("record['state'] = 'due'") == 1)
+        check(R, 'only Signal and the shared settled-choice transition write due; outcomes cannot',
+              ledger_text.count("record['state'] = 'due'") == 3 and "'due'" not in OUTCOMES_OF(SP)
+              and ledger_text[begin:ledger_text.index('    def _t_outcome(self')].count("record['state'] = 'due'") == 2
+              and ledger_text[ledger_text.index('    def _decided('):
+                              ledger_text.index('    def _publish_group(')].count("record['state'] = 'due'") == 1)
 
         R = 'f2/only-the-owners-abandon-ends-keep'
         guarded = planted('orchard', 'kept-guarded', T_KEPT, build_output=False)
@@ -1640,6 +1641,7 @@ def _v312_suite():
         bare, raised = None, None
         try:
             bare = SVC.Service(bare_config, None)
+            wired.callback(bare.space_stop)
         except Exception as error:  # noqa: BLE001 - the row says what the constructor raised
             raised = '%s: %s' % (type(error).__name__, str(error)[:120])
         check(R, 'a service is built with no store: its constructor reads no journal [%s]' % raised,
@@ -1661,6 +1663,7 @@ def _v312_suite():
                   passed == [] and bare.space_pass() == [] and bare.space_seen is None
                   and not (base / 'observations-r3.jsonl').exists())
         stored = SVC.Service(bare_config, conn)
+        wired.callback(stored.space_stop)
         unread = stored.space_seen
         stored.space = space()
         check(R, 'a service on a store has read no journal when built; wiring the ledger in marks the last record '
@@ -1668,6 +1671,7 @@ def _v312_suite():
               unread is None and journal_head() > 0 and stored.space_seen == journal_head()
               and stored.space_pass() == [] and stored.space_seen == journal_head())
         first = SVC.Service(bare_config, conn)
+        wired.callback(first.space_stop)
         passed = first.space_pass()
         check(R, 'with no ledger the first pass marks it [%s %s]' % (passed, first.space_seen),
               passed == [] and first.space_seen == journal_head() and not (base / 'observations-r3.jsonl').exists())
