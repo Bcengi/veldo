@@ -1,0 +1,359 @@
+{
+  "status": "passed",
+  "registered": 25,
+  "executed": 25,
+  "rejected": 25,
+  "invalid_results": [],
+  "case_receipts": [
+    {
+      "identity": "check_teeth_mutations.py:learning362-red-dropped",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/red-stage"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-input-race",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/input-races"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-runtime-race",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/input-races"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-authority",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/measured-per-case"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-error",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/invalid-workers"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-stale",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/invalid-workers"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-valid",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/invalid-workers"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-scratch",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/invalid-workers"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-cleanup",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/invalid-workers"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-returncode",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/invalid-workers"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-foreign-prior",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/replace-foreign"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-schema",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/foreign-corrupt"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-platform",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/foreign-corrupt"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-execution",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/foreign-corrupt"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-worker",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/foreign-corrupt"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-mode",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/foreign-corrupt"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-peer",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/unmeasured-default"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-latest",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/conservative-max"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-partial",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/unmeasured-default"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-control-red",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/invalid-controls"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-control-watchdog",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/invalid-controls"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-mutant-dropped",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/red-stage"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-empty-runs",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/invalid-workers"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-ignore-runs",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/conservative-max"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    },
+    {
+      "identity": "check_teeth_mutations.py:learning362-ignore-controls",
+      "key": null,
+      "kill_by": "unproven",
+      "kills": [
+        {
+          "kill_by": "unproven",
+          "row": "VELDO-0219 admission/learning/red-stage"
+        }
+      ],
+      "reason": "unknown_closure",
+      "source": "fresh",
+      "validated": true
+    }
+  ]
+}

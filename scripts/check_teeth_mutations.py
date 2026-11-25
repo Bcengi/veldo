@@ -18832,6 +18832,107 @@ def cases():
         if case['module'] == 'control_containment.py' and not case.get('siblings'):
             case['companions'] = sorted(set(case.get('companions', ())) | {'timers.py'})
 
+    # VELDO-0362: each resource admission guard is falsified at its assertion.
+    add(362, 'learning362-red-dropped', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        'if (admission and group_for is not None and reuse is not None',
+        "if (receipt.get('status') == 'passed' and admission and group_for is not None and reuse is not None", ['admission/learning/red-stage'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-input-race', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        'and inputs_unchanged(root, expected_common, files, head) and reuse.unchanged()):',
+        'and reuse.unchanged()):', ['admission/learning/input-races'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-runtime-race', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        'and inputs_unchanged(root, expected_common, files, head) and reuse.unchanged()):',
+        'and inputs_unchanged(root, expected_common, files, head)):', ['admission/learning/input-races'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-authority', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        'if not authority and Path(times) == RESOURCE_TIMES:',
+        'if False:', ['admission/measured-per-case'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-error', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "'error' in outcome or outcome.get('declaration_stale')",
+        "outcome.get('declaration_stale')", ['admission/learning/invalid-workers'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-stale', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "'error' in outcome or outcome.get('declaration_stale')",
+        "'error' in outcome", ['admission/learning/invalid-workers'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-valid', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "or outcome.get('resource_valid') is not True",
+        '', ['admission/learning/invalid-workers'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-scratch', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "or outcome.get('scratch_removed') is not True or 'cleanup' not in outcome",
+        "or 'cleanup' not in outcome", ['admission/learning/invalid-workers'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-cleanup', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "or outcome.get('scratch_removed') is not True or 'cleanup' not in outcome",
+        "or outcome.get('scratch_removed') is not True", ['admission/learning/invalid-workers'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-returncode', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "or outcome.get('returncode') != 0 or not outcome.get('measurement')",
+        "or not outcome.get('measurement')", ['admission/learning/invalid-workers'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-foreign-prior', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        'if not isinstance(item, dict) or any(item.get(k) != v for k, v in dict(',
+        'if False and any(item.get(k) != v for k, v in dict(', ['admission/learning/replace-foreign'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-schema', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "or item.get('schema') != 'veldo.worker-resources/v1'",
+        '', ['admission/learning/foreign-corrupt'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-platform', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "or item.get('platform') != resource_platform()",
+        '', ['admission/learning/foreign-corrupt'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-execution', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "or any(r.get('execution_key') != path.stem or not r.get('execution')",
+        'or any(False', ['admission/learning/foreign-corrupt'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-worker', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "or not r.get('worker') or r.get('mode') not in ('baseline', 'noop', 'mutant')",
+        "or r.get('mode') not in ('baseline', 'noop', 'mutant')", ['admission/learning/foreign-corrupt'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-mode', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "or not r.get('worker') or r.get('mode') not in ('baseline', 'noop', 'mutant')",
+        "or not r.get('worker')", ['admission/learning/foreign-corrupt'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-peer', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "if i['identity'] == case['identity'] and i['suite'] == case['suite']",
+        "if i['suite'] == case['suite']", ['admission/learning/unmeasured-default'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-latest', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "runs = [r for item in members for r in item['resource_runs']]",
+        "runs = [r for item in members if item['key'] == key for r in item['resource_runs']]", ['admission/learning/conservative-max'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-partial', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "complete = {r['mode'] for r in runs} == {'baseline', 'noop', 'mutant'}",
+        'complete = True', ['admission/learning/unmeasured-default'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-control-red', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        'valid = (all(ok is True for _, ok in rows) and not any(',
+        'valid = (True and not any(', ['admission/learning/invalid-controls'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-control-watchdog', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        'if valid:\n                            workers.outcomes[-1].update',
+        'if True:\n                            workers.outcomes[-1].update', ['admission/learning/invalid-controls'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-mutant-dropped', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "                workers.outcomes[-1].update(resource_valid=True, resource_execution=receipt['input_digest'])",
+        '                pass', ['admission/learning/red-stage'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-empty-runs', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        '        if not runs:\n            continue\n        target =',
+        '        if False:\n            continue\n        target =', ['admission/learning/invalid-workers'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-ignore-runs', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        '        if runs:\n            measured = resource_claim(runs)',
+        '        if False:\n            measured = resource_claim(runs)', ['admission/learning/conservative-max'])
+    result[-1]['dir'] = 'scripts'
+    add(362, 'learning362-ignore-controls', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
+        "                if not completed.get('declaration_stale'):\n",
+        '                if False:\n', ['admission/learning/red-stage'])
+    result[-1]['dir'] = 'scripts'
     return result
 
 

@@ -1,0 +1,4 @@
+[
+  "scripts/check_gate_mutations.py",
+  "engine/scripts/check_gate_mutations.py"
+]
