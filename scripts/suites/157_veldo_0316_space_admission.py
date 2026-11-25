@@ -466,11 +466,11 @@ def _v316_suite():
                     f.close()
         run('fix4/no-account-keeps-hold', no_account)
 
-        def async_admission():
+        def async_admission(mode='act'):
             import os
             import select
             consumer_module = load('control_space_consumer')
-            f = Fixture('async')
+            f = Fixture('async-' + mode, mode)
             consumer = consumer_module.Consumer(f.ledger)
             read, write = os.pipe()
             try:
@@ -518,6 +518,13 @@ def _v316_suite():
                 f.space['free'] = lambda pool: f.free[pool['name']]
                 check('fix1/failed-judgment', offer() == 'space_pending')
                 pump()
+                given = (f.space, f.dispatches, 'unit', 'build', 'project', str(f.repo))
+                healthy = requests.prepare(*given)
+                head = f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0]
+                check('fix1/failed-judgment', requests.prepare(*given) == healthy
+                      and f.ledger.hold(healthy['hold'])['state'] == 'admitted'
+                      and consumer.active is None and not consumer.tasks
+                      and f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == head)
                 check('fix1/failed-judgment', isinstance(offer(), dict))
                 receiver = f.root / 'receiver.json'
                 receiver.write_text(json.dumps({'workspace': str(f.repo), 'state_root': str(f.state), 'adapters': {}}))
@@ -533,6 +540,7 @@ def _v316_suite():
                 os.close(write)
                 f.close()
         run('ac2/worker-responsive', async_admission)
+        run('ac2/worker-responsive', lambda: async_admission('report'))
 
         def racing_prepare():
             f = Fixture('racing-prepare')

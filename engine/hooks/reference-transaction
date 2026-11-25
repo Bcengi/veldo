@@ -23,18 +23,15 @@ trunk=$(git config --get veldo.space.trunk 2>/dev/null) || trunk=
 common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || exit 0
 # The CLI starts with git's own variables cleared, so nothing it does is aimed at this repository.
 unset $(git rev-parse --local-env-vars 2>/dev/null)
-# timeout signals the whole process group. A trapped TERM can interrupt wait;
-# keep waiting for the CLI so timeout still reaches KILL when the CLI ignores TERM.
-# A caught signal resets to default in the CLI on exec.
+# Stay with the foreground CLI on TERM. timeout signals this whole process group;
+# if the CLI ignores TERM, keeping its parent alive lets timeout reach its KILL step.
+# A caught signal (unlike an ignored one) resets to default in the CLI on exec.
 trap : TERM
 if [ -n "$installation" ]; then
   printf '%s\n' "$lines" | "$cli" space event --state-root "$root" --installation "$installation" \
-    --common-dir "$common" --trunk "$trunk" >/dev/null 2>&1 &
-  veldo_pid=$!
+    --common-dir "$common" --trunk "$trunk" >/dev/null 2>&1
 else
   printf '%s\n' "$lines" | "$cli" space event --state-root "$root" \
-    --common-dir "$common" --trunk "$trunk" >/dev/null 2>&1 &
-  veldo_pid=$!
+    --common-dir "$common" --trunk "$trunk" >/dev/null 2>&1
 fi
-while kill -0 "$veldo_pid" 2>/dev/null; do wait "$veldo_pid" || :; done
 exit 0
