@@ -27,7 +27,46 @@ def _v316_suite():
         'control_service.py': ROOT / ".veldo" / "control_service.py",
     }
     # A mutant must retain the complete row inventory, including checks after a refused launch.
-    rows = {name: [] for name in ('ac1/boundaries', 'ac1/metrics', 'ac1/numbers', 'ac1/second-pool', 'ac2/pre-reservation', 'ac2/stable-hold', 'ac2/waiting-pass', 'ac3/advised-counts', 'ac3/started-advised', 'ac4/declared-first', 'ac4/digest', 'ac4/five-before-measured', 'ac4/last-five', 'ac4/legacy', 'ac4/legacy-history', 'ac4/measured-at-five', 'metrics/exposed', 'recovery/next-offer', 'recovery/orphan-released', 'ac4/project-station', 'accept/released-hold', 'disabled/no-hold', 'release/cancelled', 'release/measurements', 'release/preparation-failed')}
+    rows = {name: [] for name in (
+        'ac1/boundaries',
+        'ac1/metrics',
+        'ac1/numbers',
+        'ac1/second-pool',
+        'ac2/pre-reservation',
+        'ac2/stable-hold',
+        'ac2/waiting-pass',
+        'ac3/advised-counts',
+        'ac3/started-advised',
+        'ac4/declared-first',
+        'ac4/digest',
+        'ac4/five-before-measured',
+        'ac4/last-five',
+        'ac4/legacy',
+        'ac4/legacy-history',
+        'ac4/measured-at-five',
+        'metrics/exposed',
+        'recovery/next-offer',
+        'recovery/orphan-released',
+        'ac4/project-station',
+        'accept/released-hold',
+        'disabled/no-hold',
+        'release/cancelled',
+        'release/measurements',
+        'release/preparation-failed',
+        'ac1/concurrent',
+        'ac1/unread-pool',
+        'ac2/completion-wakes',
+        'ac2/racing-prepare',
+        'ac2/service-wiring',
+        'ac2/worker-responsive',
+        'ac3/completion-race',
+        'ac4/unread-declaration',
+        'fix1/failed-judgment',
+        'fix1/spent-answer',
+        'fix2/left-backlog',
+        'fix3/requests-unrelated-passes',
+        'fix4/no-account-keeps-hold',
+    )}
 
     def check(row, condition):
         rows.setdefault(row, []).append(bool(condition))

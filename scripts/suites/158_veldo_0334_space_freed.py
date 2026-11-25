@@ -32,14 +32,34 @@ def _v334_suite():
     }
     # A mutant must retain the complete row inventory, including checks after a refused launch.
     rows = {name: [] for name in (
-        'ac1/one-signal', 'ac1/retry-removes', 'ac1/pool-only',
-        'ac2/timer-still-waits', 'ac2/no-read-write', 'ac2/clear-after-judgment',
-        'ac3/removal-wakes', 'ac3/release-wakes', 'ac3/reconcile-wakes',
-        'ac3/pool-only', 'ac3/nonfreeing-no-mark', 'ac3/journal-marks',
-        'race/freeing-during-judgment', 'ac3/worker-wakes',
-        'race/release-resent', 'race/removal-resent', 'race/reconcile-resent',
-        'race/own-version-refused', 'race/resend-bounded',
-        'report/signal-refused-advised', 'act/signal-refused-waits', 'ac3/released-mark-no-wake')}
+        'ac1/one-signal',
+        'ac1/retry-removes',
+        'ac1/pool-only',
+        'ac2/timer-still-waits',
+        'ac2/no-read-write',
+        'ac2/clear-after-judgment',
+        'ac3/removal-wakes',
+        'ac3/release-wakes',
+        'ac3/reconcile-wakes',
+        'ac3/pool-only',
+        'ac3/nonfreeing-no-mark',
+        'ac3/journal-marks',
+        'race/freeing-during-judgment',
+        'ac3/worker-wakes',
+        'race/release-resent',
+        'race/removal-resent',
+        'race/reconcile-resent',
+        'race/own-version-refused',
+        'race/resend-bounded',
+        'report/signal-refused-advised',
+        'act/signal-refused-waits',
+        'ac3/released-mark-no-wake',
+        'ac3/release-replay',
+        'fix1/report-lost-signal',
+        'fix1/report-recovers-persisted-wait',
+        'fix2/release-marks-per-pool',
+        'fix2/waiting-release-no-mark',
+    )}
 
     def check(row, condition):
         rows.setdefault(row, []).append(bool(condition))

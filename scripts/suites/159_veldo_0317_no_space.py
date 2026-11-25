@@ -26,13 +26,36 @@ def _v317_suite():
         'control_service.py': ROOT / ".veldo" / "control_service.py",
     }
     rows = {name: [] for name in (
-        'ac1/not-charged', 'ac1/behind-admission', 'ac1/numbers-before-cleanup', 'ac1/rerun-accepted',
-        'ac2/repeated-once', 'ac2/repeat-red', 'ac3/edit-kept', 'ac3/next-brief', 'ac3/brief-no-space-only',
-        'ac3/brief-live-only', 'ac4/two-stop', 'ac4/restart-stop', 'ac4/owner-request',
-        'ac4/later-dispatch-open', 'ac4/owner-clears',
-        'classify/controls', 'classify/streams', 'classify/unread', 'history/reset',
-        'history/latest', 'history/unit-scoped', 'history/bounded-read', 'history/unconfirmed-new-run',
-        'artifact/no-verdict', 'wiring/installed-receiver')}
+        'ac1/not-charged',
+        'ac1/behind-admission',
+        'ac1/numbers-before-cleanup',
+        'ac1/rerun-accepted',
+        'ac2/repeated-once',
+        'ac2/repeat-red',
+        'ac3/edit-kept',
+        'ac3/next-brief',
+        'ac3/brief-no-space-only',
+        'ac3/brief-live-only',
+        'ac4/two-stop',
+        'ac4/restart-stop',
+        'ac4/owner-request',
+        'ac4/later-dispatch-open',
+        'ac4/owner-clears',
+        'classify/controls',
+        'classify/streams',
+        'classify/unread',
+        'history/reset',
+        'history/latest',
+        'history/unit-scoped',
+        'history/bounded-read',
+        'history/unconfirmed-new-run',
+        'artifact/no-verdict',
+        'wiring/installed-receiver',
+        'ac1/replayed-end',
+        'ac3/reconnect',
+        'ac4/off-loop',
+        'fix2/andon-redelivery',
+    )}
 
     def check(row, condition):
         rows.setdefault(row, []).append(bool(condition))
