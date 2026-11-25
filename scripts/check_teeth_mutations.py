@@ -19550,6 +19550,7 @@ def cases():
         "    if ctx.get('disposition') == 'discard':\n        return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', '--force', path)",
         "    if ctx.get('disposition'):\n        return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', '--force', path)",
         ['ac3/commands'])
+    result[-1].update({'siblings': True})
     add(318,
         'space318-a-second-force-option',
         '138_veldo_0300_space_remove.py',
@@ -19557,6 +19558,7 @@ def cases():
         "    code, out = _git(ctx['commands'], '-C', repository, 'worktree', 'move', path, to)",
         "    code, out = _git(ctx['commands'], '-C', repository, 'worktree', 'move', '--force', path, to)",
         ['ac3/commands'])
+    result[-1].update({'siblings': True})
     add(343,
         'space343-discard-without-the-branch',
         '150_veldo_0343_discard_keeps_commits.py',
@@ -19683,6 +19685,7 @@ def cases():
         '        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ',
         '        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == KEEP_BRANCH):\n            return\n        parameters = ',
         ['ac2/observer-refused-by-name'])
+    result[-1].update({'siblings': True})
     add(343,
         'space343-observer-requests-a-disposition',
         '133_veldo_0326_space_principals.py',
@@ -19690,6 +19693,7 @@ def cases():
         '        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ',
         '        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == REQUEST):\n            return\n        parameters = ',
         ['ac2/observer-refused-by-name'])
+    result[-1].update({'siblings': True})
     add(343,
         'space343-observer-signs-a-disposition',
         '133_veldo_0326_space_principals.py',
@@ -19697,6 +19701,7 @@ def cases():
         '        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ',
         '        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == DISPOSITION):\n            return\n        parameters = ',
         ['ac2/observer-refused-by-name'])
+    result[-1].update({'siblings': True})
     add(316,
         'space316-lost-completion-wake',
         '157_veldo_0316_space_admission.py',
