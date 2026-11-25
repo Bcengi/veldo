@@ -1,0 +1,16 @@
+[
+  {
+    "host": "dmitry-pc",
+    "commit": "86293d83440d1604a650141d0fa2bf7c177029db",
+    "runs": 9,
+    "passed": true,
+    "failures": []
+  },
+  {
+    "host": "dmitry-pc2",
+    "commit": "86293d83440d1604a650141d0fa2bf7c177029db",
+    "runs": 9,
+    "passed": true,
+    "failures": []
+  }
+]

@@ -1,0 +1,90 @@
+{
+  "implementation_commit": "86293d83440d1604a650141d0fa2bf7c177029db",
+  "baseline_commit": "4e6b23b9914aa05b60068d3e1209c64927bfdd3f",
+  "historical": {
+    "gate15-pc1": {
+      "baseline": {
+        "VELDO-0027 signing/kill-after-rotation": true,
+        "VELDO-0027 signing/transition-clock": true
+      },
+      "mutant": {
+        "VELDO-0027 signing/kill-after-rotation": false,
+        "VELDO-0027 signing/transition-clock": false
+      },
+      "noop": {
+        "VELDO-0027 signing/kill-after-rotation": true,
+        "VELDO-0027 signing/transition-clock": true
+      }
+    },
+    "batch-pc2": {
+      "baseline": {
+        "VELDO-0027 signing/kill-after-rotation": true,
+        "VELDO-0027 signing/transition-clock": true
+      },
+      "noop": {
+        "VELDO-0027 signing/kill-after-rotation": true,
+        "VELDO-0027 signing/transition-clock": true
+      },
+      "mutant": {
+        "VELDO-0027 signing/kill-after-rotation": true,
+        "VELDO-0027 signing/transition-clock": false
+      }
+    }
+  },
+  "runs": {
+    "before-pc1": {
+      "host": "dmitry-pc",
+      "clocksource": "tsc",
+      "timezone": "/usr/share/zoneinfo/America/New_York",
+      "case_runs": 9,
+      "mutant_kill_after_rotation": [
+        false,
+        false,
+        false
+      ],
+      "other_control_failures": [
+        "VELDO-0027 signing/process-count-and-listeners"
+      ]
+    },
+    "before-pc2": {
+      "host": "dmitry-pc2",
+      "clocksource": "tsc",
+      "timezone": "/usr/share/zoneinfo/America/New_York",
+      "case_runs": 9,
+      "mutant_kill_after_rotation": [
+        true,
+        false,
+        false
+      ],
+      "other_control_failures": []
+    },
+    "after-pc1": {
+      "host": "dmitry-pc",
+      "clocksource": "tsc",
+      "timezone": "/usr/share/zoneinfo/America/New_York",
+      "case_runs": 9,
+      "mutant_kill_after_rotation": [
+        false,
+        false,
+        false
+      ],
+      "other_control_failures": [
+        "VELDO-0027 signing/process-count-and-listeners"
+      ]
+    },
+    "after-pc2": {
+      "host": "dmitry-pc2",
+      "clocksource": "tsc",
+      "timezone": "/usr/share/zoneinfo/America/New_York",
+      "case_runs": 9,
+      "mutant_kill_after_rotation": [
+        false,
+        false,
+        false
+      ],
+      "other_control_failures": []
+    }
+  },
+  "gate_unconfined_sha256": "80b2fcbce692cf0d70e74bba071cd8a6ece1503a92ccfb004d91ea0fb04057ac",
+  "diagnosis": "Wall-clock second-boundary dependence under truncated transition time; reproduced true and false on pc2 itself. No host-specific production defect demonstrated."
+}

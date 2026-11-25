@@ -1,7 +1,7 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0365",
-  "commit": "f3b2f373983d65f3c4f98866eb6d3ad6ab5efdc5",
+  "commit": "86293d83440d1604a650141d0fa2bf7c177029db",
   "producer": "bounded native execution on the second host",
   "status": "partial",
   "scope": "Admission implemented; complete host qualification blocked; no canonical gate or landing claim.",
@@ -43,6 +43,26 @@
         {
           "type": "unit",
           "ref": "proof/VELDO-0365/comparator-controls.json"
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0365/signing/regression-after.json"
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0365/signing/regression-before.json",
+          "detail": "Expected negative control: old fixture rejected."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0365/signing/README.md",
+          "detail": "Three repetitions per mode per host, before and after. Targeted rows only; complete observations and limitations retained."
         }
       ]
     }
@@ -93,11 +113,22 @@
       "name": "final_evidence_metadata_remote_recheck",
       "status": "not_run",
       "detail": "Cancelled own queued recheck before launch because another exclusive remote job occupied the node. Source checks passed at the implementation commit; proof manifest structure checked separately."
+    },
+    {
+      "name": "signing.targeted",
+      "status": "passed",
+      "detail": "Three baseline/noop/mutant runs per host; injected boundary and lock clock regression green, old fixture red."
+    },
+    {
+      "name": "signing.full_observations",
+      "status": "failed",
+      "detail": "Unrelated pc1 process/listener control failures and varying other off-target mutant rows retained; full parity not claimed."
     }
   ],
   "protected_paths": [
     "engine/scripts/gate_schedule.py",
     "scripts/gate_schedule.py"
   ],
-  "rollback": "Revert this ticket; no host tools or privileged configuration were installed."
+  "rollback": "Revert this ticket; no host tools or privileged configuration were installed.",
+  "historical_qualification_commit": "f3b2f373983d65f3c4f98866eb6d3ad6ab5efdc5"
 }

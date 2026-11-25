@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "rows": [
+    {
+      "name": "VELDO-0365 host-relative/eight-core",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0365 host-relative/aggregate-and-mix",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0365 host-relative/worker-too-large",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0365 host-relative/manager-unchanged",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0365 host-relative/exclusions-retained",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0365 host-relative/large-host-identical",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0365 host-relative/memory-and-overhead",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0365 host-relative/malformed-floor",
+      "passed": true
+    },
+    {
+      "name": "VELDO-0365 host-relative/qualification-fail-closed",
+      "passed": true
+    }
+  ]
+}

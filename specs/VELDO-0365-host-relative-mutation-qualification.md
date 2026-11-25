@@ -57,7 +57,7 @@ acceptance_criteria:
   - id: AC4
     text: >
       Signing crash-after-rotation observations use an injected clock and retain every assertion.
-      Baseline and no-op pass; the truncated-clock mutant deterministically fails historical
+      The investigated baseline and no-op rows pass; the truncated-clock mutant deterministically fails historical
       receipt verification and the named transition-clock row on both hosts. Light serial
       single-case repeats record all observations and timestamp operands. A regression control
       fails with the former wall-clock-dependent fixture. No live-capture module or confinement
@@ -100,3 +100,17 @@ canonical gate, independent review or landing approval is claimed.
 Renumbered from this branch's former VELDO-0364 to VELDO-0365 because speed-reuse owns
 VELDO-0364. Existing commits and raw receipts retain their historical identities and bytes.
 All current source registrations, commands and proof paths use VELDO-0365.
+
+## Signing row follow-up
+
+At `86293d834` the fixture uses injected signing/transition instants for crash
+recovery and a pipe event plus a post-lock clock for transition precision. The
+original discrepancy is explained by rounding across a real second: pc2 itself
+reproduced both verdicts before the fix. Three repetitions per mode per host
+pass the targeted regression after the fix and fail it before. See
+`proof/VELDO-0365/signing/README.md` and its complete raw observations.
+
+This resolves the investigated row only. Other off-target lifecycle observations
+still use actual time; pc1 also reports an unrelated process/listener row failure.
+The historical 100-case comparison and host qualification remain partial, and
+no gate admission is authorized by these diagnostic results.

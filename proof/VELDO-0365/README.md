@@ -34,3 +34,13 @@ live engine capture, transport, aggregator or first-host workload is part of thi
 The final evidence-only metadata recheck was queued behind another exclusive remote job
 and cancelled before it started. Source checks above are bound to `f3b2f3739`; the proof
 manifest's structure was checked separately. No later full-gate result is implied.
+
+
+## Signing row follow-up (VELDO-0365)
+
+The original host-admission evidence above is historical. The pc2 ticket and
+proof directory were renumbered from this branch's former VELDO-0364 without
+rewriting commits or raw receipts. See [signing/README.md](signing/README.md) for
+the bounded two-host investigation, deterministic fixture fix, regression and
+remaining limitations. The follow-up includes light single-case pc1 probes;
+full qualification remains blocked.

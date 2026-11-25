@@ -1,0 +1,635 @@
+{
+  "opened_files": [
+    "proof/VELDO-0027/universe.json",
+    "scripts/suites/56_veldo_0027_signing.py",
+    "scripts/suites/shared.py",
+    "scripts/suites/support/__pycache__/holders.cpython-312.pyc",
+    "scripts/suites/support/__pycache__/ports.cpython-312.pyc",
+    "scripts/suites/support/__pycache__/waits.cpython-312.pyc",
+    "scripts/suites/support/holders.py",
+    "scripts/suites/support/ports.py",
+    "scripts/suites/support/waits.py"
+  ],
+  "failure_kinds": {
+    "VELDO-0027 signing/transition-clock": "assertion"
+  },
+  "count": 121,
+  "observations": [
+    [
+      "good spec accepted",
+      true
+    ],
+    [
+      "spec without criteria rejected",
+      true
+    ],
+    [
+      "unknown evidence kind rejected",
+      true
+    ],
+    [
+      "bad status rejected",
+      true
+    ],
+    [
+      "invented proof criterion rejected",
+      true
+    ],
+    [
+      "missing proof criterion rejected",
+      true
+    ],
+    [
+      "absent required evidence rejected",
+      true
+    ],
+    [
+      "passed-without-evidence rejected",
+      true
+    ],
+    [
+      "bad verdict value rejected",
+      true
+    ],
+    [
+      "good plan accepted",
+      true
+    ],
+    [
+      "plan dependency cycle rejected",
+      true
+    ],
+    [
+      "dangling dependency rejected",
+      true
+    ],
+    [
+      "unknown outcome ref rejected",
+      true
+    ],
+    [
+      "unknown feature ref rejected",
+      true
+    ],
+    [
+      "undeclared depends_on rejected",
+      true
+    ],
+    [
+      "ready without approval rejected",
+      true
+    ],
+    [
+      "decision without blocks rejected",
+      true
+    ],
+    [
+      "decision blocking unknown spec rejected",
+      true
+    ],
+    [
+      "duplicate work spec rejected",
+      true
+    ],
+    [
+      "bad release mode rejected",
+      true
+    ],
+    [
+      "mirror mismatch rejected",
+      true
+    ],
+    [
+      "correct mirror accepted",
+      true
+    ],
+    [
+      "spec binding to wrong plan rejected",
+      true
+    ],
+    [
+      "spec claiming missing work item rejected",
+      true
+    ],
+    [
+      "spec plan without work rejected",
+      true
+    ],
+    [
+      "correct spec binding accepted",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/telegram_chat/decision_answer",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/telegram_chat/assignment_acceptance",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/telegram_chat/review_disposition",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/telegram_chat/acknowledgement",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/jira/decision_answer",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/jira/assignment_acceptance",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/jira/review_disposition",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/jira/acknowledgement",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/signed_cli/decision_answer",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/signed_cli/assignment_acceptance",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/signed_cli/review_disposition",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kind/signed_cli/acknowledgement",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-content-binding",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-relabel/presentation_digest",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-relabel/assertion_kind",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-relabel/authority_scope",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing/ruling",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing/presentation_id",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing/presentation_digest",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing/assertion_kind",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing/authority_scope",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing/request_version",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing/presentation_version",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-envelope-expiry",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-foreign/store_uuid",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-foreign/domain_uuid",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-foreign/repository_uuid",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing-authority/all",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing-authority/store_uuid",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing-authority/domain_uuid",
+      true
+    ],
+    [
+      "VELDO-0027 signing/personal-missing-authority/repository_uuid",
+      true
+    ],
+    [
+      "VELDO-0027 signing/unauthenticated-diagnostic-is-empty",
+      true
+    ],
+    [
+      "VELDO-0027 signing/cross-channel",
+      true
+    ],
+    [
+      "VELDO-0027 signing/channel-comes-from-the-connection",
+      true
+    ],
+    [
+      "VELDO-0027 signing/key-comes-from-the-channel",
+      true
+    ],
+    [
+      "VELDO-0027 signing/unauthenticated",
+      true
+    ],
+    [
+      "VELDO-0027 signing/key-path",
+      true
+    ],
+    [
+      "VELDO-0027 signing/arbitrary",
+      true
+    ],
+    [
+      "VELDO-0027 signing/membership",
+      true
+    ],
+    [
+      "VELDO-0027 signing/unknown-kind",
+      true
+    ],
+    [
+      "VELDO-0027 signing/delegation/absent",
+      true
+    ],
+    [
+      "VELDO-0027 signing/delegation/stale",
+      true
+    ],
+    [
+      "VELDO-0027 signing/delegation/wrong-principal",
+      true
+    ],
+    [
+      "VELDO-0027 signing/delegation/revoked",
+      true
+    ],
+    [
+      "VELDO-0027 signing/delegation/valid-control",
+      true
+    ],
+    [
+      "VELDO-0027 signing/attribution/platform_message_id",
+      true
+    ],
+    [
+      "VELDO-0027 signing/attribution/sender_id",
+      true
+    ],
+    [
+      "VELDO-0027 signing/attribution/platform_timestamp",
+      true
+    ],
+    [
+      "VELDO-0027 signing/text-only",
+      true
+    ],
+    [
+      "VELDO-0027 signing/attribution/personal-signature",
+      true
+    ],
+    [
+      "VELDO-0027 signing/bound/contract_digest",
+      true
+    ],
+    [
+      "VELDO-0027 signing/bound/source_digest",
+      true
+    ],
+    [
+      "VELDO-0027 signing/bound/presentation_digest",
+      true
+    ],
+    [
+      "VELDO-0027 signing/bound/actor",
+      true
+    ],
+    [
+      "VELDO-0027 signing/bound/actor_kind",
+      true
+    ],
+    [
+      "VELDO-0027 signing/bound/principal",
+      true
+    ],
+    [
+      "VELDO-0027 signing/captured-observation",
+      true
+    ],
+    [
+      "VELDO-0027 signing/observation-bound/stdout_digest",
+      true
+    ],
+    [
+      "VELDO-0027 signing/observation-bound/stderr_digest",
+      true
+    ],
+    [
+      "VELDO-0027 signing/observation-bound/executable_digest",
+      true
+    ],
+    [
+      "VELDO-0027 signing/observation-bound/invocation",
+      true
+    ],
+    [
+      "VELDO-0027 signing/observation-bound/exit_code",
+      true
+    ],
+    [
+      "VELDO-0027 signing/observation-bound/pid",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/schema",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/channel",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/key_id",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/key_effective_at",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/key_revision",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/signed_at",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/source_id",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/source_digest",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/payload",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/delegation_id",
+      true
+    ],
+    [
+      "VELDO-0027 signing/receipt-bound/delegation_version",
+      true
+    ],
+    [
+      "VELDO-0027 signing/assertion-control",
+      true
+    ],
+    [
+      "VELDO-0027 signing/assertion-relabel",
+      true
+    ],
+    [
+      "VELDO-0027 signing/branch-key",
+      true
+    ],
+    [
+      "VELDO-0027 signing/rotation",
+      true
+    ],
+    [
+      "VELDO-0027 signing/retirement",
+      true
+    ],
+    [
+      "VELDO-0027 signing/revocation",
+      true
+    ],
+    [
+      "VELDO-0027 signing/rotation-race",
+      true
+    ],
+    [
+      "VELDO-0027 signing/race-new-key",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kill-after-rotation",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kill-after-retire_signing_key",
+      true
+    ],
+    [
+      "VELDO-0027 signing/kill-after-revoke_signing_key",
+      true
+    ],
+    [
+      "VELDO-0027 signing/transition-clock",
+      false
+    ],
+    [
+      "VELDO-0027 signing/rotation-requires-rebound-delegation",
+      true
+    ],
+    [
+      "VELDO-0027 signing/rotation-source-only-refused",
+      true
+    ],
+    [
+      "VELDO-0027 signing/rotation-rebound-control",
+      true
+    ],
+    [
+      "VELDO-0027 signing/ambiguous-channel-key",
+      true
+    ],
+    [
+      "VELDO-0027 signing/process-count-and-listeners",
+      true
+    ],
+    [
+      "VELDO-0027 signing/children-exit",
+      true
+    ],
+    [
+      "VELDO-0027 signing/no-key-leaks",
+      true
+    ],
+    [
+      "VELDO-0027 signing/no-socket-or-pidfile",
+      true
+    ],
+    [
+      "VELDO-0027 signing/universe",
+      true
+    ]
+  ],
+  "row_names": [
+    "good spec accepted",
+    "spec without criteria rejected",
+    "unknown evidence kind rejected",
+    "bad status rejected",
+    "invented proof criterion rejected",
+    "missing proof criterion rejected",
+    "absent required evidence rejected",
+    "passed-without-evidence rejected",
+    "bad verdict value rejected",
+    "good plan accepted",
+    "plan dependency cycle rejected",
+    "dangling dependency rejected",
+    "unknown outcome ref rejected",
+    "unknown feature ref rejected",
+    "undeclared depends_on rejected",
+    "ready without approval rejected",
+    "decision without blocks rejected",
+    "decision blocking unknown spec rejected",
+    "duplicate work spec rejected",
+    "bad release mode rejected",
+    "mirror mismatch rejected",
+    "correct mirror accepted",
+    "spec binding to wrong plan rejected",
+    "spec claiming missing work item rejected",
+    "spec plan without work rejected",
+    "correct spec binding accepted",
+    "VELDO-0027 signing/kind/telegram_chat/decision_answer",
+    "VELDO-0027 signing/kind/telegram_chat/assignment_acceptance",
+    "VELDO-0027 signing/kind/telegram_chat/review_disposition",
+    "VELDO-0027 signing/kind/telegram_chat/acknowledgement",
+    "VELDO-0027 signing/kind/jira/decision_answer",
+    "VELDO-0027 signing/kind/jira/assignment_acceptance",
+    "VELDO-0027 signing/kind/jira/review_disposition",
+    "VELDO-0027 signing/kind/jira/acknowledgement",
+    "VELDO-0027 signing/kind/signed_cli/decision_answer",
+    "VELDO-0027 signing/kind/signed_cli/assignment_acceptance",
+    "VELDO-0027 signing/kind/signed_cli/review_disposition",
+    "VELDO-0027 signing/kind/signed_cli/acknowledgement",
+    "VELDO-0027 signing/personal-content-binding",
+    "VELDO-0027 signing/personal-relabel/presentation_digest",
+    "VELDO-0027 signing/personal-relabel/assertion_kind",
+    "VELDO-0027 signing/personal-relabel/authority_scope",
+    "VELDO-0027 signing/personal-missing/ruling",
+    "VELDO-0027 signing/personal-missing/presentation_id",
+    "VELDO-0027 signing/personal-missing/presentation_digest",
+    "VELDO-0027 signing/personal-missing/assertion_kind",
+    "VELDO-0027 signing/personal-missing/authority_scope",
+    "VELDO-0027 signing/personal-missing/request_version",
+    "VELDO-0027 signing/personal-missing/presentation_version",
+    "VELDO-0027 signing/personal-envelope-expiry",
+    "VELDO-0027 signing/personal-foreign/store_uuid",
+    "VELDO-0027 signing/personal-foreign/domain_uuid",
+    "VELDO-0027 signing/personal-foreign/repository_uuid",
+    "VELDO-0027 signing/personal-missing-authority/all",
+    "VELDO-0027 signing/personal-missing-authority/store_uuid",
+    "VELDO-0027 signing/personal-missing-authority/domain_uuid",
+    "VELDO-0027 signing/personal-missing-authority/repository_uuid",
+    "VELDO-0027 signing/unauthenticated-diagnostic-is-empty",
+    "VELDO-0027 signing/cross-channel",
+    "VELDO-0027 signing/channel-comes-from-the-connection",
+    "VELDO-0027 signing/key-comes-from-the-channel",
+    "VELDO-0027 signing/unauthenticated",
+    "VELDO-0027 signing/key-path",
+    "VELDO-0027 signing/arbitrary",
+    "VELDO-0027 signing/membership",
+    "VELDO-0027 signing/unknown-kind",
+    "VELDO-0027 signing/delegation/absent",
+    "VELDO-0027 signing/delegation/stale",
+    "VELDO-0027 signing/delegation/wrong-principal",
+    "VELDO-0027 signing/delegation/revoked",
+    "VELDO-0027 signing/delegation/valid-control",
+    "VELDO-0027 signing/attribution/platform_message_id",
+    "VELDO-0027 signing/attribution/sender_id",
+    "VELDO-0027 signing/attribution/platform_timestamp",
+    "VELDO-0027 signing/text-only",
+    "VELDO-0027 signing/attribution/personal-signature",
+    "VELDO-0027 signing/bound/contract_digest",
+    "VELDO-0027 signing/bound/source_digest",
+    "VELDO-0027 signing/bound/presentation_digest",
+    "VELDO-0027 signing/bound/actor",
+    "VELDO-0027 signing/bound/actor_kind",
+    "VELDO-0027 signing/bound/principal",
+    "VELDO-0027 signing/captured-observation",
+    "VELDO-0027 signing/observation-bound/stdout_digest",
+    "VELDO-0027 signing/observation-bound/stderr_digest",
+    "VELDO-0027 signing/observation-bound/executable_digest",
+    "VELDO-0027 signing/observation-bound/invocation",
+    "VELDO-0027 signing/observation-bound/exit_code",
+    "VELDO-0027 signing/observation-bound/pid",
+    "VELDO-0027 signing/receipt-bound/schema",
+    "VELDO-0027 signing/receipt-bound/channel",
+    "VELDO-0027 signing/receipt-bound/key_id",
+    "VELDO-0027 signing/receipt-bound/key_effective_at",
+    "VELDO-0027 signing/receipt-bound/key_revision",
+    "VELDO-0027 signing/receipt-bound/signed_at",
+    "VELDO-0027 signing/receipt-bound/source_id",
+    "VELDO-0027 signing/receipt-bound/source_digest",
+    "VELDO-0027 signing/receipt-bound/payload",
+    "VELDO-0027 signing/receipt-bound/delegation_id",
+    "VELDO-0027 signing/receipt-bound/delegation_version",
+    "VELDO-0027 signing/assertion-control",
+    "VELDO-0027 signing/assertion-relabel",
+    "VELDO-0027 signing/branch-key",
+    "VELDO-0027 signing/rotation",
+    "VELDO-0027 signing/retirement",
+    "VELDO-0027 signing/revocation",
+    "VELDO-0027 signing/rotation-race",
+    "VELDO-0027 signing/race-new-key",
+    "VELDO-0027 signing/kill-after-rotation",
+    "VELDO-0027 signing/kill-after-retire_signing_key",
+    "VELDO-0027 signing/kill-after-revoke_signing_key",
+    "VELDO-0027 signing/transition-clock",
+    "VELDO-0027 signing/rotation-requires-rebound-delegation",
+    "VELDO-0027 signing/rotation-source-only-refused",
+    "VELDO-0027 signing/rotation-rebound-control",
+    "VELDO-0027 signing/ambiguous-channel-key",
+    "VELDO-0027 signing/process-count-and-listeners",
+    "VELDO-0027 signing/children-exit",
+    "VELDO-0027 signing/no-key-leaks",
+    "VELDO-0027 signing/no-socket-or-pidfile",
+    "VELDO-0027 signing/universe"
+  ],
+  "failed_rows": [
+    "VELDO-0027 signing/transition-clock"
+  ],
+  "failed_details": [],
+  "targets": {
+    "signing/transition-clock": [
+      false
+    ]
+  }
+}

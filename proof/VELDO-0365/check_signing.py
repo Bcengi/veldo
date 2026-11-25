@@ -5,6 +5,7 @@ does not place a receipt and its retirement at the required fractional instants.
 Only the investigated row and named clock row qualify here; every other raw
 observation remains in the receipt and is never relabeled green.
 """
+import gzip
 import json
 from pathlib import Path
 import sys
@@ -38,6 +39,7 @@ def check(receipt):
 
 
 if __name__ == '__main__':
-    results = [check(json.loads(Path(path).read_text())) for path in sys.argv[1:]]
+    results = [check(json.loads(gzip.decompress(Path(path).read_bytes()) if path.endswith('.gz')
+                               else Path(path).read_bytes())) for path in sys.argv[1:]]
     print(json.dumps(results, indent=2))
     sys.exit(not results or any(not r['passed'] for r in results))
