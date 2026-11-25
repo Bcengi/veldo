@@ -108,8 +108,8 @@ def _v326_space_principals_suite():
         spec.loader.exec_module(module)
         return module
 
-    fixture = load('v326_gate_fixtures', ROOT / 'scripts' / 'gate_fixtures.py').directory()
-    temp = Path(fixture.__enter__())
+    fixture_directory = load('v326_gate_fixtures', ROOT / 'scripts' / 'gate_fixtures.py').directory()
+    temp = Path(fixture_directory.__enter__())
     connections = []
     try:
         beside = PRODUCTION['control_space.py']
@@ -1607,7 +1607,7 @@ def _v326_space_principals_suite():
                 os.chmod(str(path), 0o600)
             except OSError:
                 pass
-        fixture.__exit__(None, None, None)
+        fixture_directory.__exit__(None, None, None)
 
     for row, values in rows.items():
         failed = [label for label, ok in values if not ok]
