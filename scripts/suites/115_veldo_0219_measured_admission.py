@@ -49,7 +49,8 @@ def _v219_checks():
         key = '1' * 32
         runs = []
         def outcome(name, mode, elapsed, cpu, memory):
-            return dict(name=name, mode=mode, elapsed=elapsed,
+            return dict(name=name, mode=mode, elapsed=elapsed, returncode=0, cleanup={},
+                        scratch_removed=True, resource_valid=True, resource_execution='fixture',
                         measurement=dict(cpu_seconds=cpu, peak_anon_bytes=memory))
         def record(key, c, seconds, cpu, memory, age=0):
             group = gate.control_group(c)
@@ -57,7 +58,7 @@ def _v219_checks():
                         outcome(group + ':baseline', 'baseline', seconds, cpu, memory),
                         outcome(group + ':noop', 'noop', seconds, cpu, memory)]
             with patch.object(gate.time, 'time', lambda: now + age):
-                gate.record_case_times(ROOT, {key: seconds}, store)
+                gate.record_case_times(ROOT, {key: seconds}, top / 'elapsed')
                 gate.record_case_resources([c], {c['identity']: key}, outcomes, gate.control_group, store)
             return outcomes
 
@@ -66,14 +67,15 @@ def _v219_checks():
         claim = gate.CaseClaims(store).claim(case, key)
         item = json.loads((store / (key + '.json')).read_text())
         measured = [claim['cpu'] == .8, claim['memory'] == 96 * 2**20,
-                    len(item['resource_runs']) == 6, gate.case_deadline(key, store) == 120]
+                    len(item['resource_runs']) == 6, gate.case_deadline(key, top / 'elapsed') == 120 and 'seconds' not in item]
         bad = record('2' * 32, dict(case, identity='failure'), 10, 8, 1024)
         before = (store / ('2' * 32 + '.json')).read_bytes()
-        bad[0]['error'] = 'control_failed'
+        for worker in bad:
+            worker['error'] = 'control_failed'
         gate.record_case_resources([dict(case, identity='failure')], {'failure': '2' * 32}, bad,
                                    gate.control_group, store)
         measured.append((store / ('2' * 32 + '.json')).read_bytes() == before)
-        with patch.object(gate, 'CASE_TIMES', store):
+        with patch.object(gate, 'RESOURCE_TIMES', store):
             measured.append(gate.record_case_resources([case], {case['identity']: key}, [],
                                                        gate.control_group, store) is False)
         with patch.object(gate.time, 'time', lambda: now + 31 * 86400):
@@ -255,9 +257,7 @@ def _v219_checks():
         glob = gate.CaseClaims(store).claim(dict(case, identity='unseen', suite='unseen.py'), 'new')
         empty = gate.CaseClaims(top / 'empty').claim(case, 'new')
         row('fallback-order', prior['source'] == 'previous_key' and prior['keys'] == [key]
-            and suite['source'] == 'suite_median' and suite['cpu'] == .8
-            and glob['source'] == 'all_median' and glob['cpu'] == 1.4
-            and glob['memory'] == (96*2**20+2**29)/2
+            and suite == glob == empty
             and empty == dict(cpu=1., memory=2**30, source='default', keys=[]))
 
         class Client:
@@ -446,7 +446,10 @@ def _v219_checks():
             oldkey = '%032x' % n
             (inventory_store / (oldkey + '.json')).write_text(json.dumps(dict(authority=str(ROOT),
                 key=oldkey, identity=c['identity'], suite=c['suite'],
-                resource_runs=[dict(at=now, cpu_seconds=6, elapsed=10, peak_anon_bytes=2**29)])))
+                schema='veldo.worker-resources/v1', platform=gate.resource_platform(),
+                resource_runs=[dict(at=now, cpu_seconds=6, elapsed=10, peak_anon_bytes=2**29,
+                    mode=mode, worker='fixture', execution='fixture', execution_key=oldkey)
+                    for mode in ('baseline','noop','mutant')])))
         known = gate.CaseClaims(inventory_store)
         full_jobs = {c['identity']: dict(case=c, mode='baseline', budget_seconds=120,
                      claim=known.claim(c, 'changed-'+str(n))) for n, c in enumerate(inventory)}
@@ -493,7 +496,7 @@ def _v219_checks():
         # enforces its cap, validates verdicts and writes the scratch store.
         stage_cases = [dict(case, identity='case%d' % n, name='case%d' % n) for n in range(12)]
         stage_files = {'scripts/check_gate_mutations.py': (0o644, b'fixture')}
-        def stage_run(ceiling, fail=False):
+        def stage_run(ceiling, fail=False, stable=True, runtime=True):
             nonlocal invocation
             invocation += 1
             times = top / ('stage-store-%d' % invocation)
@@ -523,7 +526,7 @@ def _v219_checks():
                 def lookup(self, *a):
                     return None
                 def unchanged(self):
-                    return True
+                    return runtime
                 def evidence(self, c, r, reused):
                     return dict(r, reused=reused)
                 def publish(self, *a):
@@ -534,9 +537,15 @@ def _v219_checks():
                     self.job = json.loads(Path(argv[-1]).read_text())
                     self.pid, self.returncode, self.born = 2000000 + Child.serial, None, clock[0]
                     Child.serial += 1
-                    ok = self.job['mode'] != 'mutant' and not fail
+                    ok = self.job['mode'] != 'mutant' and fail is not True
+                    if fail == 'mixed' and self.job['case']['identity'] == 'case0':
+                        ok = True
                     obs = dict(count=1,observations=[['TEST target',ok]],row_names=['TEST target'],
                                failed_rows=[] if ok else ['TEST target'])
+                    if fail == 'watchdog':
+                        obs['watchdog_fired'] = True
+                    if fail == 'malformed':
+                        obs['count'] = 2
                     kwargs['stdout'].write(json.dumps(dict(observation=obs,replacement_count=1,
                         old_digest='a',new_digest='b' if self.job['mode']=='mutant' else 'a')).encode())
                 def poll(self):
@@ -554,14 +563,14 @@ def _v219_checks():
                     return types.SimpleNamespace(cleanup=lambda *a: {}, remove_tree=ownership.remove_tree)
                 return real_load(path)
             patches = dict(inventory=lambda *a: stage_cases,read_inputs=lambda *a: stage_files,
-                git=lambda *a: 'head',snapshot=lambda *a: None,inputs_unchanged=lambda *a: True,
+                git=lambda *a: 'head',snapshot=lambda *a: None,inputs_unchanged=lambda *a: stable,
                 load=loader,CaseClaims=lambda: claim_store,
                 # Every fixture case is measured at 240s; since VELDO-0285 the stage reads its
                 # deadlines through case_deadlines, where an unmeasured case is None.
                 case_deadlines=lambda keys: {identity: 240 for identity in keys},
                 record_case_times=lambda root,samples,authority=False: real_record(root,samples,times,authority=authority),
                 record_case_resources=lambda cases,keys,outcomes,group,authority=False:
-                    real_resources(cases,keys,outcomes,group,times,authority=authority))
+                    real_resources(cases,keys,outcomes,group,times / 'resources',authority=authority))
             with contextlib.ExitStack() as stack:
                 for name, value in patches.items():
                     stack.enter_context(patch.object(gate,name,value))
@@ -588,6 +597,72 @@ def _v219_checks():
             receipt_checks.append(result['estimate_seconds']==wanted and result['guaranteed_workers']==m)
         receipt_checks.append(stage_failed['error']=='control_failed' and not list(failed_store.glob('*.json')))
         row('stage-receipts-and-recording', all(receipt_checks))
+
+        mixed, mixed_store = stage_run(8, 'mixed')
+        resource_files = list((mixed_store / 'resources').glob('*.json'))
+        hints = [json.loads(p.read_text()) for p in resource_files]
+        row('learning/red-stage', mixed['status'] == 'failed' and mixed['error'] == 'mutation_survived'
+            and len(hints) == 12 and not list(mixed_store.glob('*.json'))
+            and all(len(i['resource_runs']) == (2 if i['identity'] == 'case0' else 3) for i in hints)
+            and mixed['reused'] == 0 and mixed['rejected'] == 11)
+        bad_controls = [stage_run(8, True), stage_run(8, 'watchdog'), stage_run(8, 'malformed')]
+        row('learning/invalid-controls', all(r['status'] == 'failed'
+            and not list((t / 'resources').glob('*.json')) for r,t in bad_controls))
+        races = [stage_run(8, 'mixed', stable=False), stage_run(8, 'mixed', runtime=False)]
+        row('learning/input-races', all(r['status'] == 'failed'
+            and not list((t / 'resources').glob('*.json')) for r,t in races))
+        invalid_modes = []
+        for field, value in [('error','worker_cancelled'), ('declaration_stale','stale'),
+                             ('resource_valid',False), ('scratch_removed',False), ('cleanup',None),
+                             ('returncode',1), ('measurement',None)]:
+            target = top / ('invalid-' + field)
+            bad = outcome(case['identity'], 'mutant', 1, 1, 1024)
+            bad[field] = value
+            if field == 'cleanup':
+                del bad[field]
+            gate.record_case_resources([case], {case['identity']:key}, [bad], gate.control_group, target)
+            invalid_modes.append(not list(target.glob('*.json')))
+        row('learning/invalid-workers', all(invalid_modes))
+        fresh_store = top / 'maxima'
+        def sample(k, modes, cpu=1, memory=1024):
+            group = gate.control_group(case)
+            values = [outcome(case['identity'] if m == 'mutant' else group + ':' + m,
+                              m, 10, cpu, memory) for m in modes]
+            gate.record_case_resources([case], {case['identity']:k}, values, gate.control_group, fresh_store)
+        sample(key, ['baseline', 'noop'])
+        partial = gate.CaseClaims(fresh_store).claim(case,key)
+        sample('5'*32, ['mutant'], cpu=25, memory=2**31)
+        sample('6'*32, ['baseline','noop','mutant'], cpu=2, memory=2048)
+        maximum = gate.CaseClaims(fresh_store).claim(case,'6'*32)
+        row('learning/conservative-max', maximum['cpu'] == 2.5 and maximum['memory'] == 2**31
+            and maximum['keys'] == [key,'5'*32,'6'*32])
+        row('learning/unmeasured-default', partial['cpu'] == 1 and partial['memory'] == 2**30
+            and gate.CaseClaims(fresh_store).claim(dict(case,identity='outlier'),key) == empty)
+        corrupt = []
+        original = json.loads((fresh_store / (key + '.json')).read_text())
+        for field, value in [('authority','foreign'), ('key','wrong'), ('schema','unknown'),
+                             ('platform',{}), ('identity',None), ('suite',None)]:
+            target = top / ('corrupt-' + field)
+            target.mkdir()
+            (target / (key + '.json')).write_text(json.dumps(dict(original, **{field:value})))
+            corrupt.append(gate.CaseClaims(target).claim(case,key) == empty)
+        for field,value in [('execution_key','wrong'),('execution',''),('worker',''),('mode','other'),
+                            ('cpu_seconds',float('nan')),('elapsed',0),('peak_anon_bytes',-1)]:
+            target = top / ('corrupt-run-' + field)
+            target.mkdir()
+            item = copy.deepcopy(original)
+            item['resource_runs'] = [dict(item['resource_runs'][0], **{field:value})]
+            (target / (key + '.json')).write_text(json.dumps(item))
+            corrupt.append(gate.CaseClaims(target).claim(case,key) == empty)
+        row('learning/foreign-corrupt', all(corrupt))
+        # A wrong prior file must never contaminate a new authority sample.
+        bad_prior = dict(original, platform={})
+        bad_prior['resource_runs'][0]['cpu_seconds'] = 99999
+        (fresh_store / (key + '.json')).write_text(json.dumps(bad_prior))
+        sample(key, ['baseline','noop','mutant'])
+        overwritten = json.loads((fresh_store / (key + '.json')).read_text())
+        row('learning/replace-foreign', len(overwritten['resource_runs']) == 3
+            and max(r['cpu_seconds'] for r in overwritten['resource_runs']) == 1)
 
         regressions = load(ROOT / 'proof/VELDO-0219/round2/check.py')
         row('aggregate-handoff', regressions.handoff(gate))
