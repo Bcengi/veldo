@@ -1,0 +1,127 @@
+{
+  "base": "05f9cbe9fe9d252815980ab2ab30374b24bfdd6f",
+  "standalone_suite": {
+    "passed": 25,
+    "failed": 0
+  },
+  "reviewer_probe": {
+    "passed": 23,
+    "failed": 2,
+    "failed_rows": [
+      "VELDO-0309 exit/leftover-does-not-hold-gate",
+      "VELDO-0309 exit/group-ended"
+    ],
+    "timeout": false
+  },
+  "registered_mutants": {
+    "local": [
+      {
+        "run": 1,
+        "rejected": true,
+        "baseline_failed": 0,
+        "noop_failed": 0,
+        "failed_rows": [
+          "VELDO-0309 exit/leftover-does-not-hold-gate",
+          "VELDO-0309 exit/group-ended"
+        ],
+        "failure_kind": "assertion",
+        "kill_by": "unproven",
+        "surviving_workers": 0
+      },
+      {
+        "run": 2,
+        "rejected": true,
+        "baseline_failed": 0,
+        "noop_failed": 0,
+        "failed_rows": [
+          "VELDO-0309 exit/leftover-does-not-hold-gate",
+          "VELDO-0309 exit/group-ended"
+        ],
+        "failure_kind": "assertion",
+        "kill_by": "unproven",
+        "surviving_workers": 0
+      },
+      {
+        "run": 3,
+        "rejected": true,
+        "baseline_failed": 0,
+        "noop_failed": 0,
+        "failed_rows": [
+          "VELDO-0309 exit/leftover-does-not-hold-gate",
+          "VELDO-0309 exit/group-ended"
+        ],
+        "failure_kind": "assertion",
+        "kill_by": "unproven",
+        "surviving_workers": 0
+      }
+    ],
+    "template": [
+      {
+        "run": 1,
+        "rejected": true,
+        "baseline_failed": 0,
+        "noop_failed": 0,
+        "failed_rows": [
+          "VELDO-0309 exit/leftover-does-not-hold-gate",
+          "VELDO-0309 exit/group-ended"
+        ],
+        "failure_kind": "assertion",
+        "kill_by": "unproven",
+        "surviving_workers": 0
+      },
+      {
+        "run": 2,
+        "rejected": true,
+        "baseline_failed": 0,
+        "noop_failed": 0,
+        "failed_rows": [
+          "VELDO-0309 exit/leftover-does-not-hold-gate",
+          "VELDO-0309 exit/group-ended"
+        ],
+        "failure_kind": "assertion",
+        "kill_by": "unproven",
+        "surviving_workers": 0
+      },
+      {
+        "run": 3,
+        "rejected": true,
+        "baseline_failed": 0,
+        "noop_failed": 0,
+        "failed_rows": [
+          "VELDO-0309 exit/leftover-does-not-hold-gate",
+          "VELDO-0309 exit/group-ended"
+        ],
+        "failure_kind": "assertion",
+        "kill_by": "unproven",
+        "surviving_workers": 0
+      }
+    ]
+  },
+  "end_line_single_case": {
+    "rejected": true,
+    "kill_by": "unproven",
+    "baseline_failed": 0,
+    "noop_failed": 0,
+    "failed_rows": [
+      "VELDO-0309 exit/leftover-does-not-hold-gate",
+      "VELDO-0309 exit/group-ended"
+    ]
+  },
+  "checks": {
+    "wallclock": "passed; no new sites",
+    "personal_setup": 0,
+    "stale_mutants": 0,
+    "stale_scanned": 3976,
+    "lint": "passed",
+    "template_sync": "passed",
+    "original_checks_unchanged": 28,
+    "added_checks": 1,
+    "gate_unconfined_unchanged": true,
+    "live_capture_modules_unchanged": true
+  },
+  "protected_paths_touched": [],
+  "implementation_sha256": {
+    "scripts/suites/153_veldo_0309_gate_space.py": "2410745bdc4f4775663845f9f25286175e18e64751c7e822db639f3a2476b5aa"
+  },
+  "evidence_directory": "gatefix33-evidence/ beside gatefix31-cand-1122.md"
+}
