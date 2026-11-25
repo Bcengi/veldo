@@ -1,0 +1,54 @@
+{
+  "scope": "unit-level single-case diagnostics",
+  "registered": 4,
+  "rejected": 4,
+  "cases": [
+    {
+      "name": "learning362-memory-margin",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/learning/memory-margin",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "name": "learning362-control-outcome-name",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/learning/baseline-outcome-name",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "name": "learning362-mutant-outcome-name",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/learning/mutant-outcome-name",
+          "kill_by": "unproven"
+        }
+      ]
+    },
+    {
+      "name": "learning362-control-watchdog",
+      "kills": [
+        {
+          "row": "VELDO-0219 admission/learning/invalid-controls",
+          "kill_by": "unproven"
+        }
+      ]
+    }
+  ],
+  "suite": {
+    "name": "115_veldo_0219_measured_admission",
+    "passed": 72,
+    "failed": 0,
+    "exit_code": 2
+  },
+  "wallclock": "passed",
+  "personal_setup": 0,
+  "stale_mutants": 0,
+  "engine_copy_identical": true,
+  "gate_unconfined_unchanged": true
+}
