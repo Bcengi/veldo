@@ -41,7 +41,9 @@ def _v315_suite():
         spec.loader.exec_module(module)
         return module
 
-    with tempfile.TemporaryDirectory(prefix='r315-') as temporary:
+    # Mutation workers have long TMPDIR names. The guarded allocation keeps the
+    # authority and spool sockets within AF_UNIX's bound in both runners.
+    with load('gate_fixtures', ROOT / 'scripts' / 'gate_fixtures.py').directory() as temporary:
         base = Path(temporary).resolve()
         mods = base / 'installed' / '.veldo'
         mods.mkdir(parents=True)
