@@ -916,6 +916,10 @@ time.sleep(60)
             until = time.monotonic() + 1
             while any(running(pid) for pid in pids) and time.monotonic() < until:
                 time.sleep(0.01)
+            for pid in pids:
+                if running(pid):
+                    print('space329 deadline survivor', pid, Path('/proc/%d/stat' % pid).read_text(),
+                          'command', Path('/proc/%d/cmdline' % pid).read_bytes())
             return not any(running(pid) for pid in pids)
 
         try:

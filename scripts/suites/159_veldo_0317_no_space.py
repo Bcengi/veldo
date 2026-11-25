@@ -323,7 +323,8 @@ def _v317_suite():
                         # Reconnecting starts the service's reconciler; reconnect is not a
                         # lifecycle event. Use the real service entry and its disk/store read.
                         service = object.__new__(SV.Service)
-                        service.space, service.repositories = f.space, {}
+                        # This is the worker callback, after Service has wired its ledger.
+                        service._space, service.repositories = f.space, {}
                         result = service.space_received_reconcile()
                         if not result['ok']:
                             print('space317 reconnect', mode, result)
