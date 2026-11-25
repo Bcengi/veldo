@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-reap
+@@ -894,7 +894,7 @@
+                          load_opened=args.load_opened,
+                          collect_all=os.environ.get('VELDO_GATE_COLLECT_ALL') == '1')
+         finally:
+-            reap_children()
++            pass
+         (args.directory / 'receipt.json').write_text(json.dumps(result, indent=2) + '\n')
+         (args.directory / 'graph-field').write_text(',"graph":' + json.dumps(result['graph']))
+         for stage, verdict in result['stages'].items():

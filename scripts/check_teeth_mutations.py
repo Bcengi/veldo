@@ -18609,6 +18609,68 @@ def cases():
     add(359, 'store359-conversation-any-record', query359, 'control_run_query.py',
         "    if gate.repository_uuid is None:\n", "    if False:\n", ['query/scope'])
 
+    # VELDO-0360: one falsifier for every new scheduling guard and cleanup boundary.
+    add(360, 'failfast360-prerequisite', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "    if not collect_all and any(results[d]['verdict'] != 'pass' for d in depends[name]):\n",
+        '    if False:\n', ['failfast/held-chain'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-prerequisite-diagnostic', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "    if not collect_all and any(results[d]['verdict'] != 'pass' for d in depends[name]):\n",
+        "    if any(results[d]['verdict'] != 'pass' for d in depends[name]):\n", ['failfast/held-diagnostic'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-prerequisite-green', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "    if not collect_all and any(results[d]['verdict'] != 'pass' for d in depends[name]):\n",
+        '    if not collect_all:\n', ['failfast/held-green'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-pending', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '                if hold is None and first_failure is not None and not collect_all:\n',
+        '                if False:\n', ['failfast/early/stopped'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-pending-load', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '                if hold is None and first_failure is not None and not collect_all:\n',
+        '                if first_failure is not None and not collect_all:\n', ['failfast/early/stopped'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-pending-diagnostic', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '                if hold is None and first_failure is not None and not collect_all:\n',
+        '                if hold is None and first_failure is not None:\n', ['failfast/collect-all'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-first-red', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "                if result['verdict'] == 'FAIL' and first_failure is None:\n",
+        "                if result['verdict'] == 'FAIL':\n", ['failfast/diagnostic/first-red'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-first-pass', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "                if result['verdict'] == 'FAIL' and first_failure is None:\n",
+        "                if result['verdict'] in ('FAIL', 'pass') and first_failure is None:\n", ['failfast/green/first-red'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-cancel', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '            if first_failure is not None and not collect_all:\n',
+        '            if False:\n', ['failfast/early/stopped'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-cancel-diagnostic', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '            if first_failure is not None and not collect_all:\n',
+        '            if first_failure is not None:\n', ['failfast/collect-all'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-cancel-live', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "                    if item['proc'].poll() is None:\n",
+        '                    if False:\n', ['failfast/early/stopped'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-cancel-verdict', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "                              verdict='cancelled' if item.get('cancelled') else (\n",
+        "                              verdict='pass' if item.get('cancelled') else (\n", ['failfast/early/stopped'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-subreaper-refusal', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '        if ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0) != 0:\n',
+        '        if False:\n', ['failfast/subreaper-refused'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-collect-opt-in', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        "                         collect_all=os.environ.get('VELDO_GATE_COLLECT_ALL') == '1')\n",
+        "                         collect_all=bool(os.environ.get('VELDO_GATE_COLLECT_ALL')))\n", ['failfast/not-opted-in/stopped'])
+    result[-1]['dir'] = 'scripts'
+    add(360, 'failfast360-reap', '161_veldo_0360_failfast.py', 'gate_schedule.py',
+        '            reap_children()\n',
+        '            pass\n', ['failfast/error-cleanup'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0210 AC6: a stop queued before child registration must be masked, then
     # kill the starting tree. Both controls and mutants run the complete confined suite.
     for name, old, new in (

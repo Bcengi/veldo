@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-subreaper-refusal
+@@ -887,7 +887,7 @@
+         if len(dict(args.stage)) != len(args.stage):
+             raise Refused('duplicate catalog stage')
+         # Adopt orphaned workers so cgroup cancellation also reaps them, including zombies.
+-        if ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0) != 0:
++        if False:
+             raise Refused('cannot become the scheduler child subreaper')
+         try:
+             result = run(dict(args.stage), args.root, args.directory, args.record, args.receipt,

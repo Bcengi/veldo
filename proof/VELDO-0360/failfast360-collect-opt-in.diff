@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-collect-opt-in
+@@ -892,7 +892,7 @@
+         try:
+             result = run(dict(args.stage), args.root, args.directory, args.record, args.receipt,
+                          load_opened=args.load_opened,
+-                         collect_all=os.environ.get('VELDO_GATE_COLLECT_ALL') == '1')
++                         collect_all=bool(os.environ.get('VELDO_GATE_COLLECT_ALL')))
+         finally:
+             reap_children()
+         (args.directory / 'receipt.json').write_text(json.dumps(result, indent=2) + '\n')

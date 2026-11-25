@@ -1,0 +1,222 @@
+[
+  {
+    "control": "early",
+    "scheduler_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "stages": {
+      "worker": "cancelled",
+      "red": "FAIL",
+      "tail": "not_started",
+      "load": "not_run",
+      "mutation": "not_started",
+      "after": "not_started"
+    },
+    "first_failure": {
+      "node": "red",
+      "start": 0.002872656099498272,
+      "end": 0.06905235582962632,
+      "wall_seconds": 0.06617969973012805,
+      "verdict": "FAIL",
+      "returncode": 7,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.026072,
+      "peak_anon_bytes": 8765440,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "cleanup": true,
+    "grants": 3,
+    "releases": 3,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.06617969973012805,
+        "cpu_seconds": 0.026072,
+        "peak_anon_bytes": 8765440
+      },
+      "tail": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "worker": {
+        "wall_seconds": 0.0702010141685605,
+        "cpu_seconds": 0.029435,
+        "peak_anon_bytes": 11440128
+      },
+      "load": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "mutation": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "after": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      }
+    }
+  },
+  {
+    "control": "diagnostic",
+    "scheduler_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "stages": {
+      "worker": "pass",
+      "red": "FAIL",
+      "tail": "pass",
+      "load": "not_run",
+      "mutation": "pass",
+      "after": "FAIL"
+    },
+    "first_failure": {
+      "node": "red",
+      "start": 0.0026417309418320656,
+      "end": 0.06864152615889907,
+      "wall_seconds": 0.065999795217067,
+      "verdict": "FAIL",
+      "returncode": 7,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.027157,
+      "peak_anon_bytes": 8765440,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "cleanup": true,
+    "grants": 6,
+    "releases": 6,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.065999795217067,
+        "cpu_seconds": 0.027157,
+        "peak_anon_bytes": 8765440
+      },
+      "worker": {
+        "wall_seconds": 0.07510477397590876,
+        "cpu_seconds": 0.034082,
+        "peak_anon_bytes": 11616256
+      },
+      "tail": {
+        "wall_seconds": 0.07038475666195154,
+        "cpu_seconds": 0.026318,
+        "peak_anon_bytes": 5222400
+      },
+      "load": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "mutation": {
+        "wall_seconds": 0.05829270975664258,
+        "cpu_seconds": 0.026429,
+        "peak_anon_bytes": 7962624
+      },
+      "after": {
+        "wall_seconds": 0.059136330150067806,
+        "cpu_seconds": 0.027112,
+        "peak_anon_bytes": 7659520
+      }
+    }
+  },
+  {
+    "control": "green",
+    "scheduler_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "stages": {
+      "worker": "pass",
+      "red": "pass",
+      "tail": "pass",
+      "load": "pass",
+      "mutation": "pass",
+      "after": "pass"
+    },
+    "first_failure": null,
+    "cleanup": true,
+    "grants": 7,
+    "releases": 7,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.07121985591948032,
+        "cpu_seconds": 0.026511,
+        "peak_anon_bytes": 8773632
+      },
+      "worker": {
+        "wall_seconds": 0.08107273327186704,
+        "cpu_seconds": 0.034715,
+        "peak_anon_bytes": 11497472
+      },
+      "tail": {
+        "wall_seconds": 0.0673452690243721,
+        "cpu_seconds": 0.026344,
+        "peak_anon_bytes": 6758400
+      },
+      "load": {
+        "wall_seconds": 0.07111397385597229,
+        "cpu_seconds": 0.026127,
+        "peak_anon_bytes": 3469312
+      },
+      "mutation": {
+        "wall_seconds": 0.06746796239167452,
+        "cpu_seconds": 0.026074,
+        "peak_anon_bytes": 4595712
+      },
+      "after": {
+        "wall_seconds": 0.058591455686837435,
+        "cpu_seconds": 0.026447,
+        "peak_anon_bytes": 7839744
+      }
+    }
+  },
+  {
+    "control": "green-diagnostic",
+    "scheduler_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "stages": {
+      "worker": "pass",
+      "red": "pass",
+      "tail": "pass",
+      "load": "pass",
+      "mutation": "pass",
+      "after": "pass"
+    },
+    "first_failure": null,
+    "cleanup": true,
+    "grants": 7,
+    "releases": 7,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.06995517387986183,
+        "cpu_seconds": 0.026667,
+        "peak_anon_bytes": 8765440
+      },
+      "worker": {
+        "wall_seconds": 0.07900246512144804,
+        "cpu_seconds": 0.034002,
+        "peak_anon_bytes": 11538432
+      },
+      "tail": {
+        "wall_seconds": 0.06409865617752075,
+        "cpu_seconds": 0.026124,
+        "peak_anon_bytes": 7790592
+      },
+      "load": {
+        "wall_seconds": 0.06786330929026008,
+        "cpu_seconds": 0.025853,
+        "peak_anon_bytes": 4538368
+      },
+      "mutation": {
+        "wall_seconds": 0.06981971394270658,
+        "cpu_seconds": 0.026211,
+        "peak_anon_bytes": 3919872
+      },
+      "after": {
+        "wall_seconds": 0.061136523727327585,
+        "cpu_seconds": 0.029174,
+        "peak_anon_bytes": 6848512
+      }
+    }
+  }
+]

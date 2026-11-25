@@ -2572,6 +2572,15 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "161_veldo_0360_failfast",
+   "file": "161_veldo_0360_failfast.py",
+   "regions": "VELDO-0360",
+   "requires": [
+    "161_veldo_0360_failfast"
+   ],
+   "requires_note": "Only ROOT and expect; scratch scheduler CLI with real tiny processes and simulated cgroups. No host lock, manager, load or live services."
   }
  ],
  "resource_capacities": {

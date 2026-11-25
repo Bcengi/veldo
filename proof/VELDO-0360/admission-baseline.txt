@@ -1,0 +1,3 @@
+baseline failed rows: ['VELDO-0219 admission/fits-ledger', 'VELDO-0219 admission/abort-releases-every-grant', 'VELDO-0219 admission/lifecycle-manager-admission', 'VELDO-0219 admission/manifest-and-manager', 'VELDO-0219 admission/unmeasured-inventory', 'VELDO-0219 admission/same-verdicts', 'VELDO-0219 admission/stage-receipts-and-recording']
+current failed rows: ['VELDO-0219 admission/fits-ledger', 'VELDO-0219 admission/abort-releases-every-grant', 'VELDO-0219 admission/lifecycle-manager-admission', 'VELDO-0219 admission/manifest-and-manager', 'VELDO-0219 admission/unmeasured-inventory', 'VELDO-0219 admission/same-verdicts', 'VELDO-0219 admission/stage-receipts-and-recording']
+identical: True

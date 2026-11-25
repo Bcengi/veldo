@@ -1,0 +1,5 @@
+early exit 1
+diagnostic exit 1
+green exit 0
+green-diagnostic exit 0
+4 native controls passed; all worker PIDs reaped, cgroups removed, grants released

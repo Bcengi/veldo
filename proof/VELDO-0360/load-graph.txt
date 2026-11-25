@@ -1,0 +1,3 @@
+baseline [('VELDO-0358 leg/graph-blocks', True)]
+noop [('VELDO-0358 leg/graph-blocks', True)]
+mutant [("VELDO-0358 leg/graph-blocks: a red leg under the scheduler: stages {'lint': 'pass', 'load': 'FAIL', 'mutation': 'pass'}; a red leg under the scheduler: the mutation stage started; the held mutation node does not say why", False)]
