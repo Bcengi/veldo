@@ -367,10 +367,16 @@ def _v317_suite():
                             f.free['host'] = 1000
                             # Freeing by hand writes nothing to the ledger: the waiting rerun stays waiting.
                             manual, out = rerun(f, rec)
+                            old_hold = rec['contract']['space']['hold']
+                            waits = [i for i, h in f.ledger.holds().items() if h['state'] == 'waiting']
+                            check('ac1/behind-admission', len(waits) == 1 and waits[0] != old_hold
+                                  and f.ledger.hold(old_hold)['state'] == 'released')
                             check('ac1/behind-admission', manual is None and len(out['waiting']) == 1
                                   and len(f.started) == 1 and f.conn.execute("SELECT COUNT(*) FROM entities WHERE kind='dispatch'").fetchone()[0] == 1)
                             assert f.ledger.reconcile('console', [], [], {key: 0 for key in SP.RECONCILE_COUNTS})['ok']
                             launch, out = rerun(f, rec)
+                            check('ac1/behind-admission', launch is not None and launch.contract['space']['hold'] == waits[0]
+                                  and f.ledger.hold(waits[0])['state'] == 'admitted')
                         payload = launch.contract['input']['payload'] if launch else {}
                         check('ac3/next-brief', str(work) in payload.get('retained_worktrees', [])
                               and 'uncommitted changes' in payload.get('space_recovery', '')
@@ -396,7 +402,8 @@ def _v317_suite():
                               and L.D.RES is not None and load('control_reservation_runtime').boundary(
                                   clean['contract']) == 'retry'
                               and f.dispatches.charged('unit', 'build') == 1
-                              and line(f).latest()[('unit', 'build')]['dispatch_id'] == clean['dispatch_id'])
+                              and line(f).latest()[('unit', 'build')]['dispatch_id'] == clean['dispatch_id']
+                              and (work / 'unfinished.txt').read_text() == 'unique uncommitted work')
                     finally:
                         f.close()
             row('ac1/not-charged', confirmed)
@@ -438,7 +445,8 @@ def _v317_suite():
                     check('ac2/repeat-red', second['termination']['returncode'] == 1
                           and not D.completed(second) and not second['space_failure']['retry']
                           and not second['space_failure']['andon']
-                          and third is None and not out['asked'] and len(f.started) == 2)
+                          and third is None and not out['asked'] and len(f.started) == 2
+                          and f.dispatches.charged('unit', 'build') == 2)
                     check('history/latest', line(f).latest()[('unit', 'build')]['dispatch_id'] == second['dispatch_id'])
                     # Review finding 5: the repeat stood. A run started afresh that ends unconfirmed is a new
                     # run with a repeat of its own, not a third of the same chain.
