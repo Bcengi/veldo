@@ -374,3 +374,15 @@ or process reader and a pool dropped or its floor lowered still wait for the own
 ac2/space-safeguard-loosened (the waiting side) and ac2/space-unread-direct (the direct side). The
 falsifier install253-space-floor-direct lets a lowered floor through and must turn the first red;
 install253-space-needs-wait makes any pool change wait and must turn the second red.
+
+### Space V1 semantic integration, 2026-11-25
+
+Owner order 43607 adds runtime consumers to the earlier fix-round-3 premise: the
+candidate admission selector already reads accepted pool defaults, and review grouping
+now reads the accepted time zone. These remain direct configuration changes. Existing
+holds retain their recorded needs, and existing review requests retain their recorded
+day, identity and signed terms. A new hold reads the current accepted defaults; a new
+review deferral uses the current accepted zone. Neither change authorizes removal or
+changes an existing owner answer. Floors, protection, and signed disposition checks
+remain independently enforced. The earlier claim that neither field has a runtime
+consumer is superseded by this integration, not by a change to configuration provenance.

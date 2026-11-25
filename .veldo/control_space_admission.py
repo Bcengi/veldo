@@ -71,7 +71,10 @@ def judge(ledger, identity, free):
     hold = ledger.hold(identity)
     for pool in sorted(hold['needs']):
         record = ledger.pool(pool)
-        need, free_now, others = hold['needs'][pool], free(record), held(ledger, pool, identity)
+        free_now = free(record)
+        if type(free_now) is not int or free_now < 0:
+            raise organ('control_dispatch').Refused('space_free_unread:' + pool)
+        need, others = hold['needs'][pool], held(ledger, pool, identity)
         if free_now - others < need + record['floor']:
             return {'pool': pool, 'need': need, 'free': free_now, 'held': others, 'floor': record['floor']}
     return None
@@ -400,3 +403,93 @@ def brief(slots, ledger, payload):
     return dict(payload if isinstance(payload, dict) else {'payload': payload}, retained_worktrees=sorted(retained),
                 space_recovery='These worktrees were kept after a no-space end and hold uncommitted changes: '
                                + ', '.join(sorted(retained)))
+
+
+class Requests:
+    """Service admission on its serial space worker, using the current preparation API.
+
+    The answer belongs to a unit/station/attempt. A counted hold survives account shortage;
+    a failed read is reported once then retried. A waiting answer is invalidated only by
+    its committed freed mark. The completion pipe wakes the factory without polling.
+    """
+    def __init__(self, service, loop, dispatches):
+        self.service, self.loop, self.dispatches = service, loop, dispatches
+        self.answers, self.asked, self.leavings = {}, set(), 0
+
+    def _dispatches(self):
+        import copy
+        dispatches = copy.copy(self.dispatches)
+        dispatches.conn = self.service.space['ledger'].conn
+        return dispatches
+
+    def prepare(self, space, dispatches, unit, station, project, repository):
+        if space is None or space['ledger'].config.get('enabled') is not True:
+            return None
+        D = organ('control_dispatch')
+        key = (unit, station, dispatches.attempts(unit, station) + 1)
+        self.asked.add(key)
+        answer = self.answers.get(key)
+        if answer is not None:
+            hold = space['ledger'].hold((answer.get('space') or {}).get('hold'))
+            if not hold or hold['state'] == 'released' or hold['state'] == 'waiting' and hold.get('freed'):
+                del self.answers[key]
+                if answer.get('space'):
+                    answer = None
+            if answer is not None:
+                if answer.get('ok'):
+                    return answer.get('space')
+                error = D.Refused(answer.get('code') or answer.get('reason') or 'space_worker_failed')
+                error.space = answer.get('numbers') or {}
+                raise error
+        consumer = self.service.space_consumer
+        if consumer is None:
+            raise D.Refused('space_worker_unavailable')
+
+        def judge():
+            current = self._dispatches()
+            try:
+                bound = prepare(space, current, unit, station, project, repository)
+                return {'ok': True, 'space': bound}
+            except Exception as error:
+                code = str(getattr(error, 'code', None) or type(error).__name__)
+                bound = None
+                if code.startswith('space_wait:'):
+                    base = json.dumps([current.domain, current.repository, unit, station, key[2]], separators=(',', ':'))
+                    identity, generation = base, 0
+                    while (space['ledger'].hold(identity) or {}).get('state') == 'released':
+                        generation += 1
+                        identity = base + '/' + str(generation)
+                    hold = space['ledger'].hold(identity)
+                    if hold:
+                        bound = {'hold': identity, 'needs': dict(hold['needs'])}
+                return {'ok': False, 'code': code, 'space': bound, 'numbers': getattr(error, 'space', None)}
+
+        def complete(answer):
+            self.answers[key] = answer
+            self.loop.wake('space_admission', key)
+
+        consumer.submit(('admission', dispatches.repository) + key, judge, complete)
+        raise D.Refused('space_pending')
+
+    def taken(self, contract):
+        self.answers.pop((contract['unit'], contract['station'], contract['attempt']), None)
+
+    def passed(self):
+        left = sorted(set(self.answers) - self.asked)
+        self.asked.clear()
+        holds = [(self.answers.pop(key).get('space') or {}).get('hold') for key in left]
+        holds = [hold for hold in holds if hold]
+        consumer, space = self.service.space_consumer, self.service.space
+        if holds and consumer is not None and space is not None:
+            self.leavings += 1
+            def release():
+                current = self._dispatches()
+                bound = {((json.loads(raw).get('contract') or {}).get('space') or {}).get('hold')
+                         for (raw,) in current.conn.execute("SELECT data FROM entities WHERE kind='dispatch'")}
+                for identity in holds:
+                    hold = space['ledger'].hold(identity)
+                    if identity not in bound and hold and hold['state'] in COUNTED:
+                        space['ledger'].release(identity)
+                return {'ok': True}
+            consumer.submit(('admission_left', self.dispatches.repository, self.leavings), release)
+        return left

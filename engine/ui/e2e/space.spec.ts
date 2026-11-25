@@ -106,8 +106,8 @@ for (const viewport of [{ width: 1280, height: 860 }, { width: 390, height: 844 
     expect(busy.text).toContain('4.1 GiB')
     // The plain repository and no project are rows of their own, beside the projects.
     const top = await usage.locator('[data-level="0"]').evaluateAll((rows) => rows.map((r) => (r as HTMLElement).dataset.usage))
-    expect(top.filter((k) => k !== 'total')).toEqual(['project:project-a', 'project:project-b', 'plain_repository:/home/owner/tools', 'no_project:'])
-    await expect(usage.locator('[data-usage="plain_repository:/home/owner/tools"]')).toContainText('Plain repository')
+    expect(top.filter((k) => k !== 'total')).toEqual(['project:project-a', 'project:project-b', 'plain_repository:/srv/fixture/tools', 'no_project:'])
+    await expect(usage.locator('[data-usage="plain_repository:/srv/fixture/tools"]')).toContainText('Plain repository')
     await expect(usage.locator('[data-usage="no_project:"]')).toContainText('No project')
     await expect(usage.locator('[data-usage="total"]')).toContainText('Total')
     // A removed and a gone item are in no figure.

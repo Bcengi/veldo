@@ -1,0 +1,61 @@
+{
+  "schema": "veldo.space-v1-retired-mutations/v1",
+  "reason": "Superseded old APIs; see retirement.md row mapping and current candidate cases. Distinct unmet behaviors have current API mutations.",
+  "cases": [
+    {
+      "finding": 316,
+      "name": "space316-measured-after-one",
+      "suite": "150_veldo_0316_admission.py",
+      "module": "control_space_admission.py",
+      "old": "elif len(recent) == 5 and all(type(run.get(name)) is int for run in recent):",
+      "new": "elif len(recent) >= 1 and all(type(run.get(name)) is int for run in recent):",
+      "rows": [
+        "space316/ac4/one-run-default"
+      ]
+    },
+    {
+      "finding": 316,
+      "name": "space316-wait-listed-refused",
+      "suite": "150_veldo_0316_admission.py",
+      "module": "control_service.py",
+      "old": "if code.startswith('space_wait:') or code == 'space_pending':",
+      "new": "if code == 'space_pending':",
+      "rows": [
+        "space316/ac2/factory-waiting"
+      ]
+    },
+    {
+      "finding": 316,
+      "name": "space316-lost-completion-wake",
+      "suite": "150_veldo_0316_admission.py",
+      "module": "control_space_admission.py",
+      "old": "            self.loop.wake('space_admission', key)",
+      "new": "            pass  # defect: the factory never hears the completed judgment",
+      "rows": [
+        "space316/ac2/completion-wakes"
+      ]
+    },
+    {
+      "finding": 316,
+      "name": "space316-release-winning-promise",
+      "suite": "150_veldo_0316_admission.py",
+      "module": "control_launch.py",
+      "old": "            if space is not None and promised != space:",
+      "new": "            if space is not None:",
+      "rows": [
+        "space316/ac2/racing-prepare"
+      ]
+    },
+    {
+      "finding": 316,
+      "name": "space316-prepare-without-lock",
+      "suite": "150_veldo_0316_admission.py",
+      "module": "control_space_admission.py",
+      "old": "        with lock(ledger):\n            base = identity_of",
+      "new": "        with contextlib.nullcontext():\n            base = identity_of",
+      "rows": [
+        "space316/ac1/concurrent"
+      ]
+    }
+  ]
+}

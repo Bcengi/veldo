@@ -118,3 +118,5 @@ Owner order 43607 retains the newer candidate implementation and integrates sign
 dispositions. See `proof/VELDO-0334/assembly-v1.md` for explicit implementation
 retirements and their evidence. Historical receipts retain their original binding;
 joined-tree suite and mutation validation is pending Gate 18 completion.
+
+Space V1 assertion reconciliation: the superseded suite-150 fixture and its row-by-row disposition are archived in `proof/VELDO-0334/historical-space-v1/retirement.md`. Required distinct assertions were ported to candidate fixtures; runtime validation is pending and recorded in the assembly proof, not inferred from historical receipts.

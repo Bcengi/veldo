@@ -232,8 +232,8 @@ class SpaceUi(F.FactoryUi):
         # Another project, a plain repository and no project.
         item('b-tree', 'worktree', ROOT + '/project-b/VELDO-9148', owner('project-b', 'VELDO-9148', 'run-9148'), 'present',
              (1 * GIB, 'run_finished'), branch='veldo-9148')
-        item('plain', 'worktree', '/home/owner/tools/worktrees/experiment',
-             {'scope': {'type': 'plain_repository', 'id': '/home/owner/tools'}}, 'present', (350 * MIB, 'reconcile'),
+        item('plain', 'worktree', '/srv/fixture/tools/worktrees/experiment',
+             {'scope': {'type': 'plain_repository', 'id': '/srv/fixture/tools'}}, 'present', (350 * MIB, 'reconcile'),
              adopted=True, creator='reconcile', branch='experiment')
         item('scratch', 'scratch', '/srv/veldo/scratch/session-41', {'scope': {'type': 'no_project'}, 'session': 'session-41'},
              'present', (64 * MIB, 'session_started'))

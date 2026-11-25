@@ -20,7 +20,7 @@
  {
   "command": [
    "bash",
-   "/home/dmitry/projects/myday/scripts/host_heavy.sh",
+   "<historical-home>/projects/myday/scripts/host_heavy.sh",
    "nice",
    "-n",
    "10",

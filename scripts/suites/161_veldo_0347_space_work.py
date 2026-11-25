@@ -791,6 +791,9 @@ def _v347_space_work_suite():
                   holds(REPOSITORY, lone) and bool(git(REPOSITORY, 'for-each-ref', '--contains', lone, prefix)))
 
 
+        KEEP = load('v347_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
+        desk = KEEP.Desk(VELDO, S, CM, AC, conn, IDS, journal_sign, owner_sign, keys, NOW, tag='v347_desk')
+
         @row('ac3/unique-work-request')
         def _ac3_unique_work_request():
             ROW = 'ac3/unique-work-request'
@@ -812,6 +815,15 @@ def _v347_space_work_suite():
                       and entry[0].get('unique_work') == 'decision_request'
                       and K.REGISTRY['tables']['2']['rows']['worktree']['landed'].get('method') == 'git_worktree_remove')
                 check(ROW, 'the %s is whole' % form, sorted(os.listdir(str(where))) == listing)
+                request = L.item(item).get('disposition') or {}
+                check(ROW, 'one clone-only request names this item', request.get('state') == 'requested'
+                      and request['proposal'].get('clones', [{}])[0].get('item') == item
+                      and 'worktrees' not in request['proposal'])
+                settled, edge, marked = desk.owner_keeps(L, item, SP.ITEM_KIND)
+                check(ROW, 'only the signed owner command applies Keep', settled.get('outcome') == 'settled'
+                      and not edge.get('ok') and marked.get('ok') and L.item(item).get('owner_keep') == {'by': 'owner'})
+                check(ROW, 'Keep removes nothing', sorted(os.listdir(str(where))) == listing)
+
 
 
         @row('ac3/worker-snapshot')

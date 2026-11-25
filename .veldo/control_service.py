@@ -3391,9 +3391,11 @@ class Line:
         self.registration = S.COMMAND_REGISTRY['subscription_reservation']
         pool = L.D.RES.POOL.Pool({name: {'engine': engine, 'host': host} for name, engine in self.engines.items()})
         # VELDO-0158: the Runner removes a run directory its receiver left once the run is gone.
+        self.space_requests = _organ('control_space_admission').Requests(service, loop, self.dispatches)
         self.runner = L.Runner(self.gate, self.reservations, self.dispatches, self.invoke, account=pool,
                                runs=L.runs_root(receiver), profile=receiver.get('profile'),
-                               observe=lambda event: service._log(dict(event, kind='loop')))
+                               observe=lambda event: service._log(dict(event, kind='loop')),
+                               admission=self.space_requests.prepare)
         # VELDO-0148: the land station, when the work configuration names this repository's `land`: each land
         # of a unit its own land dispatch on the service's connection, written as the service's principal.
         self.station = LS.LandStation(
@@ -3486,6 +3488,7 @@ class Line:
                                     'receiver_lost': launch.lost})
         # VELDO-0188 AC3: a closed project's line settles its runs and offers nothing, no station and no re-run.
         if getattr(self, 'closing', False):
+            self.space_left()
             return
         # Coordination uses this same event-driven pass and this line's Runner; the factory project's cycles
         # run on the loop's factory line (VELDO-0143).
@@ -3513,6 +3516,15 @@ class Line:
                 self.next(unit, latest, report)
         if getattr(self, 'batches', None) is not None:
             report.setdefault('batches', []).extend(self.batches.pass_once())
+        self.space_left()
+
+    def space_left(self):
+        requests = getattr(self, 'space_requests', None)
+        if requests is not None:
+            left = requests.passed()
+            for key in left:
+                self.runner.space_waiting_accounts.pop(key, None)
+
 
 
     def wants_cycles(self):
@@ -3943,8 +3955,8 @@ class Line:
                                         **({'exclude': list(exclude)} if exclude else {}))
         except Exception as error:  # noqa: BLE001 - a refused offer is named in the pass, never the end of the service
             code = str(getattr(error, 'code', None) or 'unknown_outcome:' + type(error).__name__)
-            if code.startswith('space_wait:'):
-                report['waiting'].append(dict(entry, refusal=code, space=dict(error.space)))
+            if code.startswith('space_wait:') or code == 'space_pending':
+                report['waiting'].append(dict(entry, refusal=code, space=dict(getattr(error, 'space', {}))))
             elif code.startswith('no_account'):
                 until = code.split(':', 1)[1] if code.startswith('no_account_until:') else ''
                 report['waiting'].append(dict(entry, refusal=code, until=int(until) if until.isdigit() else None))
@@ -3952,6 +3964,9 @@ class Line:
                 report['refused'].append(dict(entry, refusals=[code]))
             return None
         contract = launch.contract
+        requests = getattr(self, 'space_requests', None)
+        if requests is not None:
+            requests.taken(contract)
         report['offered'].append(dict(entry, dispatch_id=launch.dispatch_id, attempt=contract['attempt'],
                                       account=contract['reservation']['account'], host=self.hosts.get(adapter),
                                       adapter=adapter, commit=contract['source']['commit'], result=launch.result))
@@ -4020,12 +4035,40 @@ class Line:
                      'The worktree %s holds its uncommitted changes. Pool readings: %s. Answer rerun to dispatch '
                      'the station once more, or acknowledge to close this andon and leave the unit stopped.'
                      % (contract['unit'], failure.get('worktree'), json.dumps(failure['pools'], sort_keys=True)))
+            subject = {'kind': SPACE_ANDON_KIND, 'ref': record['dispatch_id'], 'digest': S.digest_of(failure)}
+            key = 'space-andon/' + record['dispatch_id']
+            consumer = getattr(self.service, 'space_consumer', None)
+            if consumer is not None:
+                # Signing and inbox delivery use the serial worker's fresh connection. The durable
+                # stop is already recorded, including when delivery fails or the worker is lost.
+                answers = self.__dict__.setdefault('space_andon_answers', {})
+                prior = answers.pop(key, None)
+                if prior is not None:
+                    report['asked'].append(dict(entry, owner=prior.get('owner'), outcome=prior.get('ok') is True,
+                                                refusal=None if prior.get('ok') else prior.get('reason')))
+                unit_record = self.gate.unit_record(contract['unit'])
+                def deliver():
+                    import copy
+                    worker = copy.copy(self)
+                    worker.service = copy.copy(self.service)
+                    worker.service.conn = self.service.space['ledger'].conn
+                    worker.gate = copy.copy(self.gate)
+                    worker.gate.unit_record = lambda unit: unit_record
+                    worker_inbox = Service.inbox(worker.service, self.repository)
+                    owner, opened = worker.open_question(worker_inbox, alias, contract['unit'], brief,
+                                                         SPACE_ANDON_CHOICES, subject, key)
+                    return dict(opened, owner=owner)
+                def complete(answer):
+                    answers[key] = answer
+                    self.loop.wake('space_andon', record['dispatch_id'])
+                consumer.submit(('space_andon', self.repository, key), deliver, complete)
+                return None
             owner, opened = self.open_question(inbox, alias, contract['unit'], brief, SPACE_ANDON_CHOICES,
-                {'kind': SPACE_ANDON_KIND, 'ref': record['dispatch_id'], 'digest': S.digest_of(failure)},
-                'space-andon/' + record['dispatch_id'])
+                                                subject, key)
             report['asked'].append(dict(entry, owner=owner, outcome=opened.get('ok') is True,
                                         refusal=None if opened.get('ok') else opened.get('reason')))
             return None
+        self.__dict__.get('space_andon_answers', {}).pop('space-andon/' + record['dispatch_id'], None)
         admission = inbox.admit(aid)
         if not admission['admitted']:
             report['stopped'].append(entry)

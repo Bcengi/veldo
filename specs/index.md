@@ -252,6 +252,12 @@ Generated from specification front matter. Derived, never authoritative: the spe
 | VELDO-0348 | The no-work-is-lost suite, and act mode | ready | high | dmitry | required | VELDO-0348-the-no-work-is-lost-suite-and-act-mode.md |
 | VELDO-0349 | The guard keeps hands off the kept store | ready | high | dmitry | required | VELDO-0349-the-guard-keeps-hands-off-the-kept-store.md |
 | VELDO-0350 | The end write survives the runner's stop record | ready | high | dmitry | required | VELDO-0350-the-end-write-survives-the-runners-stop-record.md |
+| VELDO-0351 | The console's Reports list and the owner's Adopt | ready | high | dmitry | required | VELDO-0351-the-consoles-reports-list-and-the-owners-adopt.md |
+| VELDO-0352 | The console's Protected section | ready | high | dmitry | required | VELDO-0352-the-consoles-protected-section.md |
+| VELDO-0353 | A pool's capacity and free space on the Space screen | ready | high | dmitry | required | VELDO-0353-a-pools-capacity-and-free-space-on-the-space-screen.md |
+| VELDO-0354 | Space requests from the You screen, and waiting runs in a group of their own | ready | standard | dmitry | required | VELDO-0354-space-requests-from-the-you-screen-and-waiting-runs-in-a-group-of-their-own.md |
+| VELDO-0355 | Save and Discard for a clone | ready | high | dmitry | required | VELDO-0355-save-and-discard-for-a-clone.md |
+| VELDO-0356 | Evidence whose only copy is on the trunk | ready | high | dmitry | required | VELDO-0356-evidence-whose-only-copy-is-on-the-trunk.md |
 | VELDO-0358 | A gate's verdict does not depend on how busy the machine is | ready | high | Dmitry Grinberg | required | VELDO-0358-a-gates-verdict-does-not-depend-on-how-busy-the-machine-is.md |
 | VELDO-0360 | Stop doomed gate stages at the first red | ready | high | Dmitry Grinberg | required | VELDO-0360-gate-fails-fast.md |
 | VELDO-0367 | Run validation only for changed dependencies | ready | high | Dmitry Grinberg | required | VELDO-0367-change-scoped-validation.md |

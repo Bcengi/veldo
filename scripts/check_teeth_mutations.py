@@ -12143,9 +12143,13 @@ def cases():
     project_lines('lines188-timer-reconciles', 'control_service.py',
                   "        if 'journal' in report['sources']:\n",
                   "        if True:\n", ['lines/journal-only'])
-    project_lines('lines188-closing-offers', 'control_service.py',
-                  "        if getattr(self, 'closing', False):\n            return\n",
-                  "        if getattr(self, 'closing', False):\n            pass\n", ['close/guard'])
+    add(188,
+        'lines188-closing-offers',
+        '116_veldo_0188_project_lines.py',
+        'control_service.py',
+        "        if getattr(self, 'closing', False):\n            self.space_left()\n            return\n",
+        "        if getattr(self, 'closing', False):\n            self.space_left()\n            pass\n",
+        ['close/guard'])
     project_lines('lines188-paused-omitted', 'control_service.py',
                   "PROJECT_OPEN = ('ACTIVE', 'PAUSED')", "PROJECT_OPEN = ('ACTIVE',)", ['lines/paused-restart'])
 
@@ -13275,9 +13279,12 @@ def cases():
         "        if identities:\n            outcomes.extend(_carry(",
         "        if False:  # defect: return after marking due\n            outcomes.extend(_carry(",
         ['ac1/removes-before-return'])
-    add(301, 'space301-refused-item-not-deferred', space301, 'control_space_signal.py',
-        "    return write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",
-        "    return write('kept', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",
+    add(301,
+        'space301-refused-item-not-deferred',
+        '139_veldo_0301_space_signal.py',
+        'control_space_signal.py',
+        "    result = write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",
+        "    result = write('kept', refusal, deferral=judged['deferral'], rule=judged['rule'])\n",
         ['ac2/deferred-then-retried'])
     add(301, 'space301-mode-ignored', space301, 'control_space_signal.py',
         "        if enabled and record.get('state') == 'due' and (\n"
@@ -13362,17 +13369,14 @@ def cases():
         add(345, name, space345, module, old, new, rows, also)
         result[-1]['siblings'] = True
 
-    keep345('space345-refs-after-the-remove', 'control_space_remove.py',
-            "    path = _plain(record['locator']['path'])\n"
-            "    kept = _kept(ctx, identity, record)\n"
-            "    owner = record.get('owner') or {}\n",
-            "    path = _plain(record['locator']['path'])\n"
-            "    kept = {'tips': tips(path, 'worktree', ctx['commands'])}\n"
-            "    owner = record.get('owner') or {}\n",
-            ['ac1/kept-before-remove'],
-            also=(("        raise\n    _after(ctx, pools, answer)\n\n\ndef _review_scratch",
-                   "        raise\n    _kept(ctx, identity, record)\n    _after(ctx, pools, answer)\n\n\n"
-                   "def _review_scratch"),))
+    add(345,
+        'space345-refs-after-the-remove',
+        '140_veldo_0345_space_keep.py',
+        'control_space_remove.py',
+        "    path = _plain(record['locator']['path'])\n    kept = _kept(ctx, identity, record)\n    owner = record.get('owner') or {}\n",
+        "    path = _plain(record['locator']['path'])\n    kept = {'tips': tips(path, 'worktree', ctx['commands'])}\n    owner = record.get('owner') or {}\n",
+        ['ac1/kept-before-remove'],
+        also=[['        raise\n    _after(ctx, pools, answer)\n\n\ndef disposition_files', '        raise\n    _kept(ctx, identity, record)\n    _after(ctx, pools, answer)\n\n\ndef disposition_files']])
     keep345('space345-agent-worktree-kept-in-agent-repository', 'control_space_keep.py',
             "        main = ledger.main_repository(identity)\n",
             "        main = ledger.main_repository(identity)\n"
@@ -15335,11 +15339,13 @@ def cases():
              "                                   if isinstance(one, dict) and one.get('deferral') == 'unique_work']\n",
              "        out['discard_required'] = []  # defect: the answer does not say the owner's Discard is needed\n",
              ['f3/unique-work-needs-discard', 'ac4/abandon-keeps-unique-work'])
-    api312('space312-abandon-by-anyone-signed-in', 'control_api_authority.py',
-           "        if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'),\n"
-           "                                                                                         SPACE_SCOPE):\n",
-           "        if False:\n",
-           ['f3/route-refusals'])
+    add(312,
+        'space312-abandon-by-anyone-signed-in',
+        '149_veldo_0312_ticket_ended.py',
+        'control_api_authority.py',
+        "        if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'),\n                                                                                         SPACE_SCOPE):\n            raise Refused('unauthorized:not_owner', 'Abandon is the owner\\'s action')\n",
+        "        if False:\n            raise Refused('unauthorized:not_owner', 'Abandon is the owner\\'s action')\n",
+        ['f3/route-refusals'])
     api312('space312-route-not-dispatched', 'control_api_authority.py',
            "        if a['operation'] == ABANDON:\n            return self._abandon(a, person)\n",
            "        if a['operation'] == ABANDON:\n            return {'outcome': 'refused', 'reason': 'unavailable_service:space_ledger'}\n",
@@ -15359,20 +15365,24 @@ def cases():
     # reviewer's two falsifiers that survived: the service names an item the owner marked Keep beneath
     # the worktree it abandons; a host principal signs a signal that names items. F4: space_abandon
     # defaults its cause to the owner's Abandon.
-    ledger312('space312-keep-written-on-the-callers-word',
-              "            by = self._owner(params, mark['at'], 'the owner\\'s Keep')\n",
-              "            by = self._outer['principal']  # defect: the caller is taken at its word\n",
-              ['r2/ledger-checks-the-owner'])
+    add(312,
+        'space312-keep-written-on-the-callers-word',
+        '149_veldo_0312_ticket_ended.py',
+        'control_space.py',
+        "            raise Refused('not_authorized', 'owner Keep requires the signed space_disposition command')\n",
+        "            record['owner_keep'] = dict(mark, by=self._outer['principal'])\n",
+        ['r2/ledger-checks-the-owner'])
     ledger312('space312-keep-ended-on-the-callers-word',
               "            by = self._owner(params, abandon['at'], 'the owner\\'s Abandon') if abandon is not None else None\n",
               "            by = self._outer['principal'] if abandon is not None else None  # defect: taken at its word\n",
               ['r2/ledger-checks-the-owner'])
-    ledger312('space312-keep-by-read-from-the-request',
-              "            if outcome != 'kept' or not isinstance(mark, dict) or 'by' in mark or not _is_time(mark.get('at')):\n",
-              "            if outcome != 'kept' or not isinstance(mark, dict) or not _is_time(mark.get('at')):\n",
-              ['r2/by-is-the-verified-principal'],
-              also=[("            record['owner_keep'] = dict(mark, by=by)\n",
-                     "            record['owner_keep'] = dict({'by': by}, **mark)  # defect: the request's by wins\n")])
+    add(312,
+        'space312-keep-by-read-from-the-request',
+        '149_veldo_0312_ticket_ended.py',
+        'control_space.py',
+        "            record['owner_keep'] = {'by': owner}\n",
+        "            record['owner_keep'] = {'by': 'caller-claimed-owner'}\n",
+        ['r2/by-is-the-verified-principal'])
     ledger312('space312-abandon-by-read-from-the-request',
               "        if not isinstance(abandon, dict) or set(abandon) != {'item', 'at'} or not _is_time(abandon['at']) \\\n",
               "        if not isinstance(abandon, dict) or not {'item', 'at'} <= set(abandon) or not _is_time(abandon['at']) \\\n",
@@ -15917,9 +15927,13 @@ def cases():
                ("                                          'branch': subject['branch'], 'start': subject['start']})",
                 "                                          'branch': None, 'start': subject['start']})"),
                ("    if there or subject['branch'] is not None:\n", "    if there:\n")])
-    run336('space336-scratch-is-unique-work', 'control_space_signal.py',
-           "if not (case == REVIEW_SCRATCH_CASE and _is_review_worktree(record))",
-           "if True", ['ac3/scratch-saved-and-removed'])
+    add(336,
+        'space336-scratch-is-unique-work',
+        '153_veldo_0336_run_worktree.py',
+        'control_space_signal.py',
+        "if not (case == REVIEW_SCRATCH_CASE and _is_review_worktree(record)\n                     and not facts.get('ignored'))",
+        'if True',
+        ['ac3/scratch-saved-and-removed'])
     run336('space336-scratch-not-saved', 'control_space_keep.py',
            "            attempt, saved = _snapshot(ledger, identity, record, path, header, commands)\n",
            "            attempt = None\n"
@@ -17310,9 +17324,12 @@ def cases():
         "        changes = self._freed_changes(self._freeing_pools(OUTCOME, params))\n",
         "        changes = {}  # defect: removed bytes never mark a waiting hold\n",
         ['space334/ac3/removal-wakes'])
-    add(334, 'space334-release-without-mark', space334, 'control_space.py',
-        "        changes = self._freed_changes(set(record['needs']), but=identity)\n",
-        "        changes = {}  # defect: a released promise never marks waiters\n",
+    add(334,
+        'space334-release-without-mark',
+        '158_veldo_0334_space_freed.py',
+        'control_space.py',
+        '        changes = self._freed_changes(pools, but=identity)\n',
+        '        changes = {}  # defect: a released promise never marks waiters\n',
         ['space334/ac3/release-wakes'])
     add(334, 'space334-reconcile-without-mark', space334, 'control_space.py',
         "        changes = self._freed_changes(set(self.config['pools']))\n",
@@ -17362,16 +17379,14 @@ def cases():
     add(316, 'space316-ignore-floor', space316, 'control_space_admission.py',
         "        if free_now - others < need + record['floor']:\n",
         "        if free_now - others < need:\n", ['space316/ac1/boundaries'])
-    add(316, 'space316-admission-at-acceptance', space316, 'control_launch.py',
-        "        space = _organ('control_space_admission').prepare(\n"
-        "            self.space, self.dispatches, unit, station, project, source)\n",
-        "        space = None  # defect: defer admission until the dispatch holds its reservation\n",
-        ['space316/ac2/pre-reservation'], also=[(
-            "        contract = self.prepare(unit, station, **kwargs)\n        launch = self.receiver(contract)\n",
-            "        contract = self.prepare(unit, station, **kwargs)\n"
-            "        _organ('control_space_admission').prepare(self.space, self.dispatches, unit, station,\n"
-            "            contract['reservation']['project'], kwargs['source'])\n"
-            "        launch = self.receiver(contract)\n")])
+    add(316,
+        'space316-admission-at-acceptance',
+        '157_veldo_0316_space_admission.py',
+        'control_launch.py',
+        '            space = prepare_space(self.space, self.dispatches, unit, station, project, source)\n',
+        '            space = None  # defect: admission postponed past reservation\n',
+        ['space316/ac2/pre-reservation'],
+        also=[['        contract = self.prepare(unit, station, **kwargs)\n        launch = self.receiver(contract)\n', "        contract = self.prepare(unit, station, **kwargs)\n        _organ('control_space_admission').prepare(self.space, self.dispatches, unit, station,\n            contract['reservation']['project'], kwargs['source'])\n        launch = self.receiver(contract)\n"]])
     add(316, 'space316-block-report', space316, 'control_space_admission.py',
         "    answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'\n",
         "    answer = 'admitted' if reason is None else 'waiting'\n", ['space316/ac3/started-advised'])
@@ -17379,9 +17394,13 @@ def cases():
         "        elif len(history) == 5 and all(pool in run for run in history):\n",
         "        elif len(history) >= 1 and all(pool in run for run in history):\n",
         ['space316/ac4/five-before-measured'])
-    add(316, 'space316-wait-is-refused', space316, 'control_service.py',
-        "            if code.startswith('space_wait:'):\n",
-        "            if False:  # defect: a space wait goes to refused\n", ['space316/ac2/waiting-pass'])
+    add(316,
+        'space316-wait-is-refused',
+        '157_veldo_0316_space_admission.py',
+        'control_service.py',
+        "            if code.startswith('space_wait:') or code == 'space_pending':\n",
+        '            if False:  # defect: a space wait goes to refused\n',
+        ['space316/ac2/waiting-pass'])
     add(316, 'space316-first-five', space316, 'control_space_admission.py',
         "WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq DESC",
         "WHERE command_id LIKE 'dispatch/exit/%' ORDER BY seq ASC", ['space316/ac4/last-five'])
@@ -19112,18 +19131,14 @@ def cases():
         "SPACE_PENDING = ('due',)",
         ['space319/ac2/in-use-folder'])
     # AC3, declared: accept Abandon as a plain read route.
-    add(319, 'space319-abandon-as-a-plain-read-route', api319, 'control_api.py',
-        "    Route('space.abandon', 'POST', '/api/v1/domains/{domain}/space/abandon', 'work', True,\n"
-        "          ('item', 'version'), (), 'abandon_worktree'),",
-        "    Route('space.abandon', 'GET', '/api/v1/domains/{domain}/space/abandon', 'reads', False,\n"
-        "          ('item', 'version'), (), None),",
+    add(319,
+        'space319-abandon-as-a-plain-read-route',
+        '150_veldo_0319_space_screen.py',
+        'control_api.py',
+        "    Route('space.abandon', 'POST', '/api/v1/domains/{domain}/space/abandon', 'work', True,\n          ('item', 'version'), (), 'abandon_worktree'),",
+        "    Route('space.abandon', 'GET', '/api/v1/domains/{domain}/space/abandon', 'reads', False,\n          ('item', 'version'), (), None),",
         ['space319/ac3/unsigned-refused'],
-        also=[("        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write,\n"
-               "                              'space.keep': self._write})",
-               "        self.handlers.update({'space.abandon': lambda route, body, session, extra, headers: (\n"
-               "            200, self.authority.space_abandon(body['item'], version=int(body['version']), by=None,\n"
-               "                                              cause='owner_abandon')), 'space.reconcile': self._write,\n"
-               "                              'space.keep': self._write})")])
+        also=[["        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write})", "        self.handlers.update({'space.abandon': lambda route, body, session, extra, headers: (\n            200, self.authority.space_abandon(body['item'], version=int(body['version']), by=None,\n                                              cause='owner_abandon')), 'space.reconcile': self._write})"]])
     # The owner of a space command: a member who is not the owner reaches the service's reconcile.
     add(319, 'space319-reconcile-for-any-member', api319, 'control_api_authority.py',
         "            if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'), SPACE_SCOPE):\n"
@@ -19197,9 +19212,12 @@ def cases():
 
     # The amendment (AC5 to AC7): the console signs the owner's Keep. ac3/no-dead-route, restated as a property:
     # a published route whose command the Ledger has no transition for.
-    add(319, 'space319-keep-route-without-a-transition', api319, 'control_api_authority.py',
-        "                'reconcile_space': 'space_reconcile', KEEP: SPACE_DISPOSITION}",
-        "                'reconcile_space': 'space_reconcile', KEEP: 'space_reject'}",
+    add(319,
+        'space319-keep-route-without-a-transition',
+        '150_veldo_0319_space_screen.py',
+        'control_api_authority.py',
+        "                'reconcile_space': 'space_reconcile', KEEP: SPACE_DISPOSITION,",
+        "                'reconcile_space': 'space_reconcile', KEEP: 'space_reject',",
         ['space319/ac3/no-dead-route'])
     # AC6, declared: take the edge's signature in place of the passkey's.
     add(319, 'space319-keep-takes-the-edge-signature', api319, 'control_space.py',
@@ -19266,6 +19284,482 @@ def cases():
           "  const sent = await keepWorktree(packet, contractRoute)\n  return sent.sent ? sent.answer : null",
           "  return { outcome: 'kept', api_request_id: packet.command.command_id, contractRoute } as KeepAnswer",
           ['space319ui/ac7/sign-keep'])
+
+    # Space V1: distinct disposition mutations and current-API ports of old assertions.
+    add(327,
+        'space327-bare-choices',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        "SPACE_CHOICES = ('accept save', 'accept keep', 'accept discard')",
+        "SPACE_CHOICES = ('save', 'keep', 'discard')",
+        ['space327/ac1/presented'])
+    add(327,
+        'space327-empty-file-list',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        '    if not files and not commits:\n',
+        '    if False:\n',
+        ['space327/ac2/empty-files'])
+    add(327,
+        'space327-ruling-instead-of-choice',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        "'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': choice, 'ruling': ruling,",
+        "'proposal': terms['proposal'] if ruling == 'approve' else None, 'choice': ruling, 'ruling': ruling,",
+        ['space327/ac3/choice'])
+    add(327,
+        'space327-expand-rulings',
+        '150_veldo_0327_disposition.py',
+        'authority_contract.py',
+        'RULINGS = ("approve", "reject", "return_for_elaboration")',
+        'RULINGS = ("approve", "reject", "return_for_elaboration", "save", "keep", "discard")',
+        ['space327/ac4/rulings'])
+    add(327,
+        'space327-hide-request-list',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        "    if any(data.get(key) != value for key, value in expected.items()):\n        return 'space request choices and brief must match its signed terms'\n",
+        '',
+        ['space327/ac2/request-binding'])
+    add(327,
+        'space327-write-skips-validator',
+        '150_veldo_0327_disposition.py',
+        'control_assignment.py',
+        "            if problem:\n                raise self.store.StoreRefused('invalid_input', problem)\n",
+        '',
+        ['space327/fix1/late-inbox', 'space327/fix1/no-settlement'])
+    add(327,
+        'space327-frames-unmatched',
+        '150_veldo_0327_disposition.py',
+        'control_channel_presentation.py',
+        "            if self.assignment.subject_problem(self._entity, c):\n                raise Refused('presentation_mismatch', 'the request does not show what its terms require')\n",
+        '',
+        ['space327/fix1/presenter'])
+    add(327,
+        'space327-presents-unmatched',
+        '150_veldo_0327_disposition.py',
+        'control_channel_presentation.py',
+        "        if self.assignment.subject_problem(self._entity, c):\n            # A request whose content is not what its subject's terms require is never shown.\n            return 'presentation_mismatch', None, {}\n",
+        '',
+        ['space327/fix1/presenter'])
+    add(327,
+        'space327-no-detached-branch',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        "if tree['branch'] is None and (tree['unheld_commits'] or commits) and not _is_str(tree['kept_branch']):",
+        'if False:',
+        ['space327/ac2/missing-kept-branch'])
+    add(327,
+        'space327-target-another-item',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        "elif target['kind'] != 'space_item' or target['ref'] != space_target(c['proposal'])['item']:",
+        "elif target['kind'] != 'space_item':",
+        ['space327/fix3/target-item'])
+    add(327,
+        'space327-files-only',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        '    if not files and not commits:\n',
+        '    if not files:\n',
+        ['space327/fix2/commits-only'])
+    add(327,
+        'space327-commits-not-said-to-stay',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        "        lines.append('Discard removes no uncommitted file; the commits stay on ' + quoted(held))\n",
+        "        lines.append('Files Discard would remove:')\n",
+        ['space327/fix2/commits-only'])
+    add(327,
+        'space327-commit-tips-unlisted',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        '    if commits:\n        lines +=',
+        '    if False:\n        lines +=',
+        ['space327/fix2/commits-only'])
+    add(327,
+        'space327-detached-commits-no-branch',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        "if tree['branch'] is None and (tree['unheld_commits'] or commits) and not _is_str(tree['kept_branch']):",
+        "if tree['branch'] is None and tree['unheld_commits'] and not _is_str(tree['kept_branch']):",
+        ['space327/fix2/commits-only'])
+    add(327,
+        'space327-no-save-explanation',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        "or proposal.get('discard') != SPACE_DISCARD",
+        'or False',
+        ['space327/ac2/missing-save'])
+    add(327,
+        'space327-wrong-restore',
+        '150_veldo_0327_disposition.py',
+        'control_request_settlement.py',
+        "if tree['restore'] != restore:",
+        'if False:',
+        ['space327/ac2/wrong-restore'])
+    add(318,
+        'space318-request-every-event',
+        '150_veldo_0318_unique_work.py',
+        'control_space.py',
+        "        if prior and prior.get('state') != 'refused':\n            return {'ok': True, 'request': prior, 'replayed': True}",
+        "        if False:\n            return {'ok': True, 'request': prior, 'replayed': True}",
+        ['space318/ac1/one-request', 'space318/ac1/released-agent'],
+        also=[["        if prior and prior.get('state') != 'refused':\n            raise Refused('space_disposition_exists', 'the item already has its request')", "        if False:\n            raise Refused('space_disposition_exists', 'the item already has its request')"]])
+    add(318,
+        'space318-commit-at-deferral',
+        '150_veldo_0318_unique_work.py',
+        'control_space_signal.py',
+        "            asked = _request(ledger, probe, remover, identity, record, given['landed'], given['run'])",
+        "            remover._git([], '-C', record['locator']['path'], 'commit', '--allow-empty', '-m', 'Unasked save')\n            asked = _request(ledger, probe, remover, identity, record, given['landed'], given['run'])",
+        ['space318/ac2/no-unsettled-commit'])
+    add(318,
+        'space318-save-without-comparison',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        "        else:\n            _last_look(ctx, record, kept, name)\n            if ctx.get('disposition') == 'save':",
+        "        elif ctx.get('disposition') != 'save':\n            _last_look(ctx, record, kept, name)\n            if ctx.get('disposition') == 'save':",
+        ['space318/ac2/snapshot-comparison'])
+    add(318,
+        'space318-save-at-original-path',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        "    name = marked(path, identity)\n    if os.path.lexists(name):\n        raise _Refusal(REFUSED, 'something is already at the marked name', marked=name)",
+        "    name = path if ctx.get('disposition') == 'save' else marked(path, identity)\n    if name != path and os.path.lexists(name):\n        raise _Refusal(REFUSED, 'something is already at the marked name', marked=name)",
+        ['space318/ac2/marked-path'],
+        also=[['    refused = _worktree_move(ctx, repository, path, name)', '    refused = None if name == path else _worktree_move(ctx, repository, path, name)'], ['        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) else None', '        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) and name != path else None']])
+    add(318,
+        'space318-discard-at-original-path',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        "    name = marked(path, identity)\n    if os.path.lexists(name):\n        raise _Refusal(REFUSED, 'something is already at the marked name', marked=name)",
+        "    name = path if ctx.get('disposition') == 'discard' else marked(path, identity)\n    if name != path and os.path.lexists(name):\n        raise _Refusal(REFUSED, 'something is already at the marked name', marked=name)",
+        ['space318/ac3/marked-path'],
+        also=[['    refused = _worktree_move(ctx, repository, path, name)', '    refused = None if name == path else _worktree_move(ctx, repository, path, name)'], ['        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) else None', '        stuck = _worktree_move(ctx, repository, name, path) if os.path.lexists(name) and name != path else None']])
+    add(318,
+        'space318-discard-without-list',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        "    if saved_names != shown['files']:",
+        '    if False:',
+        ['space318/ac3/list-comparison'])
+    add(318,
+        'space318-terms-without-commits',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        "        'files': disposition_files(ledger, record, path), 'commits': list(commits),",
+        "        'files': disposition_files(ledger, record, path), 'commits': [],",
+        ['space318/commits/request'])
+    add(318,
+        'space318-clean-tree-is-a-failed-snapshot',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        "    else:\n        manifest = {'files': {}, 'deleted_worktree': [], 'deleted_index': []}",
+        "    else:\n        raise _Refusal(KEEP_FAILED, 'the saved manifest cannot be read back')",
+        ['space318/commits/discard-keeps'])
+    add(318,
+        'space318-save-invents-a-commit',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        '    exists = holds is not None\n    if changed:',
+        '    exists = holds is not None\n    if True:',
+        ['space318/commits/save'])
+    add(318,
+        'space318-discard-without-commit-comparison',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        "    if before['tips'].get('head') != decision['head']:",
+        '    if False:',
+        ['space318/commits/late-commit'])
+    add(318,
+        'space318-keep-left-deferred',
+        '150_veldo_0318_unique_work.py',
+        'control_space.py',
+        "            record['state'] = 'kept'\n            record['disposition']['state'] = 'kept'",
+        "            record['state'] = 'deferred'\n            record['disposition']['state'] = 'kept'",
+        ['space318/ac4/state'])
+    add(318,
+        'space318-keep-without-mark',
+        '150_veldo_0318_unique_work.py',
+        'control_space.py',
+        "            record['owner_keep'] = {'by': owner}",
+        "            record['owner_keep'] = None",
+        ['space318/ac4/mark', 'space318/ac4/no-retry'])
+    add(318,
+        'space318-keep-two-commands',
+        '150_veldo_0318_unique_work.py',
+        'control_space.py',
+        "            return self._send(DISPOSITION, dict({'item': identity, 'packet': packet, 'at': now},",
+        "            self.signal(record['due']['event'], record['owner'])\n            return self._send(DISPOSITION, dict({'item': identity, 'packet': packet, 'at': now},",
+        ['space318/ac4/atomic'])
+    add(318,
+        'space318-keep-without-owner-signature',
+        '150_veldo_0318_unique_work.py',
+        'control_space.py',
+        "            self._mode_signer(command, packet.get('signature'), now, self._membership())",
+        '            pass  # defect: no owner signature',
+        ['space318/ac4/signature'],
+        also=[["        self._mode_signer(command, packet.get('signature'), at, self._membership())", '        pass  # defect: no transaction recheck'], ["        if owner != command['principal']:", '        if False:']])
+    add(318,
+        'space318-lost-worker-wakeup',
+        '150_veldo_0318_unique_work.py',
+        'control_service.py',
+        '            self.space_disposition_again = True',
+        '            self.space_disposition_again = False',
+        ['space318/worker/no-lost-wakeup'])
+    add(318,
+        'space318-no-channel-stops-the-task',
+        '150_veldo_0318_unique_work.py',
+        'control_service.py',
+        '        channel = self.channel\n        if channel is not None:\n',
+        "        channel = self.channel\n        if channel is None:\n            return {'ok': False, 'reason': 'space_disposition_channel_unavailable'}\n        if channel is not None:\n",
+        ['space318/worker/no-channel'])
+    add(318,
+        'space318-commit-compared-only-when-commits-were-shown',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        "    if before['tips'].get('head') != decision['head']:",
+        "    if shown['commits'] and before['tips'].get('head') != decision['head']:",
+        ['space318/terms/unshown-commit'])
+    add(318,
+        'space318-terms-compared-before-the-snapshot',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        "    keeper = _sibling('control_space_keep')\n    ctx['keep'] = keeper.keeper(ledger, event='space_disposition', snapshot=True)\n",
+        "    if disposition_files(ledger, record, path) != shown['files']:\n        raise _Refusal(KEEP_FAILED, 'the file list differs from the list shown to the owner')\n    if disposition_head(path, ctx['commands']) != decision['head']:\n        raise _Refusal(KEEP_FAILED, 'the commits differ from the commits shown to the owner')\n    keeper = _sibling('control_space_keep')\n    ctx['keep'] = keeper.keeper(ledger, event='space_disposition', snapshot=True)\n",
+        ['space318/terms/snapshot-race'],
+        also=[["    if saved_names != shown['files']:", '    if False:'], ["    if before['tips'].get('head') != decision['head']:", '    if False:']])
+    add(318,
+        'space318-save-onto-a-held-branch',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        "    if holds:\n        raise _Refusal(REFUSED, 'the kept branch already holds other work')",
+        "    if False:\n        raise _Refusal(REFUSED, 'the kept branch already holds other work')",
+        ['space318/ac2/kept-name-taken'])
+    add(318,
+        'space318-second-worktree-takes-the-first-name',
+        '150_veldo_0318_unique_work.py',
+        'control_space_remove.py',
+        '    return disposition_branch(record, lambda name: name in named or _branch_holds(commands, path, name) is True)',
+        '    return disposition_branch(record)',
+        ['space318/ac2/second-worktree'])
+    add(318,
+        'space318-force-beyond-the-discard',
+        '138_veldo_0300_space_remove.py',
+        'control_space_remove.py',
+        "    if ctx.get('disposition') == 'discard':\n        return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', '--force', path)",
+        "    if ctx.get('disposition'):\n        return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', '--force', path)",
+        ['ac3/commands'])
+    add(318,
+        'space318-a-second-force-option',
+        '138_veldo_0300_space_remove.py',
+        'control_space_remove.py',
+        "    code, out = _git(ctx['commands'], '-C', repository, 'worktree', 'move', path, to)",
+        "    code, out = _git(ctx['commands'], '-C', repository, 'worktree', 'move', '--force', path, to)",
+        ['ac3/commands'])
+    add(343,
+        'space343-discard-without-the-branch',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])",
+        '        pass  # defect: no kept branch before the Discard',
+        ['space343/ac1/kept-branch', 'space343/ac1/branch-item'])
+    add(343,
+        'space343-remove-after-the-failed-branch-write',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        "        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])",
+        "        try:\n            _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])\n        except _Refusal:\n            pass  # defect: the remove runs after the failed branch write",
+        ['space343/ac2/name-taken', 'space343/ac2/git-refuses'])
+    add(343,
+        'space343-agent-repository-goes-with-the-worktree',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        "        if os.path.lexists(name):\n            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
+        "        if ctx.get('disposition') == 'discard' and record.get('parent'):\n            import shutil\n            shutil.rmtree(ctx['ledger'].item(record['parent'])['locator']['path'], ignore_errors=True)\n        if os.path.lexists(name):\n            raise _Refusal(REFUSED, 'git said it removed the worktree and the folder is still there')",
+        ['space343/ac3/agent'])
+    add(343,
+        'space343-discard-commits-as-save-does',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        "    if choice == 'save':\n        _save_commit(ctx, identity, record, path, answer, shown)",
+        "    if choice in ('save', 'discard'):\n        _save_commit(ctx, identity, record, path, answer, shown)",
+        ['space343/ac4/no-commit'])
+    add(343,
+        'space343-branch-made-and-not-recorded',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        "    if not isinstance(recorded, dict) or recorded.get('ok') is not True:",
+        '    if False:',
+        ['space343/ac2/not-recorded'])
+    add(343,
+        'space343-branch-for-a-held-commit',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        "        if holders:\n            answer['commit_held_by'] = holders[:NAMED]",
+        "        if False:\n            answer['commit_held_by'] = holders[:NAMED]",
+        ['space343/ac1/only-unheld'])
+    add(343,
+        'space343-ledger-trusts-the-branch',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space.py',
+        '        if self._kept_refs(repository, name).get(name) != commit:',
+        '        if False:',
+        ['space343/ac2/ledger-reads'])
+    add(343,
+        'space343-ledger-trusts-the-commit',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space.py',
+        '        if self._item_head(path) != commit:',
+        '        if False:',
+        ['space343/ac2/ledger-reads'])
+    add(343,
+        'space343-kept-branch-in-the-agent-repository',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        "    home = _kept_home(ctx['ledger'], identity, record, path)\n",
+        "    home = path  # defect: an agent's worktree gets its kept branch in the agent repository\n",
+        ['space343/ac3/detached'])
+    add(343,
+        'space343-ledger-records-in-the-agent-repository',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space.py',
+        "        repository = self._main_of(record)\n        if repository is None:\n            raise Refused('space_keep_branch_repository'",
+        "        repository = self._repository_of(record)\n        if repository is None:\n            raise Refused('space_keep_branch_repository'",
+        ['space343/ac3/detached'])
+    add(343,
+        'space343-orphan-branch-counted-a-holder',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        '    if holds is not False:\n        if holders:\n',
+        '    if holds is not False or holders:\n        if holders:\n',
+        ['space343/ac1/stopped-before-record'])
+    add(343,
+        'space343-ledger-accepts-an-attached-worktree',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space.py',
+        "        if self._item_branch(path) is not None:\n            raise Refused('space_keep_branch_attached'",
+        "        if False:\n            raise Refused('space_keep_branch_attached'",
+        ['space343/ac2/ledger-reads'])
+    add(343,
+        'space343-kept-branch-written-over-a-branch',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        "                         ref, commit, '')",
+        '                         ref, commit)  # defect: not create-only',
+        ['space343/ac2/create-only'])
+    add(343,
+        'space343-tag-and-remote-ref-counted-holders',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        "HOLDING_REFS = ('refs/heads/',)",
+        "HOLDING_REFS = ('refs/heads/', 'refs/tags/', 'refs/remotes/')",
+        ['space343/ac1/only-a-branch-holds'])
+    add(343,
+        'space343-name-of-a-leaving-item-is-free',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        "        if (item.get('kind') == 'branch' and item.get('state') in BRANCH_LEAVING\n",
+        "        if (False and item.get('state') in BRANCH_LEAVING\n",
+        ['space343/ac2/name-of-a-leaving-item'])
+    add(343,
+        'space343-left-branch-read-and-not-recorded',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_remove.py',
+        '        return ledger.keep_branch(identity, branch, commit)\n    except Exception:',
+        '        return None  # defect: the left branch is found and not recorded\n    except Exception:',
+        ['space343/ac1/reconcile-records'])
+    add(343,
+        'space343-reconcile-defers-without-recording',
+        '150_veldo_0343_discard_keeps_commits.py',
+        'control_space_reconcile.py',
+        '            self.remove.record_left_branch(self.ledger, identity, record)',
+        '            pass  # defect: reconcile defers and the left branch stays unrecorded',
+        ['space343/ac1/reconcile-records'])
+    add(343,
+        'space343-observer-keeps-a-branch',
+        '133_veldo_0326_space_principals.py',
+        'control_space.py',
+        '        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ',
+        '        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == KEEP_BRANCH):\n            return\n        parameters = ',
+        ['ac2/observer-refused-by-name'])
+    add(343,
+        'space343-observer-requests-a-disposition',
+        '133_veldo_0326_space_principals.py',
+        'control_space.py',
+        '        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ',
+        '        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == REQUEST):\n            return\n        parameters = ',
+        ['ac2/observer-refused-by-name'])
+    add(343,
+        'space343-observer-signs-a-disposition',
+        '133_veldo_0326_space_principals.py',
+        'control_space.py',
+        '        if principal not in HOST_PRINCIPALS:\n            return\n        parameters = ',
+        '        if principal not in HOST_PRINCIPALS or (principal == OBSERVER and operation == DISPOSITION):\n            return\n        parameters = ',
+        ['ac2/observer-refused-by-name'])
+    add(316,
+        'space316-lost-completion-wake',
+        '157_veldo_0316_space_admission.py',
+        'control_space_admission.py',
+        "            self.loop.wake('space_admission', key)",
+        '            pass  # defect: completed work never wakes the service',
+        ['space316/ac2/completion-wakes'])
+    add(316,
+        'space316-release-winning-promise',
+        '157_veldo_0316_space_admission.py',
+        'control_launch.py',
+        '                    if not bound:\n',
+        '                    if True:\n',
+        ['space316/ac2/racing-prepare'])
+    add(316,
+        'space316-no-account-loses-hold',
+        '157_veldo_0316_space_admission.py',
+        'control_launch.py',
+        "                if str(getattr(error, 'code', '')).startswith('no_account'):",
+        '                if False:',
+        ['space316/fix4/no-account-keeps-hold'])
+    add(334,
+        'space334-cache-hides-freed',
+        '157_veldo_0316_space_admission.py',
+        'control_space_admission.py',
+        "or hold['state'] == 'waiting' and hold.get('freed'):",
+        'or False:',
+        ['space316/ac3/completion-race'])
+    add(334,
+        'space334-failed-judgment-kept',
+        '157_veldo_0316_space_admission.py',
+        'control_space_admission.py',
+        '                del self.answers[key]\n',
+        '                pass  # defect: failed judgment remains cached\n',
+        ['space316/fix1/failed-judgment'])
+    add(334,
+        'space334-requests-resubmit-every-pass',
+        '157_veldo_0316_space_admission.py',
+        'control_space_admission.py',
+        '        answer = self.answers.get(key)\n',
+        '        answer = None\n',
+        ['space316/fix3/requests-unrelated-passes'])
+    add(334,
+        'space334-waiting-release-marks',
+        '158_veldo_0334_space_freed.py',
+        'control_space.py',
+        "                    if record.get('state') in ('admitted', 'advised') and need > used.get(pool, 0)}",
+        '                    if need > used.get(pool, 0)}',
+        ['space334/fix2/waiting-release-no-mark'])
+    add(317,
+        'space317-failed-andon-notice-kept',
+        '159_veldo_0317_no_space.py',
+        'control_service.py',
+        '                prior = answers.pop(key, None)\n',
+        '                prior = answers.get(key)\n                if prior is not None:\n                    return None\n',
+        ['space317/fix2/andon-redelivery'])
+    add(347,
+        'space347-clone-with-files-raises-no-request',
+        '161_veldo_0347_space_work.py',
+        'control_space_signal.py',
+        "            and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n",
+        "            and False and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n",
+        ['space347/ac3/unique-work-request'])
 
     return result
 

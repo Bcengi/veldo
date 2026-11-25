@@ -77,8 +77,8 @@ rollback: >
 ## Intent
 
 An evidence file may be removed at a ticket's or a project's end once a copy of it is held elsewhere.
-The usual place for that copy is the landed commit on the trunk. Today no caller tells Signal which
-branch the trunk is, so those files are never removed and the space is never freed.
+The usual place for that copy is the landed commit on the trunk. The worker path already passes the declared landing configuration on the candidate
+(d590d9252). Remaining caller coverage must be established before this follow-up is shipped.
 
 ## Context
 
@@ -89,8 +89,8 @@ copy is in a commit of the trunk is KEPT." The independent review (review-veldo-
 the same way: "A space shortfall, no loss; the caller wiring is a follow-up for the lead."
 
 The remover's side is built and tested. control_space_signal.signal and the evidence remover take
-trunk(repository); rows ac4/held-files-go, ac4/unreadable-is-no-copy and ac4/trunk-never-guessed of
-suite 150_veldo_0347_unseen_work prove them. This ticket changes neither module.
+held and landing; candidate suite 161_veldo_0347_space_work covers digest-at-removal,
+declared-trunk and no-copy-unread. The old trunk(repository) interface is superseded.
 
 ## Design
 
@@ -98,7 +98,7 @@ The design is docs/design/VELDO-0295-design.md, section 0.4: the remover "remove
 the store holds a blob with that digest, or a commit that the trunk or a kept ref reaches holds a file
 with it".
 
-One trunk function. Signal takes trunk(repository). The space authority already answers the declared
+One declared trunk lookup. Signal takes the accepted landing configuration. The space authority already answers the declared
 trunk of a repository from the work configuration's land entry (control_space_spool.Local.trunk, given
 control_service.landing_names), and its docstring says that is the only place a trunk is read from. The
 git setting veldo.space.trunk is what the hook reads to decide what to report; the authority never
@@ -135,3 +135,10 @@ control_space_config.py is not in it: the trunk is not one of the space declarat
   control_space_config.py in the footprint. Old AC3 restated the remover's resolution of the trunk,
   which VELDO-0347 built and proves; the new AC3 checks that a repository gets its own trunk and no
   other.
+
+### Space V1 assembly, 2026-11-25
+
+This remains a follow-up spec. Worker wiring is partially satisfied by d590d9252;
+service/reconcile caller evidence and all three acceptance criteria still require their
+own verification. Implement against held/landing and control_space_spool.Local.trunk,
+not the retired trunk callback or old suite 150. No completion is claimed by assembly.

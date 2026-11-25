@@ -313,6 +313,22 @@ def _v334_suite():
         for kind in ('removal', 'release', 'reconcile'):
             run('ac3/' + kind + '-wakes', lambda kind=kind: freeing(kind))
 
+        def release_only_promises():
+            f = wired('release-only-promises')
+            try:
+                for identity, needs in (('host-wait', {'host': 10}), ('image-wait', {'image': 10}),
+                                        ('not-counted', {'host': 10}), ('partial', {'host': 10, 'image': 20})):
+                    assert f.ledger.place_hold(identity, needs, {k: 'default' for k in needs}, scope=f.scope)['ok']
+                assert f.ledger.release('not-counted')['ok']
+                check('fix2/waiting-release-no-mark', not f.ledger.hold('host-wait')['freed'])
+                assert f.ledger.admit('partial', 'admitted', used={'host': 10, 'image': 5})['ok']
+                assert f.ledger.release('partial')['ok']
+                check('fix2/release-marks-per-pool', not f.ledger.hold('host-wait')['freed']
+                      and f.ledger.hold('image-wait')['freed'])
+            finally:
+                f.close()
+        run('fix2/release-marks-per-pool', release_only_promises)
+
         def retry_removes():
             f = wired('retry-removes')
             try:

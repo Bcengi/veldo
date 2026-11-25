@@ -59,7 +59,7 @@
   "blocker": {
     "rule": "engine/ui/CLAUDE.md and scripts/gate_host.json require the host gate lock for these runs",
     "holder": "99zy4-veldo-0343-suite156",
-    "guard": "/home/dmitry/projects/myday/research/lock-queue/quiet.sh",
+    "guard": "<historical-home>/projects/myday/research/lock-queue/quiet.sh",
     "detail": "After the earlier quiet-host guard waited three hours, the rebased 0342 suite ran. The next queued job took the lock and entered the same guard. Stopped under the user instruction; no lock or guard bypass."
   },
   "findings": {

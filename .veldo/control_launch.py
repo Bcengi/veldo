@@ -1943,11 +1943,13 @@ class Runner:
     the kernel shows nothing of the run left (VELDO-0158)."""
 
     def __init__(self, gate, reservations, dispatches, receiver, *, account, clock=None, clones=None, runs=None,
-                 profile=None, space=None, observe=None):
+                 profile=None, space=None, observe=None, admission=None):
         self.gate, self.reservations, self.dispatches = gate, reservations, dispatches
         # VELDO-0303: the installation's space ledger and what Signal is given (space_signal), or None where
         # the installation has none. With it, a leftover run directory goes through Signal and not by a delete here.
         self.space = space
+        self.admission = admission
+        self.space_waiting_accounts = {}
         self.receiver, self.account = receiver, account
         self.clock = clock or time.time
         self.observations = []
@@ -2255,8 +2257,15 @@ class Runner:
             row = self.dispatches.conn.execute('SELECT data FROM entities WHERE id=?', (entity,)).fetchone()
             data = json.loads(row[0]) if row else {}
             claim = {'entity': entity, 'holder': data.get('holder'), 'generation': data.get('generation')}
-        space = _organ('control_space_admission').prepare(
-            self.space, self.dispatches, unit, station, project, source)
+        space_key = (unit, station, self.dispatches.attempts(unit, station) + 1)
+        space = self.space_waiting_accounts.get(space_key) if self.admission is None else None
+        if space is not None and (self.space is None or
+                (self.space['ledger'].hold(space['hold']) or {}).get('state') not in ('admitted', 'advised')):
+            self.space_waiting_accounts.pop(space_key, None)
+            space = None
+        if space is None:
+            prepare_space = self.admission or _organ('control_space_admission').prepare
+            space = prepare_space(self.space, self.dispatches, unit, station, project, source)
         dispatch_id = 'dispatch/%s/%s' % (unit, uuid.uuid4().hex)
         reserved = False
         try:
@@ -2293,9 +2302,18 @@ class Runner:
                 'space': space,
             }
             self.dispatches.prepare(contract, now=now)
-        except BaseException:
+            self.space_waiting_accounts.pop(space_key, None)
+        except BaseException as error:
             if space is not None:
-                space_release(self.space, space['hold'])
+                if str(getattr(error, 'code', '')).startswith('no_account'):
+                    self.space_waiting_accounts[space_key] = space
+                else:
+                    self.space_waiting_accounts.pop(space_key, None)
+                    # A racing accepted dispatch owns its binding; the losing preparation cannot release it.
+                    bound = any(((json.loads(raw).get('contract') or {}).get('space') or {}).get('hold') == space['hold']
+                                for (raw,) in self.dispatches.conn.execute("SELECT data FROM entities WHERE kind='dispatch'"))
+                    if not bound:
+                        space_release(self.space, space['hold'])
             if reserved:
                 self._retire(dispatch_id, 'cancelled', 'never_spawned')
             raise

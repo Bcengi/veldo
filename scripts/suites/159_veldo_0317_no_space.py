@@ -309,6 +309,10 @@ def _v317_suite():
                         check('ac3/edit-kept', (work / 'unfinished.txt').is_file()
                               and (work / 'unfinished.txt').read_text() == 'unique uncommitted work'
                               and retained_state in retained_states)
+                        signal = load('control_space_signal')
+                        result = signal.signal(f.ledger, 'reconnect', {}, **{key: value for key, value in f.space.items()
+                                               if key != 'ledger'})
+                        check('ac3/reconnect', result['ok'] and (work / 'unfinished.txt').read_text() == 'unique uncommitted work')
                         launch, out = rerun(f, rec)
                         if mode == 'act':
                             check('ac1/behind-admission', launch is None and len(out['waiting']) == 1
@@ -474,6 +478,59 @@ def _v317_suite():
                             conn.close()
                         f.close()
             row('ac4/two-stop', bounded)
+
+            def worker_andon():
+                import os
+                import select
+                f = Fixture('worker-andon', 'report')
+                consumer = load('control_space_consumer').Consumer(f.ledger)
+                try:
+                    first, _, _, _ = end(f)
+                    launch, _ = rerun(f, first)
+                    f.started.pop()
+                    second, _, _, _ = end(f, contract=launch.contract)
+                    obj = owner_line(f)
+                    obj.service.space_consumer = consumer
+                    wakes = []
+                    obj.loop = types.SimpleNamespace(wake=lambda *args: wakes.append(args))
+                    entered_r, entered_w = os.pipe()
+                    release_r, release_w = os.pipe()
+                    original = SV.Line.open_question
+                    def blocked(one, *args):
+                        os.write(entered_w, str(os.getpid()).encode())
+                        os.read(release_r, 1)
+                        return 'owner', {'ok': False, 'reason': 'delivery_unavailable'}
+                    def drain():
+                        while consumer.active:
+                            ready, _, _ = select.select(list(consumer.pipes()), [], [], 120)
+                            assert ready, 'worker did not complete'
+                            for fd in ready:
+                                consumer.readable(fd)
+                    try:
+                        with patch.object(SV.Line, 'open_question', blocked):
+                            # Copying the line must retain the class method, not a fixture-bound override.
+                            del obj.open_question
+                            stopped, out = rerun(f, second, obj)
+                            ready, _, _ = select.select([entered_r], [], [], 120)
+                            assert ready
+                            pid = int(os.read(entered_r, 100))
+                            check('ac4/off-loop', stopped is None and pid != os.getpid()
+                                  and len(f.started) == 2 and not requests(f.conn) and not wakes)
+                            os.write(release_w, b'x')
+                            drain()
+                        stopped, out = rerun(f, second, obj)
+                        failed = out['asked'] and out['asked'][0]['refusal'] == 'delivery_unavailable'
+                        drain()
+                        stopped, out = rerun(f, second, obj)
+                        check('fix2/andon-redelivery', failed and stopped is None and len(requests(f.conn)) == 1
+                              and len(f.started) == 2 and len(wakes) == 2 and consumer.active is None)
+                    finally:
+                        for fd in (entered_r, entered_w, release_r, release_w):
+                            os.close(fd)
+                finally:
+                    consumer.stop()
+                    f.close()
+            row('ac4/off-loop', worker_andon)
 
             def scoped():
                 # Review finding 4: the state is on the unit's own index slots, read by their key range.

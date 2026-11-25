@@ -1276,7 +1276,9 @@ class Ledger:
             return set(self.config['pools'])
         if operation == RELEASE:
             record = self._row(parameters.get('hold'), HOLD_KIND)[1] or {}
-            return set(record.get('needs', {})) if record.get('state') != 'released' else set()
+            used = record.get('used') or {}
+            return {pool for pool, need in record.get('needs', {}).items()
+                    if record.get('state') in ('admitted', 'advised') and need > used.get(pool, 0)}
         if operation == OUTCOME and parameters.get('outcome') == 'removed':
             record = self.item(parameters.get('item')) or {}
             facts = parameters.get('facts')
@@ -3469,10 +3471,11 @@ class Ledger:
         identity, record = self._stored(params, before, 'hold', HOLD_KIND, 'space_no_hold')
         if record['state'] == 'released':
             raise Refused('space_hold_state:released', 'the hold is released already')
+        pools = self._freeing_pools(RELEASE, params)
         if params.get('used') is not None:
             record['used'] = self._per_pool(params['used'], 'used')
         record['state'] = 'released'
-        changes = self._freed_changes(set(record['needs']), but=identity)
+        changes = self._freed_changes(pools, but=identity)
         changes[identity] = {'kind': HOLD_KIND, 'data': record}
         return changes
 

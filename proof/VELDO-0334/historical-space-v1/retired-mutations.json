@@ -1,0 +1,126 @@
+{
+  "schema": "veldo.space-v1-retired-mutations/v1",
+  "reason": "Superseded old APIs; see retirement.md row mapping and current candidate cases. Distinct unmet behaviors have current API mutations.",
+  "cases": [
+    {
+      "finding": 334,
+      "name": "space334-request-every-pass",
+      "suite": "150_veldo_0334_space_wait.py",
+      "module": "control_space_admission.py",
+      "old": "        if hold['state'] != 'waiting' or (hold.get('reason') is not None and not hold.get('freed')):",
+      "new": "        if hold['state'] != 'waiting':",
+      "rows": [
+        "space334/ac1/one-signal"
+      ],
+      "also": [
+        [
+          "        if given is not None and reason is not None and not hold.get('retry_asked'):",
+          "        if given is not None and reason is not None:"
+        ]
+      ]
+    },
+    {
+      "finding": 334,
+      "name": "space334-read-every-pass",
+      "suite": "150_veldo_0334_space_wait.py",
+      "module": "control_space_admission.py",
+      "old": "        if hold['state'] != 'waiting' or (hold.get('reason') is not None and not hold.get('freed')):",
+      "new": "        if hold['state'] != 'waiting':",
+      "rows": [
+        "space334/ac2/manual-free-timer"
+      ]
+    },
+    {
+      "finding": 334,
+      "name": "space334-no-freed-marks",
+      "suite": "150_veldo_0334_space_wait.py",
+      "module": "control_space.py",
+      "old": "        return {key: {'kind': HOLD_KIND, 'data': dict(value, freed=True)}",
+      "new": "        return {key: {'kind': HOLD_KIND, 'data': dict(value, freed=False)}",
+      "rows": [
+        "space334/ac3/outcome",
+        "space334/ac3/release",
+        "space334/ac3/reconcile"
+      ]
+    },
+    {
+      "finding": 334,
+      "name": "space334-mark-never-cleared",
+      "suite": "150_veldo_0334_space_wait.py",
+      "module": "control_space.py",
+      "old": "        record['freed'] = False",
+      "new": "        pass  # defect: every later offer can read space",
+      "rows": [
+        "space334/ac3/release"
+      ]
+    },
+    {
+      "finding": 334,
+      "name": "space334-freeing-race-lost",
+      "suite": "150_veldo_0334_space_wait.py",
+      "module": "control_space_admission.py",
+      "old": "        options = {'expected_version': version} if versioned and version is not None else {}",
+      "new": "        options = {}  # defect: use the version after reading free space",
+      "rows": [
+        "space334/ac3/free-during-judgment"
+      ]
+    },
+    {
+      "finding": 334,
+      "name": "space334-cache-hides-freed",
+      "suite": "150_veldo_0334_space_wait.py",
+      "module": "control_space_admission.py",
+      "old": "            elif hold['state'] != 'released' and not (hold['state'] == 'waiting' and hold.get('freed')):",
+      "new": "            elif hold['state'] != 'released':",
+      "rows": [
+        "space334/ac3/completion-race",
+        "space334/ac3/stopped-clock"
+      ]
+    },
+    {
+      "finding": 334,
+      "name": "space334-failed-judgment-kept",
+      "suite": "150_veldo_0334_space_wait.py",
+      "module": "control_space_admission.py",
+      "old": "                if not bound:\n                    return answer\n",
+      "new": "                if not bound:\n                    self.answers[key] = answer\n                    return answer\n",
+      "rows": [
+        "space334/fix4/failed-read-rejudges"
+      ]
+    },
+    {
+      "finding": 334,
+      "name": "space334-waiting-release-marks",
+      "suite": "150_veldo_0334_space_wait.py",
+      "module": "control_space.py",
+      "old": "                 if record['state'] in ('admitted', 'advised') and need > held.get(pool, 0)}",
+      "new": "                 if True}  # defect: any release counts as freed space",
+      "rows": [
+        "space334/fix2/waiting-release-no-mark",
+        "space334/fix2/release-marks-per-pool"
+      ]
+    },
+    {
+      "finding": 334,
+      "name": "space334-requests-resubmit-every-pass",
+      "suite": "150_veldo_0334_space_wait.py",
+      "module": "control_space_admission.py",
+      "old": "            elif hold['state'] != 'released' and not (hold['state'] == 'waiting' and hold.get('freed')):",
+      "new": "            elif hold['state'] not in ('released', 'waiting'):",
+      "rows": [
+        "space334/fix3/requests-unrelated-passes"
+      ]
+    },
+    {
+      "finding": 334,
+      "name": "space334-retry-loses-ending",
+      "suite": "150_veldo_0334_space_wait.py",
+      "module": "control_space_signal.py",
+      "old": "            ending = ledger.item(identity)['due']['event']",
+      "new": "            ending = event  # defect: retry forgets why the item ended",
+      "rows": [
+        "space334/ac1/signal-can-admit"
+      ]
+    }
+  ]
+}

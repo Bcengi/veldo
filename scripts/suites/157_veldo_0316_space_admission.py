@@ -440,6 +440,229 @@ def _v316_suite():
                 f.close()
         run('release/measurements', receiver_measurements)
 
+        # Space V1: distinct assertions of the retired 150 fixture, against the current API.
+        def no_account():
+            for code in ('no_account', 'no_account_until:1900000000'):
+                f = Fixture('account-' + code.split(':')[0])
+                try:
+                    reads = []
+                    f.space['free'] = lambda pool: reads.append(pool['name']) or f.free[pool['name']]
+                    with patch.object(f.reservations, 'reserve_worker', side_effect=D.Refused(code)):
+                        for attempt in range(3):
+                            try:
+                                f.prepare()
+                            except Exception as error:
+                                assert getattr(error, 'code', None) == code, error
+                            if attempt == 0:
+                                holds = copy.deepcopy(f.ledger.holds())
+                                head, count = f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0], len(reads)
+                            check('fix4/no-account-keeps-hold', f.ledger.holds() == holds and len(holds) == 1
+                                  and next(iter(holds.values()))['state'] == 'admitted'
+                                  and len(reads) == count
+                                  and f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == head)
+                    bound = f.prepare()
+                    check('fix4/no-account-keeps-hold', bound['space']['hold'] in holds)
+                finally:
+                    f.close()
+        run('fix4/no-account-keeps-hold', no_account)
+
+        def async_admission():
+            import os
+            import select
+            consumer_module = load('control_space_consumer')
+            f = Fixture('async')
+            consumer = consumer_module.Consumer(f.ledger)
+            read, write = os.pipe()
+            try:
+                seen = f.root / 'reader-pid'
+                def free(pool):
+                    seen.write_text(str(os.getpid()))
+                    os.read(read, 1)
+                    return f.free[pool['name']]
+                f.space['free'] = free
+                wakes = []
+                service = types.SimpleNamespace(space=f.space, space_consumer=consumer)
+                requests = ADM.Requests(service, types.SimpleNamespace(wake=lambda *args: wakes.append(args)),
+                                        f.dispatches)
+                f.runner.admission = requests.prepare
+                def offer():
+                    try:
+                        return f.prepare()
+                    except Exception as error:
+                        return getattr(error, 'code', None)
+                check('ac2/worker-responsive', offer() == 'space_pending' and consumer.active is not None)
+                check('ac2/worker-responsive', offer() == 'space_pending' and len(consumer.tasks) == 1)
+                pid = consumer.active[1]
+                # Completion is impossible before these bytes; returning above proves nonblocking admission.
+                os.write(write, b'xxxxxxxx')
+                def pump():
+                    while consumer.active:
+                        descriptor = consumer.active[0]
+                        assert select.select([descriptor], [], [], 120)[0], 'worker hang'
+                        consumer.readable(descriptor)
+                pump()
+                check('ac2/completion-wakes', len(wakes) == 1 and int(seen.read_text()) == pid
+                      and pid != os.getpid() and not Path('/proc/%d' % pid).exists())
+                with patch.object(f.reservations, 'reserve_worker', side_effect=D.Refused('no_account')):
+                    check('ac2/completion-wakes', offer() == 'no_account')
+                held = next(iter(f.ledger.holds()))
+                requests.passed()  # this pass asked for the offer
+                left = requests.passed()  # the next pass no longer offers it
+                pump()
+                check('fix2/left-backlog', bool(left) and f.ledger.hold(held)['state'] == 'released')
+                f.runner.space_waiting_accounts.clear()
+                f.space['free'] = lambda pool: (_ for _ in ()).throw(OSError('fixture unread'))
+                check('fix1/failed-judgment', offer() == 'space_pending')
+                pump()
+                check('fix1/failed-judgment', offer() == 'OSError')
+                f.space['free'] = lambda pool: f.free[pool['name']]
+                check('fix1/failed-judgment', offer() == 'space_pending')
+                pump()
+                check('fix1/failed-judgment', isinstance(offer(), dict))
+            finally:
+                consumer.stop()
+                os.close(read)
+                os.close(write)
+                f.close()
+        run('ac2/worker-responsive', async_admission)
+
+        def racing_prepare():
+            f = Fixture('racing-prepare')
+            try:
+                original = f.dispatches.prepare
+                winners = []
+                def competing(contract, **kwargs):
+                    other = copy.deepcopy(contract)
+                    other['dispatch_id'] += '-winner'
+                    f.reservations.reserve_worker('worker/' + other['dispatch_id'], other['dispatch_id'],
+                        'account', 'project', 'unit', now=f.now)
+                    entity, version, digest = f.runner._slot(other['dispatch_id'])
+                    other['reservation'].update(entity=entity, version=version, digest=digest)
+                    original(other, **kwargs)
+                    winners.append(other)
+                    return original(contract, **kwargs)
+                error = None
+                with patch.object(f.dispatches, 'prepare', competing):
+                    try:
+                        f.prepare()
+                    except Exception as caught:
+                        error = caught
+                check('ac2/racing-prepare', bool(winners) and str(getattr(error, 'code', '')).startswith('active_dispatch:')
+                      and f.ledger.hold(winners[0]['space']['hold'])['state'] == 'admitted')
+            finally:
+                f.close()
+        run('ac2/racing-prepare', racing_prepare)
+
+        def worker_wait():
+            import select
+            f = Fixture('worker-wait')
+            consumer = load('control_space_consumer').Consumer(f.ledger)
+            try:
+                f.free['host'] = 0
+                wakes = []
+                service = types.SimpleNamespace(space=f.space, space_consumer=consumer)
+                requests = ADM.Requests(service, types.SimpleNamespace(wake=lambda *args: wakes.append(args)), f.dispatches)
+                f.runner.admission = requests.prepare
+                def offer():
+                    try:
+                        return f.prepare()
+                    except Exception as error:
+                        return getattr(error, 'code', None)
+                def pump():
+                    while consumer.active:
+                        ready, _, _ = select.select(list(consumer.pipes()), [], [], 120)
+                        assert ready
+                        for fd in ready:
+                            consumer.readable(fd)
+                assert offer() == 'space_pending'
+                pump()
+                assert offer() == 'space_wait:host'
+                head = f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0]
+                f.free['host'] = 1000
+                for _ in range(3):
+                    requests.passed()
+                    check('fix3/requests-unrelated-passes', offer() == 'space_wait:host'
+                          and not consumer.tasks and len(wakes) == 1
+                          and f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == head)
+                assert f.ledger.reconcile('console', [], [], {key: 0 for key in SP.RECONCILE_COUNTS})['ok']
+                check('ac3/completion-race', offer() == 'space_pending')
+                pump()
+                bound = offer()
+                check('ac3/completion-race', isinstance(bound, dict) and len(wakes) == 2)
+                requests.taken(bound)
+                check('fix1/spent-answer', not requests.answers)
+            finally:
+                consumer.stop()
+                f.close()
+        run('fix3/requests-unrelated-passes', worker_wait)
+
+        def concurrent():
+            import os
+            import select
+            f = Fixture('concurrent')
+            children = []
+            go_read, go_write = os.pipe()
+            registry = dict(f.conn.command_registry)
+            f.free['host'] = 120
+            try:
+                for number in range(2):
+                    read, write = os.pipe()
+                    pid = os.fork()
+                    if pid == 0:
+                        try:
+                            os.close(read)
+                            os.close(go_write)
+                            f.conn.close()
+                            f.conn = S.open_store(str(f.state / 'store.sqlite3'))
+                            f.conn.command_registry.update(registry)
+                            f.ledger.conn = f.dispatches.conn = f.conn
+                            os.read(go_read, 1)
+                            try:
+                                result = ADM.prepare(f.space, f.dispatches, 'unit-' + str(number), 'build',
+                                                     'project', str(f.repo))
+                                answer = 'admitted' if result else 'disabled'
+                            except Exception as error:
+                                answer = getattr(error, 'code', type(error).__name__)
+                            os.write(write, answer.encode())
+                            os._exit(0)
+                        except BaseException:
+                            os._exit(1)
+                    os.close(write)
+                    children.append((pid, read))
+                os.write(go_write, b'xx')
+                answers = []
+                for pid, read in children:
+                    assert select.select([read], [], [], 120)[0], 'concurrent admission hang'
+                    answers.append(os.read(read, 4096).decode())
+                    assert os.waitpid(pid, 0)[1] == 0
+                check('ac1/concurrent', sorted(answers) == ['admitted', 'space_wait:host']
+                      and ADM.held(f.ledger, 'host') == 100)
+            finally:
+                for pid, read in children:
+                    os.close(read)
+                    try:
+                        os.kill(pid, 9)
+                        os.waitpid(pid, 0)
+                    except ProcessLookupError:
+                        pass
+                os.close(go_read)
+                os.close(go_write)
+                f.close()
+        run('ac1/concurrent', concurrent)
+
+        def unread_free():
+            f = Fixture('unread-free')
+            try:
+                f.space['free'] = lambda pool: -1
+                try:
+                    f.prepare()
+                    check('ac1/unread-pool', False)
+                except Exception as error:
+                    check('ac1/unread-pool', str(getattr(error, 'code', '')).startswith('space_free_unread:'))
+            finally:
+                f.close()
+        run('ac1/unread-pool', unread_free)
+
     for row, answers in rows.items():
         expect('VELDO-0316 space316/' + row, bool(answers) and all(answers))
 

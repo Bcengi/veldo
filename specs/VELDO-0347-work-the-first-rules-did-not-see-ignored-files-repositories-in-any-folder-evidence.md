@@ -272,3 +272,5 @@ components, each engine file with its synced copy, and the ticket's suite, proof
 
 Owner order 43607 retains the candidate implementation and ports clone Keep requests.
 Explicit supersession evidence and validation status: `proof/VELDO-0347/assembly-v1.md`.
+
+Space V1 assertion reconciliation: the superseded suite-150 fixture and its row-by-row disposition are archived in `proof/VELDO-0347/historical-space-v1/retirement.md`. Required distinct assertions were ported to candidate fixtures; runtime validation is pending and recorded in the assembly proof, not inferred from historical receipts.

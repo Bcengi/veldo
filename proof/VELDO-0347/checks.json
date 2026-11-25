@@ -197,7 +197,7 @@
   "commit": "7848368496a1ad0044c19bbb6ea1232e4a9d8e50",
   "failed_count": 3,
   "failed_rows": [
-   "VELDO-0308 keep/run-kept-item-not-named: raised RuntimeError: the fixture could not mark Keep: None not_authorized ^^^^^^^^^^^^^^^^^^^^^^^^^^^ | File \"/home/dmi",
+   "VELDO-0308 keep/run-kept-item-not-named: raised RuntimeError: the fixture could not mark Keep: None not_authorized ^^^^^^^^^^^^^^^^^^^^^^^^^^^ | File \"<historical-home>",
    "VELDO-0308 keep/teardown-kept-item-not-named",
    "VELDO-0308 n2/observations-bounded"
   ],

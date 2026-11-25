@@ -1,0 +1,274 @@
+{
+  "schema": "veldo.space-v1-retired-mutations/v1",
+  "reason": "Superseded old APIs; see retirement.md row mapping and current candidate cases. Distinct unmet behaviors have current API mutations.",
+  "cases": [
+    {
+      "finding": 347,
+      "name": "space347-ignored-paths-left-out-of-case-3",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_probe.py",
+      "old": "    untracked = untracked + [name for name in work['work'] if name not in untracked]\n",
+      "new": "    untracked = list(untracked)  # defect: ignored paths are left out of case 3\n",
+      "rows": [
+        "space347/ac1/loose-ignored-file",
+        "space347/ac1/personal-rule",
+        "space347/ac1/untraced-rule"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-look-beneath-worktrees-and-agent-repositories-only",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_signal.py",
+      "old": "    if record.get('kind') in HOLDS_UNPUSHED and path and ('path:' + path) not in found:\n",
+      "new": "    if False and path and ('path:' + path) not in found:  # defect: scratch and build output are not looked in\n",
+      "rows": [
+        "space347/ac2/unpushed-commit",
+        "space347/ac2/build-output"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-remote-tracking-ref-taken-at-its-word",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_probe.py",
+      "old": "        elif local:\n            # What only a local remote's ref holds must be in that remote now.\n",
+      "new": "        elif False:  # defect: a remote-tracking ref is taken at its word\n",
+      "rows": [
+        "space347/ac2/hand-written-ref"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-clone-removed-by-the-folder-remover-alone",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_remove.py",
+      "old": "    kept = _kept(ctx, identity, record)\n    pools = _before(ctx, record, answer)\n    if saved:\n",
+      "new": "    kept = {'ok': True, 'tips': tips(path, record.get('kind'), ctx['commands'])}  # defect: no keep step\n    pools = _before(ctx, record, answer)\n    if saved:\n",
+      "rows": [
+        "space347/ac3/keep-first"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-worker-clone-removed-without-the-snapshot",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_remove.py",
+      "old": "        ctx['keep'] = _sibling('control_space_keep').keeper(ctx['ledger'], snapshot=True)\n",
+      "new": "        ctx['keep'] = _sibling('control_space_keep').keeper(ctx['ledger'], snapshot=False)  # defect\n",
+      "rows": [
+        "space347/ac3/worker-clone-saved"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-worker-clone-deleted-without-the-comparison",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_remove.py",
+      "old": "            before_file=lambda relative, descriptor, name: _clone_compare(state, relative, descriptor, name),\n",
+      "new": "            before_file=None,  # defect: no file is compared with the manifest before it is deleted\n",
+      "rows": [
+        "space347/ac3/changed-after-snapshot"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-folder-left-under-its-marked-name",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_remove.py",
+      "old": "        stuck = _put_back(parent, tail, base)\n        if stuck is not None:\n",
+      "new": "        stuck = _put_back(parent, tail, base) if before_file is None else None  # defect\n        if stuck is not None:\n",
+      "rows": [
+        "space347/ac3/renamed-back"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-evidence-digest-of-the-last-measurement",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_remove.py",
+      "old": "        held = copies.find([hashed.hexdigest() for hashed in blobs], digest.hexdigest())\n",
+      "new": "        held = copies.find([hashed.hexdigest() for hashed in blobs], globals().setdefault(\n            '_MEASURED', {}).setdefault(relative, digest.hexdigest()))  # defect: the digest first measured\n",
+      "rows": [
+        "space347/ac4/changed-after-measure"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-look-beneath-the-item-only",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_signal.py",
+      "old": "    if record.get('kind') in DISK_KINDS and record.get('kind') not in HOLDS_REPOSITORIES and path:\n        own = probe.is_repository(path)\n",
+      "new": "    if False and path:  # defect: the look starts beneath the item\n        own = probe.is_repository(path)\n",
+      "rows": [
+        "space347/ac5/own-folder-holds"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-no-form-given-the-clone-row",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space.py",
+      "old": "        ending = self.lifecycle['ends_on'].get('%s:%s' % (kind, form), self.lifecycle['ends_on'][kind])\n",
+      "new": "        ending = self.lifecycle['ends_on'].get('%s:%s' % (kind, form or 'worker_clone'),  # defect\n                                               self.lifecycle['ends_on'][kind])\n",
+      "rows": [
+        "space347/ac5/no-form"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-any-traced-rule-makes-build-output",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_probe.py",
+      "old": "        if declared or own:\n            build.append(name)\n",
+      "new": "        if declared or own or source is not None:  # defect: a personal rule makes build output\n            build.append(name)\n",
+      "rows": [
+        "space347/ac1/personal-rule"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-remover-takes-any-repository-in-the-folder",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_remove.py",
+      "old": "        ctx, identity, record, record['locator']['path'], look=lambda name: _clean_clones(ctx, name),\n",
+      "new": "        ctx, identity, record, record['locator']['path'], look=lambda name: set(  # defect: no last look\n            os.path.relpath(found, name) for found in ctx['probe'].nested(name)['repositories']),\n",
+      "rows": [
+        "space347/ac2/last-look"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-clone-with-files-raises-no-request",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_signal.py",
+      "old": "            and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n            and found.get('work_tree') is True):\n",
+      "new": "            and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n            and False):  # defect: a clone is deferred and nobody is asked\n",
+      "rows": [
+        "space347/ac3/clone-request"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-ledger-takes-a-worktree-request-for-a-clone",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space.py",
+      "old": "                or ('clones' in proposal) != clone or (clone and tree['form'] != record['form'])):\n",
+      "new": "                or False):  # defect: a clone may be asked about as a worktree\n",
+      "rows": [
+        "space347/ac3/clone-request"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-any-item-with-the-form-is-a-worker-clone",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_signal.py",
+      "old": "            if shown['clone'] is True:\n                return None\n            return dict(found, not_shown_a_worker_clone=shown['said'])\n",
+      "new": "            return None  # defect: the manifest is not asked\n",
+      "rows": [
+        "space347/ac3/not-shown"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-evidence-file-written-while-read-is-deleted",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_remove.py",
+      "old": "        if held is None or _signature(os.lstat(name, dir_fd=dir_fd)) != _signature(found):\n",
+      "new": "        if held is None:  # defect: the file is not looked at again before its delete\n",
+      "rows": [
+        "space347/ac4/changed-after-measure"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-trunk-guessed",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_remove.py",
+      "old": "            named = trunk(main) if callable(trunk) else None\n",
+      "new": "            named = trunk(main) if callable(trunk) else 'main'  # defect: the trunk is guessed\n",
+      "rows": [
+        "space347/ac4/trunk-never-guessed"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-registry-gives-no-form-the-clone-row",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_kinds.py",
+      "old": "        row = FORM_ROWS.get((record['kind'], record.get('form')))\n",
+      "new": "        row = FORM_ROWS.get((record['kind'], record.get('form') or 'worker_clone'))  # defect\n",
+      "rows": [
+        "space347/ac5/registry-row"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-rule-5-reads-a-table-1-clone-by-its-form",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_signal.py",
+      "old": "        if form not in CLONE_FORMS or given.get('row') != CLONE_ROW:\n",
+      "new": "        if form not in CLONE_FORMS:  # defect: the form alone picks the clone's reading\n",
+      "rows": [
+        "space347/ac3/table-1-clone"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-signal-names-the-clone-row-for-any-item",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_signal.py",
+      "old": "        if entry.get('row') == CLONE_ROW:\n            # The item's own table gave it the clone's row",
+      "new": "        if True:  # defect: every item is handed over as one of the clone's row\n            # The item's own table gave it the clone's row",
+      "rows": [
+        "space347/ac3/table-1-clone"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-remover-saves-a-table-1-worker-clone-by-its-form",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_remove.py",
+      "old": "    if record.get('form') == WORKER_CLONE and ctx.get('row') == CLONE_ROW and ctx['keep'] is not None:\n",
+      "new": "    if record.get('form') == WORKER_CLONE and ctx['keep'] is not None:  # defect: the form alone\n",
+      "rows": [
+        "space347/ac3/table-1-clone"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-ledger-takes-a-clone-request-for-a-table-1-item",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space.py",
+      "old": "                 and self._clone_row(record))\n",
+      "new": "                 and True)  # defect: the form alone makes it a clone to ask about\n",
+      "rows": [
+        "space347/ac3/table-1-clone"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-signal-names-the-clone-row-for-no-item",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space_signal.py",
+      "old": "        if entry.get('row') == CLONE_ROW:\n            # The item's own table gave it the clone's row",
+      "new": "        if False:  # defect: the remover is never told the clone's row\n            # The item's own table gave it the clone's row",
+      "rows": [
+        "space347/ac3/table-2-clone",
+        "space347/ac3/worker-clone-saved"
+      ]
+    },
+    {
+      "finding": 347,
+      "name": "space347-ledger-applies-any-settled-choice-to-a-clone",
+      "suite": "150_veldo_0347_unseen_work.py",
+      "module": "control_space.py",
+      "old": "        if record['kind'] != 'worktree' and choice != 'keep':\n",
+      "new": "        if False:  # defect: a settled Save or Discard of a clone is applied\n",
+      "rows": [
+        "space347/ac3/ledger-keep-only"
+      ]
+    }
+  ]
+}
