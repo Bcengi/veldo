@@ -80,11 +80,6 @@ def _v41_suite():
             shutil.copyfile(source, mods / source.name)
         for name, source in PRODUCTION.items():
             shutil.copyfile(source, mods / name)
-        # The held stop subject never exits to rescue an omitted stop. Observe the
-        # receiver's completed timer decision, forwarding its real work unchanged.
-        boundary = load('v41_decision_boundary', ROOT / 'scripts/fixtures/heartbeat_decision_boundary.py')
-        receiver = mods / 'control_launch.py'
-        receiver.write_text(boundary.instrument(receiver.read_text()))
         S = load('v41_store', mods / 'control_store.py')
         L = load('v41_launch', mods / 'control_launch.py')
         C = load('v41_containment', mods / 'control_containment.py')
@@ -229,9 +224,6 @@ children = [subprocess.Popen([sys.executable, '-B', child, markers, tag, name, k
 own = facts('worker')
 own['cwd'] = os.getcwd()
 mark(markers, tag, 'worker', own)
-# A stop subject lives until the stop event, regardless of time spent in earlier rows.
-while payload.get('hold_until_stop'):
-    signal.pause()
 if payload.get('block'):
     # THE MODEL CALL: one blocking read of a child that answers after `block` seconds.
     model = subprocess.Popen([sys.executable, '-B', child, markers, tag, 'model', 'model', str(payload['block'])],
@@ -240,9 +232,6 @@ if payload.get('block'):
     answer = model.stdout.read()
     model.wait()
     mark(markers, tag, 'answer', {'returned': time.monotonic(), 'bytes': len(answer)})
-if payload.get('release'):
-    with open(payload['release'], 'rb', buffering=0) as latch:
-        latch.read(1)
 end = time.monotonic() + payload.get('hold', 0)
 while time.monotonic() < end and not (payload.get('release') and Path(payload['release']).exists()):
     time.sleep(0.02)
@@ -250,18 +239,14 @@ if payload.get('signal_group'):
     # The engine signals its own process group, as an engine ending its own children does, and lives on.
     mark(markers, tag, 'signalled', {'at': time.monotonic(), 'pgrp': os.getpgrp()})
     os.killpg(0, signal.SIGTERM)
-    if payload.get('signal_release'):
-        with open(payload['signal_release'], 'rb', buffering=0) as latch:
-            latch.read(1)
-    else:
-        time.sleep(payload['signal_group'])
+    time.sleep(payload['signal_group'])
 mark(markers, tag, 'exit', {'at': time.monotonic()})
 sys.exit(payload.get('code', 0))
 ''')
 
         def profile(**changes):
             value = {'kind': 'linux-systemd', 'slice': slice_name, 'lock': str(base / 'slice.lock'), 'concurrency': 16,
-                     'runtime_seconds': WAITS.PROCESS_HANG_SECONDS, 'memory_bytes': 256 << 20, 'cpu_percent': 200, 'file_bytes': 8 << 20,
+                     'runtime_seconds': 120, 'memory_bytes': 256 << 20, 'cpu_percent': 200, 'file_bytes': 8 << 20,
                      'tasks_max': 128, 'stop_grace_seconds': 0.5, 'kill_grace_seconds': 0.5}
             value.update(changes)
             return {k: v for k, v in value.items() if v is not None}
@@ -318,16 +303,11 @@ sys.exit(payload.get('code', 0))
             return runners[name]
 
         releases = []
-        latch_fds = []
 
-        def job(deadline=WAITS.PROCESS_HANG_SECONDS, **payload):
-            for key in ('release', 'signal_release'):
-                if payload.get(key):
-                    path = base / ('release-' + payload[key])
-                    os.mkfifo(path, 0o600)
-                    latch_fds.append(os.open(path, os.O_RDWR | os.O_NONBLOCK))
-                    payload[key] = str(path)
-                    releases.append(path)
+        def job(deadline=60, **payload):
+            if payload.get('release'):
+                payload['release'] = str(base / ('release-' + payload['release']))
+                releases.append(Path(payload['release']))
             return dict(holder=HOLDER, source=str(src), revision='HEAD', payload=payload, adapter='engine',
                         configuration={'tools': ['Read', 'Bash'], 'model': 'configured-model'},
                         deadline=time.time() + deadline)
@@ -335,8 +315,8 @@ sys.exit(payload.get('code', 0))
         def rec(dispatch_id):
             return dispatches.record(dispatch_id) or {}
 
-        def release(launch, key='release'):
-            path = Path((rec(launch.dispatch_id).get('contract') or {}).get('input', {}).get('payload', {}).get(key, ''))
+        def release(launch):
+            path = Path((rec(launch.dispatch_id).get('contract') or {}).get('input', {}).get('payload', {}).get('release', ''))
             if path.name:
                 path.write_text('go')
 
@@ -495,12 +475,12 @@ sys.exit(payload.get('code', 0))
                                                                  ('signal', 'VELDO-9511'))}
                 claims = {name: claim_version(unit) for name, unit in units.items()}
                 started['blocked'] = runner('fast').submit(units['blocked'], 'build', **job(block=2.0))
-                started['missing'] = runner('fast').submit(units['missing'], 'build', **job(hold_until_stop=True))
+                started['missing'] = runner('fast').submit(units['missing'], 'build', **job(block=8))
                 started['shipped'] = runner('shipped').submit(units['shipped'], 'build', **job(block=1.5))
-                started['orphan'] = runner('main').submit(units['orphan'], 'build', **job(hold_until_stop=True))
+                started['orphan'] = runner('main').submit(units['orphan'], 'build', **job(hold=30))
                 # Waits for its release, then signals its own process group and runs two seconds more.
                 started['signal'] = runner('fast').submit(units['signal'], 'build', **job(
-                    hold=30, release='signal', signal_release='signal-done', signal_group=2.0, on_term='ignore'))
+                    hold=30, release='signal', signal_group=2.0, on_term='ignore'))
 
             # AC1: the heartbeat comes from the trusted wrapper while the model call is still blocked, and
             # each one renews the claim.
@@ -545,14 +525,9 @@ sys.exit(payload.get('code', 0))
                 cgroup = (getattr(missing, 'group', None) or {}).get('cgroup')
                 renewed_three = wait_for(lambda: len(heartbeats(missing.dispatch_id)) >= 3, 10)
                 beaters = procs(str(cgroup) + '/' + GROUP) if cgroup else []
-                # The kernel acknowledges quiescence; queued heartbeats may still
-                # be read later, so judge their send times, not receiver scheduling.
-                heartbeat_group = group_path(str(cgroup) + '/' + GROUP)
-                (heartbeat_group / 'cgroup.freeze').write_text('1')
-                WAITS.wait('heartbeat sender frozen',
-                           lambda: 'frozen 1' in (read(heartbeat_group / 'cgroup.events') or '').splitlines(),
-                           lambda: not heartbeat_group.exists(), [WAITS.CgroupEmpty(heartbeat_group)])
                 stopped_at = now_m()
+                for pid in beaters:
+                    os.kill(pid, signal.SIGSTOP)  # the wrapper's heartbeat stops answering
                 ended = runner('fast').wait(missing) or {}
                 supervision = getattr(missing, 'supervision', None) or {}
                 beat = supervision.get('heartbeat') or {}
@@ -569,11 +544,11 @@ sys.exit(payload.get('code', 0))
                 check('heartbeat/missing-heartbeat-stop',
                       renewed_three and bool(beaters) and bool(worker) and beat.get('beats', 0) >= 3
                       and supervision.get('cause') == 'heartbeat_missing' and beat.get('liveness') == 'uncertain'
-                      and bool(beat.get('recent')) and all(b['sent'] <= stopped_at for b in beat['recent'])
-                      and lapse >= 1.0
+                      and (beat.get('last') or 1e18) <= stopped_at + 0.3
+                      and within(lapse, 1.0, 1.0 + TOL)
                       and [s.get('step') for s in steps][:1] == ['cooperative']
-                      and minus(steps[0].get('monotonic'), beat.get('uncertain_at')) >= 0
-                      and bool(terms) and terms[0] >= steps[0]['monotonic']
+                      and within(minus(steps[0].get('monotonic'), beat.get('uncertain_at')), 0, 0.05)
+                      and bool(terms) and within(minus(terms[0], beat.get('uncertain_at')), -0.01, TOL)
                       and not living(worker) and all(proc_start(pid) is None for pid in beaters)
                       and ended.get('state') == 'exited' and supervision.get('empty') is True
                       and slot(missing.dispatch_id).get('retired') is True)
@@ -609,14 +584,6 @@ sys.exit(payload.get('code', 0))
                 before = procs(str(cgroup) + '/' + GROUP) if cgroup else []
                 release(signalled)
                 sent = marker(signalled, 'signalled')
-                # Renewals carry sequence numbers; wait for six new ones after
-                # the signal marker before allowing the engine to exit.
-                first_count = len(heartbeats(signalled.dispatch_id))
-                WAITS.wait('six heartbeats after engine group signal',
-                           lambda: len(heartbeats(signalled.dispatch_id)) >= first_count + 6,
-                           lambda: signalled.child.poll() is not None or not living(worker),
-                           [WAITS.Store(db), WAITS.Pidfd(signalled.child)])
-                release(signalled, 'signal_release')
                 ended = runner('fast').wait(signalled) or {}
                 supervision = getattr(signalled, 'supervision', None) or {}
                 beat = supervision.get('heartbeat') or {}
@@ -633,9 +600,8 @@ sys.exit(payload.get('code', 0))
                                             'state': ended.get('state'), 'termination': ended.get('termination')}
                 check('heartbeat/engine-group-signal',
                       bool(sent) and sent.get('pgrp') == worker.get('pid') and len(before) == 1
-                      and bool(terms) and terms[0] >= at
-                      and len(after) >= 6 and bool(gaps) and all(gap >= 0 for gap in gaps)
-                      and all(b['seq'] == a['seq'] + 1 for a, b in zip(spanning, spanning[1:]))
+                      and bool(terms) and within(minus(terms[0], at), 0, TOL)
+                      and len(after) >= 6 and bool(gaps) and max(gaps) <= 0.25 + TOL
                       and beat.get('pid') == before[0] and beat.get('liveness') == 'live' and beat.get('uncertain_at') is None
                       and supervision.get('cause') is None and ended.get('state') == 'exited'
                       and (ended.get('termination') or {}).get('returncode') == 0
@@ -1037,8 +1003,6 @@ sys.exit(payload.get('code', 0))
                     facts = json.loads(leftover.read_text())
                     if living(facts):
                         os.kill(facts['pid'], signal.SIGKILL)
-            for fd in latch_fds:
-                os.close(fd)
             writer.close()
             reader.close()
         for first_label in regions:
