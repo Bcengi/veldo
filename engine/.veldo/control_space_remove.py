@@ -1724,7 +1724,9 @@ def _r_remove_held(ctx, identity, record, answer):
                     if copy is None or after.st_size != len(data) or os.pread(descriptor, len(data) + 1, 0) != data:
                         kept.append(relative)
                         continue
-                    holder = _open_inside(folder, relative, directory=True) if '/' in relative else os.dup(folder)
+                    # The folder that holds the file: the name is unlinked there, by its last part.
+                    holder = (_open_inside(folder, relative.rsplit('/', 1)[0], directory=True) if '/' in relative
+                              else os.dup(folder))
                     try:
                         name = relative.rsplit('/', 1)[-1]
                         now = os.lstat(name, dir_fd=holder)

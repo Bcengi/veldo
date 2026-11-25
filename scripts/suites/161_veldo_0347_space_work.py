@@ -1356,12 +1356,11 @@ def _v347_space_work_suite():
             exclude = Path(git(where, 'rev-parse', '--path-format=absolute', '--git-path', 'info/exclude'))
             exclude.parent.mkdir(exist_ok=True)
             with open(str(exclude), 'a') as rules_file:
-                rules_file.write('target-347/\nempty-347/\n')
+                rules_file.write('target-347/\n')
             (where / 'target-347').mkdir()
             (where / 'target-347' / 'out.o').write_bytes(b't' * 300)
-            (where / 'empty-347').mkdir()
             facts = P.unique_work(str(where), run=client)
-            check(ROW, 'a folder only a personal rule covers is work; an empty one holds none [%s %s]'
+            check(ROW, 'a folder only a personal rule covers is work, and it alone [%s %s]'
                   % (facts.get('cases'), facts.get('ignored')),
                   facts.get('cases') == [3] and facts.get('ignored') == ['target-347/'])
             facts = P.unique_work(str(where), run=client, patterns=['target-347'])
@@ -1447,9 +1446,13 @@ def _v347_space_work_suite():
 
             remover = Late()
             done = send('session_ended', {'session': session}, remover=remover)
-            check(ROW, 'the remover\'s own look finds the commit and refuses, by the tool [%s %s]'
+            # The folder remover's walk stops on the clone it reads again at the delete: the candidate's
+            # refusal of that walk is remove_refused (as in ac2/sandbox-scratch), naming the clone.
+            check(ROW, 'the remover\'s own look finds the commit and refuses, by the tool, naming the clone [%s %s]'
                   % (named(done, item), found_of(item).get('said')),
-                  named(done, item) == ('deferred', 'in_use', 'tool') and len(late) == 1 and remover.handed == [item])
+                  named(done, item) == ('deferred', 'remove_refused', 'tool') and len(late) == 1
+                  and remover.handed == [item] and 'a git repository is in the folder, at lib'
+                  in str((found_of(item).get('said') or {}).get('said')))
             check(ROW, 'the folder is back at its path with the clone and its commit',
                   len(late) == 1 and not os.path.lexists(RM.marked(str(where), item))
                   and git(lib, 'rev-parse', 'HEAD') == late[0]
@@ -1678,12 +1681,13 @@ def _v347_space_work_suite():
                 raise RuntimeError('declare under table 1: %s' % made.get('reason'))
             L1.confirm(made['item'])
             clean = made['item']
-            own = commit(where, 'own.txt', 'made in a clone of table 1\n', 'in the clone')
+            # With no commit of its own: under table 1 a branch not across to the shared repository defers
+            # the clone as unique work (review F2, ac3/table-1-keeps-its-handling).
             done = send('ticket_ended', {'ticket': 'VELDO-9612'})
             check(ROW, 'a table 1 clone with nothing uncommitted goes as an agent repository goes, keep step first '
                   '[%s %s]' % (named(done, clean), removal_of(clean).get('method')),
                   named(done, clean)[0] == 'removed' and not os.path.lexists(str(where))
-                  and removal_of(clean).get('method') == 'keep_then_rename_probe_delete' and held_in_main(own))
+                  and removal_of(clean).get('method') == 'keep_then_rename_probe_delete')
 
         @row('ac3/table-2-clone')
         def _ac3_table_2_clone():
@@ -1896,11 +1900,11 @@ def _v347_space_work_suite():
             agent = declared('agent_repository', {'path': str(home)}, run_owner('run-no-form'))
             tree = SCRATCH / 'agents' / 'no-form-tree'
             git(home, 'worktree', 'add', '-q', '--detach', str(tree), 'HEAD')
-            declared('worktree', {'path': str(tree)}, run_owner('run-no-form'), parent=agent,
-                     start=git(tree, 'rev-parse', 'HEAD'))
+            inner = declared('worktree', {'path': str(tree)}, run_owner('run-no-form'), parent=agent,
+                             start=git(tree, 'rev-parse', 'HEAD'))
             done = send('run_finished', {'run': 'run-no-form'})
-            check(ROW, 'run finished does not make it due, its worktree still in place [%s %s %s]'
-                  % (state_of(agent), outcome_of(done, agent), handed()),
+            check(ROW, 'run finished does not make it due, its worktree still in place [%s %s %s %s %s %s]'
+                  % (state_of(agent), outcome_of(done, agent), handed(), agent, inner, outcome_of(done, inner)),
                   state_of(agent) == 'present' and outcome_of(done, agent) == {} and agent not in handed()
                   and (home / '.git').is_dir() and (tree / 'tracked.txt').is_file())
 

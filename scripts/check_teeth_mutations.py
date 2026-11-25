@@ -17676,6 +17676,13 @@ def cases():
             "                if False:  # defect: an object the remote holds counts, reached or not\n"
             "                    pass\n",
             ['ac2/unreachable-in-remote'])
+    # Fix round 2 of Space V1: a held file beneath a folder of the evidence is unlinked in the folder
+    # that holds it; opened as a folder by its own name, the remover refuses the whole item.
+    work347('space347-nested-held-file-opened-as-folder', 'control_space_remove.py',
+            "                    holder = (_open_inside(folder, relative.rsplit('/', 1)[0], directory=True) if '/' in relative\n"
+            "                              else os.dup(folder))\n",
+            "                    holder = _open_inside(folder, relative, directory=True) if '/' in relative else os.dup(folder)\n",
+            ['ac4/held-files-go'])
     add(347, 'space347-table-2-not-whole', '135_veldo_0298_space_kinds.py', 'control_space_kinds.py',
         "CLONE = {'action': 'remove', 'after': ['worktree'], 'unique_work': 'decision_request'}\n",
         "CLONE = {'action': 'remove', 'unique_work': 'decision_request'}  # defect: not after its worktrees\n",
