@@ -473,14 +473,13 @@ def _v324_suite():
                     observed.append(not Path(locator['path']).exists())
                 return original(kind, locator, *args, **kwargs)
             def prepare(path):
-                # Shut against writing, and listable: the reader sees all of it, and the remover has
-                # to open each folder to empty it. A folder nobody can list is the next row
-                # (VELDO-0347 AC2 holds such a scratch as unread; before it this row shut both
-                # folders with mode 0).
+                # Candidate 0347's narrow exception: an owned sandbox scratch with its declared
+                # parent may open shut disposable folders. The next row covers ordinary scratch,
+                # which must remain held when unreadable; suite 161 covers the nested-repository guard.
                 (path / 'shut/inner').mkdir(parents=True)
                 (path / 'shut/inner/output').write_text('disposable scratch')
-                (path / 'shut/inner').chmod(0o500)
-                (path / 'shut').chmod(0o500)
+                (path / 'shut/inner').chmod(0)
+                (path / 'shut').chmod(0)
             with patch.object(L, 'declare', declaration):
                 code, root, parent_item, seen = launch('recorded', prepare)
             path = seen[0]
@@ -501,15 +500,17 @@ def _v324_suite():
                 (path / 'shut/inner/output').write_text('nobody read this')
                 (path / 'shut/inner').chmod(0)
                 (path / 'shut').chmod(0)
-            code, root, parent_item, seen = launch('unlistable', prepare)
-            path = seen[0]
-            identity = at(path)[0]
+            root = scratch / 'ordinary-unlistable'
+            parent_item = declare('scratch', root)
+            path = root / 'ordinary-child'
+            identity = declare('scratch', path, parent=parent_item)
+            prepare(path)
             try:
                 finish([root])
                 held, parent = L.item(identity), L.item(parent_item)
                 check(row, 'a scratch the reader cannot list is held as unread, with its parent [%s %s %s]'
                       % (held['state'], (held.get('deferral') or {}).get('found', {}).get('states'), parent['state']),
-                      code == 7 and held['state'] == 'deferred' and parent['state'] == 'deferred'
+                      held['state'] == 'deferred' and parent['state'] == 'deferred'
                       and held['deferral'].get('refused_by') == 'children'
                       and (held['deferral'].get('found') or {}).get('states') == {'path:' + str(path): 'unread'}
                       and path.is_dir() and root.is_dir())
