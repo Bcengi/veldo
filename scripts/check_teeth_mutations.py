@@ -18837,10 +18837,10 @@ def cases():
         if case['module'] in ('init_scaffold.py', 'control_assignment.py') and not case.get('siblings'):
             case['companions'] = sorted(set(case.get('companions', ())) | {
                 'installation.py', 'git_process.py', 'yamlish.py'})
-        # Both gate entry modules import this sibling before any suite can use them. Some suites
+        # Gate entry modules and the observer preload this sibling before any suite can use them. Some suites
         # copy the entry into a complete fixture tree; others also load the isolated mutation
         # copy directly. Keep that copy's imports complete without changing its fixture grants.
-        if case['module'] in ('agent_sandbox.py', 'run_scope.py') and not case.get('siblings'):
+        if case['module'] in ('agent_sandbox.py', 'run_scope.py', 'mutation_observer.py') and not case.get('siblings'):
             case['companions'] = sorted(set(case.get('companions', ())) | {'gate_fixtures.py'})
         # The re-land suite also loads the isolated containment copy directly to
         # check its release parser. Its import loads the adjacent timers table.

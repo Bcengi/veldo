@@ -15,6 +15,31 @@ def load(path):
 
 
 class ProductionTree(unittest.TestCase):
+    def test_registered_observer_copies_preload_their_own_allocator(self):
+        registry = load(ROOT / 'scripts/check_teeth_mutations.py')
+        cases = [case for case in registry.cases() if case['module'] == 'mutation_observer.py']
+        self.assertTrue(cases)
+        allocator = load(ROOT / 'scripts/gate_fixtures.py')
+        for name in ('scripts/check_teeth_mutations.py', 'scripts/mutation_observer.py',
+                     'engine/scripts/mutation_observer.py'):
+            materializer = load(ROOT / name)
+            for case in cases:
+                for mode in ('baseline', 'noop', 'mutant'):
+                    with self.subTest(materializer=name, case=case['name'], mode=mode):
+                        with allocator.directory() as directory:
+                            made = materializer.materialize(case, mode, directory, root=ROOT)
+                            path = made['mutant'] or made['source']
+                            observer = load(path)
+                            companion = path.with_name('gate_fixtures.py')
+                            self.assertEqual(Path(observer.FIXTURES['__file__']), companion)
+                            self.assertEqual(companion.read_bytes(),
+                                             (ROOT / 'scripts/gate_fixtures.py').read_bytes())
+                            self.assertEqual(made['old_digest'] == made['new_digest'], mode != 'mutant')
+                            with observer.private_runtime() as runtime:
+                                self.assertTrue(runtime.is_dir())
+                                self.assertEqual(runtime.stat().st_mode & 0o777, 0o700)
+                            self.assertFalse(runtime.exists())
+
     def test_lazy_round_trip_and_owner_path(self):
         # The sibling imports the selected module again, just as conversation
         # decisions construct settlement. Both paths must see the same bytes and
