@@ -1,0 +1,159 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0364",
+  "commit": "353a31e8fb3466405fcd0a70b4a4815baf64296f",
+  "producer": "local bounded execution",
+  "status": "partial",
+  "scope": "unit and sequential single-case diagnostics; no canonical gate, full leg, approval or production activation",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0364/cost-ranking.json",
+          "detail": "224 proposed cases cover 10.787% and 10.348% of measured confined worker time; all reviewed flags false."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0364/single-case-trace.json",
+          "detail": "Passing representative baseline, but host_socket and shared-preamble Git metadata remain unclosed. Four current traces and a matching successful observation are absent. Declarations are not review-ready for approval."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0364/unit.json",
+          "detail": "85 rows passed, including late failure, complete identity coverage, cleanup failures and input/runtime races restored before finalization."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0364/checkpoint364-remember-race.json",
+          "detail": "All ten registered checkpoint falsifiers killed with green baseline/no-op controls at named assertion rows; companion JSON records retain each verdict."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0364/native-single-case.json",
+          "detail": "Sequential native fresh and forced-fresh selected case: identical observations, three workers each, complete cleanup, zero publication. Coordinator bytes match this implementation commit."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0364/reuse_examples.json",
+          "detail": "Unrelated-edit hit, real transitive dependency miss, forced-fresh equivalence and corruption miss in a single-case unit fixture with explicit admission/runtime/sensitivity seams."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0364/unit.json",
+          "detail": "Existing audit mismatch revocation and refusal passed. Missing/wrong-key sensitivity refuses."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0364/README.md",
+          "detail": "No positive production sensitivity proof: perturbation producer and host libfaketime are absent. No installation or guard weakening was performed."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit.selected",
+      "status": "passed",
+      "detail": "85 rows"
+    },
+    {
+      "name": "mutation.selected",
+      "status": "passed",
+      "detail": "10 registered falsifiers"
+    },
+    {
+      "name": "native.selected",
+      "status": "passed",
+      "detail": "One case twice, sequential, force-fresh equivalent"
+    },
+    {
+      "name": "wallclock",
+      "status": "passed",
+      "detail": "No added sites; census green"
+    },
+    {
+      "name": "personal_setup",
+      "status": "passed",
+      "findings": 0
+    },
+    {
+      "name": "stale_mutants",
+      "status": "passed",
+      "findings": 0,
+      "registered": 4014
+    },
+    {
+      "name": "engine_sync",
+      "status": "passed"
+    },
+    {
+      "name": "unconfined_unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "canonical_gate",
+      "status": "not_run",
+      "detail": "User prohibits full gate/full legs; gate 18 running"
+    },
+    {
+      "name": "protected_path_approval",
+      "status": "pending"
+    }
+  ],
+  "protected_paths": [
+    "scripts/check_gate_mutations.py",
+    "engine/scripts/check_gate_mutations.py",
+    "scripts/mutation_case_inputs.json",
+    "proof/VELDO-0217/reviews/speed-phase1.json"
+  ],
+  "rollback": "Revert the implementation commit; declarations grant nothing while unreviewed.",
+  "artifact_sha256": {
+    "proof/VELDO-0364/README.md": "c288dd3f932632a36d9866261c0f85dc881dc701c32e133408ef9f0eb6b06129",
+    "proof/VELDO-0364/check_case.py": "68a62fbf0179ec80871d0eab06679fb0ac8fce7e6f2a7c4ca644fb908f0db2ef",
+    "proof/VELDO-0364/checkpoint364-active.diff": "d39cdc0f439fe1bf14482c317e7a40562b59966eb363a68e4ae944f3b3839f06",
+    "proof/VELDO-0364/checkpoint364-active.json": "d122142df3e43ea4f28ebf1b82abd01a802b9305b6a58d5104c7531e542011a1",
+    "proof/VELDO-0364/checkpoint364-audit.diff": "c876b3256fe1aef51c01de21b5d8ca6c081e7187b93edb807fcf95f6ead8b6dd",
+    "proof/VELDO-0364/checkpoint364-audit.json": "9ed9cfaf448cd9bfe43563dd66f3d77d23e358b7e4f787fda49c3634c65433bf",
+    "proof/VELDO-0364/checkpoint364-cleanup-outcome.diff": "9d6540c5c1d96adb8f03cb5b4cc15277ad39c380ca5614ef1708890fa678822d",
+    "proof/VELDO-0364/checkpoint364-cleanup-outcome.json": "113d1202ac2653d4b52fe1e1c132dbb1e876692bb975086e142f36e652f187ef",
+    "proof/VELDO-0364/checkpoint364-cleanup.diff": "b005544452dadc0906eb1770d1c0b581700b7a9390ec0039f453686e19fff6f1",
+    "proof/VELDO-0364/checkpoint364-cleanup.json": "49c8a2fa6249cb93ca7a158612aacb0610f8184c63b91e227334ee94ac1b260d",
+    "proof/VELDO-0364/checkpoint364-collect.diff": "96eb93943c4cf7fe00308fec015103d417e3c63ff83aa244b4e6b50435245fc6",
+    "proof/VELDO-0364/checkpoint364-collect.json": "c8f44154b589f5cfc7cf725abae018b394e70d531902ae3409b06006a5b70215",
+    "proof/VELDO-0364/checkpoint364-green-only.diff": "211f18e1a027f97fcfc67b10d8d29d14ed7282f7b586fa5227bee89f66377988",
+    "proof/VELDO-0364/checkpoint364-green-only.json": "fab137500f6ad148a734bc410d3e3fdf556489b7d9fa194c5dcab5dfabf57662",
+    "proof/VELDO-0364/checkpoint364-input-race.diff": "1446e8fa8b727daf0597e98fa30b96f3a4d4d4ea0fae82c4034f7f221d0f8ffc",
+    "proof/VELDO-0364/checkpoint364-input-race.json": "91631c0e6370a3a936296cbe201cb539e2df3df3c8b5d0d0f7524a2dcd2ba95c",
+    "proof/VELDO-0364/checkpoint364-invalid.diff": "609104fd88c1ac62f59584cf6d7d132ae8a7e8894e3875d376b3118cac826aed",
+    "proof/VELDO-0364/checkpoint364-invalid.json": "5e7ffc3f24299a6f9b312cdec1c5f1b69a52917c7ade762e2354a7b5cb3608f0",
+    "proof/VELDO-0364/checkpoint364-remember-race.diff": "f6e2015daa8da38488ad0abcb203e196d9112d0342aef6a65c7ebe5a3b162305",
+    "proof/VELDO-0364/checkpoint364-remember-race.json": "54f362362a6d59a28384535c8e62ca1e64ffe3d5f433e37a696bbfcea5f74a01",
+    "proof/VELDO-0364/checkpoint364-runtime-race.diff": "c705188b370d8c8e7cb6c8390b7d40f6f07e93c2ea9e7a71554ce03cde9bae31",
+    "proof/VELDO-0364/checkpoint364-runtime-race.json": "0b6e05b325329b852551dc07574bfb2727b8dccb96c9487e2bf8fab3d628e0f3",
+    "proof/VELDO-0364/checks.json": "c8198099f1e172465bf5612b5fa87db5f314059a4061edb770c2d6526f30244e",
+    "proof/VELDO-0364/closure-inputs.json": "04f786847bbee413363fd5bc39f2725497e914c5325158e1a5cc967de7e1302b",
+    "proof/VELDO-0364/cost-ranking.json": "1e33f52aadf95a4f4aae016950816619cf8116f59f046aec48d0e9e8c910271a",
+    "proof/VELDO-0364/native-single-case.json": "e7d1a54971d03f3caf5e0312d9b989608caeab67cd352636a35cce163671aef7",
+    "proof/VELDO-0364/personal_setup.txt": "f100f565a0ad704932983b75f8057134deba9b6b97c77a2d932e1ed30d96ed1c",
+    "proof/VELDO-0364/reuse_examples.json": "1d6f1525b4186e2006a5b889cff63c69015a6ca73b4750187268b3d442e4dd36",
+    "proof/VELDO-0364/reuse_examples.py": "518a49db87fb652d5f1127e1b4f16b7f7fc51f14f225e3e444793d789ac6f1a9",
+    "proof/VELDO-0364/single-case-trace.json": "30e27331e5184776d64bbc17d7001d1dbb62753a2e5ee72b3a058c8fe90fd0bd",
+    "proof/VELDO-0364/unit.json": "de95eacbd12b99b2cbd01a7b3ae84b9dd4ab914b7913653bb2589de35dd71543",
+    "proof/VELDO-0364/wallclock.txt": "7981efed528b6b2039bc64af68ce666c751175779a27b42cd449e830aabca4c6"
+  }
+}
