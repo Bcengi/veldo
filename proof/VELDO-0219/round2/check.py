@@ -83,7 +83,7 @@ def fixed_cap(gate):
         return gate.Workers(time.monotonic()+60).parallel==16 and gate.Workers(time.monotonic()+60,admission=object()).parallel==40
 
 def per_run(gate):
-    return gate.resource_claim([dict(cpu_seconds=8,elapsed=10,peak_anon_bytes=1),dict(cpu_seconds=12,elapsed=20,peak_anon_bytes=2)])==dict(cpu=.8,memory=2)
+    return gate.resource_claim([dict(cpu_seconds=8,elapsed=10,peak_anon_bytes=1),dict(cpu_seconds=12,elapsed=20,peak_anon_bytes=2)])==dict(cpu=.8,memory=2.3)
 
 def blocking_resource(gate):
     class Client:

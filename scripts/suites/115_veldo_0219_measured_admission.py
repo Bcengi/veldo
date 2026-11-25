@@ -66,7 +66,7 @@ def _v219_checks():
         record(key, case, 20, 8, 96 * 2**20)
         claim = gate.CaseClaims(store).claim(case, key)
         item = json.loads((store / (key + '.json')).read_text())
-        measured = [claim['cpu'] == .8, claim['memory'] == 96 * 2**20,
+        measured = [claim['cpu'] == .8, claim['memory'] == 1.15 * 96 * 2**20,
                     len(item['resource_runs']) == 6, gate.case_deadline(key, top / 'elapsed') == 120 and 'seconds' not in item]
         bad = record('2' * 32, dict(case, identity='failure'), 10, 8, 1024)
         before = (store / ('2' * 32 + '.json')).read_bytes()
@@ -458,8 +458,8 @@ def _v219_checks():
         empty_run = exercise(defaults, 20, 15, resources_manifest=inventory_manifest)
         historical = exercise(dict(list(full_jobs.items())[:2689]), 20, 15, resources_manifest=inventory_manifest)
         row('unmeasured-inventory', len(inventory) >= 2689 and previous_run[3] is None
-            and previous_run[0].peak >= 16 and previous_run[0].peak == 30
-            and empty_run[3] is None and empty_run[0].peak == 15 and historical[0].peak == 30
+            and previous_run[0].peak >= 16 and previous_run[0].peak == 26
+            and empty_run[3] is None and empty_run[0].peak == 15 and historical[0].peak == 26
             and all(j['claim']['source'] == 'previous_key' for j in full_jobs.values())
             and all(j['claim']['cpu'] == 1 and j['claim']['memory'] == 2**30 for j in defaults.values()))
 
@@ -496,7 +496,7 @@ def _v219_checks():
         # enforces its cap, validates verdicts and writes the scratch store.
         stage_cases = [dict(case, identity='case%d' % n, name='case%d' % n) for n in range(12)]
         stage_files = {'scripts/check_gate_mutations.py': (0o644, b'fixture')}
-        def stage_run(ceiling, fail=False, stable=True, runtime=True):
+        def stage_run(ceiling, fail=False, stable=True, runtime=True, wrong_outcome=None):
             nonlocal invocation
             invocation += 1
             times = top / ('stage-store-%d' % invocation)
@@ -562,6 +562,18 @@ def _v219_checks():
                 if Path(path).name == 'mutation_ownership.py':
                     return types.SimpleNamespace(cleanup=lambda *a: {}, remove_tree=ownership.remove_tree)
                 return real_load(path)
+            real_run = gate.Workers.run
+            def run_with_wrong_outcome(workers, jobs, directory, root, on_result=None):
+                def completed(name, result):
+                    latest = workers.outcomes[-1]
+                    original_name = latest['name']
+                    if latest['mode'] == wrong_outcome:
+                        latest['name'] = 'different-worker'
+                    try:
+                        return on_result(name, result)
+                    finally:
+                        latest['name'] = original_name
+                return real_run(workers, jobs, directory, root, on_result=completed)
             patches = dict(inventory=lambda *a: stage_cases,read_inputs=lambda *a: stage_files,
                 git=lambda *a: 'head',snapshot=lambda *a: None,inputs_unchanged=lambda *a: stable,
                 load=loader,CaseClaims=lambda: claim_store,
@@ -575,6 +587,7 @@ def _v219_checks():
                 for name, value in patches.items():
                     stack.enter_context(patch.object(gate,name,value))
                 stack.enter_context(patch.object(gate.SuiteResources,'from_root',lambda *a:gate.SuiteResources(manifest)))
+                stack.enter_context(patch.object(gate.Workers,'run',run_with_wrong_outcome))
                 stack.enter_context(patch.object(gate.Workers,'launcher_fds',lambda self:()))
                 stack.enter_context(patch.object(gate.subprocess,'Popen',Child))
                 stack.enter_context(patch.object(gate.os,'killpg',lambda *a:None))
@@ -597,6 +610,18 @@ def _v219_checks():
             receipt_checks.append(result['estimate_seconds']==wanted and result['guaranteed_workers']==m)
         receipt_checks.append(stage_failed['error']=='control_failed' and not list(failed_store.glob('*.json')))
         row('stage-receipts-and-recording', all(receipt_checks))
+
+        for mode in ('baseline', 'noop', 'mutant'):
+            mismatched, _ = stage_run(8, wrong_outcome=mode)
+            outcomes = [o for o in mismatched['worker_outcomes'] if o['mode'] == mode]
+            row('learning/' + mode + '-outcome-name', mismatched['status'] == 'failed'
+                and mismatched.get('error') == 'driver_error' and bool(outcomes)
+                and all(o.get('resource_valid') is not True for o in outcomes))
+
+        margin_runs = [dict(cpu_seconds=8, elapsed=10, peak_anon_bytes=1000),
+                       dict(cpu_seconds=12, elapsed=20, peak_anon_bytes=500, peak_memory_bytes=2000)]
+        row('learning/memory-margin', gate.resource_claim(margin_runs) == dict(cpu=.8, memory=2300)
+            and gate.resource_claim(margin_runs[:1]) == dict(cpu=.8, memory=1150))
 
         mixed, mixed_store = stage_run(8, 'mixed')
         resource_files = list((mixed_store / 'resources').glob('*.json'))
@@ -634,7 +659,7 @@ def _v219_checks():
         sample('5'*32, ['mutant'], cpu=25, memory=2**31)
         sample('6'*32, ['baseline','noop','mutant'], cpu=2, memory=2048)
         maximum = gate.CaseClaims(fresh_store).claim(case,'6'*32)
-        row('learning/conservative-max', maximum['cpu'] == 2.5 and maximum['memory'] == 2**31
+        row('learning/conservative-max', maximum['cpu'] == 2.5 and maximum['memory'] == 1.15 * 2**31
             and maximum['keys'] == [key,'5'*32,'6'*32])
         row('learning/unmeasured-default', partial['cpu'] == 1 and partial['memory'] == 2**30
             and gate.CaseClaims(fresh_store).claim(dict(case,identity='outlier'),key) == empty)
@@ -673,7 +698,7 @@ def _v219_checks():
         row('unit-lifecycle', regressions.unit_lifecycle(ownership))
         row('lifecycle-channel-serialized', regressions.lifecycle_threads(ownership))
         row('final-memory-bound', gate.resource_claim([dict(cpu_seconds=1, elapsed=2,
-            peak_anon_bytes=1024, peak_memory_bytes=32*2**20)])['memory'] == 32*2**20)
+            peak_anon_bytes=1024, peak_memory_bytes=32*2**20)])['memory'] == 1.15 * 32*2**20)
 
         round3 = load(ROOT / 'proof/VELDO-0219/round3/check.py')
         row('cli-graph-without-channel', round3.cli_channel(gate, False))
