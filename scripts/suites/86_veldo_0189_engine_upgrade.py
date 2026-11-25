@@ -1573,8 +1573,8 @@ def _v189_suite():
 
                 def without_signer():
                     """The fresh host as a setup from before the adoption signer left it after upgrading it to the current
-                    engine: no adoption key, the owner's line alone in both signers files, its service running on that.
-                    Returns the number of step-log lines it holds."""
+                engine: no adoption key, the owner's line alone in both signers files, its service running on that.
+                Returns the number of step-log lines it holds."""
                     fresh.manager.stop_all()
                     restore(saved_fresh)
                     for path in (ak_key, Path(str(ak_key) + '.pub')):
