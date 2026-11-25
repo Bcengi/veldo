@@ -40,7 +40,8 @@ acceptance_criteria:
     text: >
       An explicit native qualification requires delegated cgroup-v2 accounting and cleanup, Landlock
       allow and deny behavior, the installed namespace helper self-test, ptrace and pidfd operation,
-      and concrete toolchain identities. Every required probe records success or failure; no missing
+      and concrete toolchain identities from worker-visible tools, including Node and npm.
+      Every required probe records success or failure; no missing
       probe or failed probe can qualify. A selected diagnostic batch starts only after all probes pass.
     falsified_by: Treating a failed or missing probe as qualified fails host-relative/qualification-fail-closed.
   - id: AC3

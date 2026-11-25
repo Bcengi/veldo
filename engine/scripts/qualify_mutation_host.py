@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -137,18 +138,25 @@ def ptrace():
 def toolchain():
     reuse = load('mutation_reuse')
     paths = reuse.required_runtime(os.environ)
-    tools = {}
-    for name in ('git', 'sh', 'strace', 'busctl', 'systemctl', 'node', 'ssh-keygen'):
-        found = shutil.which(name)
+    tools, missing = {}, []
+    # Match the UI suites' account nvm lookup plus the fresh worker's fixed PATH.
+    # The remote supervisor's private tools on its PATH are not worker grants.
+    boundary = load('agent_sandbox')
+    nodes = sorted((boundary.account_home() / '.nvm/versions/node').glob('v*/bin'),
+                   key=lambda p: [int(n) for n in re.findall(r'\d+', p.parent.name)])
+    worker_path = os.pathsep.join([*(str(p) for p in nodes[-1:]), '/usr/bin', '/bin'])
+    for name in ('git', 'sh', 'strace', 'busctl', 'systemctl', 'node', 'npm', 'ssh-keygen'):
+        found = shutil.which(name, path=worker_path)
         if found is None:
-            raise RuntimeError('required tool absent: ' + name)
+            missing.append(name)
+            continue
         path = Path(found).resolve()
         paths.append(path)
         tools[name] = dict(path=str(path), sha256=hashlib.sha256(path.read_bytes()).hexdigest())
     paths.append(load('agent_sandbox').NAMESPACE_HELPER)
     identity = reuse.runtime_identity(sorted(set(paths)), os.environ)
     identity['trees'] = {p: reuse.R.digest(tree) for p, tree in identity['trees'].items()}
-    return dict(tools=tools, runtime=identity)
+    return dict(tools=tools, runtime=identity, missing=missing, worker_path=worker_path)
 
 
 def qualify(scope):
@@ -159,7 +167,10 @@ def qualify(scope):
                   ptrace=ptrace, pidfds=pidfds, toolchain=toolchain)
     for name in REQUIRED:
         try:
-            checks[name] = dict(passed=True, evidence=probes[name]())
+            evidence = probes[name]()
+            checks[name] = dict(passed=not (name == 'toolchain' and evidence['missing']), evidence=evidence)
+            if not checks[name]['passed']:
+                checks[name]['error'] = 'required tools absent from worker runtime: ' + ', '.join(evidence['missing'])
         except Exception as error:
             checks[name] = dict(passed=False, error=str(error))
         print('qualification %s: %s' % (name, 'passed' if checks[name]['passed'] else checks[name]['error']), flush=True)
