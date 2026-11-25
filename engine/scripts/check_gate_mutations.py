@@ -1163,6 +1163,10 @@ class Workers:
                     if job.get('declared_case'):
                         self.owned_snapshots[name] = directory / 'cases' / str(self.invocations)
                         job.update(self.case_reuse.prepare(job['case'], self.owned_snapshots[name]))
+                    if getattr(self, 'no_network', False):
+                        if in_leg(self.leg, job['case']):
+                            raise Refused('driver_error', 'no-network shard cannot launch an unconfined worker')
+                        job['no_network'] = True
                     jobpath = home / 'job.json'
                     jobpath.write_bytes(canonical(job))
                     out, err = (open(directory / (str(self.invocations) + '-' + f), 'w+b')
@@ -1366,7 +1370,7 @@ def snapshot(root, expected_common, destination, files, head):
 
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
               drivers=None, parallel=None, diff_dir=None, force_fresh=False, leg=None, measure=False,
-              admission=None, admit=False):
+              admission=None, admit=False, identities=None, no_network=False):
     """expected_common is the trusted Git common directory of root, named by the caller that owns
     root: the authority's own for the gate, a fixture's own for the fixture's creator. leg is the
     authority's unconfined leg (gate_legs.mutation_leg), None for every case confined. Only
@@ -1374,6 +1378,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     started = time.monotonic()
     workers = Workers(None, parallel=parallel, admission=admission)
     workers.leg = leg
+    workers.no_network = no_network
     receipt = {'schema': 'veldo.mutation-stage/v1', 'results': [],
                'registered': 0, 'executed': 0, 'reused': 0,
                'rejected': 0, 'drivers': {}, 'surviving_workers': 0, 'invalid_results': []}
@@ -1382,6 +1387,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     audits, audit_keys = {}, {}
     collect_all = os.environ.get('VELDO_GATE_COLLECT_ALL') == '1'
     receipt['collect_all'] = collect_all
+    receipt['no_network'] = no_network
     audit_module = AUDIT or _load_audit(ROOT / 'scripts/mutation_reuse.py')
     receipt['audit'] = dict(population=[], entries=[], audited=0, matched=0, mismatched=0,
                             worker_seconds=0.0, suites={})
@@ -1393,10 +1399,14 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         full_inventory = inventory(root, expected_common)
         cases = [c for c in full_inventory if (not findings or c['finding'] in findings)
                  and (not drivers or c['driver'] in drivers)
-                 and (not names or c['name'] in names)]
+                 and (not names or c['name'] in names)
+                 and (identities is None or c['identity'] in identities)]
+        if identities is not None and (len(identities) != len(set(identities))
+                or set(identities) != {c['identity'] for c in cases}):
+            raise Refused('incomplete_inventory', 'missing, duplicate or foreign shard identity')
         if not cases or (names and set(names) - {c['name'] for c in cases}):
             raise Refused('incomplete_inventory', 'empty or unknown subset')
-        receipt['scope'] = 'selected' if findings or names or drivers else 'full'
+        receipt['scope'] = 'selected' if findings or names or drivers or identities is not None else 'full'
         receipt['registered'] = len(cases)
         budget = budget_for(len(full_inventory), workers.parallel)
         receipt['estimate_seconds'] = budget
@@ -1896,7 +1906,13 @@ def main():
         return 1
     # The gate names the authority checkout's own common directory; a candidate root is a linked
     # worktree of it, and its marker is checked against that directory before any Git runs.
-    receipt = run_stage(args.root, common_directory(ROOT), capacities=resource_capacities(args.resource_capacity),
+    if os.environ.get('VELDO_GATE_DISTRIBUTED') == '1':
+        if args.finding or args.names or args.resource_capacity or args.worker_log_dir:
+            parser.error('distributed full-stage execution cannot accept a selected scope or overrides')
+        receipt = load(ROOT / 'scripts/mutation_shards.py').coordinate(
+            sys.modules[__name__], args.root, common_directory(ROOT), leg)
+    else:
+        receipt = run_stage(args.root, common_directory(ROOT), capacities=resource_capacities(args.resource_capacity),
                         findings=args.finding, names=args.names,
                         admit=load(ROOT / 'scripts/gate_schedule.py').CHANNEL in os.environ,
                         log_dir=args.worker_log_dir, leg=leg, measure=True)

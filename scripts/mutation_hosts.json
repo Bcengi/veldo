@@ -1,0 +1,16 @@
+{
+  "schema": "veldo.mutation-hosts/v1",
+  "hosts": [{"name": "pc2", "ssh": "dmitry-pc2"}],
+  "remote_suites": [
+    "47_veldo_0107_ipc.py",
+    "49_veldo_0109_unavailable.py",
+    "54_veldo_0118_grammar.py",
+    "55_veldo_0119_agreement.py",
+    "56_veldo_0027_signing.py",
+    "57_veldo_0120_policygrammar.py",
+    "58_veldo_0031_claims.py",
+    "58_veldo_0035_snapshots.py",
+    "58_veldo_0036_reservations.py"
+  ],
+  "native_requirements": "Linux qualification including worker-visible Python, Node/npm, git, shell, ptrace, systemd and ssh-keygen. This initial suite set is the phase-1 bounded selection's suites; other suites stay local until their native requirements are declared and qualified. Unconfined cases always stay local."
+}

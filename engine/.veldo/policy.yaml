@@ -7,6 +7,14 @@ risk_tiers:
   critical: {gate: expanded, reviews: 2, min_independence: L4, human_approval: true,
              prepare_and_execute: true}
 protected_paths:
+  # VELDO-0366: distributed execution and receipt authority.
+  - {path: "scripts/qualify_mutation_host.py", floor: high}
+  - {path: "engine/scripts/qualify_mutation_host.py", floor: high}
+  - {path: "scripts/mutation_shards.py", floor: high}
+  - {path: "engine/scripts/mutation_shards.py", floor: high}
+  - {path: "scripts/mutation_transport.py", floor: high}
+  - {path: "engine/scripts/mutation_transport.py", floor: high}
+  - {path: "scripts/mutation_hosts.json", floor: high}
   # Adjust for this repository. Anything touching these floors the risk tier.
   - {path: "auth/**",       floor: critical}
   - {path: "billing/**",    floor: high}

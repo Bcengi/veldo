@@ -2554,6 +2554,15 @@
    ],
    "regions": "VELDO-0365 host-relative admission and explicit qualification refusal; fixture capacities only.",
    "requires_note": "Only ROOT and expect. No native probe runs inside this suite."
+  },
+  {
+   "name": "163_veldo_0366_shards",
+   "file": "163_veldo_0366_shards.py",
+   "requires": [
+    "163_veldo_0366_shards"
+   ],
+   "regions": "VELDO-0366 exact coverage, authenticated receipts, directory-node disconnect and idle-child cleanup.",
+   "requires_note": "ROOT and expect only. Fake nodes and small committed directory fixtures; no native gate, manager, load or network."
   }
  ],
  "resource_capacities": {

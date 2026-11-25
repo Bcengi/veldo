@@ -1,0 +1,13 @@
+[
+  ".veldo/policy.yaml",
+  "engine/.veldo/policy.yaml",
+  "scripts/check_gate_mutations.py",
+  "engine/scripts/check_gate_mutations.py",
+  "scripts/reuse_worker.py",
+  "engine/scripts/reuse_worker.py",
+  "scripts/mutation_shards.py",
+  "engine/scripts/mutation_shards.py",
+  "scripts/mutation_transport.py",
+  "engine/scripts/mutation_transport.py",
+  "scripts/mutation_hosts.json"
+]

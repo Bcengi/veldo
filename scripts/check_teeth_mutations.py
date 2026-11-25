@@ -12025,6 +12025,76 @@ def cases():
         ['declarations/review-record-bound'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0366: protected distributed authority guards, all fake-node falsifiers.
+    for name, module, old, new, row in [('identity-set',
+         'mutation_shards.py',
+         'if len(actual) != len(set(actual)) or collections.Counter(actual) != collections.Counter(list(expected)):',
+         'if False:',
+         'identity-multiset'),
+        ('authentication',
+         'mutation_shards.py',
+         'or not hmac.compare_digest(',
+         'or False and not hmac.compare_digest(',
+         'forged-receipt'),
+        ('qualification-any',
+         'mutation_shards.py',
+         "not all(checks[n].get('passed') is True for n in required)",
+         "not any(checks[n].get('passed') is True for n in required)",
+         'unqualified-host'),
+        ('input-unbound',
+         'mutation_shards.py',
+         "or stage.get('input_digest') != task['request']['input_digest']",
+         'or False',
+         'input-mismatch'),
+        ('cleanup-unbound',
+         'mutation_shards.py',
+         "body.get('cleaned') is not True or stage.get('status') != 'passed'",
+         "stage.get('status') != 'passed'",
+         'cleanup-failed'),
+        ('verdict-unchecked',
+         'mutation_shards.py',
+         "        gate.validate_result(record, expected[record['case']['identity']])",
+         '        pass  # defective receipt validation',
+         'survivor'),
+        ('split-controls',
+         'mutation_shards.py',
+         'groups[gate.control_group(case)].append(case)',
+         "groups[case['identity']].append(case)",
+         'controls-together'),
+        ('native-assumed',
+         'mutation_shards.py',
+         "if all(not gate.in_leg(leg, c) and c['suite'] in remote_suites for c in members):",
+         'if all(not gate.in_leg(leg, c) for c in members):',
+         'native-declaration'),
+        ('duplicate-shard',
+         'mutation_shards.py',
+         'if name not in tasks or name in envelopes:',
+         'if name not in tasks:',
+         'coordinator-duplicate'),
+        ('network-unattested',
+         'mutation_shards.py',
+         "if task['host'] != 'local' and stage.get('no_network') is not True:",
+         'if False:',
+         'network-boundary'),
+        ('network-socket-allowed',
+         'mutation_transport.py',
+         'for syscall in (41, 53):',
+         'for syscall in (53,):',
+         'no-network-filter')]:
+        add(366, "shards366-" + name, "163_veldo_0366_shards.py", module,
+            old, new, ["shards/" + row])
+        result[-1]["dir"] = "scripts"
+
+    add(366, 'shards366-worker-network-omitted', '163_veldo_0366_shards.py', 'reuse_worker.py',
+        '        network.deny_network(boundary)', '        pass  # defective remote confinement',
+        ['shards/worker-network-before-code'])
+    result[-1]['dir'] = 'scripts'
+
+    add(366, 'shards366-runtime-race-ignored', '163_veldo_0366_shards.py', 'mutation_shards.py',
+        "return digest(qualified['checks']['toolchain']['evidence']) == digest(evidence)",
+        'return True', ['shards/runtime-race'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0365: reservation elasticity never changes individual demand validation.
     for name, module, old, new, row in [
         ('absolute-floor', 'gate_schedule.py',

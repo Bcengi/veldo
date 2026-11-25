@@ -58,6 +58,7 @@ def main():
     job = json.loads(jobpath.read_text())
     boundary = load(authority / 'scripts/agent_sandbox.py')
     sandbox = load(authority / 'scripts/mutation_sandbox.py')
+    network = load(authority / 'scripts/mutation_transport.py') if job.get('no_network') is True else None
     # The tree's marker stays too: a coordinator inside a tree the agent launcher made hands it on,
     # and a fresh worker's tree nests in that one (VELDO-0210 AC6).
     boundary.close_descriptors([], keep=(*keep, *boundary.launcher_fds()))
@@ -80,6 +81,8 @@ def main():
     os.environ.pop('VELDO_MUTATION_LIFECYCLE_FD', None)
     ownership.Tracker(jobpath.parent, ledger, int(lifecycle) if lifecycle is not None else None).install()
     if mode == 'unconfined':
+        if network is not None:
+            raise ValueError('no-network worker cannot run unconfined')
         # The mutation stage's unconfined leg (VELDO-0208, owner decision Telegram 32403-32407): the
         # coordinator starts a case of a suite the authority's list names in this mode, and only
         # such a case. It runs as that suite does in the unit stage's unconfined leg, without the
@@ -96,6 +99,8 @@ def main():
         sandbox.confine_in_tree(authority, root, Path(os.environ['TMPDIR']), keep=keep, boundary=boundary)
     else:
         sandbox.confine(authority, root, Path(os.environ['TMPDIR']), job.get('runtime_paths'), keep=keep)
+    if network is not None:
+        network.deny_network(boundary)
     observe(gate, owner, job, root)
 
 
