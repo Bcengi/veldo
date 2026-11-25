@@ -152,9 +152,11 @@ class Ledger:
                 or type(capacity['manager']) is not int:
             raise Refused('invalid_resource_requirement: capacity')
         self.capacity = capacity
-        self.floor = floor or {'cpu': 0, 'memory': 0}
-        if any(self.floor[r] > capacity[r] for r in self.floor):
-            raise Refused('invalid_resource_requirement: mutation floor exceeds capacity')
+        requested = floor if floor is not None else {'cpu': 0, 'memory': 0}
+        if set(requested) != {'cpu', 'memory'} or not all(number(v) for v in requested.values()):
+            raise Refused('invalid_resource_requirement: mutation reservation')
+        # A reservation is aggregate policy, never an individual worker demand.
+        self.floor = {r: min(v, capacity[r]) for r, v in requested.items()}
         self.held, self.events = {}, []
         self.refusals = set()
         self.peak = dict.fromkeys(capacity, 0)
@@ -345,7 +347,11 @@ def node_claim(node, measured, capacity):
         demand = dict(cpu=capacity['cpu'], memory=capacity['memory'])
         source = 'no authority estimate; reserving full gate capacity'
     if 'coordinator' in node:
-        demand = {r: max(demand[r], node['coordinator'][r]) for r in ('cpu', 'memory')}
+        # Only the pre-handoff aggregate is elastic. Check actual overhead first;
+        # individual workers still pass Ledger.demand and the root-plus-child check.
+        if any(node['coordinator'][r] >= capacity[r] for r in ('cpu', 'memory')):
+            raise Refused('invalid_resource_requirement: coordinator consumes capacity')
+        demand = {r: max(min(demand[r], capacity[r]), node['coordinator'][r]) for r in ('cpu', 'memory')}
     return dict(demand, manager=node['manager'], ports=node['ports'],
                 host_lock=node.get('host_lock', 'none')), source
 
@@ -607,7 +613,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
             overhead = dict(node['coordinator'])
             if measured:
                 overhead.update({r: claim[r] for r in ('cpu', 'memory')})
-            if any(overhead[r] >= graph['mutation_floor'][r] for r in ('cpu', 'memory')):
+            if any(overhead[r] >= ledger.floor[r] for r in ('cpu', 'memory')):
                 raise Refused('invalid_resource_requirement: coordinator consumes the mutation floor')
             coordinator_claims[name] = overhead
     if 'mutation' not in required or depends.get('mutation'):
