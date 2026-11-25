@@ -36,6 +36,20 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
         _v27_shutil.copyfile(ROOT / '.veldo' / (_v27_module + '.py'), _v27_modules / (_v27_module + '.py'))
     _v27_shutil.copyfile(ROOT / ".veldo" / "control_signer.py", _v27_modules / 'control_signer.py')
     _v27_shutil.copyfile(ROOT / ".veldo" / "control_keys.py", _v27_modules / 'control_keys.py')
+    # Only this disposable signer gets the fixture clock. Keep the real child,
+    # authentication, signature and store paths; production has no test switch.
+    _v27_clock_file = _v27_modules / 'fixture-clock.json'
+    _v27_clock_file.write_text('null')
+    _v27_signer_path = _v27_modules / 'control_signer.py'
+    _v27_signer_source = _v27_signer_path.read_text()
+    _v27_clock_hook = """
+from types import SimpleNamespace
+fixture_at = json.loads(Path(__file__).with_name('fixture-clock.json').read_text())
+if fixture_at is not None:
+    time = SimpleNamespace(time=lambda: fixture_at)
+"""
+    _v27_signer_path.write_text(_v27_signer_source.replace(
+        "if __name__ == '__main__':", _v27_clock_hook + "\nif __name__ == '__main__':"))
     _v27_signer = _v27_load('v27_signer', _v27_modules / 'control_signer.py')
     _v27_keys, _v27_store = _v27_signer.K, _v27_signer.S
     _v27_mem, _v27_ac = _v27_keys.CM, _v27_keys.AC
@@ -177,9 +191,13 @@ with _v27_temp.TemporaryDirectory(prefix='v27-') as _v27_directory:
     _v27_observer = _v27_threading.Thread(target=_v27_observe_processes, daemon=True)
     _v27_observer.start()
 
-    def _v27_call(request, authenticated='telegram_chat'):
+    def _v27_call(request, authenticated='telegram_chat', at=None):
         kid, auth = _v27_channels.get(authenticated, (None, None))
-        result = _v27_signer.call(_v27_config, request, kid, _v27_keydir / auth if auth else None)
+        _v27_clock_file.write_text(_v27_json.dumps(at))
+        try:
+            result = _v27_signer.call(_v27_config, request, kid, _v27_keydir / auth if auth else None)
+        finally:
+            _v27_clock_file.write_text('null')
         _v27_results.append(result)
         return result
 
@@ -451,19 +469,40 @@ conn.close()
 sys.path.insert(0,sys.argv[1]); import control_signer as C
 config=json.load(open(sys.argv[2])); packet=json.loads(sys.argv[3])
 conn=C.S.open_store(config['store']); C.K.attach(C.S)
+if packet.get('at') is not None:
+    from types import SimpleNamespace
+    clock=[packet['at']]
+    C.K.time=SimpleNamespace(time=lambda: clock[0])
+if packet.get('after_lock') is not None:
+    class LockedConnection:
+        def execute(self, sql, *args):
+            if sql == 'BEGIN IMMEDIATE':
+                print('locking',flush=True)
+            result=conn.execute(sql,*args)
+            if sql == 'BEGIN IMMEDIATE':
+                clock[0]=packet['after_lock']
+            return result
+        def __getattr__(self, name):
+            return getattr(conn,name)
+    admitted_conn=LockedConnection()
+else:
+    admitted_conn=conn
 js=('owner',lambda m: C.sign_bytes(__import__('pathlib').Path(config['key_directory'])/'owner',m,C.AC.SIGNATURE_NAMESPACE))
 print('ready',flush=True); sys.stdin.readline()
-r=C.K.admit(C.S,conn,packet['envelope'],packet['command'],packet['signature'],packet['ids'],js,config['allowed_signers'])
+r=C.K.admit(C.S,admitted_conn,packet['envelope'],packet['command'],packet['signature'],packet['ids'],js,config['allowed_signers'])
 print(json.dumps(r),flush=True)
 if packet.get('kill_boundary'): sys.stdin.readline()
 C.K.publish(C.S,conn,config['allowed_signers']); conn.close()
 """
 
-    def _v27_transition_child(operation, params, kill_boundary=False):
+    def _v27_transition_child(operation, params, kill_boundary=False, at=None, after_lock=None):
         command = _v27_command(operation, params)
         envelope = _v27_envelope(command)
+        if at is not None:
+            envelope['expires_at'] = at + 600
         packet = {'command': command, 'envelope': envelope, 'ids': _v27_ids,
-                  'signature': _v27_sign('owner', _v27_ac.canonical_envelope_bytes(envelope)), 'kill_boundary': kill_boundary}
+                  'signature': _v27_sign('owner', _v27_ac.canonical_envelope_bytes(envelope)),
+                  'kill_boundary': kill_boundary, 'at': at, 'after_lock': after_lock}
         child = _v27_sp.Popen([_v27_sys.executable, '-B', '-c', _v27_transition_code,
                               str(_v27_modules), str(_v27_config), _v27_json.dumps(packet)],
                              stdin=_v27_sp.PIPE, stdout=_v27_sp.PIPE, stderr=_v27_sp.PIPE, text=True)
@@ -489,11 +528,15 @@ C.K.publish(C.S,conn,config['allowed_signers']); conn.close()
                  and not _v27_keys.verify(_v27_race_state, _v27_race_before, fresh=True))
     _v27_channels['evidence'] = ('race-next', 'ev-auth')
     _v27_evidence['edge_key_id'] = 'race-next'
-    _v27_race_after = _v27_call(_v27_evidence, 'evidence')
+    # Put signing and rotation in the SAME logical second, independently of
+    # process startup, CPU load, timezone or filesystem timestamps. Truncation
+    # must invalidate this historical receipt; crossing a real second hid it.
+    _v27_crash_epoch = int(_v27_keys.entries(_v27_race_state)['race-next']['effective_at']) + 1
+    _v27_race_after = _v27_call(_v27_evidence, 'evidence', at=_v27_crash_epoch + .25)
     _v27_expect('signing/race-new-key', _v27_race_after['accepted'] and _v27_keys.verify(_v27_state(), _v27_race_after))
     _v27_crash_rotation = _v27_transition_child('rotate_signing_key', {
         'key_id': 'kill-rotated', 'channel': 'evidence', 'public_key': _v27_public['kill-rotated'],
-        'connection_public_key': _v27_public['ev-auth']}, kill_boundary=True)
+        'connection_public_key': _v27_public['ev-auth']}, kill_boundary=True, at=_v27_crash_epoch + .75)
     _v27_crash_rotation.stdin.write('go\n'); _v27_crash_rotation.stdin.flush()
     _v27_rotation_commit = _v27_json.loads(_v27_crash_rotation.stdout.readline())
     _v27_rotation_snapshot = _v27_keys.entries(_v27_state())
@@ -501,17 +544,20 @@ C.K.publish(C.S,conn,config['allowed_signers']); conn.close()
     _v27_channels['evidence'] = ('kill-rotated', 'ev-auth')
     _v27_evidence['edge_key_id'] = 'kill-rotated'
     _v27_conn.close(); _v27_conn = _v27_store.open_store(str(_v27_db))
-    _v27_unpublished = _v27_call(_v27_evidence, 'evidence')
+    _v27_unpublished = _v27_call(_v27_evidence, 'evidence', at=_v27_crash_epoch + 1.25)
     _v27_keys.publish(_v27_store, _v27_conn, _v27_projection)
-    _v27_published = _v27_call(_v27_evidence, 'evidence')
+    _v27_published = _v27_call(_v27_evidence, 'evidence', at=_v27_crash_epoch + 1.25)
     _v27_expect('signing/kill-after-rotation', _v27_rotation_commit['committed'] and
                  _v27_crash_rotation.returncode == -_v27_signal.SIGKILL and
                  _v27_keys.entries(_v27_state()) == _v27_rotation_snapshot and
                  _v27_unpublished.get('refusal') == 'projection-mismatch' and _v27_published['accepted'] and
-                 _v27_keys.verify(_v27_state(), _v27_race_after) and not _v27_keys.verify(_v27_state(), _v27_race_after, fresh=True))
+                 _v27_keys.verify(_v27_state(), _v27_race_after) and
+                 not _v27_keys.verify(_v27_state(), _v27_race_after, fresh=True, now=_v27_crash_epoch + 1.25))
     _v27_race_after = _v27_published
-    for _v27_operation in ('retire_signing_key', 'revoke_signing_key'):
-        _v27_crasher = _v27_transition_child(_v27_operation, {'key_id': 'kill-rotated'}, kill_boundary=True)
+    for _v27_step, _v27_operation in enumerate(('retire_signing_key', 'revoke_signing_key'), 1):
+        _v27_crash_at = _v27_crash_epoch + _v27_step + .75
+        _v27_crasher = _v27_transition_child(_v27_operation, {'key_id': 'kill-rotated'},
+                                           kill_boundary=True, at=_v27_crash_at)
         _v27_crasher.stdin.write('go\n'); _v27_crasher.stdin.flush()
         _v27_committed = _v27_json.loads(_v27_crasher.stdout.readline())
         _v27_at_commit = _v27_keys.entries(_v27_state())
@@ -520,26 +566,26 @@ C.K.publish(C.S,conn,config['allowed_signers']); conn.close()
         _v27_conn.close()
         _v27_conn = _v27_store.open_store(str(_v27_db))
         _v27_keys.publish(_v27_store, _v27_conn, _v27_projection)
-        _v27_after_kill = _v27_call(_v27_evidence, 'evidence')
+        _v27_after_kill = _v27_call(_v27_evidence, 'evidence', at=_v27_crash_at)
         _v27_expect('signing/kill-after-' + _v27_operation,
                      _v27_committed['committed'] and _v27_crasher.returncode == -_v27_signal.SIGKILL and
                      _v27_keys.entries(_v27_state()) == _v27_at_commit and
                      _v27_after_kill.get('refusal') == 'revoked-key' and
                      _v27_keys.verify(_v27_state(), _v27_race_after) and
-                     not _v27_keys.verify(_v27_state(), _v27_race_after, fresh=True))
+                     not _v27_keys.verify(_v27_state(), _v27_race_after, fresh=True, now=_v27_crash_at))
 
     _v27_clock_child = _v27_transition_child('register_signing_key', {
         'key_id': 'clock-key', 'channel': 'evidence', 'public_key': _v27_public['clock-key'],
-        'connection_public_key': _v27_public['ev-auth']})
+        'connection_public_key': _v27_public['ev-auth']},
+        at=_v27_crash_epoch + 3.25, after_lock=_v27_crash_epoch + 4.75)
     _v27_conn.execute('BEGIN IMMEDIATE')
     _v27_clock_child.stdin.write('go\n'); _v27_clock_child.stdin.flush()
-    _v27_time.sleep(0.15)
-    _v27_lock_release = _v27_time.time()
+    assert _v27_clock_child.stdout.readline().strip() == 'locking'
+    _v27_lock_release = _v27_crash_epoch + 4.75
     _v27_conn.execute('COMMIT')
     _v27_clock_child.communicate(timeout=10)
-    # The clock is read AFTER the lock (effective_at >= the release) and at full precision: a truncated
-    # clock passes the ordering check whenever a whole second ticks over between the release and the
-    # read, so the row also requires a fractional reading, which a truncated clock never gives.
+    # The child announces the lock attempt; only after acquisition does its
+    # clock advance. Preflight-time reuse and truncation both fail deterministically.
     _v27_effective = _v27_keys.entries(_v27_state())['clock-key']['effective_at']
     _v27_expect('signing/transition-clock', _v27_clock_child.returncode == 0 and
                  _v27_effective >= _v27_lock_release and _v27_effective != int(_v27_effective))

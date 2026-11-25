@@ -15,7 +15,7 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
-PROCESS_HANG_SECONDS = 3600
+WAIT_HANG_SECONDS = 600
 
 
 def load(name):
@@ -34,6 +34,10 @@ def one(mode):
     def profile(frame, event, arg):
         if event != 'call' or frame.f_code.co_name != '_v27_expect':
             return
+        if frame.f_locals.get('row') == 'signing/transition-clock':
+            ns = frame.f_globals
+            operands.update(lock_release=ns['_v27_lock_release'],
+                            clock_effective=ns['_v27_effective'])
         if frame.f_locals.get('row') != 'signing/kill-after-rotation':
             return
         ns = frame.f_globals
@@ -47,7 +51,8 @@ def one(mode):
             snapshot_preserved=keys.entries(state) == ns['_v27_rotation_snapshot'],
             unpublished_refusal=ns['_v27_unpublished'].get('refusal'),
             published_accepted=ns['_v27_published']['accepted'],
-            historical_valid=keys.verify(state, receipt), fresh_valid=keys.verify(state, receipt, fresh=True))
+            historical_valid=keys.verify(state, receipt), fresh_valid=keys.verify(state, receipt, fresh=True,
+                now=ns['_v27_crash_epoch'] + 1.25 if '_v27_crash_epoch' in ns else None))
 
     with tempfile.TemporaryDirectory(prefix='signing365-') as directory:
         material = observer.materialize(case, mode, directory)
@@ -74,7 +79,7 @@ def main():
         for mode in ('baseline', 'noop', 'mutant'):
             process = subprocess.run([sys.executable, '-I', '-S', str(Path(__file__).resolve()),
                                       '--mode', mode], capture_output=True, text=True,
-                                     timeout=PROCESS_HANG_SECONDS, check=True)
+                                     timeout=WAIT_HANG_SECONDS, check=True)
             run = dict(repeat=repeat, **json.loads(process.stdout))
             runs.append(run)
             print(json.dumps(dict(repeat=repeat, mode=mode, operands=run['operands'],
