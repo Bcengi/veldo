@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-workers-scope
+@@ -417,7 +417,7 @@
+     try:
+         return item['meter'].finish()
+     finally:
+-        if name == 'mutation' and scope:
++        if name == 'mutation':
+             group = Path('/sys/fs/cgroup') / scope.lstrip('/')
+             for path in group.glob('worker-%d-*' % item['proc'].pid):
+                 empty_group(path)

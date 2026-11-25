@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-zombie-nonblocking
+@@ -890,7 +890,7 @@
+     """Collect zombies without signalling or waiting for live sibling descendants."""
+     for pid in child_pids() - set(excluded):
+         try:
+-            os.waitpid(pid, os.WNOHANG)
++            os.waitpid(pid, 0)
+         except ChildProcessError:
+             pass
+ 

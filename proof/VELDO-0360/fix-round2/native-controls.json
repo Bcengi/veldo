@@ -1,0 +1,417 @@
+[
+  {
+    "control": "early",
+    "scheduler_sha256": "43ef703513cf31d6836936ae0c0cc47999c6cb3aaaaffa795aee6fe08e83a7e4",
+    "stages": {
+      "worker": "cancelled",
+      "red": "FAIL",
+      "tail": "not_started",
+      "load": "not_run",
+      "mutation": "not_started",
+      "after": "not_started"
+    },
+    "first_failure": {
+      "node": "red",
+      "start": 0.0030483268201351166,
+      "end": 0.0774358338676393,
+      "wall_seconds": 0.07438750704750419,
+      "verdict": "FAIL",
+      "returncode": 7,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.026839,
+      "peak_anon_bytes": 8970240,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "cleanup": true,
+    "grants": 3,
+    "releases": 3,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.07438750704750419,
+        "cpu_seconds": 0.026839,
+        "peak_anon_bytes": 8970240
+      },
+      "tail": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "worker": {
+        "wall_seconds": 0.0941862347535789,
+        "cpu_seconds": 0.031998,
+        "peak_anon_bytes": 11898880
+      },
+      "load": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "mutation": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "after": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      }
+    }
+  },
+  {
+    "control": "diagnostic",
+    "scheduler_sha256": "43ef703513cf31d6836936ae0c0cc47999c6cb3aaaaffa795aee6fe08e83a7e4",
+    "stages": {
+      "worker": "pass",
+      "red": "FAIL",
+      "tail": "pass",
+      "load": "not_run",
+      "mutation": "pass",
+      "after": "FAIL"
+    },
+    "first_failure": {
+      "node": "red",
+      "start": 0.0033219787292182446,
+      "end": 0.07179223466664553,
+      "wall_seconds": 0.06847025593742728,
+      "verdict": "FAIL",
+      "returncode": 7,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.025912,
+      "peak_anon_bytes": 8974336,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "cleanup": true,
+    "grants": 6,
+    "releases": 6,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.06847025593742728,
+        "cpu_seconds": 0.025912,
+        "peak_anon_bytes": 8974336
+      },
+      "worker": {
+        "wall_seconds": 0.08129811706021428,
+        "cpu_seconds": 0.036222,
+        "peak_anon_bytes": 11620352
+      },
+      "tail": {
+        "wall_seconds": 0.06933245016261935,
+        "cpu_seconds": 0.02645,
+        "peak_anon_bytes": 6942720
+      },
+      "load": {
+        "wall_seconds": 0.0,
+        "cpu_seconds": null,
+        "peak_anon_bytes": null
+      },
+      "mutation": {
+        "wall_seconds": 0.059630812145769596,
+        "cpu_seconds": 0.025181,
+        "peak_anon_bytes": 7139328
+      },
+      "after": {
+        "wall_seconds": 0.06683969032019377,
+        "cpu_seconds": 0.025141,
+        "peak_anon_bytes": 4780032
+      }
+    }
+  },
+  {
+    "control": "green",
+    "scheduler_sha256": "43ef703513cf31d6836936ae0c0cc47999c6cb3aaaaffa795aee6fe08e83a7e4",
+    "stages": {
+      "worker": "pass",
+      "red": "pass",
+      "tail": "pass",
+      "load": "pass",
+      "mutation": "pass",
+      "after": "pass"
+    },
+    "first_failure": null,
+    "cleanup": true,
+    "grants": 7,
+    "releases": 7,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.0708897695876658,
+        "cpu_seconds": 0.026808,
+        "peak_anon_bytes": 8970240
+      },
+      "worker": {
+        "wall_seconds": 0.08148669311776757,
+        "cpu_seconds": 0.034994,
+        "peak_anon_bytes": 12050432
+      },
+      "tail": {
+        "wall_seconds": 0.06960382917895913,
+        "cpu_seconds": 0.026273,
+        "peak_anon_bytes": 5799936
+      },
+      "load": {
+        "wall_seconds": 0.06976980902254581,
+        "cpu_seconds": 0.025979,
+        "peak_anon_bytes": 4071424
+      },
+      "mutation": {
+        "wall_seconds": 0.06578261964023113,
+        "cpu_seconds": 0.024271,
+        "peak_anon_bytes": 4816896
+      },
+      "after": {
+        "wall_seconds": 0.11562986299395561,
+        "cpu_seconds": 0.025435,
+        "peak_anon_bytes": 8970240
+      }
+    }
+  },
+  {
+    "control": "green-diagnostic",
+    "scheduler_sha256": "43ef703513cf31d6836936ae0c0cc47999c6cb3aaaaffa795aee6fe08e83a7e4",
+    "stages": {
+      "worker": "pass",
+      "red": "pass",
+      "tail": "pass",
+      "load": "pass",
+      "mutation": "pass",
+      "after": "pass"
+    },
+    "first_failure": null,
+    "cleanup": true,
+    "grants": 7,
+    "releases": 7,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.07048057718202472,
+        "cpu_seconds": 0.025974,
+        "peak_anon_bytes": 8970240
+      },
+      "worker": {
+        "wall_seconds": 0.08127102209255099,
+        "cpu_seconds": 0.034243,
+        "peak_anon_bytes": 11792384
+      },
+      "tail": {
+        "wall_seconds": 0.07565274368971586,
+        "cpu_seconds": 0.030549,
+        "peak_anon_bytes": 5345280
+      },
+      "load": {
+        "wall_seconds": 0.07083867397159338,
+        "cpu_seconds": 0.031436,
+        "peak_anon_bytes": 4734976
+      },
+      "mutation": {
+        "wall_seconds": 0.06735682999715209,
+        "cpu_seconds": 0.025704,
+        "peak_anon_bytes": 4739072
+      },
+      "after": {
+        "wall_seconds": 0.06653528800234199,
+        "cpu_seconds": 0.025511,
+        "peak_anon_bytes": 4833280
+      }
+    }
+  },
+  {
+    "control": "sibling",
+    "scheduler_sha256": "43ef703513cf31d6836936ae0c0cc47999c6cb3aaaaffa795aee6fe08e83a7e4",
+    "stages": {
+      "worker": "pass",
+      "red": "pass"
+    },
+    "first_failure": null,
+    "cleanup": true,
+    "grants": 3,
+    "releases": 3,
+    "metrics": {
+      "red": {
+        "wall_seconds": 0.07842859299853444,
+        "cpu_seconds": 0.026799,
+        "peak_anon_bytes": 8978432
+      },
+      "worker": {
+        "wall_seconds": 0.0925464523024857,
+        "cpu_seconds": 0.045645,
+        "peak_anon_bytes": 13152256
+      }
+    }
+  },
+  {
+    "control": "mutation-cancel",
+    "scheduler_sha256": "43ef703513cf31d6836936ae0c0cc47999c6cb3aaaaffa795aee6fe08e83a7e4",
+    "stages": {
+      "worker": "not_started",
+      "red": "FAIL",
+      "tail": "not_started",
+      "load": "not_run",
+      "mutation": "cancelled",
+      "after": "not_started"
+    },
+    "first_failure": {
+      "node": "red",
+      "start": 0.0033026719465851784,
+      "end": 0.11442184587940574,
+      "wall_seconds": 0.11111917393282056,
+      "verdict": "FAIL",
+      "returncode": 7,
+      "error": null,
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.029205,
+      "peak_anon_bytes": 7749632,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "worker_pids": [
+      4169451,
+      4169458,
+      4169464,
+      4169468,
+      4169482
+    ],
+    "cleanup": true,
+    "release_observations": [
+      {
+        "name": "mutation/child0",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation/child1",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation",
+        "gone": true,
+        "removed": true
+      }
+    ],
+    "grants": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ],
+    "releases": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ]
+  },
+  {
+    "control": "mutation-killed",
+    "scheduler_sha256": "43ef703513cf31d6836936ae0c0cc47999c6cb3aaaaffa795aee6fe08e83a7e4",
+    "stages": {
+      "worker": "not_started",
+      "red": "FAIL",
+      "tail": "not_started",
+      "load": "not_run",
+      "mutation": "FAIL",
+      "after": "not_started"
+    },
+    "first_failure": {
+      "node": "mutation",
+      "start": 0.00025250762701034546,
+      "end": 0.12249769596382976,
+      "wall_seconds": 0.12224518833681941,
+      "verdict": "FAIL",
+      "returncode": -9,
+      "error": "unreleased_ledger_claim",
+      "inputs_unchanged": true,
+      "input_snapshot": false,
+      "cpu_seconds": 0.055462,
+      "peak_anon_bytes": 14721024,
+      "metrics_source": "cgroup-v2-anon-sampled-50ms",
+      "live_descendants": false
+    },
+    "worker_pids": [
+      4169488,
+      4169492,
+      4169494,
+      4169495,
+      4169496
+    ],
+    "cleanup": true,
+    "release_observations": [
+      {
+        "name": "mutation/child0",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation/child1",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation",
+        "gone": true,
+        "removed": true
+      }
+    ],
+    "grants": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ],
+    "releases": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ]
+  },
+  {
+    "control": "mutation-exception",
+    "scheduler_sha256": "43ef703513cf31d6836936ae0c0cc47999c6cb3aaaaffa795aee6fe08e83a7e4",
+    "stages": null,
+    "first_failure": null,
+    "worker_pids": [
+      4169500,
+      4169531,
+      4169539,
+      4169540,
+      4169544
+    ],
+    "cleanup": true,
+    "release_observations": [
+      {
+        "name": "mutation/child0",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation/child1",
+        "gone": true,
+        "removed": true
+      },
+      {
+        "name": "mutation",
+        "gone": true,
+        "removed": true
+      }
+    ],
+    "grants": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ],
+    "releases": [
+      "mutation",
+      "mutation/child0",
+      "mutation/child1",
+      "red"
+    ]
+  }
+]

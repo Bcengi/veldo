@@ -37,8 +37,8 @@ acceptance_criteria:
     text: First red cancels active siblings, reaps their processes and descendants, removes their cgroups and releases all grants only after cleanup. Keep the first failure and partial logs/receipts. Never report green for incomplete work.
     falsified_by: Registered failfast360-cancel, failfast360-reap and failfast360-first-red remove cancellation, reaping or first-failure retention; their stopped, error-cleanup and first-red rows must fail. Native controls additionally cancel or kill an active mutation coordinator and inject a scheduler sampling exception, requiring every descendant PID, node cgroup and worker cgroup gone before any grant release.
   - id: AC3
-    text: Explicit VELDO_GATE_COLLECT_ALL=1 restores diagnostic inventory execution, including mutation after load not_run. Default is fail-fast. A green control has identical stage verdicts and no cancellations in either mode.
-    falsified_by: Invert the diagnostic mode guard or cancel passing nodes; collect-all and green rows must fail.
+    text: Explicit VELDO_GATE_COLLECT_ALL=1 restores diagnostic inventory execution, including mutation after load not_run. Default is fail-fast. A green control has identical stage verdicts and no cancellations in either mode. Completing one node reaps only exited children without blocking or signalling live descendants of running siblings.
+    falsified_by: Invert the diagnostic mode guard or cancel passing nodes; collect-all and green rows must fail. Restore the destructive completion reaper or remove the nonblocking, exclusion or exit-race guards; sibling-survives, zombie-only and zombie-race must fail.
   - id: AC4
     text: Engine mirrors match, scheduler suites pass alone, wall-clock census passes with no new sites, personal setup and stale mutant scans report zero, and gate_unconfined.json is unchanged.
     falsified_by: Introduce mirror drift or a stale mutation target; the corresponding check must fail.

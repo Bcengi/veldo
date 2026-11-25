@@ -1,0 +1,10 @@
+--- scripts/gate_schedule.py
++++ failfast360-exception-root-release
+@@ -868,7 +868,6 @@
+                             {other['proc'].pid for other in active.values()})
+                 for claimant in item['children']:
+                     ledger.release(claimant)
+-                ledger.release(name)
+             except Exception as error:
+                 cleanup_errors.append('%s: %s' % (name, error))
+             finally:

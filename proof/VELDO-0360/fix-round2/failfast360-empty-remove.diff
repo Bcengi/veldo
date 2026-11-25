@@ -1,0 +1,10 @@
+--- scripts/gate_schedule.py
++++ failfast360-empty-remove
+@@ -409,7 +409,6 @@
+     for child in sorted(path.rglob('*'), reverse=True):
+         if child.is_dir():
+             child.rmdir()
+-    path.rmdir()
+ 
+ 
+ def finish_node(name, item, scope, excluded):

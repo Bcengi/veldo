@@ -421,7 +421,7 @@ def finish_node(name, item, scope, excluded):
             group = Path('/sys/fs/cgroup') / scope.lstrip('/')
             for path in group.glob('worker-%d-*' % item['proc'].pid):
                 empty_group(path)
-        reap_children(excluded)
+        reap_exited_children(excluded)
 
 
 def input_guard(root):
@@ -884,6 +884,15 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
 
 def child_pids():
     return {int(pid) for pid in Path('/proc/self/task/%d/children' % os.getpid()).read_text().split()}
+
+
+def reap_exited_children(excluded=()):
+    """Collect zombies without signalling or waiting for live sibling descendants."""
+    for pid in child_pids() - set(excluded):
+        try:
+            os.waitpid(pid, os.WNOHANG)
+        except ChildProcessError:
+            pass
 
 
 def reap_children(excluded=()):
