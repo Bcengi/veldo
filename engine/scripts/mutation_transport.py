@@ -22,7 +22,6 @@ import tempfile
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent.parent
-PROCESS_HANG_SECONDS = 3600
 
 
 def load(name):
@@ -236,7 +235,7 @@ def deny_network(boundary):
 def execute(gate, root, task, qualified, admission=None, remote=False, scratch_parent='/tmp'):
     shards = load('mutation_shards')
     common = gate.common_directory(root)
-    shards.validate_assignment(gate, root, common, task, qualified)
+    shards.validate_assignment(gate, root, common, task, qualified, no_network=remote)
     leg = load('gate_legs').mutation_leg()
     if remote:
         os.environ['VELDO_GATE_COLLECT_ALL'] = '1' if task['request'].get('collect_all') else '0'

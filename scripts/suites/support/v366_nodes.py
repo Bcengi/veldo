@@ -189,6 +189,86 @@ def checks(gate, shards, transport, root, expect, worker=None):
     bundle_node(transport, row)
     network_checks(transport, root, row)
     worker_checks(worker or load(root/"scripts/reuse_worker.py"), row)
+    inventory_checks(gate, worker or load(root/'scripts/reuse_worker.py'), root, row)
+    inventory_requests(gate, shards, transport, root, row)
+    receipt_checks(gate, root, row)
+
+
+def inventory_checks(gate, worker, root, row):
+    # Only the native launcher is substituted. The real inventory bootstrap installs
+    # the kernel filter in an isolated child before importing this candidate driver.
+    import socket
+    with tempfile.TemporaryDirectory(prefix='v366-inventory-') as directory, socket.socket() as listener:
+        top = Path(directory)
+        (top/'scripts').mkdir()
+        listener.bind(('127.0.0.1', 0))
+        listener.listen()
+        (top/'scripts/probe.py').write_text(
+            'import socket\n'
+            'with socket.create_connection(%r): pass\n' % (listener.getsockname(),) +
+            'def cases(): return [dict(name="probe", rows=["target"], old="a", new="b")]\n')
+        bootstrap = (
+            'import runpy\n'
+            'w = runpy.run_path(%r, run_name="inventory_fixture")\n' % worker.__file__ +
+            'g = w["main"].__globals__\n'
+            'g["__file__"] = %r\n' % str(root/'scripts/reuse_worker.py') +
+            'original = g["load"]\n'
+            'def load(path):\n'
+            '    module = original(path)\n'
+            '    if path.name == "check_gate_mutations.py": module.DRIVERS = ["probe.py"]\n'
+            '    return module\n'
+            'g["load"] = load\n'
+            'w["main"]()\n')
+        def command(candidate, argv):
+            return [sys.executable, '-I', '-S', '-c', bootstrap, *argv[4:]]
+        with patch.object(gate, 'confined_command', command):
+            try:
+                gate.inventory(top, top, True)
+            except gate.Refused as error:
+                denied = error.code == 'candidate_execution_denied' and 'PermissionError: [Errno 1]' in str(error)
+            else:
+                denied = False
+            row('inventory-network-before-code', denied)
+            row('inventory-local-tcp', gate.inventory(top, top)[0]['name'] == 'probe')
+
+
+def inventory_requests(gate, shards, transport, root, row):
+    cases, request, quals, tasks, _, _ = specimen(gate, shards)
+    with patch.object(shards, 'binding', return_value=dict(head=request['head'], input_digest='inputs')), \
+            patch.object(gate, 'inventory', return_value=cases) as inventory:
+        shards.validate_assignment(gate, root, root, tasks['pc2'], quals['pc2'], no_network=True)
+        row('assignment-inventory-request', inventory.call_args.args == (root, root, True))
+    original = transport.load
+    with patch.object(transport, 'load', lambda name: shards if name == 'mutation_shards' else original(name)), \
+            patch.object(gate, 'common_directory', return_value=root), \
+            patch.object(shards, 'validate_assignment', side_effect=RuntimeError('fixture stop')) as validate:
+        for remote in (True, False):
+            try:
+                transport.execute(gate, root, tasks['pc2'], quals['pc2'], remote=remote)
+            except RuntimeError as error:
+                assert str(error) == 'fixture stop'
+            row('remote-inventory-request' if remote else 'local-inventory-request',
+                validate.call_args.kwargs.get('no_network') is remote)
+
+
+def receipt_checks(gate, root, row):
+    # Frozen pre-distribution receipt shape with a deterministic inventory refusal.
+    # No workers or fixtures launch; compare serialized bytes, including field order.
+    expected = dict(schema='veldo.mutation-stage/v1', results=[], registered=0, executed=0,
+        reused=0, rejected=0, drivers={}, surviving_workers=0, invalid_results=[], collect_all=False,
+        audit=dict(population=[], entries=[], audited=0, matched=0, mismatched=0, worker_seconds=0, suites={}),
+        status='failed', error='incomplete_inventory', detail='incomplete_inventory: fixture',
+        declaration_stale=[], stale_count=0, gate_run=None, stale_unpersisted=0, reuse_unavailable={},
+        authority_stale_count=0, worker_outcomes=[], case_receipts=[], reuse_integrity_errors=[],
+        peak_workers=0, parallel_workers=1, worker_invocations=0, elapsed=0)
+    with patch.dict(os.environ, {}, clear=True), \
+            patch.object(gate, 'inventory', side_effect=gate.Refused('incomplete_inventory', 'fixture')) as inventory, \
+            patch.object(gate.time, 'monotonic', return_value=0):
+        receipt = gate.run_stage(root, root, parallel=1)
+        row('single-host-receipt-bytes', json.dumps(receipt).encode() == json.dumps(expected).encode())
+        remote = gate.run_stage(root, root, parallel=1, no_network=True)
+        row('stage-inventory-request', inventory.call_args.args == (root, root, True))
+        row('remote-receipt-network', remote.get('no_network') is True)
 
 
 def coordinator_stub(gate, shards, root, row):

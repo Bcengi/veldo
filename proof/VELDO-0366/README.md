@@ -39,8 +39,8 @@ VELDO-0366 defect to a temporary module and checks baseline, no-op and the named
 row. Neither invokes the mutation coordinator with real workers. The directory node
 uses idle children and a temporary host lock; the shipping fixture uses a tiny temporary
 Git repository. Neither fixture starts a gate, a manager, a load generator or a native
-sandbox. The network filter is tested with an instruction interpreter, not installed
-on pc1. Existing VELDO-0363 event-driven doubles prove release and cancellation.
+sandbox. The initial phase-2 network proof used an instruction interpreter. Fix round 1
+also installs the filter in a short-lived local child, as described below. Existing VELDO-0363 event-driven doubles prove release and cancellation.
 
 Receipt refusals cover missing, duplicate, foreign, forged, replayed, changed-input,
 changed-runtime, unqualified, failed, cancelled, incomplete and unclean results.
@@ -69,3 +69,29 @@ canonical gate remain outstanding. No other worktree was changed.
 Every protected path touched is enumerated in `protected-paths.json` (11 paths).
 Qualification helper files are newly covered by policy; their bytes were not changed.
 The checked-in unconfined list and wall-clock baseline are unchanged.
+
+
+## Phase 2 fix round 1
+
+Remote assignment validation and stage inventory now pass an explicit no-network
+flag to the authority bootstrap. It installs the AF_UNIX-only filter before the
+candidate driver import and registry execution. Ordinary local inventory retains
+its existing call and behavior. A loopback TCP candidate-import probe is refused
+with EPERM; its unrestricted control succeeds. Only this probe child installs the
+filter; the native launcher is substituted and no gate or nested fixture starts.
+
+The single-host receipt omits no_network again. A deterministic receipt compares
+byte-for-byte with the pre-distribution shape; a separate bounded comparison uses
+actual source from 2bea06cb4. Remote receipts still require no_network=true.
+Eight new guard mutants cover the flag, bootstrap filter, both inventory calls,
+remote forwarding and receipt guards. The fake-node suite has 71 rows and the
+registered falsifier drive has 21 cases with baseline and no-op controls.
+
+Removed the unused PROCESS_HANG_SECONDS constant. The other non-blocking notes
+remain: remote partial-receipt observability needs a transport lifecycle change;
+moving scratch outside the supervisor directory also needs explicit teardown
+ownership. Neither is a one-line fix within this round.
+
+Current bounded evidence is in fix-round-1/. No canonical gate, full leg, load,
+nested gate fixture, native host qualification or live-capture module was run
+or changed. The exemption list and clock baseline are unchanged.

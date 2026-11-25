@@ -534,13 +534,14 @@ def common_directory(root):
     return load(ROOT / '.veldo/candidate_git.py').common_directory(root)
 
 
-def inventory(root, expected_common):
+def inventory(root, expected_common, no_network=False):
     # Registry imports are candidate execution too. Only data crosses this pipe.
     env = dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str(expected_common))
     # Run inside a tree the agent launcher made (a suite of the gate's), the launcher this starts is
     # nested and is handed the tree's marker (VELDO-0210 AC6).
     result = subprocess.run(confined_command(root, [sys.executable, '-I', '-S',
-        str(ROOT / 'scripts/reuse_worker.py'), 'inventory', str(root)]),
+        str(ROOT / 'scripts/reuse_worker.py'), 'inventory', str(root),
+        *(['--no-network'] if no_network else [])]),
         capture_output=True, text=True, timeout=WAIT_HANG_SECONDS, env=env,
         pass_fds=load(ROOT / 'scripts/agent_sandbox.py').launcher_fds())
     if result.returncode:
@@ -1387,7 +1388,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
     audits, audit_keys = {}, {}
     collect_all = os.environ.get('VELDO_GATE_COLLECT_ALL') == '1'
     receipt['collect_all'] = collect_all
-    receipt['no_network'] = no_network
+    if no_network:
+        receipt['no_network'] = True
     audit_module = AUDIT or _load_audit(ROOT / 'scripts/mutation_reuse.py')
     receipt['audit'] = dict(population=[], entries=[], audited=0, matched=0, mismatched=0,
                             worker_seconds=0.0, suites={})
@@ -1396,7 +1398,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             admission = workers.admission = Admission.authority()
             if parallel is None:
                 workers.parallel = worker_count()
-        full_inventory = inventory(root, expected_common)
+        full_inventory = (inventory(root, expected_common, True) if no_network
+                          else inventory(root, expected_common))
         cases = [c for c in full_inventory if (not findings or c['finding'] in findings)
                  and (not drivers or c['driver'] in drivers)
                  and (not names or c['name'] in names)

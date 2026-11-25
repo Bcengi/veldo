@@ -42,6 +42,9 @@ def main():
     authority = Path(__file__).resolve().parents[1]
     mode, root = sys.argv[1], Path(sys.argv[2])
     if mode == 'inventory':  # Already confined by gate_candidate before this import.
+        if '--no-network' in sys.argv[3:]:
+            boundary = load(authority / 'scripts/agent_sandbox.py')
+            load(authority / 'scripts/mutation_transport.py').deny_network(boundary)
         gate = load(authority / 'scripts/check_gate_mutations.py')
         print(json.dumps(gate.inventory_local(root)))
         return

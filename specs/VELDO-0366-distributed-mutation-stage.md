@@ -108,3 +108,9 @@ scope can use that path; internally each shard is explicitly selected and only t
 can claim full coverage. Force-fresh shard execution does not change the outer gate's requested
 reuse policy. Remote unavailability and qualification failure refuse rather than silently
 falling back. VELDO_GATE_COLLECT_ALL=1 retains diagnostic collection while still returning red.
+
+
+Review fix round 1 also applies the remote no-network boundary to candidate registry
+imports, during assignment validation and again during stage inventory. With the
+opt-in unset, the single-host receipt retains its pre-distribution byte shape;
+no_network is emitted only when the stricter distributed boundary is requested.

@@ -120,7 +120,7 @@ def assignment(request, host, cases, qualification_receipt):
                 qualification_digest=digest(qualification_receipt))
 
 
-def validate_assignment(gate, root, common, task, qualified):
+def validate_assignment(gate, root, common, task, qualified, no_network=False):
     if (task.get('schema') != SCHEMA or task.get('request') != qualified['request']
             or task.get('host') != qualified['host']
             or task.get('qualification_digest') != digest(qualified)):
@@ -128,7 +128,7 @@ def validate_assignment(gate, root, common, task, qualified):
     current = binding(gate, root, common)
     if any(task['request'][k] != v for k, v in current.items()):
         raise Refused('assignment input mismatch')
-    registry = gate.inventory(root, common)
+    registry = gate.inventory(root, common, no_network)
     if digest(registry) != task['request']['inventory_digest']:
         raise Refused('assignment registry mismatch')
     known = {c['identity']: c for c in registry}

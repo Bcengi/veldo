@@ -33,7 +33,7 @@ for case in [c for c in driver.cases() if c['finding'] == 366]:
             transport = module if case['module']=='mutation_transport.py' else load(root/'scripts/mutation_transport.py')
             rows = []
             with contextlib.redirect_stdout(io.StringIO()):
-                helper.checks(gate, shards, transport, root, lambda name, passed: rows.append((name,bool(passed))),
+                helper.checks(module if case['module']=='check_gate_mutations.py' else gate, shards, transport, root, lambda name, passed: rows.append((name,bool(passed))),
                               worker=module if case['module']=='reuse_worker.py' else None)
             target = [ok for name,ok in rows if name.split()[-1] == case['rows'][0]]
             record['observations'][mode] = dict(target=target, failed=[n for n,ok in rows if not ok],

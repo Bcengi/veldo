@@ -12026,6 +12026,33 @@ def cases():
     result[-1]['dir'] = 'scripts'
 
     # VELDO-0366: protected distributed authority guards, all fake-node falsifiers.
+    for name, module, old, new, row in [
+        ('inventory-flag-omitted', 'check_gate_mutations.py',
+         "*(['--no-network'] if no_network else [])", '*([])', 'inventory-network-before-code'),
+        ('inventory-flag-ignored', 'reuse_worker.py',
+         "if '--no-network' in sys.argv[3:]:", 'if False:', 'inventory-network-before-code'),
+        ('inventory-filter-omitted', 'reuse_worker.py',
+         "            load(authority / 'scripts/mutation_transport.py').deny_network(boundary)",
+         '            pass', 'inventory-network-before-code'),
+        ('assignment-inventory-network-omitted', 'mutation_shards.py',
+         'registry = gate.inventory(root, common, no_network)',
+         'registry = gate.inventory(root, common, False)', 'assignment-inventory-request'),
+        ('remote-inventory-network-omitted', 'mutation_transport.py',
+         'shards.validate_assignment(gate, root, common, task, qualified, no_network=remote)',
+         'shards.validate_assignment(gate, root, common, task, qualified, no_network=False)',
+         'remote-inventory-request'),
+        ('stage-inventory-network-omitted', 'check_gate_mutations.py',
+         'inventory(root, expected_common, True) if no_network',
+         'inventory(root, expected_common, False) if no_network', 'stage-inventory-request'),
+        ('single-host-receipt-changed', 'check_gate_mutations.py',
+         "    if no_network:\n        receipt['no_network'] = True",
+         "    if True:\n        receipt['no_network'] = no_network", 'single-host-receipt-bytes'),
+        ('remote-receipt-network-omitted', 'check_gate_mutations.py',
+         "        receipt['no_network'] = True", "        receipt['no_network'] = False",
+         'remote-receipt-network')]:
+        add(366, 'shards366-' + name, '163_veldo_0366_shards.py', module, old, new, ['shards/' + row])
+        result[-1]['dir'] = 'scripts'
+
     for name, module, old, new, row in [('identity-set',
          'mutation_shards.py',
          'if len(actual) != len(set(actual)) or collections.Counter(actual) != collections.Counter(list(expected)):',
