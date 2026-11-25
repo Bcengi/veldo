@@ -1,53 +1,15 @@
 {
   "selected": 53,
-  "passed": 11,
-  "pending": [
-    "newproject143-presented-when-named",
+  "passed": 51,
+  "pending": [],
+  "pending_on_host": [
     "pool-shared-profile",
-    "role127-resource-grant-omitted",
-    "upgrade189-previous-commands-not-recorded",
-    "ui131-node-settings-hover-only",
-    "newproject143-correction-name-unbound",
-    "newproject143-judge-correction-unbound",
-    "newproject143-identity-from-document",
-    "newproject143-visibility-from-text",
-    "api-request-unsigned-accepted",
-    "api-call-verified-by-keyring",
-    "signer-signs-any-request",
-    "revocation-not-delivered",
-    "subscribers-forgotten",
-    "restart-announces-nothing",
-    "pending-inspect-unguarded",
-    "connect-head-dropped",
-    "decision-not-scaffolded",
-    "upgrade189-existing-pin-rewritten",
-    "upgrade189-existing-record-rewritten",
-    "upgrade189-record-in-place",
-    "upgrade189-unreadable-record-kept",
-    "upgrade189-different-record-accepted",
-    "upgrade189-codex-refusal-differs",
-    "upgrade189-repair-reported-done",
-    "upgrade189-repair-count-hidden",
-    "upgrade189-repair-record-hidden",
-    "upgrade189-runtime-type-unchecked",
-    "upgrade189-receiver-store-unchecked",
-    "v164-socket-message-unrouted",
-    "ui131-priority-shown-unsent",
-    "ui131-cap-shown-unsent",
-    "wave358-browser-fixed-wait-restored",
-    "wave358-browser-test-limit-restored",
-    "wait358-browser-watchdog-silent",
-    "wave358-harness-bound-restored",
-    "ui131-configurations-team-named-only",
-    "ui131-catalog-first-server-only",
-    "ui131-credential-metadata-dropped",
-    "ui131-provider-unread",
-    "ui131-capability-dropped",
-    "newproject143-correction-told-code"
+    "role127-resource-grant-omitted"
   ],
   "cases": [
     {
       "name": "newproject143-correction-mode-unbound",
+      "status": "passed",
       "suite": "110_veldo_0143_corrections.py",
       "before_suite": "110_veldo_0143_new_project.py",
       "target_rows": [
@@ -63,10 +25,11 @@
       "receipt": "after-runtime/.local/speed-round2/receipts.json.gz",
       "input_digest": "4c44ac18fd7782a3884861f5b53ee687edb976619d00f0cf3ec1cf8f0e98098d",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
     },
     {
       "name": "wave358-browser-expectation-restored",
+      "status": "passed",
       "suite": "121_veldo_0131_factory_census.py",
       "before_suite": "121_veldo_0131_factory_screens_narrow.py",
       "target_rows": [
@@ -82,10 +45,11 @@
       "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
       "input_digest": "dab5824d29ec33b26b11868c1d2bf60824d9d361b9cbda09f90cfbdc286ad3cc",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
     },
     {
       "name": "wait358-browser-watchdog-total-time",
+      "status": "passed",
       "suite": "121_veldo_0131_factory_progress.py",
       "before_suite": "121_veldo_0131_factory_screens_narrow.py",
       "target_rows": [
@@ -101,10 +65,11 @@
       "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
       "input_digest": "c7210925016b7f4916079b1cc1e23a54139992962da5a35146938b326e8d90bc",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
     },
     {
       "name": "ui131-stop-shown-unsent",
+      "status": "passed",
       "suite": "124_veldo_0131_factory_commands.py",
       "before_suite": "124_veldo_0131_factory_reads_commands.py",
       "target_rows": [
@@ -120,10 +85,11 @@
       "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
       "input_digest": "62c8c2a9475e545f074b2be4352234b9e403ccc08e6459ffcddbf0e63fe2bb2c",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
     },
     {
       "name": "api-runs-in-process",
+      "status": "passed",
       "suite": "71_veldo_0130_api_service.py",
       "before_suite": "71_veldo_0130_api.py",
       "target_rows": [
@@ -139,10 +105,11 @@
       "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
       "input_digest": "735d4e6e2dc15958033b2679834705e3d4a5a789d38e0d02ea989178dfb53fc8",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
     },
     {
       "name": "pool-not-scaffolded",
+      "status": "passed",
       "suite": "78_veldo_0160_account_assets.py",
       "before_suite": "78_veldo_0160_account_pool.py",
       "target_rows": [
@@ -158,10 +125,11 @@
       "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
       "input_digest": "8b585120399b4d4b6261d569793f0f1fc53ae93d3f880cc608f729096b02b56b",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
     },
     {
       "name": "role127-init-unbounded",
+      "status": "passed",
       "suite": "86_veldo_0127_init_bound.py",
       "before_suite": "86_veldo_0127_agent_configuration.py",
       "target_rows": [
@@ -177,10 +145,11 @@
       "receipt": "after-resources/.local/speed-round2/receipts.json.gz",
       "input_digest": "f132f61ea0cba0b61b931604a86bdd6f6c350a28539949284160ce5334204e2d",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
     },
     {
       "name": "upgrade189-runtime-unrecorded",
+      "status": "passed",
       "suite": "86_veldo_0189_engine_records.py",
       "before_suite": "86_veldo_0189_engine_upgrade.py",
       "target_rows": [
@@ -196,10 +165,31 @@
       "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
       "input_digest": "29b6cc30765d6b6de534698ebabf9fef2a3d50a841fb7271b44f1308a7e4699d",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
+    },
+    {
+      "name": "newproject143-presented-when-named",
+      "status": "passed",
+      "suite": "110_veldo_0143_new_project.py",
+      "before_suite": "110_veldo_0143_new_project.py",
+      "target_rows": [
+        "VELDO-0143 proposal/nothing-asked"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 32.25592734105885,
+      "pc2_worker_seconds": {
+        "baseline": 67.32717388297897,
+        "noop": 64.50309363903943,
+        "mutant": 32.93695851205848
+      },
+      "receipt": "after-continuation-part/.local/speed-round2/receipts.json.gz",
+      "input_digest": "b8cd49a4339e4a4c803e24477bf048e1c71d316f0f5171fcb62861e8e5b30493",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
     },
     {
       "name": "ui131-decision-action-hidden-360",
+      "status": "passed",
       "suite": "121_veldo_0131_factory_screens_narrow.py",
       "before_suite": "121_veldo_0131_factory_screens_narrow.py",
       "target_rows": [
@@ -215,10 +205,11 @@
       "receipt": "after-remaining-part/.local/speed-round2/receipts.json.gz",
       "input_digest": "599abeb6f9c36e2fbbf0b003a3fe387f73f24171eb02d354e83590502dab6df3",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
     },
     {
       "name": "ui131-identities-dropped",
+      "status": "passed",
       "suite": "124_veldo_0131_factory_reads_commands.py",
       "before_suite": "124_veldo_0131_factory_reads_commands.py",
       "target_rows": [
@@ -234,10 +225,11 @@
       "receipt": "after-final/.local/speed-round2/receipts.json.gz",
       "input_digest": "001dd07dc69ae1acfb0c56b0ab3988780f3e8ee2f50e10cfa3837963ff9133c2",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
     },
     {
       "name": "body-actor-authorizes",
+      "status": "passed",
       "suite": "71_veldo_0130_api.py",
       "before_suite": "71_veldo_0130_api.py",
       "target_rows": [
@@ -253,12 +245,838 @@
       "receipt": "after-final/.local/speed-round2/receipts.json.gz",
       "input_digest": "4232015c92fd51212245a8c0cb18ffa20f3b4571b1b14a42cb99257ddf5bd4c8",
       "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
-      "single_case_stage": true
+      "shared_controls": false
+    },
+    {
+      "name": "pool-shared-profile",
+      "status": "pending-on-host",
+      "suite": "78_veldo_0160_account_pool.py",
+      "before_suite": "78_veldo_0160_account_pool.py",
+      "target_rows": [
+        "VELDO-0160 pool/per-account-isolation"
+      ],
+      "reason": "The confined receiver cannot read remote_run Python virtualenv pyvenv.cfg; Python exits during site initialization and all dispatches are refused receiver_unavailable. The original suite passes directly outside confinement. This is not missing Node.",
+      "diagnostic": "original-driver-diagnosis/.local/speed-round2/receipts.json.gz"
+    },
+    {
+      "name": "role127-resource-grant-omitted",
+      "status": "pending-on-host",
+      "suite": "86_veldo_0127_agent_configuration.py",
+      "before_suite": "86_veldo_0127_agent_configuration.py",
+      "target_rows": [
+        "VELDO-0127 wire/resources"
+      ],
+      "reason": "The qualified Codex 0.166.0 vendor binary named by runtime/engines.json is absent from the account home. Original Codex/Code Mode controls fail too. System Node is also absent, but installing Node alone cannot supply the qualified binary.",
+      "diagnostic": "original-driver-diagnosis/.local/speed-round2/receipts.json.gz"
+    },
+    {
+      "name": "upgrade189-previous-commands-not-recorded",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_upgrade.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 ownership/restore-commands"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 144.5886346916668,
+      "pc2_worker_seconds": {
+        "baseline": 148.2809686110122,
+        "noop": 148.95403528597672,
+        "mutant": 148.87148400198203
+      },
+      "receipt": "after-continuation-part/.local/speed-round2/receipts.json.gz",
+      "input_digest": "d6eca2655c2bdf35283e7dd87e6b101723833ecc497c07e8571778ac353dceb7",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "ui131-node-settings-hover-only",
+      "status": "passed",
+      "suite": "120_veldo_0131_factory_ui.py",
+      "before_suite": "120_veldo_0131_factory_ui.py",
+      "target_rows": [
+        "VELDO-0131 ac3/keyboard-desktop",
+        "VELDO-0131 ac3/touch-phone"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 1260.6680240449496,
+      "pc2_worker_seconds": {
+        "baseline": 59.06760129297618,
+        "noop": 57.11836678406689,
+        "mutant": 70.78242817299906
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "fc8adf9e31aa813f37739e0bf0a6f4ff84990484e9316d19164dc6d0c180cb74",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "newproject143-correction-name-unbound",
+      "status": "passed",
+      "suite": "110_veldo_0143_corrections.py",
+      "before_suite": "110_veldo_0143_new_project.py",
+      "target_rows": [
+        "VELDO-0143 proposal/correction-bound"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 57.517878524027765,
+      "pc2_worker_seconds": {
+        "baseline": 10.747330360929482,
+        "noop": 10.904041958972812,
+        "mutant": 10.913694125949405
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "7dec4d39c5a8cfd6c98a1bc11ffca7664c7d8055d649c5c1090b27a7deae8e23",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "newproject143-judge-correction-unbound",
+      "status": "passed",
+      "suite": "110_veldo_0143_corrections.py",
+      "before_suite": "110_veldo_0143_new_project.py",
+      "target_rows": [
+        "VELDO-0143 proposal/correction-bound"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 67.00509710796177,
+      "pc2_worker_seconds": {
+        "baseline": 10.747330360929482,
+        "noop": 10.904041958972812,
+        "mutant": 11.409265371970832
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "7dec4d39c5a8cfd6c98a1bc11ffca7664c7d8055d649c5c1090b27a7deae8e23",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "newproject143-identity-from-document",
+      "status": "passed",
+      "suite": "110_veldo_0143_corrections.py",
+      "before_suite": "110_veldo_0143_new_project.py",
+      "target_rows": [
+        "VELDO-0143 proposal/correction-bound",
+        "VELDO-0143 proposal/correction-negated",
+        "VELDO-0143 proposal/correction-phrasings"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 60.72053753817454,
+      "pc2_worker_seconds": {
+        "baseline": 10.747330360929482,
+        "noop": 10.904041958972812,
+        "mutant": 11.837080847006291
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "7dec4d39c5a8cfd6c98a1bc11ffca7664c7d8055d649c5c1090b27a7deae8e23",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "newproject143-visibility-from-text",
+      "status": "passed",
+      "suite": "110_veldo_0143_corrections.py",
+      "before_suite": "110_veldo_0143_new_project.py",
+      "target_rows": [
+        "VELDO-0143 proposal/correction-negated",
+        "VELDO-0143 proposal/correction-phrasings"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 60.92573342984542,
+      "pc2_worker_seconds": {
+        "baseline": 10.747330360929482,
+        "noop": 10.904041958972812,
+        "mutant": 10.91774180403445
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "7dec4d39c5a8cfd6c98a1bc11ffca7664c7d8055d649c5c1090b27a7deae8e23",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "api-request-unsigned-accepted",
+      "status": "passed",
+      "suite": "71_veldo_0130_api_service.py",
+      "before_suite": "71_veldo_0130_api.py",
+      "target_rows": [
+        "VELDO-0130 service/edge-signed-requests"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 36.16266162740067,
+      "pc2_worker_seconds": {
+        "baseline": 23.92287083598785,
+        "noop": 23.902661181986332,
+        "mutant": 23.40046469005756
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "d2f9f3b5cae802062cc32ba9bbdb7375e375e7a00594c6b0259884e0a8c8bb33",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "api-call-verified-by-keyring",
+      "status": "passed",
+      "suite": "71_veldo_0130_api_service.py",
+      "before_suite": "71_veldo_0130_api.py",
+      "target_rows": [
+        "VELDO-0130 service/edge-signed-requests"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 69.13586884690449,
+      "pc2_worker_seconds": {
+        "baseline": 23.92287083598785,
+        "noop": 23.902661181986332,
+        "mutant": 53.57750599901192
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "d2f9f3b5cae802062cc32ba9bbdb7375e375e7a00594c6b0259884e0a8c8bb33",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "signer-signs-any-request",
+      "status": "passed",
+      "suite": "71_veldo_0130_api_service.py",
+      "before_suite": "71_veldo_0130_api.py",
+      "target_rows": [
+        "VELDO-0130 service/edge-signed-requests"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 33.589619430713356,
+      "pc2_worker_seconds": {
+        "baseline": 23.94090237200726,
+        "noop": 23.97268319397699,
+        "mutant": 23.92424875497818
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "2b67e363bcef5caa03ae7a52beba7d992e2af0fe0e1b43a037f067d947b1cdfd",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "revocation-not-delivered",
+      "status": "passed",
+      "suite": "71_veldo_0130_api_service.py",
+      "before_suite": "71_veldo_0130_api.py",
+      "target_rows": [
+        "VELDO-0130 service/host-revocation-closes-stream",
+        "VELDO-0130 service/socket-path"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 77.05878085782751,
+      "pc2_worker_seconds": {
+        "baseline": 23.92287083598785,
+        "noop": 23.902661181986332,
+        "mutant": 62.198610569001175
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "d2f9f3b5cae802062cc32ba9bbdb7375e375e7a00594c6b0259884e0a8c8bb33",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "subscribers-forgotten",
+      "status": "passed",
+      "suite": "71_veldo_0130_api_service.py",
+      "before_suite": "71_veldo_0130_api.py",
+      "target_rows": [
+        "VELDO-0130 service/restart-reconciles"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 52.01835201866925,
+      "pc2_worker_seconds": {
+        "baseline": 23.89321349794045,
+        "noop": 23.837917885975912,
+        "mutant": 36.894676094991155
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "a1eaa6a2be0335b5556424533434823d471f7a59b337d58ef91864b2c6f18dec",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "restart-announces-nothing",
+      "status": "passed",
+      "suite": "71_veldo_0130_api_service.py",
+      "before_suite": "71_veldo_0130_api.py",
+      "target_rows": [
+        "VELDO-0130 service/restart-reconciles"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 41.09050449123606,
+      "pc2_worker_seconds": {
+        "baseline": 23.92287083598785,
+        "noop": 23.902661181986332,
+        "mutant": 27.94736843300052
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "d2f9f3b5cae802062cc32ba9bbdb7375e375e7a00594c6b0259884e0a8c8bb33",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "pending-inspect-unguarded",
+      "status": "passed",
+      "suite": "71_veldo_0130_api_service.py",
+      "before_suite": "71_veldo_0130_api.py",
+      "target_rows": [
+        "VELDO-0130 service/down-at-registration"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 33.075442468281835,
+      "pc2_worker_seconds": {
+        "baseline": 23.819949037977494,
+        "noop": 23.92235795094166,
+        "mutant": 23.921715951059014
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "5683b6df29250625774fa78249f7b78c751dad11b68a247226222be4142ab146",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "connect-head-dropped",
+      "status": "passed",
+      "suite": "71_veldo_0130_api_service.py",
+      "before_suite": "71_veldo_0130_api.py",
+      "target_rows": [
+        "VELDO-0130 service/connect-sets-cursor"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 35.5534129999578,
+      "pc2_worker_seconds": {
+        "baseline": 23.889990341034718,
+        "noop": 23.903449895908125,
+        "mutant": 23.443355837021954
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "1b79a4cb8edddf7ef6bbbbc7e79c17df160d283be0342fcf21cb84729ca86a3b",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "decision-not-scaffolded",
+      "status": "passed",
+      "suite": "78_veldo_0160_account_assets.py",
+      "before_suite": "78_veldo_0160_account_pool.py",
+      "target_rows": [
+        "VELDO-0160 install/assets"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 37.70468442840502,
+      "pc2_worker_seconds": {
+        "baseline": 0.9811748790089041,
+        "noop": 1.0695400070399046,
+        "mutant": 1.049072001944296
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "005a56a694458dc10656336f0b0ffa52125ab12cfde35250bb4510eb389538b2",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "upgrade189-existing-pin-rewritten",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 upgrade/fresh-0186"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 81.15341481892392,
+      "pc2_worker_seconds": {
+        "baseline": 18.880071501014754,
+        "noop": 18.777864166884683,
+        "mutant": 18.780696942005306
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "4306d568d6cf6b726e472e23208bb91d1c7edb3eb5affc3235d8e6efd4b8b355",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "upgrade189-existing-record-rewritten",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 upgrade/fresh-0186"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 79.80691742803901,
+      "pc2_worker_seconds": {
+        "baseline": 18.880071501014754,
+        "noop": 18.777864166884683,
+        "mutant": 18.7787903919816
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "4306d568d6cf6b726e472e23208bb91d1c7edb3eb5affc3235d8e6efd4b8b355",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "upgrade189-record-in-place",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 engines/atomic-record"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 105.88229003874585,
+      "pc2_worker_seconds": {
+        "baseline": 18.880071501014754,
+        "noop": 18.777864166884683,
+        "mutant": 18.775592148071155
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "4306d568d6cf6b726e472e23208bb91d1c7edb3eb5affc3235d8e6efd4b8b355",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "upgrade189-unreadable-record-kept",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 engines/repair-record"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 105.49963134108111,
+      "pc2_worker_seconds": {
+        "baseline": 18.880071501014754,
+        "noop": 18.777864166884683,
+        "mutant": 18.82950998703018
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "4306d568d6cf6b726e472e23208bb91d1c7edb3eb5affc3235d8e6efd4b8b355",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "upgrade189-different-record-accepted",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 engines/refuse-record"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 103.24655178328976,
+      "pc2_worker_seconds": {
+        "baseline": 18.880071501014754,
+        "noop": 18.777864166884683,
+        "mutant": 18.763326858985238
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "4306d568d6cf6b726e472e23208bb91d1c7edb3eb5affc3235d8e6efd4b8b355",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "upgrade189-codex-refusal-differs",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 engines/codex-refusal"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 103.22791660903022,
+      "pc2_worker_seconds": {
+        "baseline": 18.880071501014754,
+        "noop": 18.777864166884683,
+        "mutant": 18.86116024700459
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "4306d568d6cf6b726e472e23208bb91d1c7edb3eb5affc3235d8e6efd4b8b355",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "upgrade189-repair-reported-done",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 engines/repair-report"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 121.3234535837546,
+      "pc2_worker_seconds": {
+        "baseline": 18.764940039953217,
+        "noop": 18.945235178922303,
+        "mutant": 18.91240035102237
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "963b2c1600030f3eeb1f2a576fcfc656b35204df781c37c8a60a05e07eedc6b5",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "upgrade189-repair-count-hidden",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 engines/repair-report"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 104.68059874279425,
+      "pc2_worker_seconds": {
+        "baseline": 18.880071501014754,
+        "noop": 18.777864166884683,
+        "mutant": 18.837229546974413
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "4306d568d6cf6b726e472e23208bb91d1c7edb3eb5affc3235d8e6efd4b8b355",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "upgrade189-repair-record-hidden",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 engines/repair-report"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 104.70682636508718,
+      "pc2_worker_seconds": {
+        "baseline": 18.880071501014754,
+        "noop": 18.777864166884683,
+        "mutant": 18.821780146914534
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "4306d568d6cf6b726e472e23208bb91d1c7edb3eb5affc3235d8e6efd4b8b355",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "upgrade189-runtime-type-unchecked",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 upgrade/corrupt-runtime-record"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 118.27502883784473,
+      "pc2_worker_seconds": {
+        "baseline": 18.764940039953217,
+        "noop": 18.945235178922303,
+        "mutant": 18.865734618972056
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "963b2c1600030f3eeb1f2a576fcfc656b35204df781c37c8a60a05e07eedc6b5",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "upgrade189-receiver-store-unchecked",
+      "status": "passed",
+      "suite": "86_veldo_0189_engine_records.py",
+      "before_suite": "86_veldo_0189_engine_upgrade.py",
+      "target_rows": [
+        "VELDO-0189 upgrade/receiver-without-store"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 119.71298762736842,
+      "pc2_worker_seconds": {
+        "baseline": 18.764940039953217,
+        "noop": 18.945235178922303,
+        "mutant": 18.84663302905392
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "963b2c1600030f3eeb1f2a576fcfc656b35204df781c37c8a60a05e07eedc6b5",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "v164-socket-message-unrouted",
+      "status": "passed",
+      "suite": "71_veldo_0130_api_service.py",
+      "before_suite": "71_veldo_0130_api.py",
+      "target_rows": [
+        "VELDO-0130 service/socket-path"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 33.43044827179983,
+      "pc2_worker_seconds": {
+        "baseline": 23.925957557046786,
+        "noop": 23.79517968907021,
+        "mutant": 23.859802079037763
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "0908f5a6802b600c576bf93a5d0aeb9b1e5ecf99fff0252f1d45a8a4e7997590",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "ui131-priority-shown-unsent",
+      "status": "passed",
+      "suite": "124_veldo_0131_factory_commands.py",
+      "before_suite": "124_veldo_0131_factory_reads_commands.py",
+      "target_rows": [
+        "VELDO-0131 ac2/priority-save"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 645.7313641868532,
+      "pc2_worker_seconds": {
+        "baseline": 46.0778103210032,
+        "noop": 45.973520157975145,
+        "mutant": 48.278640424017794
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "f1de8c557f21ab175098d77a61deccda3630c2ed4682180b94641a9f8ad9a56e",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "ui131-cap-shown-unsent",
+      "status": "passed",
+      "suite": "124_veldo_0131_factory_commands.py",
+      "before_suite": "124_veldo_0131_factory_reads_commands.py",
+      "target_rows": [
+        "VELDO-0131 ac2/worker-cap"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 642.0630539320409,
+      "pc2_worker_seconds": {
+        "baseline": 46.0778103210032,
+        "noop": 45.973520157975145,
+        "mutant": 41.35965390794445
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "f1de8c557f21ab175098d77a61deccda3630c2ed4682180b94641a9f8ad9a56e",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "wave358-browser-fixed-wait-restored",
+      "status": "passed",
+      "suite": "121_veldo_0131_factory_census.py",
+      "before_suite": "121_veldo_0131_factory_screens_narrow.py",
+      "target_rows": [
+        "VELDO-0131 wave1/no-sites"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 186.68039810378104,
+      "pc2_worker_seconds": {
+        "baseline": 1.0334611990256235,
+        "noop": 1.0358816100051627,
+        "mutant": 1.038765894016251
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "5e8a7ef6a39f55b77027d4dda4ffe7ec4e6edb806a932412f1f200aaf3f200f4",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "wave358-browser-test-limit-restored",
+      "status": "passed",
+      "suite": "121_veldo_0131_factory_census.py",
+      "before_suite": "121_veldo_0131_factory_screens_narrow.py",
+      "target_rows": [
+        "VELDO-0131 wave1/no-sites"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 117.99078714009374,
+      "pc2_worker_seconds": {
+        "baseline": 1.0244818959617987,
+        "noop": 1.0379173590335995,
+        "mutant": 1.0399434050777927
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "5db8ff6422f66c465a8d52cf14a561432ea71143a4745d487baa0f0e2115b5cb",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "wait358-browser-watchdog-silent",
+      "status": "passed",
+      "suite": "121_veldo_0131_factory_progress.py",
+      "before_suite": "121_veldo_0131_factory_screens_narrow.py",
+      "target_rows": [
+        "VELDO-0131 browser/hang-by-progress"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 187.59092075983062,
+      "pc2_worker_seconds": {
+        "baseline": 8.911861508968286,
+        "noop": 8.804912795079872,
+        "mutant": 8.826056940946728
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "2ba2d76dfff78d8fe20d27df0bb17bcf4dd6014e8e4c860f5d3bd6eb596507a0",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "wave358-harness-bound-restored",
+      "status": "passed",
+      "suite": "121_veldo_0131_factory_census.py",
+      "before_suite": "121_veldo_0131_factory_screens_narrow.py",
+      "target_rows": [
+        "VELDO-0131 wave1/no-sites"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 180.74791654618457,
+      "pc2_worker_seconds": {
+        "baseline": 1.0298614689381793,
+        "noop": 1.032890944974497,
+        "mutant": 1.0497286429163069
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "d41262fd400a67fd67e3c1327fcc986a2a96398c8ff0ed1b840de487059b0b70",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "ui131-configurations-team-named-only",
+      "status": "passed",
+      "suite": "124_veldo_0131_factory_reads_commands.py",
+      "before_suite": "124_veldo_0131_factory_reads_commands.py",
+      "target_rows": [
+        "VELDO-0131 ac1/every-configuration"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 654.5550777576864,
+      "pc2_worker_seconds": {
+        "baseline": 37.41672846500296,
+        "noop": 37.28649950399995,
+        "mutant": 44.745175970951095
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "dc7cc6077e3d09eb6eb9cf5e9168d74c299abb73a226bea0b54159388fcd3a86",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "ui131-catalog-first-server-only",
+      "status": "passed",
+      "suite": "124_veldo_0131_factory_reads_commands.py",
+      "before_suite": "124_veldo_0131_factory_reads_commands.py",
+      "target_rows": [
+        "VELDO-0131 ac1/whole-catalog"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 651.1904055541381,
+      "pc2_worker_seconds": {
+        "baseline": 37.36724981397856,
+        "noop": 37.31050274404697,
+        "mutant": 43.98999872000422
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "15c021001a1b38b232282f52da48134d4ae7b03718058222b3d41724b500a517",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "ui131-credential-metadata-dropped",
+      "status": "passed",
+      "suite": "124_veldo_0131_factory_reads_commands.py",
+      "before_suite": "124_veldo_0131_factory_reads_commands.py",
+      "target_rows": [
+        "VELDO-0131 ac1/whole-catalog"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 650.0747263357043,
+      "pc2_worker_seconds": {
+        "baseline": 37.36724981397856,
+        "noop": 37.31050274404697,
+        "mutant": 44.07789443607908
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "15c021001a1b38b232282f52da48134d4ae7b03718058222b3d41724b500a517",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": true
+    },
+    {
+      "name": "ui131-provider-unread",
+      "status": "passed",
+      "suite": "124_veldo_0131_factory_reads_commands.py",
+      "before_suite": "124_veldo_0131_factory_reads_commands.py",
+      "target_rows": [
+        "VELDO-0131 ac1/usage-provider"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 652.609692228958,
+      "pc2_worker_seconds": {
+        "baseline": 37.32819614501204,
+        "noop": 37.51583168597426,
+        "mutant": 44.42495380504988
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "819aa0817665562a11510bb01b69510a027622a9b35c7d77d2f7f9469266ba90",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "ui131-capability-dropped",
+      "status": "passed",
+      "suite": "124_veldo_0131_factory_reads_commands.py",
+      "before_suite": "124_veldo_0131_factory_reads_commands.py",
+      "target_rows": [
+        "VELDO-0131 ac1/worker-capability"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 662.121149847284,
+      "pc2_worker_seconds": {
+        "baseline": 37.35990356502589,
+        "noop": 37.62699918507133,
+        "mutant": 36.56811791693326
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "0dea3f2f362b2a02bdfcfeb769e09aa73d6c51a7cf93a1d7e161db7e2847a47f",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
+    },
+    {
+      "name": "newproject143-correction-told-code",
+      "status": "passed",
+      "suite": "110_veldo_0143_corrections.py",
+      "before_suite": "110_veldo_0143_new_project.py",
+      "target_rows": [
+        "VELDO-0143 proposal/correction-told"
+      ],
+      "controls": "green",
+      "gate13_mutant_seconds": 58.13647957285866,
+      "pc2_worker_seconds": {
+        "baseline": 10.793795011006296,
+        "noop": 10.96301898593083,
+        "mutant": 10.945827380055562
+      },
+      "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "input_digest": "6fee12a0e6616aa31fb7a38ec5619c07ecafd95615e32152bb2c4f148164e6d8",
+      "implementation_digest": "a5db3104f1a39cb125d1cd23c01e6c217904f1c314d1352ab5c192c107487314",
+      "shared_controls": false
     }
   ],
+  "remaps": {
+    "selected": 40,
+    "passed": 40,
+    "pending": []
+  },
+  "sample20": {
+    "selected": 20,
+    "passed": 18,
+    "pending_on_host": [
+      "pool-shared-profile",
+      "role127-resource-grant-omitted"
+    ],
+    "pending": []
+  },
   "coverage": {
     "110_veldo_0143_new_project.py": {
-      "missing_rows": [
+      "before_rows": 137,
+      "runtime_union_rows": 137,
+      "missing_rows": [],
+      "additional_rows": [],
+      "not_green_on_pc2": [],
+      "expected_rows": [
         "VELDO-0143 activation/admitted-without-question",
         "VELDO-0143 activation/applied",
         "VELDO-0143 activation/factory-canceled",
@@ -272,6 +1090,18 @@
         "VELDO-0143 activation/new-line",
         "VELDO-0143 activation/new-projects-kept",
         "VELDO-0143 activation/order",
+        "VELDO-0143 compiled-sources/child_entry_keeps_docstring_future_imports_and_private_state",
+        "VELDO-0143 compiled-sources/exec_wrapper_never_loads_compiler",
+        "VELDO-0143 compiled-sources/failed_cache_publish_cleans_temporary_file",
+        "VELDO-0143 compiled-sources/fresh_globals_and_content_identity",
+        "VELDO-0143 compiled-sources/latin1_encoding_declaration",
+        "VELDO-0143 compiled-sources/loader_restored_after_failure",
+        "VELDO-0143 compiled-sources/private_disk_cache_revalidates_bytes_and_executes_fresh_globals",
+        "VELDO-0143 compiled-sources/read_only_cache_still_imports",
+        "VELDO-0143 compiled-sources/shebang_and_encoding",
+        "VELDO-0143 compiled-sources/shebang_and_latin1_encoding_declaration",
+        "VELDO-0143 compiled-sources/shebang_only",
+        "VELDO-0143 compiled-sources/unavailable_cache_directory_still_imports",
         "VELDO-0143 factory/own-repository",
         "VELDO-0143 format/fake-lines",
         "VELDO-0143 intake/new-project-routed",
@@ -281,6 +1111,10 @@
         "VELDO-0143 proposal/adoption-visibility",
         "VELDO-0143 proposal/choices",
         "VELDO-0143 proposal/correction",
+        "VELDO-0143 proposal/correction-bound",
+        "VELDO-0143 proposal/correction-negated",
+        "VELDO-0143 proposal/correction-phrasings",
+        "VELDO-0143 proposal/correction-told",
         "VELDO-0143 proposal/fields",
         "VELDO-0143 proposal/identities-fold-alike",
         "VELDO-0143 proposal/name-taken",
@@ -321,6 +1155,10 @@
         "VELDO-0143 ran/proposal/adoption-visibility",
         "VELDO-0143 ran/proposal/choices",
         "VELDO-0143 ran/proposal/correction",
+        "VELDO-0143 ran/proposal/correction-bound",
+        "VELDO-0143 ran/proposal/correction-negated",
+        "VELDO-0143 ran/proposal/correction-phrasings",
+        "VELDO-0143 ran/proposal/correction-told",
         "VELDO-0143 ran/proposal/fields",
         "VELDO-0143 ran/proposal/identities-fold-alike",
         "VELDO-0143 ran/proposal/name-taken",
@@ -349,32 +1187,674 @@
         "VELDO-0143 service/pm-settled-due",
         "VELDO-0143 service/provisions",
         "VELDO-0143 timers/profile-applied",
-        "VELDO-0172 fake/capture"
+        "VELDO-0172 fake/capture",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
       ],
+      "runtime_rows": [
+        "VELDO-0143 activation/admitted-without-question",
+        "VELDO-0143 activation/applied",
+        "VELDO-0143 activation/factory-canceled",
+        "VELDO-0143 activation/factory-intake-current",
+        "VELDO-0143 activation/factory-line-kept",
+        "VELDO-0143 activation/factory-line-restart",
+        "VELDO-0143 activation/factory-paused-resumed",
+        "VELDO-0143 activation/failed-activates-nothing",
+        "VELDO-0143 activation/line-from-pass",
+        "VELDO-0143 activation/name-taken",
+        "VELDO-0143 activation/new-line",
+        "VELDO-0143 activation/new-projects-kept",
+        "VELDO-0143 activation/order",
+        "VELDO-0143 compiled-sources/child_entry_keeps_docstring_future_imports_and_private_state",
+        "VELDO-0143 compiled-sources/exec_wrapper_never_loads_compiler",
+        "VELDO-0143 compiled-sources/failed_cache_publish_cleans_temporary_file",
+        "VELDO-0143 compiled-sources/fresh_globals_and_content_identity",
+        "VELDO-0143 compiled-sources/latin1_encoding_declaration",
+        "VELDO-0143 compiled-sources/loader_restored_after_failure",
+        "VELDO-0143 compiled-sources/private_disk_cache_revalidates_bytes_and_executes_fresh_globals",
+        "VELDO-0143 compiled-sources/read_only_cache_still_imports",
+        "VELDO-0143 compiled-sources/shebang_and_encoding",
+        "VELDO-0143 compiled-sources/shebang_and_latin1_encoding_declaration",
+        "VELDO-0143 compiled-sources/shebang_only",
+        "VELDO-0143 compiled-sources/unavailable_cache_directory_still_imports",
+        "VELDO-0143 factory/own-repository",
+        "VELDO-0143 format/fake-lines",
+        "VELDO-0143 intake/new-project-routed",
+        "VELDO-0143 pm/graph-stage-own",
+        "VELDO-0143 pm/new-project-run",
+        "VELDO-0143 proposal/adoption-pick-folds",
+        "VELDO-0143 proposal/adoption-visibility",
+        "VELDO-0143 proposal/choices",
+        "VELDO-0143 proposal/correction",
+        "VELDO-0143 proposal/correction-bound",
+        "VELDO-0143 proposal/correction-negated",
+        "VELDO-0143 proposal/correction-phrasings",
+        "VELDO-0143 proposal/correction-told",
+        "VELDO-0143 proposal/fields",
+        "VELDO-0143 proposal/identities-fold-alike",
+        "VELDO-0143 proposal/name-taken",
+        "VELDO-0143 proposal/no-provisioner",
+        "VELDO-0143 proposal/not-presentable",
+        "VELDO-0143 proposal/nothing-asked",
+        "VELDO-0143 proposal/one-answer",
+        "VELDO-0143 proposal/own-message-doubt",
+        "VELDO-0143 proposal/presentation-interrupted",
+        "VELDO-0143 proposal/refusals",
+        "VELDO-0143 provision/adoption-path",
+        "VELDO-0143 provision/answered-and-corrected",
+        "VELDO-0143 provision/checks-before-creation",
+        "VELDO-0143 provision/created",
+        "VELDO-0143 provision/directory-not-empty",
+        "VELDO-0143 provision/handed-over",
+        "VELDO-0143 provision/interrupted",
+        "VELDO-0143 provision/observed",
+        "VELDO-0143 provision/settlement-required",
+        "VELDO-0143 provision/signing-no-agent",
+        "VELDO-0143 provision/step-failures",
+        "VELDO-0143 ran/activation/admitted-without-question",
+        "VELDO-0143 ran/activation/applied",
+        "VELDO-0143 ran/activation/factory-canceled",
+        "VELDO-0143 ran/activation/factory-line-kept",
+        "VELDO-0143 ran/activation/factory-paused-resumed",
+        "VELDO-0143 ran/activation/failed-activates-nothing",
+        "VELDO-0143 ran/activation/line-from-pass",
+        "VELDO-0143 ran/activation/name-taken",
+        "VELDO-0143 ran/activation/new-line",
+        "VELDO-0143 ran/activation/new-projects-kept",
+        "VELDO-0143 ran/activation/order",
+        "VELDO-0143 ran/factory/own-repository",
+        "VELDO-0143 ran/intake/new-project-routed",
+        "VELDO-0143 ran/pm/graph-stage-own",
+        "VELDO-0143 ran/pm/new-project-run",
+        "VELDO-0143 ran/proposal/adoption-pick-folds",
+        "VELDO-0143 ran/proposal/adoption-visibility",
+        "VELDO-0143 ran/proposal/choices",
+        "VELDO-0143 ran/proposal/correction",
+        "VELDO-0143 ran/proposal/correction-bound",
+        "VELDO-0143 ran/proposal/correction-negated",
+        "VELDO-0143 ran/proposal/correction-phrasings",
+        "VELDO-0143 ran/proposal/correction-told",
+        "VELDO-0143 ran/proposal/fields",
+        "VELDO-0143 ran/proposal/identities-fold-alike",
+        "VELDO-0143 ran/proposal/name-taken",
+        "VELDO-0143 ran/proposal/no-provisioner",
+        "VELDO-0143 ran/proposal/not-presentable",
+        "VELDO-0143 ran/proposal/nothing-asked",
+        "VELDO-0143 ran/proposal/one-answer",
+        "VELDO-0143 ran/proposal/own-message-doubt",
+        "VELDO-0143 ran/proposal/presentation-interrupted",
+        "VELDO-0143 ran/proposal/refusals",
+        "VELDO-0143 ran/provision/adoption-path",
+        "VELDO-0143 ran/provision/answered-and-corrected",
+        "VELDO-0143 ran/provision/checks-before-creation",
+        "VELDO-0143 ran/provision/created",
+        "VELDO-0143 ran/provision/directory-not-empty",
+        "VELDO-0143 ran/provision/handed-over",
+        "VELDO-0143 ran/provision/interrupted",
+        "VELDO-0143 ran/provision/observed",
+        "VELDO-0143 ran/provision/settlement-required",
+        "VELDO-0143 ran/provision/signing-no-agent",
+        "VELDO-0143 ran/provision/step-failures",
+        "VELDO-0143 ran/service/pm-settled-due",
+        "VELDO-0143 ran/service/provisions",
+        "VELDO-0143 ran/timers/profile-applied",
+        "VELDO-0143 service/hand-off",
+        "VELDO-0143 service/pm-settled-due",
+        "VELDO-0143 service/provisions",
+        "VELDO-0143 timers/profile-applied",
+        "VELDO-0172 fake/capture",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "sources": [
+        {
+          "suite": "110_veldo_0143_corrections.py",
+          "receipt": "after-runtime/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "110_veldo_0143_new_project.py",
+          "receipt": "after-continuation-part/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "110_veldo_0143_corrections.py",
+          "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        }
+      ]
+    },
+    "120_veldo_0131_factory_ui.py": {
+      "before_rows": 42,
+      "runtime_union_rows": 42,
+      "missing_rows": [],
       "additional_rows": [],
-      "before_rows": 137,
-      "after_rows": 46
+      "not_green_on_pc2": [],
+      "expected_rows": [
+        "VELDO-0131 ac2/api-only",
+        "VELDO-0131 ac2/completion-receipt",
+        "VELDO-0131 ac2/decision-settlement",
+        "VELDO-0131 ac2/live",
+        "VELDO-0131 ac2/message-intake",
+        "VELDO-0131 ac2/metadata-only",
+        "VELDO-0131 ac2/refusals",
+        "VELDO-0131 ac3/keyboard-desktop",
+        "VELDO-0131 ac3/stale-save",
+        "VELDO-0131 ac3/touch-phone",
+        "VELDO-0131 ac4/dependency-policy",
+        "VELDO-0131 ac4/served-assets",
+        "VELDO-0131 ac4/stack",
+        "VELDO-0131 timers/profile-applied",
+        "VELDO-0131 unit/factory",
+        "VELDO-0131 wave1/no-sites",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "runtime_rows": [
+        "VELDO-0131 ac2/api-only",
+        "VELDO-0131 ac2/completion-receipt",
+        "VELDO-0131 ac2/decision-settlement",
+        "VELDO-0131 ac2/live",
+        "VELDO-0131 ac2/message-intake",
+        "VELDO-0131 ac2/metadata-only",
+        "VELDO-0131 ac2/refusals",
+        "VELDO-0131 ac3/keyboard-desktop",
+        "VELDO-0131 ac3/stale-save",
+        "VELDO-0131 ac3/touch-phone",
+        "VELDO-0131 ac4/dependency-policy",
+        "VELDO-0131 ac4/served-assets",
+        "VELDO-0131 ac4/stack",
+        "VELDO-0131 timers/profile-applied",
+        "VELDO-0131 unit/factory",
+        "VELDO-0131 wave1/no-sites",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "sources": [
+        {
+          "suite": "120_veldo_0131_factory_ui.py",
+          "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        }
+      ]
     },
     "121_veldo_0131_factory_screens_narrow.py": {
+      "before_rows": 31,
+      "runtime_union_rows": 31,
       "missing_rows": [],
       "additional_rows": [],
-      "before_rows": 31,
-      "after_rows": 31
+      "not_green_on_pc2": [],
+      "expected_rows": [
+        "VELDO-0131 ac1/screens-360",
+        "VELDO-0131 ac1/screens-390",
+        "VELDO-0131 browser/hang-by-progress",
+        "VELDO-0131 timers/profile-applied",
+        "VELDO-0131 wave1/no-sites",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "runtime_rows": [
+        "VELDO-0131 ac1/screens-360",
+        "VELDO-0131 ac1/screens-390",
+        "VELDO-0131 browser/hang-by-progress",
+        "VELDO-0131 timers/profile-applied",
+        "VELDO-0131 wave1/no-sites",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "sources": [
+        {
+          "suite": "121_veldo_0131_factory_census.py",
+          "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "121_veldo_0131_factory_progress.py",
+          "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "121_veldo_0131_factory_screens_narrow.py",
+          "receipt": "after-remaining-part/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "121_veldo_0131_factory_census.py",
+          "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "121_veldo_0131_factory_progress.py",
+          "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        }
+      ]
     },
     "124_veldo_0131_factory_reads_commands.py": {
+      "before_rows": 36,
+      "runtime_union_rows": 36,
       "missing_rows": [],
       "additional_rows": [],
-      "before_rows": 36,
-      "after_rows": 36
+      "not_green_on_pc2": [],
+      "expected_rows": [
+        "VELDO-0131 ac1/every-configuration",
+        "VELDO-0131 ac1/repositories",
+        "VELDO-0131 ac1/usage-provider",
+        "VELDO-0131 ac1/whole-catalog",
+        "VELDO-0131 ac1/worker-capability",
+        "VELDO-0131 ac2/priority-save",
+        "VELDO-0131 ac2/worker-cap",
+        "VELDO-0131 ac2/worker-stop",
+        "VELDO-0131 timers/profile-applied",
+        "VELDO-0131 wave1/no-sites",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "runtime_rows": [
+        "VELDO-0131 ac1/every-configuration",
+        "VELDO-0131 ac1/repositories",
+        "VELDO-0131 ac1/usage-provider",
+        "VELDO-0131 ac1/whole-catalog",
+        "VELDO-0131 ac1/worker-capability",
+        "VELDO-0131 ac2/priority-save",
+        "VELDO-0131 ac2/worker-cap",
+        "VELDO-0131 ac2/worker-stop",
+        "VELDO-0131 timers/profile-applied",
+        "VELDO-0131 wave1/no-sites",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "sources": [
+        {
+          "suite": "124_veldo_0131_factory_commands.py",
+          "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "124_veldo_0131_factory_reads_commands.py",
+          "receipt": "after-final/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "124_veldo_0131_factory_commands.py",
+          "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "124_veldo_0131_factory_reads_commands.py",
+          "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        }
+      ]
     },
     "71_veldo_0130_api.py": {
+      "before_rows": 71,
+      "runtime_union_rows": 71,
       "missing_rows": [],
       "additional_rows": [],
-      "before_rows": 71,
-      "after_rows": 71
+      "not_green_on_pc2": [],
+      "expected_rows": [
+        "VELDO-0130 actions/contract",
+        "VELDO-0130 actions/unauthorized-write",
+        "VELDO-0130 actions/workflow-save",
+        "VELDO-0130 decisions/exact-settlement",
+        "VELDO-0130 decisions/one-ruling",
+        "VELDO-0130 edge/authority-recheck",
+        "VELDO-0130 edge/signer-api-purpose",
+        "VELDO-0130 enrollment/pending-grants-nothing",
+        "VELDO-0130 enrollment/possession-race",
+        "VELDO-0130 enrollment/steward-signed",
+        "VELDO-0130 events/expiry-named",
+        "VELDO-0130 events/fill-window-revocation",
+        "VELDO-0130 events/live",
+        "VELDO-0130 events/published-watermark",
+        "VELDO-0130 events/reconcile-deferred",
+        "VELDO-0130 events/reconcile-past-page",
+        "VELDO-0130 events/resume-last-event-id",
+        "VELDO-0130 events/retry-after-failure",
+        "VELDO-0130 events/revoked-either-path",
+        "VELDO-0130 install/assets",
+        "VELDO-0130 messages/common-intake",
+        "VELDO-0130 reads/authoritative",
+        "VELDO-0130 reads/freshness",
+        "VELDO-0130 reads/implemented-writers",
+        "VELDO-0130 reads/model-set",
+        "VELDO-0130 routes/body-actor-refused",
+        "VELDO-0130 routes/every-family",
+        "VELDO-0130 service/connect-sets-cursor",
+        "VELDO-0130 service/down-at-registration",
+        "VELDO-0130 service/edge-signed-requests",
+        "VELDO-0130 service/host-revocation-closes-stream",
+        "VELDO-0130 service/in-process-refused",
+        "VELDO-0130 service/install",
+        "VELDO-0130 service/restart-reconciles",
+        "VELDO-0130 service/socket-path",
+        "VELDO-0130 session/cookie-and-expiry",
+        "VELDO-0130 session/forgery-refused",
+        "VELDO-0130 session/revocation-ends",
+        "VELDO-0130 transport/loopback-only",
+        "VELDO-0130 webauthn/independent-vectors",
+        "VELDO-0130 webauthn/openssl-fixed-path",
+        "VELDO-0130 webauthn/stand-in-browser",
+        "VELDO-0130 work/backlog-reprioritize",
+        "VELDO-0130 work/worker-cap",
+        "VELDO-0130 work/worker-stop",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "runtime_rows": [
+        "VELDO-0130 actions/contract",
+        "VELDO-0130 actions/unauthorized-write",
+        "VELDO-0130 actions/workflow-save",
+        "VELDO-0130 decisions/exact-settlement",
+        "VELDO-0130 decisions/one-ruling",
+        "VELDO-0130 edge/authority-recheck",
+        "VELDO-0130 edge/signer-api-purpose",
+        "VELDO-0130 enrollment/pending-grants-nothing",
+        "VELDO-0130 enrollment/possession-race",
+        "VELDO-0130 enrollment/steward-signed",
+        "VELDO-0130 events/expiry-named",
+        "VELDO-0130 events/fill-window-revocation",
+        "VELDO-0130 events/live",
+        "VELDO-0130 events/published-watermark",
+        "VELDO-0130 events/reconcile-deferred",
+        "VELDO-0130 events/reconcile-past-page",
+        "VELDO-0130 events/resume-last-event-id",
+        "VELDO-0130 events/retry-after-failure",
+        "VELDO-0130 events/revoked-either-path",
+        "VELDO-0130 install/assets",
+        "VELDO-0130 messages/common-intake",
+        "VELDO-0130 reads/authoritative",
+        "VELDO-0130 reads/freshness",
+        "VELDO-0130 reads/implemented-writers",
+        "VELDO-0130 reads/model-set",
+        "VELDO-0130 routes/body-actor-refused",
+        "VELDO-0130 routes/every-family",
+        "VELDO-0130 service/connect-sets-cursor",
+        "VELDO-0130 service/down-at-registration",
+        "VELDO-0130 service/edge-signed-requests",
+        "VELDO-0130 service/host-revocation-closes-stream",
+        "VELDO-0130 service/in-process-refused",
+        "VELDO-0130 service/install",
+        "VELDO-0130 service/restart-reconciles",
+        "VELDO-0130 service/socket-path",
+        "VELDO-0130 session/cookie-and-expiry",
+        "VELDO-0130 session/forgery-refused",
+        "VELDO-0130 session/revocation-ends",
+        "VELDO-0130 transport/loopback-only",
+        "VELDO-0130 webauthn/independent-vectors",
+        "VELDO-0130 webauthn/openssl-fixed-path",
+        "VELDO-0130 webauthn/stand-in-browser",
+        "VELDO-0130 work/backlog-reprioritize",
+        "VELDO-0130 work/worker-cap",
+        "VELDO-0130 work/worker-stop",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "sources": [
+        {
+          "suite": "71_veldo_0130_api_service.py",
+          "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "71_veldo_0130_api.py",
+          "receipt": "after-final/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "71_veldo_0130_api_service.py",
+          "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        }
+      ]
     },
     "78_veldo_0160_account_pool.py": {
-      "missing_rows": [
+      "before_rows": 60,
+      "runtime_union_rows": 60,
+      "missing_rows": [],
+      "additional_rows": [],
+      "not_green_on_pc2": [
         "VELDO-0160 decision/ask",
         "VELDO-0160 decision/frame-tool-names",
         "VELDO-0160 decision/nested-constructs",
@@ -409,12 +1889,168 @@
         "VELDO-0160 pool/usage-observes",
         "VELDO-0172 fake/capture"
       ],
-      "additional_rows": [],
-      "before_rows": 60,
-      "after_rows": 27
+      "expected_rows": [
+        "VELDO-0160 decision/ask",
+        "VELDO-0160 decision/frame-tool-names",
+        "VELDO-0160 decision/nested-constructs",
+        "VELDO-0160 decision/nested-work-asks",
+        "VELDO-0160 decision/no-write-server-reruns",
+        "VELDO-0160 decision/outward-tool-asks",
+        "VELDO-0160 decision/redacted-name",
+        "VELDO-0160 decision/remote-agent-asks",
+        "VELDO-0160 decision/repl-inner-call",
+        "VELDO-0160 decision/rerun",
+        "VELDO-0160 decision/same-id-write",
+        "VELDO-0160 decision/subagent-calls",
+        "VELDO-0160 decision/task-progress-tool",
+        "VELDO-0160 decision/tool-free-forms",
+        "VELDO-0160 decision/unconfigured-call-asks",
+        "VELDO-0160 decision/unknown-forms",
+        "VELDO-0160 decision/unreadable-asks",
+        "VELDO-0160 format/claude-fake-lines",
+        "VELDO-0160 format/codex-fake-lines",
+        "VELDO-0160 format/tool-forms",
+        "VELDO-0160 install/assets",
+        "VELDO-0160 limit/claude-rejected-texts",
+        "VELDO-0160 limit/rate-limit-result",
+        "VELDO-0160 limit/stream-exhausted",
+        "VELDO-0160 pool/added-account",
+        "VELDO-0160 pool/concurrent",
+        "VELDO-0160 pool/moved-off",
+        "VELDO-0160 pool/one-registration",
+        "VELDO-0160 pool/one-run-while-unknown",
+        "VELDO-0160 pool/per-account-isolation",
+        "VELDO-0160 pool/selection-order",
+        "VELDO-0160 pool/until-earliest",
+        "VELDO-0160 pool/usage-observes",
+        "VELDO-0172 fake/capture",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "runtime_rows": [
+        "VELDO-0160 decision/ask",
+        "VELDO-0160 decision/frame-tool-names",
+        "VELDO-0160 decision/nested-constructs",
+        "VELDO-0160 decision/nested-work-asks",
+        "VELDO-0160 decision/no-write-server-reruns",
+        "VELDO-0160 decision/outward-tool-asks",
+        "VELDO-0160 decision/redacted-name",
+        "VELDO-0160 decision/remote-agent-asks",
+        "VELDO-0160 decision/repl-inner-call",
+        "VELDO-0160 decision/rerun",
+        "VELDO-0160 decision/same-id-write",
+        "VELDO-0160 decision/subagent-calls",
+        "VELDO-0160 decision/task-progress-tool",
+        "VELDO-0160 decision/tool-free-forms",
+        "VELDO-0160 decision/unconfigured-call-asks",
+        "VELDO-0160 decision/unknown-forms",
+        "VELDO-0160 decision/unreadable-asks",
+        "VELDO-0160 format/claude-fake-lines",
+        "VELDO-0160 format/codex-fake-lines",
+        "VELDO-0160 format/tool-forms",
+        "VELDO-0160 install/assets",
+        "VELDO-0160 limit/claude-rejected-texts",
+        "VELDO-0160 limit/rate-limit-result",
+        "VELDO-0160 limit/stream-exhausted",
+        "VELDO-0160 pool/added-account",
+        "VELDO-0160 pool/concurrent",
+        "VELDO-0160 pool/moved-off",
+        "VELDO-0160 pool/one-registration",
+        "VELDO-0160 pool/one-run-while-unknown",
+        "VELDO-0160 pool/per-account-isolation",
+        "VELDO-0160 pool/selection-order",
+        "VELDO-0160 pool/until-earliest",
+        "VELDO-0160 pool/usage-observes",
+        "VELDO-0172 fake/capture",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "sources": [
+        {
+          "suite": "78_veldo_0160_account_assets.py",
+          "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "78_veldo_0160_account_assets.py",
+          "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "78_veldo_0160_account_pool.py",
+          "receipt": "after-final/worker-raw.json.gz",
+          "controls": "pending-on-host",
+          "failed_rows": [
+            "VELDO-0160 pool/per-account-isolation",
+            "VELDO-0160 pool/concurrent",
+            "VELDO-0160 limit/stream-exhausted",
+            "VELDO-0160 limit/rate-limit-result",
+            "VELDO-0160 limit/claude-rejected-texts",
+            "VELDO-0160 pool/moved-off",
+            "VELDO-0160 pool/added-account",
+            "VELDO-0160 pool/one-run-while-unknown",
+            "VELDO-0160 pool/usage-observes",
+            "VELDO-0160 pool/selection-order",
+            "VELDO-0160 pool/until-earliest",
+            "VELDO-0172 fake/capture"
+          ]
+        }
+      ]
     },
     "86_veldo_0127_agent_configuration.py": {
-      "missing_rows": [
+      "before_rows": 54,
+      "runtime_union_rows": 54,
+      "missing_rows": [],
+      "additional_rows": [],
+      "not_green_on_pc2": [
         "VELDO-0127 catalog/fields",
         "VELDO-0127 catalog/grants",
         "VELDO-0127 catalog/integrity",
@@ -442,13 +2078,159 @@
         "VELDO-0127 wire/normalization",
         "VELDO-0127 wire/resources"
       ],
-      "additional_rows": [],
-      "before_rows": 54,
-      "after_rows": 28
+      "expected_rows": [
+        "VELDO-0127 catalog/fields",
+        "VELDO-0127 catalog/grants",
+        "VELDO-0127 catalog/integrity",
+        "VELDO-0127 dispatch/binding",
+        "VELDO-0127 dispatch/refusal",
+        "VELDO-0127 format/fake-lines",
+        "VELDO-0127 handoff/claude",
+        "VELDO-0127 handoff/codex",
+        "VELDO-0127 launch/instructions",
+        "VELDO-0127 launch/push",
+        "VELDO-0127 launch/unlisted",
+        "VELDO-0127 live/claude",
+        "VELDO-0127 live/codex",
+        "VELDO-0127 review/codex-capture",
+        "VELDO-0127 review/codex-mode",
+        "VELDO-0127 review/codex-tools",
+        "VELDO-0127 review/init-bound",
+        "VELDO-0127 review/marker-debug",
+        "VELDO-0127 review/probe-terminal",
+        "VELDO-0127 review/skill-commit",
+        "VELDO-0127 review/skill-git-boundary",
+        "VELDO-0127 review/slash-collision",
+        "VELDO-0127 revision/history",
+        "VELDO-0127 wire/later-requests",
+        "VELDO-0127 wire/no-server",
+        "VELDO-0127 wire/normalization",
+        "VELDO-0127 wire/resources",
+        "VELDO-0172 fake/capture",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "runtime_rows": [
+        "VELDO-0127 catalog/fields",
+        "VELDO-0127 catalog/grants",
+        "VELDO-0127 catalog/integrity",
+        "VELDO-0127 dispatch/binding",
+        "VELDO-0127 dispatch/refusal",
+        "VELDO-0127 format/fake-lines",
+        "VELDO-0127 handoff/claude",
+        "VELDO-0127 handoff/codex",
+        "VELDO-0127 launch/instructions",
+        "VELDO-0127 launch/push",
+        "VELDO-0127 launch/unlisted",
+        "VELDO-0127 live/claude",
+        "VELDO-0127 live/codex",
+        "VELDO-0127 review/codex-capture",
+        "VELDO-0127 review/codex-mode",
+        "VELDO-0127 review/codex-tools",
+        "VELDO-0127 review/init-bound",
+        "VELDO-0127 review/marker-debug",
+        "VELDO-0127 review/probe-terminal",
+        "VELDO-0127 review/skill-commit",
+        "VELDO-0127 review/skill-git-boundary",
+        "VELDO-0127 review/slash-collision",
+        "VELDO-0127 revision/history",
+        "VELDO-0127 wire/later-requests",
+        "VELDO-0127 wire/no-server",
+        "VELDO-0127 wire/normalization",
+        "VELDO-0127 wire/resources",
+        "VELDO-0172 fake/capture",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "sources": [
+        {
+          "suite": "86_veldo_0127_init_bound.py",
+          "receipt": "after-resources/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "86_veldo_0127_agent_configuration.py",
+          "receipt": "after-final2/worker-raw.json.gz",
+          "controls": "pending-on-host",
+          "failed_rows": [
+            "VELDO-0127 handoff/codex",
+            "VELDO-0127 launch/unlisted",
+            "VELDO-0127 launch/instructions",
+            "VELDO-0127 review/skill-commit",
+            "VELDO-0127 review/codex-tools",
+            "VELDO-0127 review/codex-mode",
+            "VELDO-0127 review/codex-capture",
+            "VELDO-0127 catalog/fields",
+            "VELDO-0127 catalog/grants",
+            "VELDO-0127 wire/normalization",
+            "VELDO-0127 wire/resources",
+            "VELDO-0127 wire/no-server"
+          ]
+        }
+      ]
     },
     "86_veldo_0189_engine_upgrade.py": {
-      "missing_rows": [
+      "before_rows": 61,
+      "runtime_union_rows": 61,
+      "missing_rows": [],
+      "additional_rows": [],
+      "not_green_on_pc2": [],
+      "expected_rows": [
         "VELDO-0189 announce/before-first-write",
+        "VELDO-0189 engines/atomic-record",
+        "VELDO-0189 engines/codex-refusal",
+        "VELDO-0189 engines/refuse-record",
+        "VELDO-0189 engines/repair-record",
+        "VELDO-0189 engines/repair-report",
+        "VELDO-0189 install/assets",
         "VELDO-0189 kept/owner-data",
         "VELDO-0189 kept/runs",
         "VELDO-0189 ownership/commit-refused",
@@ -469,91 +2251,301 @@
         "VELDO-0189 switch/stop-refused",
         "VELDO-0189 timers/profile-applied",
         "VELDO-0189 upgrade/census",
+        "VELDO-0189 upgrade/corrupt-runtime-record",
+        "VELDO-0189 upgrade/fresh-0186",
         "VELDO-0189 upgrade/from-8bc34e94",
         "VELDO-0189 upgrade/from-971186ac",
         "VELDO-0189 upgrade/older-0186-equivalence",
+        "VELDO-0189 upgrade/receiver-without-store",
         "VELDO-0189 upgrade/refused-by-name",
-        "VELDO-0189 upgrade/removed-module"
+        "VELDO-0189 upgrade/removed-module",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
       ],
+      "runtime_rows": [
+        "VELDO-0189 announce/before-first-write",
+        "VELDO-0189 engines/atomic-record",
+        "VELDO-0189 engines/codex-refusal",
+        "VELDO-0189 engines/refuse-record",
+        "VELDO-0189 engines/repair-record",
+        "VELDO-0189 engines/repair-report",
+        "VELDO-0189 install/assets",
+        "VELDO-0189 kept/owner-data",
+        "VELDO-0189 kept/runs",
+        "VELDO-0189 ownership/commit-refused",
+        "VELDO-0189 ownership/committed",
+        "VELDO-0189 ownership/restore-commands",
+        "VELDO-0189 ownership/restore-differs",
+        "VELDO-0189 ownership/restore-reported",
+        "VELDO-0189 ownership/start-drops",
+        "VELDO-0189 restart/adoption-signer-kill",
+        "VELDO-0189 restart/rules",
+        "VELDO-0189 second-run/changes-nothing",
+        "VELDO-0189 switch/failed-after-start",
+        "VELDO-0189 switch/failed-restart",
+        "VELDO-0189 switch/kill-points",
+        "VELDO-0189 switch/resumed-failure",
+        "VELDO-0189 switch/rollback-kills",
+        "VELDO-0189 switch/stop-before-restore",
+        "VELDO-0189 switch/stop-refused",
+        "VELDO-0189 timers/profile-applied",
+        "VELDO-0189 upgrade/census",
+        "VELDO-0189 upgrade/corrupt-runtime-record",
+        "VELDO-0189 upgrade/fresh-0186",
+        "VELDO-0189 upgrade/from-8bc34e94",
+        "VELDO-0189 upgrade/from-971186ac",
+        "VELDO-0189 upgrade/older-0186-equivalence",
+        "VELDO-0189 upgrade/receiver-without-store",
+        "VELDO-0189 upgrade/refused-by-name",
+        "VELDO-0189 upgrade/removed-module",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "sources": [
+        {
+          "suite": "86_veldo_0189_engine_records.py",
+          "receipt": "after-batch1/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "86_veldo_0189_engine_upgrade.py",
+          "receipt": "after-continuation-part/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        },
+        {
+          "suite": "86_veldo_0189_engine_records.py",
+          "receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+          "controls": "green"
+        }
+      ]
+    },
+    "160_veldo_0358_load_leg.py": {
+      "before_rows": 32,
+      "runtime_union_rows": 32,
+      "missing_rows": [],
       "additional_rows": [],
-      "before_rows": 61,
-      "after_rows": 35
+      "not_green_on_pc2": null,
+      "expected_rows": [
+        "VELDO-0358 leg/graph-blocks",
+        "VELDO-0358 leg/proven-and-changed-rules",
+        "VELDO-0358 leg/proves-and-blocks",
+        "VELDO-0358 leg/record-taken-by-the-authority",
+        "VELDO-0358 load/hang-constants-are-the-contract",
+        "VELDO-0358 load/level-by-construction",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "runtime_rows": [
+        "VELDO-0358 leg/graph-blocks",
+        "VELDO-0358 leg/proven-and-changed-rules",
+        "VELDO-0358 leg/proves-and-blocks",
+        "VELDO-0358 leg/record-taken-by-the-authority",
+        "VELDO-0358 load/hang-constants-are-the-contract",
+        "VELDO-0358 load/level-by-construction",
+        "absent required evidence rejected",
+        "bad release mode rejected",
+        "bad status rejected",
+        "bad verdict value rejected",
+        "correct mirror accepted",
+        "correct spec binding accepted",
+        "dangling dependency rejected",
+        "decision blocking unknown spec rejected",
+        "decision without blocks rejected",
+        "duplicate work spec rejected",
+        "good plan accepted",
+        "good spec accepted",
+        "invented proof criterion rejected",
+        "mirror mismatch rejected",
+        "missing proof criterion rejected",
+        "passed-without-evidence rejected",
+        "plan dependency cycle rejected",
+        "ready without approval rejected",
+        "spec binding to wrong plan rejected",
+        "spec claiming missing work item rejected",
+        "spec plan without work rejected",
+        "spec without criteria rejected",
+        "undeclared depends_on rejected",
+        "unknown evidence kind rejected",
+        "unknown feature ref rejected",
+        "unknown outcome ref rejected"
+      ],
+      "sources": [
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/opened358-unit-not-taken.json",
+          "sha256": "095bce7ff8b3006acd13e52eac4a880b1de74a899963b4a3876491b51fc7f4f5"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/load358-canary-event-wait-removed.json",
+          "sha256": "44c992eabd45d3c9960105d3fd814e6f0e713b49374a0852634052b98c1c9fe6"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/load358-affinity-dropped.json",
+          "sha256": "23601f54fd1e88334de68e5a21b022fc1b627f0c17b2575e65bdb13c3b8a85c6"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/load358-graph-red-not-blocking.json",
+          "sha256": "8cd45402706beb9723590773a939756ac20f59a521d5e062b8384d927598df64"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/opened358-forged-claim-kept.json",
+          "sha256": "11b4a1d79e330491842943a33fade0c9e9ce54c774df91ae54fc977c7651d836"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/load358-no-spinners.json",
+          "sha256": "ed42cf4271c501955948f7b48f57ddb6887452092ba3b109df742290853cc531"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/load358-red-is-rerun.json",
+          "sha256": "5937484fbca807a48de1520ffaf23c4f014230dec78a1c4b7aede44d1feeebbc"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/opened358-tree-drops-ledger.json",
+          "sha256": "2a44eff98e68d126e4c0e3d5effcd3b5652b5bf3821472c3587196fbfc7eefa3"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/opened358-load-reads-unpublished.json",
+          "sha256": "0aa2810f9148ba77efbbbb73ca346ef79a52ddca3422e417f05154f10b8e303c"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/opened358-candidate-record-read.json",
+          "sha256": "3985d184d8f2d7a6ed71bb254dda03a05978be558ec84da790effe29fd6f3778"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/load358-canary-read-inverted.json",
+          "sha256": "c08ada1ef53093bdf5f95aa717f4a8ccbb040b623a691dbe3d0da943caedd75d"
+        },
+        {
+          "receipt": "../veldo-speed-suites-evidence/after/load358-red-not-blocking.json",
+          "sha256": "682232fdcbc6417c6be52969886e14361046c8a20425479bc0fbf661e9407ff6"
+        }
+      ],
+      "scope": "Retained Round 1 runtime receipts, checked against unchanged suite sources; no new local run.",
+      "retained_round1": true,
+      "before_receipt": "../veldo-speed-suites-evidence/before-sample20.json",
+      "before_receipt_sha256": "1130ee27036b07fbe32f58d71b8fdf94461ffed702779c0b107984a1466a1a61"
     }
   },
-  "totals": [
+  "comparisons": [
     {
-      "suite": "110_veldo_0143_new_project.py",
-      "cases": 1,
-      "gate13_mutant_seconds": 66.03215450933203,
-      "pc2_mutant_seconds": 11.141808241955005
+      "name": "upgrade189-unreadable-record-kept",
+      "host": "pc2",
+      "before_commit": "369d6d04e",
+      "before_receipt": "before/.local/speed-round2/receipts.json.gz",
+      "after_receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "before_seconds": {
+        "baseline": 159.94204309699126,
+        "noop": 160.462129896041,
+        "mutant": 160.45481114007998
+      },
+      "after_seconds": {
+        "baseline": 18.880071501014754,
+        "noop": 18.777864166884683,
+        "mutant": 18.82950998703018
+      },
+      "before_trio_seconds": 480.85898413311224,
+      "after_trio_seconds": 56.487445654929616,
+      "saved_trio_seconds": 424.37153847818263
     },
     {
-      "suite": "121_veldo_0131_factory_screens_narrow.py",
-      "cases": 3,
-      "gate13_mutant_seconds": 1655.1784462351352,
-      "pc2_mutant_seconds": 86.40477251901757
-    },
-    {
-      "suite": "124_veldo_0131_factory_reads_commands.py",
-      "cases": 2,
-      "gate13_mutant_seconds": 1293.9941666214727,
-      "pc2_mutant_seconds": 96.47171406494454
-    },
-    {
-      "suite": "71_veldo_0130_api.py",
-      "cases": 2,
-      "gate13_mutant_seconds": 74.04105304088444,
-      "pc2_mutant_seconds": 46.97158612497151
-    },
-    {
-      "suite": "78_veldo_0160_account_pool.py",
-      "cases": 1,
-      "gate13_mutant_seconds": 36.91502790292725,
-      "pc2_mutant_seconds": 1.0375164389843121
-    },
-    {
-      "suite": "86_veldo_0127_agent_configuration.py",
-      "cases": 1,
-      "gate13_mutant_seconds": 96.21618505520746,
-      "pc2_mutant_seconds": 32.323157593025826
-    },
-    {
-      "suite": "86_veldo_0189_engine_upgrade.py",
-      "cases": 1,
-      "gate13_mutant_seconds": 122.67842094087973,
-      "pc2_mutant_seconds": 19.857472939998843
+      "name": "v164-socket-message-unrouted",
+      "host": "pc2",
+      "before_commit": "369d6d04e",
+      "before_receipt": "before/.local/speed-round2/receipts.json.gz",
+      "after_receipt": "after-complete/.local/speed-round2/receipts.json.gz",
+      "before_seconds": {
+        "baseline": 45.24827561993152,
+        "noop": 45.30982691608369,
+        "mutant": 45.347884841961786
+      },
+      "after_seconds": {
+        "baseline": 23.925957557046786,
+        "noop": 23.79517968907021,
+        "mutant": 23.859802079037763
+      },
+      "before_trio_seconds": 135.905987377977,
+      "after_trio_seconds": 71.58093932515476,
+      "saved_trio_seconds": 64.32504805282224
     }
   ],
-  "measurement_note": "Gate 13 mutant times are on pc1 under gate load; after times are exclusive pc2 runs. These are worker times, not normalized host speedups or full-gate wall savings. Shared baseline/no-op workers in bounded batch stages must not be summed once per case.",
+  "starting_commit": "369d6d04e",
+  "resumed_commit": "29bac6c19",
+  "implementation_commit": "29bac6c199aeb447b7f547113874786ce61e8d0d",
+  "measurement_note": "Only fresh same-host, exclusive pc2 matched trios support normalized savings. Gate 13 times are pc1 under gate load and are not speedup estimates. Shared controls are counted once per group. No full-gate saving is claimed.",
+  "measurement_environment": "pc2 remote_run exclusive slots; parallel=1, force_fresh; pinned Node on worker PATH; private fixture parent; real locked graph runtime with process-local NSS selecting its private home; no host account changes.",
   "protected_paths": [
     "scripts/gate_unconfined.json"
-  ],
-  "starting_commit": "369d6d04e",
-  "implementation_commit": "da7b6ae5686dc454942eb46485c3d4bd654c62fa",
-  "status": "INCOMPLETE \u2014 not accepted",
-  "owner": "Telegram 43610",
-  "remapped_count": 40,
-  "requested_sample": [
-    "newproject143-presented-when-named",
-    "ui131-decision-action-hidden-360",
-    "ui131-identities-dropped",
-    "body-actor-authorizes",
-    "pool-shared-profile",
-    "role127-resource-grant-omitted",
-    "upgrade189-previous-commands-not-recorded",
-    "ui131-node-settings-hover-only",
-    "newproject143-correction-mode-unbound",
-    "newproject143-correction-name-unbound",
-    "newproject143-judge-correction-unbound",
-    "newproject143-identity-from-document",
-    "newproject143-visibility-from-text",
-    "api-runs-in-process",
-    "api-request-unsigned-accepted",
-    "api-call-verified-by-keyring",
-    "signer-signs-any-request",
-    "revocation-not-delivered",
-    "subscribers-forgotten",
-    "restart-announces-nothing"
   ],
   "assertion_preservation": {
     "110_veldo_0143_new_project.py": {
@@ -607,27 +2599,138 @@
     "cases": 3978,
     "stale": []
   },
-  "census": {
-    "returncode": 0,
-    "sites": 2844,
-    "new_sites": 0
+  "control_diagnosis": {
+    "pool-shared-profile": {
+      "classification": "pending-on-host",
+      "same_failed_rows_original_and_split": true,
+      "failed_rows": [
+        "VELDO-0160 pool/per-account-isolation",
+        "VELDO-0160 pool/concurrent",
+        "VELDO-0160 limit/stream-exhausted",
+        "VELDO-0160 limit/rate-limit-result",
+        "VELDO-0160 limit/claude-rejected-texts",
+        "VELDO-0160 pool/moved-off",
+        "VELDO-0160 pool/added-account",
+        "VELDO-0160 pool/one-run-while-unknown",
+        "VELDO-0160 pool/usage-observes",
+        "VELDO-0160 pool/selection-order",
+        "VELDO-0160 pool/until-earliest",
+        "VELDO-0172 fake/capture"
+      ],
+      "original_rows": 60,
+      "split_parent_rows": 59,
+      "original_receipt": "original-driver-diagnosis/.local/speed-round2/receipts.json.gz",
+      "split_receipt": "after-final/.local/speed-round2/receipts.json.gz"
+    },
+    "role127-resource-grant-omitted": {
+      "classification": "pending-on-host",
+      "same_failed_rows_original_and_split": true,
+      "failed_rows": [
+        "VELDO-0127 handoff/codex",
+        "VELDO-0127 launch/unlisted",
+        "VELDO-0127 launch/instructions",
+        "VELDO-0127 review/skill-commit",
+        "VELDO-0127 review/codex-tools",
+        "VELDO-0127 review/codex-mode",
+        "VELDO-0127 review/codex-capture",
+        "VELDO-0127 catalog/fields",
+        "VELDO-0127 catalog/grants",
+        "VELDO-0127 wire/normalization",
+        "VELDO-0127 wire/resources",
+        "VELDO-0127 wire/no-server"
+      ],
+      "original_rows": 54,
+      "split_parent_rows": 53,
+      "original_receipt": "original-driver-diagnosis/.local/speed-round2/receipts.json.gz",
+      "split_receipt": "after-final2/.local/speed-round2/receipts.json.gz"
+    }
   },
-  "personal_setup": {
-    "returncode": 0,
-    "findings": 0
+  "unconfined_declaration": {
+    "added": [
+      {
+        "suite": "71_veldo_0130_api_service",
+        "reason": "Split service closure of 71_veldo_0130_api: systemd user manager: the authenticated API runs as an installed user service under the authority slice"
+      },
+      {
+        "suite": "86_veldo_0127_init_bound",
+        "reason": "Split init-bound closure of 86_veldo_0127_agent_configuration: systemd user manager: accepted role revisions run through both production adapters in transient user units"
+      },
+      {
+        "suite": "86_veldo_0189_engine_records",
+        "reason": "Split records closure of 86_veldo_0189_engine_upgrade: systemd user manager: re-running factory setup upgrades and restarts installed user services"
+      },
+      {
+        "suite": "110_veldo_0143_corrections",
+        "reason": "Split corrections closure of 110_veldo_0143_new_project: graph runtime: pm/new-project-run runs the factory PM cycle through the installed Runner and graph services, which the gate domain cannot reach, as suites 92 and 93 do"
+      },
+      {
+        "suite": "121_veldo_0131_factory_progress",
+        "reason": "Split progress closure of 121_veldo_0131_factory_screens_narrow: system Chrome and the npm registry: the factory screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the factory harness"
+      },
+      {
+        "suite": "124_veldo_0131_factory_commands",
+        "reason": "Split commands closure of 124_veldo_0131_factory_reads_commands: system Chrome and the npm registry: the factory screens are built from the UI's locked dependencies (npm ci needs the registry and the network) and driven in a real browser (Playwright, /opt/google/chrome) against the factory harness"
+      }
+    ],
+    "removed": [],
+    "other_fields_unchanged": true
   },
-  "blocked_controls": [
-    "pool-shared-profile",
-    "role127-resource-grant-omitted"
+  "checks": {
+    "environment": {
+      "returncode": 0,
+      "node_sha256": "1bec56ef7cfa9a76f3e0b7c0a87f220eb73f23102b9c0b4c7529a3f7c3ce7c31",
+      "description": "Pinned Node on worker PATH; private fixture parent; process-local NSS only for new-project workers in the corrected run."
+    },
+    "census": {
+      "returncode": 0,
+      "sites": 2844,
+      "new_sites": 0
+    },
+    "personal": {
+      "returncode": 0,
+      "findings": 0,
+      "scope": "Built-in shapes; no installation found in the clean measurement home."
+    },
+    "raw_receipt": "after-complete/.local/speed-round2/checks.json"
+  },
+  "discarded_attempts": [
+    {
+      "log": "continue.log",
+      "reason": "Unfinished browser worker inherited the graph-runtime NSS preload; interrupted and excluded from timing and accepted controls. Corrected run scopes NSS to new-project workers."
+    }
   ],
+  "status": "bounded-proof-complete-with-two-host-pending-controls",
   "limitations": [
-    "Only 11 of 53 selected cases have accepted after receipts; the 20-case sample and all 40 remapped cases are not yet qualified.",
-    "Original account-pool and agent-configuration parent controls failed on pc2. The cause is unresolved; their failed runs are excluded from timing evidence.",
-    "The original new-project parent had an unavailable runtime on pc2. A real locked runtime was installed and qualified in the measurement cache; the parent retry with process-local NSS was interrupted at the work bound.",
-    "Coverage missing_rows describes rows not yet covered by successful runtime proof, not assertions removed from source.",
-    "The two fresh pc2 before trios have no completed matching after receipts; no normalized speedup claim is made.",
-    "No full leg or repository gate was run; independent review remains outstanding."
+    "Two sample controls remain pending-on-host; their original and split parents fail the same rows on pc2. Neither is accepted as a passing trio.",
+    "Runtime union coverage is complete; green runtime coverage of the pool and agent residual parents awaits a qualified host.",
+    "No full leg, repository gate, or independent review was run. No full-gate speedup is claimed."
   ],
-  "measurement_environment": "Exclusive pc2 remote_run, one mutation worker at a time, original coordinator and validation, force_fresh. Pinned Node directory appended to worker PATH and a private fixture parent supplied. Latest correction run uses a real qualified pinned graph runtime in a private home resolved through a process-local NSS database. No host account files or product runtime were changed.",
-  "protected_reason": "Six new closure entries retain the unconfined execution context of their parent suites."
+  "evidence_sha256": {
+    "after-batch1/.local/speed-round2/receipts.json.gz": "e3831356a891da7c750ad4121069acdb26991e2cb46f4df23890c9140e37e026",
+    "after-complete/.local/speed-round2/checks.json": "e5d28939aba4d329eb51d49e444df085bd724849987147e3935f1e1609cd864b",
+    "after-complete/.local/speed-round2/raw.json.gz": "7e404fb2040516e61824f4fd92c2e98f5bbe8bbca96f716cbfba61505b0ef8d9",
+    "after-complete/.local/speed-round2/receipts.json.gz": "52d87efd1c038dfc89f40c83c00e393a62454de5780842f5f3dc858bb7d49f49",
+    "after-continuation-part/.local/speed-round2/raw.json.gz": "ae3ab8f892a861c258997101c40f8084bc249653f8d9b887bf2b04d121bf985e",
+    "after-continuation-part/.local/speed-round2/receipts.json.gz": "e52cd9f61b6571854bce7d472a93710a4f25d1d276f787b149cdb99d67dbfbea",
+    "after-final/.local/speed-round2/receipts.json.gz": "77c5a7aeec7ac404ec54a4c64680dd29c7f77c9b2f11209a766c12143707d218",
+    "after-final/worker-raw.json.gz": "5cd475c53d7991a78a7d0939fe5fe9f6e224b63257a34ad669450fe4cdc50066",
+    "after-final2/worker-raw.json.gz": "6f3b4481622ad9f677536acb26e41b3eeab6973d531de4fbd22e459990e90f32",
+    "after-remaining-part/.local/speed-round2/receipts.json.gz": "dcefa7ab80636f843c14b6f5f64480d08f7e4328d25fa8dc840f4112adab44ad",
+    "after-resources/.local/speed-round2/receipts.json.gz": "e56c016a9584213924abd9a65d35f319608264bbe57793a0050bd1a3a588d387",
+    "after-runtime/.local/speed-round2/receipts.json.gz": "46317ac6a210b6d9ebee0b803a335072518fa2f3f54e8ab69f50470ad199391b",
+    "assertions.json": "4df4befa852f1a5789334c4db740d9ffd7ec412a0e50053297d358aa33a195a0",
+    "before/.local/speed-round2/receipts.json.gz": "0748f4f22a1e66230013235778ace4a6e0ac2c96922713308c61f26a05741290",
+    "complete_summary.py": "0e88daece0e6b0b0602c20eecea95bb299bebbc5f97fdf73fa201c2aaa3c633b",
+    "continue.log": "e750590d93609164e3fdde6d9c48569eec4c903622c4272674792820f45aa77b",
+    "continue_runner.py": "aa333fca1fe8205106da2ddc78ca02524ed02633aa056cb46c0f71babae8f0ee",
+    "control-diagnosis.json": "273b490ebfcdb883f670e154bf2701e119b3b0f97004926acb35de47b8f1bef4",
+    "declaration-check.json": "66f2346c2084c267897231cf3f09d55ab50d877fe7789831827088d41dc6c145",
+    "host-gap-evidence.json": "8361308a31c544a2f02c5f5219f5b952bff81007d921dfc58b7c6416af58798f",
+    "original-driver-diagnosis/.local/speed-round2/receipts.json.gz": "488dfc4a7741f99580ef515d0a0598e222f6d37d1c96700f278bbbd74970e968",
+    "original-driver-diagnosis/worker-raw.json.gz": "739b66de14481fe3fede0490699920d83d0067a9011db717ab7e2580a3d45ad4",
+    "round1-runtime-coverage.json": "58168a7c683b5ececf109ffefb13001675b93e595ed9ec9f8ecd3d91d325f19e",
+    "runtime_bootstrap.py": "5550fe81574cda8d2f5cada1433081f03acab97cd563b9b392127509e66d948e",
+    "runtime_bootstrap_scoped.py": "cf4ef5f24b77b589d7f4d36700f3d43244cc8cc90110f90f8aa75055ef3fd32c",
+    "stale.json": "e54af48e3c04e31c9a5bb9e630ea13810bec2b47876a323436990ee59a5a8f86"
+  }
 }
