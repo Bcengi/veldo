@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { test as base } from '@playwright/test'
+import { WAIT_HANG_MS, stopHarness } from './fixtures'
 import type { FactoryUi } from './factory-fixtures'
 
 export { expect, guard, routeOf, signIn } from './fixtures'
@@ -42,7 +43,7 @@ async function start(seed: '1' | '0' | 'keep') {
   child.stderr.on('data', (chunk) => (errors += String(chunk)))
   const ready = await new Promise<{ origin: string; control: string; domain: string }>((resolve, reject) => {
     let out = ''
-    const timer = setTimeout(() => reject(new Error(`space harness did not start: ${errors}`)), 90_000)
+    const timer = setTimeout(() => reject(new Error(`space harness did not start: ${errors}`)), WAIT_HANG_MS)
     child.stdout.on('data', (chunk) => {
       out += String(chunk)
       const line = out.split('\n')[0]
@@ -73,19 +74,7 @@ async function start(seed: '1' | '0' | 'keep') {
     workflow: async () => (await control<{ workflow: Record<string, any> }>('/factory/workflow')).workflow,
     ids: async () => (await control<{ ids: SpaceIds }>('/space/ids')).ids,
   }
-  const stop = async () => {
-    child.stdin.end()
-    await new Promise((resolve) => {
-      const timer = setTimeout(() => {
-        child.kill('SIGTERM')
-        resolve(null)
-      }, 10_000)
-      child.on('exit', () => {
-        clearTimeout(timer)
-        resolve(null)
-      })
-    })
-  }
+  const stop = () => stopHarness({ child, what: 'space harness', factory })
   return { factory, stop }
 }
 

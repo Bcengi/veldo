@@ -537,7 +537,7 @@ def _v316_suite():
                 def pump():
                     while consumer.active:
                         descriptor = consumer.active[0]
-                        assert select.select([descriptor], [], [], 120)[0], 'worker hang'
+                        assert select.select([descriptor], [], [], WAITS.WAIT_HANG_SECONDS)[0], 'worker hang'
                         consumer.readable(descriptor)
                 pump()
                 check('ac2/completion-wakes', len(wakes) == 1 and int(seen.read_text()) == pid
@@ -625,7 +625,7 @@ def _v316_suite():
                         return getattr(error, 'code', None)
                 def pump():
                     while consumer.active:
-                        ready, _, _ = select.select(list(consumer.pipes()), [], [], 120)
+                        ready, _, _ = select.select(list(consumer.pipes()), [], [], WAITS.WAIT_HANG_SECONDS)
                         assert ready
                         for fd in ready:
                             consumer.readable(fd)
@@ -687,7 +687,7 @@ def _v316_suite():
                 os.write(go_write, b'xx')
                 answers = []
                 for pid, read in children:
-                    assert select.select([read], [], [], 120)[0], 'concurrent admission hang'
+                    assert select.select([read], [], [], WAITS.WAIT_HANG_SECONDS)[0], 'concurrent admission hang'
                     answers.append(os.read(read, 4096).decode())
                     assert os.waitpid(pid, 0)[1] == 0
                 check('ac1/concurrent', sorted(answers) == ['admitted', 'space_wait:host']

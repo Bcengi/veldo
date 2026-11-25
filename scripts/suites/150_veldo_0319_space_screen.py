@@ -56,7 +56,7 @@ def _v319_suite():
     import shutil
     import subprocess
     import tempfile
-    import time
+    fixture_now = 1700000000.0  # Supplied record and authorization time.
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -80,7 +80,7 @@ def _v319_suite():
             'scope/member', 'scope/digest', 'redact/locator', 'words/deferrals', 'canon/synced')
     rows = {name: [] for name in ROWS}
     KEEP_ROWS = ('ac5/', 'ac6/', 'ac7/')
-    started = time.monotonic()
+    started = WAITS.stamp()
 
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
@@ -1032,11 +1032,11 @@ def _v319_suite():
                                            public_key=public[who], independence_group=who, scope='*'),
                            artifact_digests=[], expected_versions={})
             envelope = dict(ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal='steward',
-                            request_revision=1, nonce=next_id(), expires_at=time.time() + 600,
+                            request_revision=1, nonce=next_id(), expires_at=fixture_now + 600,
                             membership_version=state['membership_version'], delegation_version=state['delegation_version'],
                             command_digest=AC.canonical_command_digest(command))
             done = CM.admit(S, conn, envelope, command, sign('steward', AC.canonical_envelope_bytes(envelope)), ids,
-                            time.time(), enrollee_signature=None if who == 'steward' else
+                            fixture_now, enrollee_signature=None if who == 'steward' else
                             sign(who, AC.canonical_envelope_bytes(dict(envelope, principal=who))),
                             journal_signer=('steward', journal_sign))
             if not done.get('ok', done.get('outcome') in ('accepted', 'admitted', None)) and done.get('reason'):
@@ -1069,7 +1069,7 @@ def _v319_suite():
 
             def send(self, chat, text, reply_to):
                 self.sent.append(text)
-                return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,
+                return dict(chat_id=chat, message_id=len(self.sent), date=int(fixture_now), text=text,
                             reply_to_message_id=reply_to)
         inbox = I.Inbox(S, CM, claims, contract, conn, ids, 'steward', journal_sign)
         presenter = V.Presenter(S, CM, P, inbox, Transport(), conn, 'steward', journal_sign, assignment=I)
@@ -1084,9 +1084,9 @@ def _v319_suite():
             def __init__(self, name, principal, revoked=False):
                 self.key = base / ('passkey-' + name + '.pem')
                 subprocess.run(['openssl', 'genpkey', '-algorithm', 'EC', '-pkeyopt', 'ec_paramgen_curve:P-256',
-                                '-out', str(self.key)], check=True, capture_output=True, timeout=20)
+                                '-out', str(self.key)], check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS)
                 der = subprocess.run(['openssl', 'pkey', '-in', str(self.key), '-pubout', '-outform', 'DER'],
-                                     check=True, capture_output=True, timeout=20).stdout
+                                     check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS).stdout
                 self.credential_id, self.user_handle = b64(os.urandom(32)), b64(os.urandom(16))
                 put(CRD.entity_id(self.credential_id), CRD.KIND, {
                     'schema': CRD.SCHEMA, 'principal': principal, 'credential_id': self.credential_id,
@@ -1103,7 +1103,7 @@ def _v319_suite():
                 data = hashlib.sha256(rp_id.encode()).digest() + bytes([0x05]) + b'\x00\x00\x00\x00'
                 signature = subprocess.run(['openssl', 'dgst', '-sha256', '-sign', str(self.key)],
                                            input=data + hashlib.sha256(client).digest(), check=True,
-                                           capture_output=True, timeout=20).stdout
+                                           capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS).stdout
                 return {'credential_id': self.credential_id, 'client_data_json': b64(client),
                         'authenticator_data': b64(data), 'signature': b64(signature), 'user_handle': self.user_handle}
         PASS = {'owner': Passkey('owner', 'owner'), 'owner-revoked': Passkey('owner-old', 'owner', revoked=True),
@@ -1120,7 +1120,7 @@ def _v319_suite():
                             'build_roots': [], 'plain_repositories': [{'repository': str(repo), 'worktree_root': str(trees)}],
                             'client_accounts': [], 'protect': {'paths': [], 'volumes': [], 'containers': [], 'images': [],
                                                                'networks': [], 'compose_projects': []}})
-        L = SP.Ledger(S, conn, 'steward', journal_sign, config=config, state_root=str(state), host='fixture',
+        L = SP.Ledger(S, conn, 'steward', journal_sign, config=config, state_root=str(state), host='fixture', clock=lambda: fixture_now,
                       lifecycle=K.LIFECYCLE, device=lambda path: 'dev-host')
         L.passkeys = {'origin': ORIGIN, 'rp_id': HOST, 'state_dir': str(base / 'passkey-state')}
         if not L.set_pool('host', 'filesystem', device='dev-host').get('ok'):
@@ -1195,7 +1195,7 @@ def _v319_suite():
 
         def space_keep(packet):
             reached.append(packet)
-            return L.disposition(packet, CM, time.time(), only='keep')
+            return L.disposition(packet, CM, fixture_now, only='keep')
         authority.space_keep, authority.space_signing = space_keep, HOST
         api = API.ControlApi({'origin': ORIGIN, 'rp_id': HOST, 'host': HOST, 'domain': 'orchard-factory', 'ids': ids,
                               'edge': 'api-edge', 'state_dir': str(base / 'api-state')}, authority,
@@ -1364,11 +1364,11 @@ def _v319_suite():
 
         R = 'ac6/ssh-as-before'
         made = command(c, rid_c)
-        taken = L.disposition({'command': made, 'signature': sign('owner', S.canonical_bytes(made))}, CM, time.time())
+        taken = L.disposition({'command': made, 'signature': sign('owner', S.canonical_bytes(made))}, CM, fixture_now)
         check(R, 'a Keep signed with the owner\'s SSH key is taken as before [%s]' % taken.get('reason'),
               taken.get('ok') and L.item(c)['state'] == 'kept' and L.item(c).get('owner_keep') == {'by': 'owner'})
         made = command(d, rid_d)
-        other = L.disposition({'command': made, 'signature': sign('second', S.canonical_bytes(made))}, CM, time.time())
+        other = L.disposition({'command': made, 'signature': sign('second', S.canonical_bytes(made))}, CM, fixture_now)
         check(R, 'and one signed with another member\'s key is refused as before [%s]' % other.get('reason'),
               not other.get('ok') and other.get('reason') == 'not_authorized' and untouched(d, was_d))
 
@@ -1469,7 +1469,7 @@ def _v319_suite():
         if not observed:
             print('  VELDO-0319 space319/%s detail: no check ran' % name)
         expect('VELDO-0319 space319/' + name, ok)
-    print('VELDO-0319 suite seconds: %.3f' % (time.monotonic() - started))
+    print('VELDO-0319 suite began %s, ended %s' % (started.iso(), WAITS.stamp().iso()))
 
 
 _v319_suite()

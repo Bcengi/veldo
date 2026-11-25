@@ -489,7 +489,7 @@ def _v312_suite():
                         parameters=dict(item=identity, version=version(identity), request='fixture-keep'))
             packet = dict(command=body, signature=sign_as('olga', S.canonical_bytes(body)))
             with patch.object(L, 'disposition_effect', return_value=({'choice': 'accept keep'}, 'olga')):
-                return L.disposition(packet, CM, time.time())
+                return L.disposition(packet, CM, 1700000000.0)
 
         def owner_kept(identity):
             due = L.signal('ticket_ended', {'items': [{'item': identity, 'version': version(identity)}]})

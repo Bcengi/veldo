@@ -29,7 +29,6 @@ import importlib.util
 import json
 import os
 import subprocess
-import time
 from pathlib import Path
 from unittest.mock import patch
 
@@ -138,12 +137,14 @@ class Desk:
                                                             chat_id=self.chat, revoked_at=None)),
                                   expected_versions={eid: 0}, artifact_digests=[]), 'authority', self.journal, 1)
 
+        now = self.now
+
         class Transport:
             sent = []
 
             def send(self, chat, text, reply_to):
                 self.sent.append(text)
-                return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,
+                return dict(chat_id=chat, message_id=len(self.sent), date=int(now), text=text,
                             reply_to_message_id=reply_to)
 
         inbox = I.Inbox(S, CM, claims, contract, self.conn, self.ids, 'authority', self.journal)

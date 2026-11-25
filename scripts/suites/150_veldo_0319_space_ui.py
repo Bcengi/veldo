@@ -54,7 +54,6 @@ def _v319_space_ui():
     import shutil
     import subprocess
     import tempfile
-    import time
 
     # Literal anchors: the registered mutation driver substitutes each production copy here.
     PRODUCTION = {
@@ -79,7 +78,7 @@ def _v319_space_ui():
                'ui/states-1280', 'ui/states-1440', 'ui/api-only', 'ac5/keep-applied', 'ac7/sign-keep')
     ROWS = ('unit/space',) + BROWSER
     rows = {name: [] for name in ROWS}
-    started = time.monotonic()
+    started = WAITS.stamp()
     UI = ROOT / 'engine' / 'ui'
     SKIP = {'node_modules', 'dist', 'test-results', 'playwright-report'}
 
@@ -104,13 +103,15 @@ def _v319_space_ui():
             env['PATH'] = found[-1] + os.pathsep + env.get('PATH', '')
         return env
 
-    def run(args, cwd, env=None, timeout=900):
+    def run(args, cwd, kind, env=None):
         try:
-            done = subprocess.run(args, cwd=str(cwd), env=dict(environment(), **(env or {})), capture_output=True,
-                                  text=True, timeout=timeout, stdin=subprocess.DEVNULL)
-            return done.returncode, (done.stdout or '') + (done.stderr or '')
-        except (OSError, subprocess.TimeoutExpired) as error:
+            done = WAITS.run_heavy(args, kind, cwd=str(cwd), env=dict(environment(), **(env or {})))
+        except OSError as error:
             return -1, '%s: %s' % (type(error).__name__, error)
+        output = (done.stdout or '') + (done.stderr or '')
+        if done.hung:
+            return -1, output + '\nHUNG: child stopped producing progress'
+        return done.returncode, output
 
     def exercise(base):
         ui = base / 'engine' / 'ui'
@@ -133,26 +134,25 @@ def _v319_space_ui():
         if modules.is_dir():
             os.symlink(modules, ui / 'node_modules')
         else:
-            code, out = run(['npm', 'ci', '--prefer-offline', '--no-audit', '--no-fund'], ui)
+            code, out = run(['npm', 'ci', '--prefer-offline', '--no-audit', '--no-fund'], ui, 'package install')
             if code != 0:
                 all_rows('the locked UI dependencies are installed (npm ci) [%s]' % tail(out))
                 return
         dist = base / 'dist'
-        code, out = run(['npm', 'run', 'build', '--', '--outDir', str(dist), '--emptyOutDir'], ui)
+        code, out = run(['npm', 'run', 'build', '--', '--outDir', str(dist), '--emptyOutDir'], ui, 'browser run')
         if code != 0 or not (dist / 'index.html').is_file():
             all_rows('the UI builds with its own build script (vue-tsc, then vite) [%s]' % tail(out))
             return
         code, out = run(['npx', 'vitest', 'run', 'src/features/space', 'src/features/run/runs.spec.ts',
-                         'src/features/decisions/DecisionDetail.spec.ts'], ui, timeout=600)
+                         'src/features/decisions/DecisionDetail.spec.ts'], ui, 'browser run')
         counted = re.search(r'Tests\s+(\d+) passed \((\d+)\)', out)
         check('unit/space', 'the Space feature\'s (the Keep signing among them), the runs list\'s and the decision '
                             'detail\'s Vitest specs pass [%s]' % tail(out, 4),
               code == 0 and counted is not None and counted.group(1) == counted.group(2) and int(counted.group(1)) >= 45)
 
         e2e = base / 'e2e.json'
-        code, out = run(['npx', 'playwright', 'test', 'e2e/space.spec.ts'], ui,
-                        env={'VELDO_UI_DIST': str(dist), 'VELDO_ORGANS': str(organs), 'VELDO_E2E_REPORT': str(e2e)},
-                        timeout=3000)
+        code, out = run(['npx', 'playwright', 'test', 'e2e/space.spec.ts'], ui, 'browser run',
+                        env={'VELDO_UI_DIST': str(dist), 'VELDO_ORGANS': str(organs), 'VELDO_E2E_REPORT': str(e2e)})
         try:
             browser = json.loads(e2e.read_text())
         except (OSError, ValueError):
@@ -190,7 +190,7 @@ def _v319_space_ui():
         if not observed:
             print('  VELDO-0319 space319ui/%s detail: no check ran' % name)
         expect('VELDO-0319 space319ui/' + name, ok)
-    print('VELDO-0319 UI suite seconds: %.3f' % (time.monotonic() - started))
+    print('VELDO-0319 UI suite began %s, ended %s' % (started.iso(), WAITS.stamp().iso()))
 
 
 _v319_space_ui()

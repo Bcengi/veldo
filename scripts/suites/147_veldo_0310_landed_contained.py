@@ -1519,7 +1519,7 @@ def _v310_suite():
         # outcome that claims the mark is refused, and the worktree is kept through its request, the
         # owner's settled answer and the owner's packet (support/space_owner_keep.py). The desk's two
         # services are made members as this fixture makes its own.
-        claimed = L.outcome(held['worktree'], 'kept', {'owner_keep': {'at': time.time(), 'answer': 'keep'}}, principal='olga')
+        claimed = L.outcome(held['worktree'], 'kept', {'owner_keep': {'at': 1700000000.0, 'answer': 'keep'}}, principal='olga')
         check(R, 'an outcome that claims the owner\'s mark is refused and writes nothing [%s]' % (claimed.get('reason'),),
               claimed.get('ok') is False and claimed.get('reason') == 'not_authorized'
               and state_of(held['worktree']) == 'due' and (L.item(held['worktree']) or {}).get('owner_keep') is None)
@@ -1531,7 +1531,7 @@ def _v310_suite():
             put('key-' + who, 'verification_key', {'principal': who, 'public_key': key, 'effective_at': 0})
 
         desk = KEEP.Desk(mods, S, CM, AC, writer, ids, sign, lambda message: sign_as('olga', message), private,
-                         time.time(), owner='olga', tag='v310_desk', member=member)
+                         1700000000.0, owner='olga', tag='v310_desk', member=member)
         # The request names the commits Signal would name: the worktree's, read as rule 5 reads them.
         asked = KEEP.reserve(L, RM, held['worktree'],
                              commits=SIG._unlanded(L, P, RM, L.item(held['worktree']), (), None) or ())

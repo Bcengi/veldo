@@ -42,6 +42,7 @@ const WIDTHS = [
 ]
 const SCREENS_DIR = process.env.VELDO_0319_SCREENS
 const GIB = 1024 ** 3
+const WAIT_HANG_MS = 600_000
 const LIVE = new Set(['declared', 'present', 'due', 'deferred', 'removing', 'kept'])
 
 async function pageAs(browser: Browser, factory: SpaceFactory, who: string, viewport: { width: number; height: number }) {
@@ -51,7 +52,7 @@ async function pageAs(browser: Browser, factory: SpaceFactory, who: string, view
   // The first load of the build on a busy host can take longer than one action's wait: the sign-in screen is
   // awaited here with room, then signIn drives it.
   await page.goto(factory.origin + '/sign-in')
-  await expect(page.getByTestId('sign-in')).toBeVisible({ timeout: 45_000 })
+  await expect(page.getByTestId('sign-in')).toBeVisible({ timeout: WAIT_HANG_MS })
   await signIn(page, factory, who)
   return page
 }
@@ -261,14 +262,15 @@ test('ac3/answer-path: an open request links to the decision it is answered thro
 test('ac4/live-no-clock: with the clock stopped, a hold and a removal reach the screen from the record stream', async ({ browser, factory }) => {
   test.setTimeout(120_000)
   const page = await pageAs(browser, factory, 'owner', { width: 1280, height: 860 })
-  await page.clock.install()
+  const frozenAt = new Date((await factory.now()) * 1000)
+  await page.clock.install({ time: frozenAt })
   await openSpace(page, factory)
   const meta = page.getByTestId('live-meta')
   const seq0 = Number(await meta.getAttribute('data-seq'))
   const navigations: string[] = []
   page.on('framenavigated', (frame) => frame === page.mainFrame() && navigations.push(frame.url()))
   // The fixture clock stops: no timer of the page fires from here on.
-  await page.clock.pauseAt(new Date(Date.now() + 1000))
+  await page.clock.pauseAt(new Date(frozenAt.getTime() + 1000))
   const hold = 'space:hold:dispatch/' + 'c'.repeat(64)
   const reason = { pool: 'main', need: 9 * GIB, free: 33 * GIB, held: 14 * GIB, floor: 20 * GIB }
   await factory.upsert(hold, 'space_hold', { scope: { type: 'project', id: 'project-b' }, needs: { main: 9 * GIB }, source: { main: 'measured' },

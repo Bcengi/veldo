@@ -245,7 +245,7 @@ def _v324_suite():
             # the signature, the membership check and the transition are the Ledger's.
             identity = at(path)[0]
             assert L.signal('run_finished', CL.space_named(L, 'run_finished', [str(path)]))['ok']
-            claimed = L.outcome(identity, 'kept', {'owner_keep': {'at': time.time()}}, principal='owner')
+            claimed = L.outcome(identity, 'kept', {'owner_keep': {'at': now}}, principal='owner')
             assert not claimed['ok'] and claimed.get('reason') == 'not_authorized', claimed
             assert not L.item(identity).get('owner_keep') and L.item(identity)['state'] == 'due'
             record = L.item(identity)

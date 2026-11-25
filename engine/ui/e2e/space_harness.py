@@ -54,7 +54,6 @@ import hashlib
 import os
 from pathlib import Path
 import sys
-import time
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -156,7 +155,7 @@ class SpaceUi(F.FactoryUi):
              'present', (800 * MIB, 'run_finished'))
         item('unmeasured', 'build_output', tree + 'VELDO-9147/build', a('VELDO-9147', 'run-9147', 'review'), 'declared')
         item('kept', 'worktree', tree + 'VELDO-9144-kept-by-the-owner', a('VELDO-9144'), 'kept', (1 * GIB + 512 * MIB, 'ticket_ended'),
-             branch='veldo-9144', owner_keep={'by': 'owner', 'at': time.time() - 86400, 'request': 'space-disposition-kept-1'})
+             branch='veldo-9144', owner_keep={'by': 'owner', 'at': self.clock() - 86400, 'request': 'space-disposition-kept-1'})
         item('due', 'build_output', tree + 'VELDO-9145/build', a('VELDO-9145', 'run-9145'), 'due', (2 * GIB, 'run_finished'),
              due={'event': 'ticket_ended'})
         retry = ENDS['build_output']
@@ -200,7 +199,7 @@ class SpaceUi(F.FactoryUi):
                            'proposal': {'worktrees': [entry]}, 'head': None, 'state': 'requested'})
             entries.append(entry)
             members.append({'index': index, 'item': entry['item'], 'run': 'review-run-%d' % index, 'files': entry['files'],
-                            'kept_branch': None, 'head': None, 'at': time.time() - 3600, 'entry': entry})
+                            'kept_branch': None, 'head': None, 'at': self.clock() - 3600, 'entry': entry})
         rid = self.open_request(GROUP_ALIAS, brief='Three review worktrees of project-a hold work that is in no other '
                                                    'place. Save it, keep the worktrees, or discard?', risk='Medium')
         fixture(gid, 'space_review_group', {
@@ -312,7 +311,7 @@ class SpaceUi(F.FactoryUi):
             return {'ok': False, 'reason': 'space_no_item'}
         web = self.CR.W
         found, why = self.CR.current(self.CM.authority_state(self.S, self.conn), assertion.get('credential_id'),
-                                     time.time(), principal=principal)
+                                     self.clock(), principal=principal)
         challenge = web.b64url(hashlib.sha256(self.S.canonical_bytes(command)).digest())
         if why or web.assertion_problems(found, assertion, challenge, self.origin, 'localhost',
                                          str(self.base / 'keep-state')):
@@ -356,7 +355,7 @@ class SpaceUi(F.FactoryUi):
             return {'sent': False, 'reason': 'space_no_item'}
         if version != current:
             return {'sent': False, 'reason': 'space_item_version:' + item}
-        record = dict(record, owner_keep=None, abandoned={'by': by, 'at': time.time(), 'ended_keep': record.get('owner_keep')})
+        record = dict(record, owner_keep=None, abandoned={'by': by, 'at': self.clock(), 'ended_keep': record.get('owner_keep')})
         if item == self.space_ids.get('solo'):
             # Unique work: it stays, deferred, until the owner's Discard, which saves first.
             self.fixture(item, 'space_item', dict(record, state='deferred'))

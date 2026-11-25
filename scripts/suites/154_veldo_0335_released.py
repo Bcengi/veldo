@@ -389,7 +389,7 @@ def _v335_suite():
         body = dict(operation='space_disposition', principal='owner', command_id='signed-keep', nonce='signed-keep',
                     parameters=dict(item=inner, version=ledger._row(inner, SP.ITEM_KIND)[0], request='fixture-keep'))
         with patch.object(ledger, 'disposition_effect', return_value=({'choice': 'accept keep'}, 'owner')):
-            kept = ledger.disposition(dict(command=body, signature=sign(S.canonical_bytes(body))), CM, time.time())
+            kept = ledger.disposition(dict(command=body, signature=sign(S.canonical_bytes(body))), CM, 1700000000.0)
         if not kept['ok']:
             raise RuntimeError(kept)
         release([agent_path, inner_path])

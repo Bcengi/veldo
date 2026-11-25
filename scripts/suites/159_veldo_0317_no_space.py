@@ -541,7 +541,7 @@ def _v317_suite():
                         return 'owner', {'ok': False, 'reason': 'delivery_unavailable'}
                     def drain():
                         while consumer.active:
-                            ready, _, _ = select.select(list(consumer.pipes()), [], [], 120)
+                            ready, _, _ = select.select(list(consumer.pipes()), [], [], WAITS.WAIT_HANG_SECONDS)
                             assert ready, 'worker did not complete'
                             for fd in ready:
                                 consumer.readable(fd)
@@ -550,7 +550,7 @@ def _v317_suite():
                             # Copying the line must retain the class method, not a fixture-bound override.
                             del obj.open_question
                             stopped, out = rerun(f, second, obj)
-                            ready, _, _ = select.select([entered_r], [], [], 120)
+                            ready, _, _ = select.select([entered_r], [], [], WAITS.WAIT_HANG_SECONDS)
                             assert ready
                             pid = int(os.read(entered_r, 100))
                             check('ac4/off-loop', stopped is None and pid != os.getpid()

@@ -41,7 +41,7 @@ def _v342_suite():
     import sqlite3
     import subprocess
     import tempfile
-    import time
+    fixture_now = 1700000000.0  # Supplied record and authorization time.
     import traceback
     from unittest.mock import patch
 
@@ -78,12 +78,12 @@ def _v342_suite():
         for who in ('steward', 'owner', 'requester', 'api-edge', 'outsider'):
             keys[who] = base / who
             subprocess.run(['ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', str(keys[who])],
-                           check=True, capture_output=True, timeout=10)
+                           check=True, capture_output=True, timeout=WAITS.WAIT_HANG_SECONDS)
             public[who] = ' '.join(keys[who].with_suffix('.pub').read_text().split()[:2])
 
         def sign(who, message, namespace='veldo-command'):
             return subprocess.run(['ssh-keygen', '-Y', 'sign', '-f', str(keys[who]), '-n', namespace],
-                                  input=message, capture_output=True, check=True, timeout=10).stdout.decode()
+                                  input=message, capture_output=True, check=True, timeout=WAITS.WAIT_HANG_SECONDS).stdout.decode()
 
         def journal_sign(message):
             return sign('steward', message, 'veldo-journal')
@@ -106,11 +106,11 @@ def _v342_suite():
                                            public_key=public[who], independence_group=who, scope='*'),
                            artifact_digests=[], expected_versions={})
             envelope = dict(ids, schema=AC.ENVELOPE_SCHEMA, command_id=command['command_id'], principal='steward',
-                            request_revision=1, nonce=next_id(), expires_at=time.time() + 600,
+                            request_revision=1, nonce=next_id(), expires_at=fixture_now + 600,
                             membership_version=state['membership_version'], delegation_version=state['delegation_version'],
                             command_digest=AC.canonical_command_digest(command))
             return CM.admit(S, conn, envelope, command, sign('steward', AC.canonical_envelope_bytes(envelope)),
-                            ids, time.time(), enrollee_signature=None if who == 'steward' else
+                            ids, fixture_now, enrollee_signature=None if who == 'steward' else
                             sign(who, AC.canonical_envelope_bytes(dict(envelope, principal=who))),
                             journal_signer=('steward', journal_sign))
 
@@ -134,7 +134,7 @@ def _v342_suite():
 
             def send(self, chat, text, reply_to):
                 self.sent.append(text)
-                return dict(chat_id=chat, message_id=len(self.sent), date=int(time.time()), text=text,
+                return dict(chat_id=chat, message_id=len(self.sent), date=int(fixture_now), text=text,
                             reply_to_message_id=reply_to)
 
         transport = Transport()
@@ -177,7 +177,7 @@ def _v342_suite():
             'build_roots': [], 'plain_repositories': [{'repository': str(repo), 'worktree_root': str(trees)}],
             'client_accounts': [], 'protect': {'paths': [], 'volumes': [], 'containers': [],
                                             'images': [], 'networks': [], 'compose_projects': []}})
-        ledger = SP.Ledger(S, conn, 'steward', journal_sign, config=config, state_root=str(state), host='fixture',
+        ledger = SP.Ledger(S, conn, 'steward', journal_sign, config=config, state_root=str(state), host='fixture', clock=lambda: fixture_now,
             lifecycle={'version': K.REGISTRY['version'], **{k: K.REGISTRY['tables'][K.REGISTRY['version']][k]
                                                           for k in ('events', 'ends_on', 'forms')}})
         assert ledger.set_pool('host', 'filesystem', device=ledger.device(str(repo)))['ok']
@@ -238,7 +238,7 @@ def _v342_suite():
             body = dict(operation='space_disposition', principal=who, command_id=next_id(), nonce=next_id(),
                         parameters=dict(item=item, version=ledger._row(item, SP.ITEM_KIND)[0], request=rid, **extra))
             return ledger.disposition(dict(command=body, signature=sign(signer or who, S.canonical_bytes(body))),
-                                      CM, time.time())
+                                      CM, fixture_now)
 
         def act(item):
             return SIG.disposition(ledger, PR, RM, item, **{k: v for k, v in given.items()
