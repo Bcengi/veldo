@@ -14,7 +14,12 @@ protected_paths: []
 footprint:
   - "engine/.veldo/control_request_settlement.py"
   - ".veldo/control_request_settlement.py"
+  - "engine/.veldo/control_assignment.py"
+  - ".veldo/control_assignment.py"
+  - "engine/.veldo/control_channel_presentation.py"
+  - ".veldo/control_channel_presentation.py"
   - "scripts/suites/*_veldo_0327_*.py"
+  - "scripts/suites/69_veldo_0068_settlement.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -42,13 +47,16 @@ acceptance_criteria:
   - id: AC2
     text: >
       The request's terms state what Discard removes from disk, that it is saved first, and the command
-      that brings it back. They hold, for each worktree, the list of files Discard would remove and, for a
-      detached worktree with commits no ref holds, the name of the kept branch those commits go to. The
-      presentation shows both, and the Ledger raises no request that offers the discard pick without that
-      list. The control path has no tier field and none is added
+      that brings it back. They hold, for each worktree, the list of files Discard would remove, the
+      unlanded commits (their branch and tips) that make its work unique, at least one of the two lists
+      non-empty, and, for a detached worktree with commits no ref holds, the name of the kept branch those
+      commits go to. The presentation shows them; for a clean tree whose only unique work is unlanded
+      commits it says that Discard removes no uncommitted file and that the commits stay on their branch.
+      The Ledger raises no request that offers the discard pick with neither list. The control path has no
+      tier field and none is added
     falsified_by: >
-      Raise the request with an empty list; the row that reads the presentation finds discard offered with
-      nothing listed and fails
+      Raise the request with an empty file list and no commit named; the row that reads the presentation
+      finds discard offered with nothing listed and fails
   - id: AC3
     text: >
       The effect is applied once, in the settlement's own transaction, from the recorded choice; an answer
@@ -109,3 +117,31 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   store under the state root, and never in a repository's object store, so a secret in an ignored file
   does not enter git; commits stay on kept refs (design 0.3). AC2: the terms state that the files are
   saved first, and no longer say on a kept ref. The falsifier is unchanged.
+
+- 2026-11-16: built the settlement touchpoint and its signed terms/presentation contract. The original
+  settlement suite's footprint is included because it asserted that the journey had exactly five
+  entries. Its fifteen original Telegram answer/effect cases stay intact; the new suite covers the
+  space picks and required terms. No acceptance criterion changed. Request triggering, filesystem
+  effects and review groups remain in their later tickets.
+
+- 2026-11-16: fix round 1 (review of f2ed9f0f, verdict FIX), F1. The check that a space request shows
+  what its terms require was a command override on the Settlement's own connection, so an Inbox built
+  later, or on a connection with no Settlement, opened a request that hid the file list. It is now a
+  subject validator registered at module level in control_assignment.py, which every Inbox consults in
+  its own open and revise write, and the Presenter refuses to frame or present a request it does not
+  pass. The footprint is widened by control_assignment.py and control_channel_presentation.py with
+  their synced copies; the lead accepted the widening on 2026-11-16. The presentation's choice map is
+  unchanged. No acceptance criterion changed.
+
+- 2026-11-16: fix round 1, F2, a lead decision: the design governs. Design section 7's Save row ("When
+  the tree is clean and only unlanded commits made the work unique") and section 13's answer 2
+  ("Unlanded commits still raise a request") say such a worktree is asked about, and AC2 as written
+  refused its terms for the empty file list. AC2 and its falsifier are amended: the terms also name the
+  unlanded commits (their branch and tips), one of the file list and the commit list is non-empty, and
+  for a clean tree the brief says Discard removes no uncommitted file and the commits stay on their
+  branch. The falsifier now empties both lists. Each worktree's terms gain the member commits.
+
+- 2026-11-16: fix round 1, F3: a row and a teeth case for terms whose target names another item. F4
+  (process): this ticket records the owner's choice as an effect and releases nothing. Releasing the
+  kept worktree's pin, which VELDO-0317's History handed here, is the Ledger applying the effect in
+  VELDO-0318.

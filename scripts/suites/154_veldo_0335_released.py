@@ -118,6 +118,8 @@ def _v335_suite():
         service.config = {'space_landing': {'orchard': {'trunk': 'main'}}}
         service.conn, service.loop, service.api = conn, None, None
         service.space_seen, service.projects_due = None, False
+        # No channel is configured: a request VELDO-0318 reserves waits, and the worker says so.
+        service.channel = None
         service._log = observations.append
         service.space = {'ledger': ledger, 'proc': str(proc), 'free': lambda pool: 1000000000}
 
@@ -375,7 +377,19 @@ def _v335_suite():
         agent, agent_path, inner, inner_path = pair('owner-kept')
         (inner_path / 'draft').write_text('owner retained work')
         ledger.signal('contained', {'items': [{'item': inner, 'version': ledger._row(inner, SP.ITEM_KIND)[0]}]})
-        kept = ledger.outcome(inner, 'kept', {'owner_keep': {'at': 100}}, principal='owner')
+        # The owner's Keep is VELDO-0318's signed command. Its settled request is a fixture here;
+        # the signature, the membership and the one transition are real (suite 150_0318 has the rest).
+        from unittest.mock import patch
+        ledger.outcome(inner, 'deferred', {'rule': 'unique_work'})
+        asked = ledger.item(inner)
+        asked['disposition'] = {'state': 'requested', 'alias': 'fixture-keep'}
+        conn.execute('UPDATE entities SET data=?,digest=? WHERE id=?',
+                     (json.dumps(asked), S.digest_of(asked), inner))
+        conn.commit()
+        body = dict(operation='space_disposition', principal='owner', command_id='signed-keep', nonce='signed-keep',
+                    parameters=dict(item=inner, version=ledger._row(inner, SP.ITEM_KIND)[0], request='fixture-keep'))
+        with patch.object(ledger, 'disposition_effect', return_value=({'choice': 'accept keep'}, 'owner')):
+            kept = ledger.disposition(dict(command=body, signature=sign(S.canonical_bytes(body))), CM, time.time())
         if not kept['ok']:
             raise RuntimeError(kept)
         release([agent_path, inner_path])

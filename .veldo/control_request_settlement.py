@@ -14,7 +14,7 @@ The control store is the only authority: a second store, a file, a tracker statu
 record in the repository is never read as settlement state, and no other store can be attached.
 
 THE TOUCHPOINTS. JOURNEY is the configuration of the running journey's enabled request touchpoints
-(grooming, admission, priority, finding disposition, decision disposition): the assignment kind
+(grooming, admission, priority, finding disposition, decision disposition, space disposition): the assignment kind
 each is presented as, its policy predicates (the roles an answering principal must hold, the count
 of distinct principals and the independence required) and the typed effect each ruling produces.
 A request names its touchpoint through signed terms: the requester records `settlement_terms`
@@ -70,6 +70,7 @@ named refusals, never rationale text, signatures or keys. Standard library only.
 import hashlib
 import importlib.util
 import json
+import shlex
 from pathlib import Path
 import sqlite3
 import time
@@ -124,7 +125,13 @@ JOURNEY = {
                              'quorum': {'count': 1, 'min_independence': 1},
                              'effects': {'approve': 'decision_approved', 'reject': 'decision_rejected',
                                          'return_for_elaboration': 'decision_returned'}},
+    'space_disposition': {'assignment_kind': 'decision', 'roles': ('project_owner',),
+                          'quorum': {'count': 1, 'min_independence': 1},
+                          'effects': {'approve': 'space_disposition_decided'}},
 }
+SPACE_CHOICES = ('accept save', 'accept keep', 'accept discard')
+SPACE_DISCARD = ('Discard removes the worktree and its listed files from disk. The files are saved first '
+                 'outside git; commits are kept before removal. Nothing is removed if saving fails.')
 QUORUM_FIELDS = ('count', 'min_independence')
 # What Release 1 settles: one presented owner, at most separation from the requester.
 SUPPORTED = {'count': (1,), 'min_independence': (0, 1)}
@@ -180,8 +187,83 @@ def _canonical(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True).encode('utf-8')
 
 
+def space_presentation(proposal):
+    """The signed request content for one worktree, derived only from its signed terms.
+
+    Callers supply the probe's file list, the tips of the unlanded commits that make the work
+    unique, branch (null for detached), whether commits are unheld, and the kept branch when
+    detached commits need one. One of the two lists is non-empty: a clean tree whose only unique
+    work is unlanded commits is asked about too (design 7, Save; 13, answer 2), and its brief says
+    Discard removes no uncommitted file and the commits stay. The Ledger's request producer
+    uses this before signing its ordinary inbox open command. Group picks belong to VELDO-0342.
+    This is a description and an obligation; filesystem effects belong to VELDO-0318.
+    """
+    if (not isinstance(proposal, dict) or set(proposal) != {'discard', 'worktrees'}
+            or proposal.get('discard') != SPACE_DISCARD
+            or not isinstance(proposal.get('worktrees'), list) or len(proposal['worktrees']) != 1):
+        raise Refused('invalid_input', 'space terms name one worktree and say Discard saves before removal')
+    tree = proposal['worktrees'][0]
+    fields = {'item', 'path', 'branch', 'unheld_commits', 'kept_branch', 'files', 'commits', 'restore'}
+    if (not isinstance(tree, dict) or set(tree) != fields
+            or not all(_is_str(tree.get(k)) for k in ('item', 'path'))
+            or tree['branch'] is not None and not _is_str(tree['branch'])
+            or type(tree['unheld_commits']) is not bool
+            or tree['kept_branch'] is not None and not _is_str(tree['kept_branch'])):
+        raise Refused('invalid_input', 'space terms name the worktree and its branch state')
+    files, commits = tree['files'], tree['commits']
+    if (not isinstance(files, list) or not all(_is_str(path) for path in files)
+            or not isinstance(commits, list) or not all(_is_str(tip) for tip in commits)):
+        raise Refused('invalid_input', 'space terms list the files Discard would remove and the unlanded commits')
+    if not files and not commits:
+        raise Refused('invalid_input', 'Discard requires the files it would remove or the commits that are unique')
+    if tree['branch'] is None and (tree['unheld_commits'] or commits) and not _is_str(tree['kept_branch']):
+        raise Refused('invalid_input', 'detached commits require their kept branch name')
+    held = tree['kept_branch'] if tree['branch'] is None else tree['branch']
+    restore = 'veldo space restore ' + shlex.quote(tree['item'])
+    if tree['restore'] != restore:
+        raise Refused('invalid_input', 'space terms carry the restore command for this item')
+    # JSON quoting keeps a newline in a filename distinct from a second file or an instruction.
+    quoted = lambda value: json.dumps(value, ensure_ascii=True)
+    lines = ['Space disposition', proposal['discard'], 'Worktree: ' + quoted(tree['path']),
+             'Item: ' + quoted(tree['item']), 'Branch: ' + quoted(tree['branch'])]
+    if files:
+        lines += ['Files Discard would remove:'] + ['  ' + quoted(path) for path in files]
+    else:
+        lines.append('Discard removes no uncommitted file; the commits stay on ' + quoted(held))
+    if commits:
+        lines += ['Unlanded commits on ' + quoted(held) + ':'] + ['  ' + quoted(tip) for tip in commits]
+    if tree['branch'] is None and tree['unheld_commits']:
+        lines.append('Kept branch for detached commits: ' + quoted(tree['kept_branch']))
+    lines.append('Restore: ' + tree['restore'])
+    return {'kind': 'decision', 'brief': '\n'.join(lines), 'choices': list(SPACE_CHOICES)}
+
+
 def digest(value):
     return 'sha256:' + hashlib.sha256(_canonical(value)).hexdigest()
+
+
+def request_problem(read, data):
+    """Why a request's content is not what its recorded terms require, or None.
+
+    The inbox's subject validator for settlement terms: control_assignment consults it in every
+    open and revise write, and the Presenter before it frames or presents. `read(entity_id)`
+    gives the stored entity or None. Only a space disposition binds its content to its terms:
+    the brief and the choices are exactly space_presentation(the signed proposal).
+    """
+    subject = data.get('subject') or {}
+    found = read(subject['ref']) if subject.get('kind') == SUBJECT_KIND and _is_str(subject.get('ref')) else None
+    if found is None or found['kind'] != TERMS_KIND or found['data'].get('touchpoint') != 'space_disposition':
+        return None
+    terms = found['data']
+    if digest(terms) != subject.get('digest') or terms.get('requested_by') != data.get('requested_by'):
+        return 'a space request binds its own recorded terms'
+    try:
+        expected = space_presentation(terms.get('proposal'))
+    except Refused as exc:
+        return exc.detail
+    if any(data.get(key) != value for key, value in expected.items()):
+        return 'space request choices and brief must match its signed terms'
+    return None
 
 
 def settlement_id(request, version):
@@ -463,6 +545,10 @@ class Settlement:
                 raise Refused('invalid_input', 'quorum is a mapping or null')
             if c['proposal'] is not None and not isinstance(c['proposal'], dict):
                 raise Refused('invalid_input', 'proposal is a mapping or null')
+            if c['touchpoint'] == 'space_disposition':
+                space_presentation(c['proposal'])
+                if target['kind'] != 'space_item' or target['ref'] != c['proposal']['worktrees'][0]['item']:
+                    raise Refused('invalid_input', 'space terms target the listed item')
             self._verified(c['principal'], c, packet.get('signature'), self.AC.BOUNDARIES['proposal_commit'])
             tid = terms_id(self.ids['repository_uuid'], c['terms'])
             data = {'schema': TERMS_SCHEMA, 'terms_id': tid, 'touchpoint': c['touchpoint'], 'target': dict(target),
@@ -495,6 +581,10 @@ class Settlement:
         touchpoint = terms.get('touchpoint')
         if touchpoint not in JOURNEY or JOURNEY[touchpoint]['assignment_kind'] != data.get('kind'):
             raise Refused('unsupported_touchpoint', 'the request is not a touchpoint of this journey')
+        if touchpoint == 'space_disposition':
+            problem = request_problem(self._entity, data)
+            if problem:
+                raise Refused('invalid_input', problem)
         return touchpoint, terms, found['version']
 
     # answers from the authenticated API

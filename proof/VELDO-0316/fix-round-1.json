@@ -1,0 +1,280 @@
+{
+ "round": "fix round 1 after the independent review (verdict FIX)",
+ "builder": "Claude, a different builder from the implementation",
+ "commit": "e0f1a105e662268017ae107f3aa7bc9278d55162",
+ "tree": "6807bd4068a0541866c661233f884b5dbeb6d256",
+ "findings": {
+  "F1": {
+   "commit": "0d4b095e",
+   "change": "Requests.prepare keeps only answers that carry a hold; any other answer is returned once and dropped",
+   "rows": [
+    "space316/fix1/failed-judgment"
+   ]
+  },
+  "F2": {
+   "commit": "55f71ce2",
+   "change": "ADMISSION.reconcile runs in the space worker: at service start (Service.space_holds_start) and when an answered offer is not asked again in a line pass (Requests.passed from Line.run)",
+   "rows": [
+    "space316/fix2/withdrawn-restart",
+    "space316/fix2/left-backlog"
+   ]
+  },
+  "F3": {
+   "commits": [
+    "047589cd",
+    "e0f1a105"
+   ],
+   "change": "ac1/concurrent holds each child inside judge until the other arrives or two seconds pass; teeth case space316-prepare-without-lock registered",
+   "rows": [
+    "space316/ac1/concurrent"
+   ]
+  },
+  "F4": {
+   "commit": "e358576a",
+   "change": "Runner.prepare keeps the admitted hold when the failure is no_account or no_account_until",
+   "rows": [
+    "space316/fix4/no-account-keeps-hold"
+   ],
+   "row_changed": "ac2/reservation-failure now fails the reservation with capacity_exceeded; a no_account failure no longer releases"
+  }
+ },
+ "suite": {
+  "command": "nice -n 10 python3 scripts/selftest.py --suite 150_veldo_0316_admission",
+  "exit": 2,
+  "rows_passed": 29,
+  "rows_failed": 0,
+  "note": "Exit 2 is the partial run marker. targeted-run.txt is this run.",
+  "stdout_sha256": "bc02378f7f3806a4f842b7c1d090601e3b73275071bf9f57e4dbf379ce867adb"
+ },
+ "fast_checks": {
+  "python3 .veldo/validate.py all": 0,
+  "bash scripts/check_docs.sh": 0,
+  "bash scripts/check_template_sync.sh": 0,
+  "bash scripts/check_generated.sh": 0,
+  "bash scripts/check_lint.sh": 0
+ },
+ "teeth": {
+  "command": "nice -n 10 python3 scripts/check_teeth_mutations.py --finding 316 --jobs 1 (worker logs and diffs under /tmp)",
+  "exit": 0,
+  "registered": 9,
+  "executed": 9,
+  "rejected": 9,
+  "reused": 0,
+  "peak_workers": 1,
+  "seconds": 171.5,
+  "input_digest": "c7064b2db1ee53558e146da756e98b37b95a4987b21a37f11a5d7dac4f394e31",
+  "stdout_sha256": "98fd72352318de2244d3a352fb276acf3e8bf982e935d1516b252d9e15edf40e",
+  "cases": [
+   {
+    "name": "space316-ignore-floor",
+    "module": "control_space_admission.py",
+    "rows": [
+     "space316/ac1/floor-boundaries"
+    ],
+    "baseline": {
+     "space316/ac1/floor-boundaries": true
+    },
+    "noop": {
+     "space316/ac1/floor-boundaries": true
+    },
+    "mutant": {
+     "space316/ac1/floor-boundaries": false
+    },
+    "mutant_failed_rows": [
+     "space316/ac1/floor-boundaries",
+     "space316/ac1/metrics",
+     "space316/ac1/other-holds",
+     "space316/ac1/second-pool",
+     "space316/ac2/before-reservation",
+     "space316/ac2/completion-wakes",
+     "space316/ac2/factory-waiting",
+     "space316/ac3/report-starts",
+     "space316/ac4/one-run-default",
+     "space316/fix2/withdrawn-restart"
+    ],
+    "status": "rejected"
+   },
+   {
+    "name": "space316-admission-at-acceptance",
+    "module": "control_launch.py",
+    "rows": [
+     "space316/ac2/before-reservation"
+    ],
+    "baseline": {
+     "space316/ac2/before-reservation": true
+    },
+    "noop": {
+     "space316/ac2/before-reservation": true
+    },
+    "mutant": {
+     "space316/ac2/before-reservation": false
+    },
+    "mutant_failed_rows": [
+     "space316/ac2/before-reservation",
+     "space316/ac2/factory-waiting"
+    ],
+    "status": "rejected"
+   },
+   {
+    "name": "space316-block-report",
+    "module": "control_space_admission.py",
+    "rows": [
+     "space316/ac3/report-starts"
+    ],
+    "baseline": {
+     "space316/ac3/report-starts": true
+    },
+    "noop": {
+     "space316/ac3/report-starts": true
+    },
+    "mutant": {
+     "space316/ac3/report-starts": false
+    },
+    "mutant_failed_rows": [
+     "space316/ac1/metrics",
+     "space316/ac3/report-starts",
+     "space316/fix2/withdrawn-restart"
+    ],
+    "status": "rejected"
+   },
+   {
+    "name": "space316-measured-after-one",
+    "module": "control_space_admission.py",
+    "rows": [
+     "space316/ac4/one-run-default"
+    ],
+    "baseline": {
+     "space316/ac4/one-run-default": true
+    },
+    "noop": {
+     "space316/ac4/one-run-default": true
+    },
+    "mutant": {
+     "space316/ac4/one-run-default": false
+    },
+    "mutant_failed_rows": [
+     "space316/ac4/one-run-default"
+    ],
+    "status": "rejected"
+   },
+   {
+    "name": "space316-wait-listed-refused",
+    "module": "control_service.py",
+    "rows": [
+     "space316/ac2/factory-waiting"
+    ],
+    "baseline": {
+     "space316/ac2/factory-waiting": true
+    },
+    "noop": {
+     "space316/ac2/factory-waiting": true
+    },
+    "mutant": {
+     "space316/ac2/factory-waiting": false
+    },
+    "mutant_failed_rows": [
+     "space316/ac2/factory-waiting"
+    ],
+    "status": "rejected"
+   },
+   {
+    "name": "space316-accept-released",
+    "module": "control_dispatch.py",
+    "rows": [
+     "space316/ac2/acceptance-rechecks"
+    ],
+    "baseline": {
+     "space316/ac2/acceptance-rechecks": true
+    },
+    "noop": {
+     "space316/ac2/acceptance-rechecks": true
+    },
+    "mutant": {
+     "space316/ac2/acceptance-rechecks": false
+    },
+    "mutant_failed_rows": [
+     "space316/ac2/acceptance-rechecks"
+    ],
+    "status": "rejected"
+   },
+   {
+    "name": "space316-lost-completion-wake",
+    "module": "control_space_admission.py",
+    "rows": [
+     "space316/ac2/completion-wakes"
+    ],
+    "baseline": {
+     "space316/ac2/completion-wakes": true
+    },
+    "noop": {
+     "space316/ac2/completion-wakes": true
+    },
+    "mutant": {
+     "space316/ac2/completion-wakes": false
+    },
+    "mutant_failed_rows": [
+     "space316/ac2/completion-wakes",
+     "space316/fix1/failed-judgment"
+    ],
+    "status": "rejected"
+   },
+   {
+    "name": "space316-release-winning-promise",
+    "module": "control_launch.py",
+    "rows": [
+     "space316/ac2/racing-prepare"
+    ],
+    "baseline": {
+     "space316/ac2/racing-prepare": true
+    },
+    "noop": {
+     "space316/ac2/racing-prepare": true
+    },
+    "mutant": {
+     "space316/ac2/racing-prepare": false
+    },
+    "mutant_failed_rows": [
+     "space316/ac2/racing-prepare"
+    ],
+    "status": "rejected"
+   },
+   {
+    "name": "space316-prepare-without-lock",
+    "module": "control_space_admission.py",
+    "rows": [
+     "space316/ac1/concurrent"
+    ],
+    "baseline": {
+     "space316/ac1/concurrent": true
+    },
+    "noop": {
+     "space316/ac1/concurrent": true
+    },
+    "mutant": {
+     "space316/ac1/concurrent": false
+    },
+    "mutant_failed_rows": [
+     "space316/ac1/concurrent"
+    ],
+    "status": "rejected"
+   }
+  ],
+  "ran_last": "On a clean tree at this commit; nothing was written in the worktree while it ran."
+ },
+ "invalid_teeth_stage": {
+  "tree_commit": "047589cd",
+  "result": "registered 9, executed 9, rejected 0, exit 1: every case invalid_baseline",
+  "cause": "The first barrier was a multiprocessing semaphore; the confined teeth worker cannot create one, so the suite failed at setup in the baseline. Commit e0f1a105 makes the barrier files. Not a passing result."
+ },
+ "supervisors": "After every run an exact argv check found no space supervise process.",
+ "not_run": [
+  "./scripts/verify.sh",
+  "suites 151 and up",
+  "suite 86_veldo_0127",
+  "policy_check.py"
+ ],
+ "for_the_lead": [
+  "serve() now queues one extra space worker task at start when space is enabled (admission_start); suites 151 and up that count worker tasks at start were not run here.",
+  "teeth-receipt.json, falsifiers.json, checks.json, sources.json and earlier-teeth.json describe the tree at 42ea5a5a and are kept as they were."
+ ]
+}

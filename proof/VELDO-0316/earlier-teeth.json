@@ -1,0 +1,45 @@
+{
+  "status": "failed",
+  "registered": 8,
+  "executed": 8,
+  "rejected": 6,
+  "reused": 0,
+  "detail": "missing_target: missing_target: check_teeth_mutations.py:space316-ignore-floor: baseline rows removed",
+  "error": "missing_target",
+  "invalid_results": [
+    {
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 316,
+        "identity": "check_teeth_mutations.py:space316-ignore-floor",
+        "module": "control_space_admission.py",
+        "name": "space316-ignore-floor",
+        "new": "if free_now - others < need:",
+        "old": "if free_now - others < need + record['floor']:",
+        "rows": [
+          "space316/ac1/floor-boundaries"
+        ],
+        "suite": "150_veldo_0316_admission.py"
+      },
+      "detail": "missing_target: check_teeth_mutations.py:space316-ignore-floor: baseline rows removed",
+      "error": "missing_target"
+    },
+    {
+      "case": {
+        "driver": "check_teeth_mutations.py",
+        "finding": 316,
+        "identity": "check_teeth_mutations.py:space316-block-report",
+        "module": "control_space_admission.py",
+        "name": "space316-block-report",
+        "new": "answer = 'admitted' if reason is None else 'waiting'",
+        "old": "answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'",
+        "rows": [
+          "space316/ac3/report-starts"
+        ],
+        "suite": "150_veldo_0316_admission.py"
+      },
+      "detail": "missing_target: check_teeth_mutations.py:space316-block-report: baseline rows removed",
+      "error": "missing_target"
+    }
+  ]
+}

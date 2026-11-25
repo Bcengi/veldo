@@ -111,3 +111,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   shows only "hold: admitted", with no reason. The bound is accepted against the spec; showing the reason
   needs control_launch.py, outside this footprint, and is filed as its own ticket
   (myday research/specs-pending/VELDO-hold-admitted-shows-its-reason.md).
+
+### Space V1 assembly, 2026-11-25
+
+Owner order 43607 retains the newer candidate implementation and integrates signed
+dispositions. See `proof/VELDO-0334/assembly-v1.md` for explicit implementation
+retirements and their evidence. Historical receipts retain their original binding;
+joined-tree suite and mutation validation is pending Gate 18 completion.

@@ -1,0 +1,222 @@
+[
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0318_unique_work"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0318_unique_work",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 45
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "154_veldo_0335_released"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "failed_rows": [],
+  "name": "targeted 154_veldo_0335_released",
+  "note": "Crashed at 2fe5fd25 (review F1), 32 rows green on the base and here.",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 32
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0327_disposition"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0327_disposition",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 27
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "149_veldo_0312_ticket_ended"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "failed_rows": [],
+  "name": "targeted 149_veldo_0312_ticket_ended",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 41
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0317_full_pool"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0317_full_pool",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 23
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "140_veldo_0345_space_keep"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "failed_rows": [],
+  "name": "targeted 140_veldo_0345_space_keep",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 31
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "138_veldo_0300_space_remove"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "failed_rows": [],
+  "name": "targeted 138_veldo_0300_space_remove",
+  "note": "ac3/commands was red since the first build; the row is amended by lead decision (a).",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 39
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "139_veldo_0301_space_signal"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "failed_rows": [
+   "VELDO-0301 ac4/no-clock"
+  ],
+  "name": "targeted 139_veldo_0301_space_signal",
+  "note": "ac4/no-clock is red on the 0327 base 4a705a98 too; left by the lead's decision.",
+  "processes": "space supervisors: []",
+  "status": "failed_inherited",
+  "ticket_rows_passed": 17
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   ".veldo/validate.py",
+   "all"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "exit_code": 0,
+  "name": "validate",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_docs.sh"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "exit_code": 0,
+  "name": "docs",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_template_sync.sh"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "exit_code": 0,
+  "name": "template-sync",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_lint.sh"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "exit_code": 0,
+  "name": "lint",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_space_boundary.py"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "exit_code": 0,
+  "name": "space-boundary",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_git_boundary.py"
+  ],
+  "commit": "385ae4ae72018ea5afaa23a4a36801adaf02e8fe",
+  "exit_code": 0,
+  "name": "git-boundary",
+  "status": "passed"
+ }
+]

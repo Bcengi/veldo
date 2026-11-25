@@ -1,0 +1,153 @@
+[
+ {
+  "name": "targeted",
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0327_disposition"
+  ],
+  "exit_code": 2,
+  "supervisors_after": [],
+  "summary": "selftest (PARTIAL, 1 of 240 suites): 53 passed, 0 failed in 4.17s",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 27,
+  "failed_rows": 0,
+  "at_commit": "d762312c5d6fd4711f347839cb07f2e56b7ccf5a",
+  "limitation": "Partial selftest deliberately exits 2. It is not aggregate unit or integration evidence."
+ },
+ {
+  "name": "settlement",
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "69_veldo_0068_settlement"
+  ],
+  "exit_code": 2,
+  "supervisors_after": [],
+  "summary": "selftest (PARTIAL, 1 of 240 suites): 34 passed, 0 failed in 6.53s",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 8,
+  "failed_rows": 0,
+  "at_commit": "d762312c5d6fd4711f347839cb07f2e56b7ccf5a",
+  "limitation": "Partial selftest deliberately exits 2. It is not aggregate unit or integration evidence."
+ },
+ {
+  "name": "inbox",
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "60_veldo_0064_inbox"
+  ],
+  "exit_code": 2,
+  "supervisors_after": [],
+  "summary": "selftest (PARTIAL, 1 of 240 suites): 44 passed, 0 failed in 3.11s",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 18,
+  "failed_rows": 0,
+  "at_commit": "d762312c5d6fd4711f347839cb07f2e56b7ccf5a",
+  "limitation": "Partial selftest deliberately exits 2. It is not aggregate unit or integration evidence."
+ },
+ {
+  "name": "full-pool",
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0317_full_pool"
+  ],
+  "exit_code": 2,
+  "supervisors_after": [],
+  "summary": "selftest (PARTIAL, 1 of 240 suites): 49 passed, 0 failed in 4.64s",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 23,
+  "failed_rows": 0,
+  "at_commit": "d762312c5d6fd4711f347839cb07f2e56b7ccf5a",
+  "limitation": "Partial selftest deliberately exits 2. It is not aggregate unit or integration evidence."
+ },
+ {
+  "name": "validate",
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   ".veldo/validate.py",
+   "all"
+  ],
+  "exit_code": 0,
+  "supervisors_after": [],
+  "status": "passed",
+  "at_commit": "d762312c5d6fd4711f347839cb07f2e56b7ccf5a"
+ },
+ {
+  "name": "docs",
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_docs.sh"
+  ],
+  "exit_code": 0,
+  "supervisors_after": [],
+  "status": "passed",
+  "at_commit": "d762312c5d6fd4711f347839cb07f2e56b7ccf5a"
+ },
+ {
+  "name": "template-sync",
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_template_sync.sh"
+  ],
+  "exit_code": 0,
+  "supervisors_after": [],
+  "status": "passed",
+  "at_commit": "d762312c5d6fd4711f347839cb07f2e56b7ccf5a"
+ },
+ {
+  "name": "space-boundary",
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_space_boundary.py"
+  ],
+  "exit_code": 0,
+  "supervisors_after": [],
+  "status": "passed",
+  "at_commit": "d762312c5d6fd4711f347839cb07f2e56b7ccf5a"
+ },
+ {
+  "name": "lint",
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_lint.sh"
+  ],
+  "exit_code": 0,
+  "supervisors_after": [],
+  "status": "passed",
+  "at_commit": "d762312c5d6fd4711f347839cb07f2e56b7ccf5a"
+ }
+]

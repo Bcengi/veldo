@@ -901,6 +901,10 @@ def _v326_space_principals_suite():
             SP.REPORT: {'kind': 'worktree', 'locator': place(WORKTREES), 'found': {}},
             SP.GONE: {'item': theirs[0]},
             SP.KEEP: {'item': theirs[0], 'repository': str(temp), 'refs': {}},
+            # VELDO-0318's two and VELDO-0343's one (VELDO-0343 fix round 1: the list had gone stale).
+            SP.REQUEST: {'item': theirs[0], 'proposal': {}},
+            SP.DISPOSITION: {'item': theirs[0], 'packet': {}, 'at': 0},
+            SP.KEEP_BRANCH: {'item': theirs[0], 'branch': 'space-saved-fixture', 'commit': '0' * 40},
             SP.POOL: {'name': 'host', 'type': 'filesystem', 'device': 'dev-other'},
             SP.RECONCILE: {'started_by': 'cli', 'roots': [], 'engines': [], 'counts': {}},
             SP.ISSUE: {'to': 'space-observer'},

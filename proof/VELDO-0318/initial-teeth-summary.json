@@ -1,0 +1,18 @@
+{
+  "commit": "e6238aad",
+  "executed": 11,
+  "invalid": [
+    {
+      "name": "space318-discard-at-original-path",
+      "reason": "missing_target: check_teeth_mutations.py:space318-discard-at-original-path: baseline rows removed"
+    },
+    {
+      "name": "space318-keep-without-mark",
+      "reason": "missing_target: check_teeth_mutations.py:space318-keep-without-mark: baseline rows removed"
+    }
+  ],
+  "registered": 11,
+  "rejected": 9,
+  "resolution": "Fixture continuation and original-path mutant corrected in c95ab31f; final finding 318 rerun in full.",
+  "status": "failed"
+}

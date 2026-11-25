@@ -12,6 +12,9 @@ depends_on: [VELDO-0327, VELDO-0345]
 placement: [engine, loop]
 protected_paths: []
 footprint:
+  - "engine/.veldo/control_service.py"
+  - ".veldo/control_service.py"
+  - "scripts/suites/149_veldo_0312_ticket_ended.py"
   - "engine/.veldo/control_space_signal.py"
   - ".veldo/control_space_signal.py"
   - "engine/.veldo/control_space_remove.py"
@@ -19,6 +22,8 @@ footprint:
   - "engine/.veldo/control_space.py"
   - ".veldo/control_space.py"
   - "scripts/suites/*_veldo_0318_*.py"
+  - "scripts/suites/138_veldo_0300_space_remove.py"
+  - "scripts/suites/154_veldo_0335_released.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -184,3 +189,58 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   owner's Abandon, from anyone its own membership does not name as the owner, and writes who kept or
   abandoned from that principal (VELDO-0312 fix round 2); what this criterion adds to that is the owner's
   signature and the single command. Still four criteria.
+
+- 2026-11-16: implementation adds the service subscriber and worker task to the footprint so
+  reserved requests and settled effects are reachable at start and on journal notifications.
+  The owner signs space_disposition for Keep; an edge-signed answer alone writes no owner_keep.
+  Save and Discard consume the settled choice in the existing space worker. The older 0312
+  fixtures now use signed Keep commands, with their existing settlement fixture boundary.
+  Its static due-writer check includes the settled disposition transition and the accepted
+  admission retry transition. No acceptance criterion or protected path changed.
+
+- 2026-11-16: rebased onto the accepted VELDO-0327 (4a705a98) and adapted to its fix round 1, F2.
+  The terms handed to the owner carry the member commits: the tips of the unlanded commits that
+  rule 5 reads as unique. The file list is now the uncommitted state Discard removes (what the
+  snapshot saves), and no longer every tracked file, so a clean tree whose only unique work is
+  unlanded commits is asked about with an empty file list and its commits. Save and Discard run
+  only while the commits shown are still the worktree's tip; a commit made after the request was
+  shown refuses the removal and the next request names it. Rows commits/request,
+  commits/discard-keeps, commits/save and commits/late-commit, one teeth case each. A request
+  that cannot be built at the deferral is said in the result and leaves the item deferred; before,
+  it ended the whole signal (VELDO-0345's row ac3/main-repository-gone was red). No acceptance
+  criterion changed. Not built here: VELDO-0327's History (fix round 1, F4) says releasing the
+  kept worktree's pin after a no-space end (VELDO-0317 fix round 1, F3) is this ticket's, and no
+  criterion or History line of this specification assigned it before this one; it is reported to
+  the lead and waits for the lead's decision.
+
+- 2026-11-16: fix round 1 (independent review of 2fe5fd25, verdict FIX). No acceptance criterion
+  changed.
+  F1: with no channel the service's disposition task stopped before it carried a settled answer,
+  and suite 154 (VELDO-0335), green on the base, crashed. A reserved request now waits, said per
+  item, and a settled and authorized Save or Discard is carried with or without a channel; an
+  installation that wires no probe or remover gets the worker's. Row worker/no-channel.
+  F2 and F3: the request records the commit the worktree was at when its terms were read. Save and
+  Discard compare the file list and that commit with what the keep step saved (the manifest's
+  names, the keep record's tip), after the snapshot and never with a look of their own before it;
+  the worktree is then compared with that same snapshot, here and under the marked name. A commit
+  made after a request that showed no commit, and a file written or a commit made up to the
+  snapshot, refuse the removal; the worktree stays with everything in it and the refused attempt's
+  snapshot stays in the store. Rows terms/head-recorded, terms/unshown-commit, terms/snapshot-race.
+  F4: a second worktree of one ticket, or of one run, is saved on the next free kept branch name
+  (space-saved-<ticket>-2, and so on). A detached worktree's terms name it, and a name another
+  item's open request has is not taken twice; a branch worktree's Save takes it when it runs. A
+  kept branch that holds other work is never written onto: Save refuses, and the next request names
+  the next free one. Rows ac2/second-worktree, ac2/kept-name-taken.
+  F5, not fixed, a known gap: a clean worktree that a no-space end pins (VELDO-0317) is deferred
+  for unique work and raises no request, because it has no file and no commit to name and
+  VELDO-0327 AC2 says "The Ledger raises no request that offers the discard pick with neither
+  list". Nothing is removed. Row pin/clean-stays holds that it stays and that the result says so.
+  Lead decisions. (a) VELDO-0300 ac3/commands was stale: VELDO-0300 AC3 says "none but the discard
+  remover passes a force option". The row now allows exactly the force option the worktree remover
+  passes to git's worktree remove for a settled Discard, and no other. The footprint is widened by
+  suite 138 for that row and by suite 154 for its fixture (no channel; the owner's Keep as the
+  signed command); the lead accepted both. (b) Releasing the kept worktree's pin after a no-space
+  end is not this ticket's. It is unassigned, the lead files it as a ticket of its own, and nothing
+  is built for it here. VELDO-0301 ac4/no-clock is red on the base and is left.
+  Also found in this round: this ticket's build had moved the second anchor of the VELDO-0345
+  teeth case space345-refs-after-the-remove; the anchor is restored.

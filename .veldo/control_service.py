@@ -1747,6 +1747,84 @@ class Service:
         """
         if self.space_consumer is not None:
             self.space_consumer.start(replay, reconcile)
+            self.space_dispositions()
+
+    def space_dispositions(self):
+        """Coalesce disposition work on journal notifications and the start snapshot.
+
+        All signing, git, snapshots and removals run in the existing worker child.
+        The serving loop only queues this task. A lost child leaves durable requests
+        and authorizations for the next notification or reconnect.
+        """
+        consumer = self.space_consumer
+        if consumer is None:
+            return None
+        key = ('dispositions',)
+        if key in consumer.tasks:
+            self.space_disposition_again = True
+            return consumer.tasks[key]
+        self.space_disposition_again = False
+        def complete(answer):
+            if self.space_disposition_again:
+                self.space_dispositions()
+        return consumer.submit(key, self._space_dispositions, complete)
+
+    def _space_dispositions(self):
+        """Publish the reserved requests, authorize the settled ones, and carry Save and Discard.
+
+        A request is published through the channel. With no channel its item is said to wait and
+        stays deferred. A Save or Discard that is settled and authorized needs no channel: it is
+        carried whether or not there is one, so an owner's answer is never held up by a channel
+        that is down or not configured.
+        """
+        ledger = self.space['ledger']
+        self.conn = ledger.conn
+        channel = self.channel
+        if channel is not None:
+            st = _organ('control_request_settlement')
+            presentation = _organ('control_channel_presentation')
+            projection = _organ('control_channel_projection')
+            ids = channel.ingress.activations.ids
+            inbox = self.inbox(ids['repository_uuid'])
+            presenter = presentation.Presenter(S, CM, projection, inbox, None, ledger.conn,
+                                                self.principal, self.sign, assignment=I)
+            settlement = st.Settlement(S, CM, inbox, presenter, ledger.conn, self.principal, self.sign,
+                                       assignment=I, presentation=presentation)
+            requester = (self.principal,
+                         lambda data: SIG.sign_bytes(self.config['journal_key'], data, 'veldo-command'))
+        outcomes = []
+        for identity, record in ledger.items().items():
+            decision = record.get('disposition') or {}
+            if decision.get('state') == 'requested' and record['state'] == 'deferred' and channel is None:
+                outcomes.append({'item': identity, 'ok': True, 'waits': 'space_disposition_channel_unavailable'})
+            elif decision.get('state') == 'requested' and record['state'] == 'deferred':
+                scope = record['owner']['scope']
+                project = ledger._row('project:' + scope.get('id', ''), 'project')[1] or {}
+                owner = (project.get('owner') if scope['type'] == 'project'
+                         else (channel.record() or {}).get('owner'))
+                if not owner:
+                    outcomes.append({'item': identity, 'ok': False, 'reason': 'space_disposition_owner_unknown'})
+                    continue
+                published = ledger.publish_disposition(identity, settlement, inbox, presenter, requester, owner)
+                outcomes.append(dict(published, item=identity))
+                request = presenter.inbox_request(decision['alias'])
+                try:
+                    effect, _owner = ledger.disposition_effect(identity, request)
+                except Exception:
+                    continue  # an open request has no effect yet
+                if effect['choice'] != 'accept keep':
+                    outcomes.append(ledger.authorize_disposition(identity, request))
+            record = ledger.item(identity)
+            if record['state'] == 'due' and (record.get('disposition') or {}).get('state') == 'authorized':
+                given = {key: value for key, value in self.space.items()
+                         if key not in ('ledger', 'probe', 'remover')}
+                # As the worker's own signals do, an installation that wires no probe or remover
+                # gets the worker's.
+                outcomes.append(SPACE_SIGNAL.disposition(
+                    ledger, self.space.get('probe') or SPACE_CONSUMER.WORKER.PROBE,
+                    self.space.get('remover') or SPACE_CONSUMER.WORKER.REMOVE, identity, **given))
+        return {'ok': True, 'outcomes': outcomes, 'worker': os.getpid()}
+
 
     def space_received_reconcile(self):
         ledger = self.space['ledger']
@@ -2132,6 +2210,10 @@ class Service:
                 result = _organ('control_tracker_service').execute(self, packet, repository)
             elif command.get('operation') == 'reconcile_space':
                 result = self.space_reconcile_command(packet, repository)
+            elif command.get('operation') == 'space_disposition':
+                if self.space is None:
+                    raise Refused('space_not_configured')
+                result = self.space['ledger'].disposition(packet, CM, time.time())
             elif command.get('operation') == 'save_memory_store':
                 memory = _organ('control_memory')
                 ids = dict(domain_uuid=self.domain, store_uuid=self.store, repository_uuid=repository)
@@ -2400,6 +2482,7 @@ class Service:
         result = self.api.credential(packet)
         observation['accepted_versions'] = dict(result.pop('accepted_versions', None) or {})
         return result
+
 
     def hint_after(self, before, consume=True):
         """After a packet or pass that advanced the journal, the head record's hint to every subscribed
@@ -2857,6 +2940,13 @@ class Service:
             head = self.watermark()
             records = self.space_committed(head) if head > self.space_seen else []
             for record in records:
+                changed = record.get('transition') or {}
+                if any(value.get('kind') == 'settlement_effect'
+                       and (value.get('data') or {}).get('touchpoint') == 'space_disposition'
+                       or value.get('kind') == 'space_item'
+                       and ((value.get('data') or {}).get('disposition') or {}).get('state')
+                       in ('requested', 'authorized') for value in changed.values()):
+                    self.space_dispositions()
                 # The freeing transaction journals its marked holds, including worker writes. Only a
                 # waiting hold is woken for: a released hold may still carry an older mark.
                 if self.loop is not None and any(
@@ -3411,6 +3501,7 @@ class Line:
                 self.next(unit, latest, report)
         if getattr(self, 'batches', None) is not None:
             report.setdefault('batches', []).extend(self.batches.pass_once())
+
 
     def wants_cycles(self):
         """Whether this line runs project cycles: an active project executes in its repository, or it is the

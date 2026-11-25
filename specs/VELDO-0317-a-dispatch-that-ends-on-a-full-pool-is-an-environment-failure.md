@@ -110,3 +110,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   last classification and its count live on the index slot the exit transaction writes, read by key
   range. An unconfirmed end after a standing repeat is a new run with a repeat of its own. The
   footprint is unchanged. Status remains ready pending the lead gate and independent review.
+
+### Space V1 assembly, 2026-11-25
+
+Owner order 43607 retains the newer candidate implementation and integrates signed
+dispositions. See `proof/VELDO-0317/assembly-v1.md` for explicit implementation
+retirements and their evidence. Historical receipts retain their original binding;
+joined-tree suite and mutation validation is pending Gate 18 completion.

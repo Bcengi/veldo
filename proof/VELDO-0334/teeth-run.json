@@ -1,0 +1,31 @@
+{
+  "after": {
+    "digest": "0d986a7cd15d4cd716ed3bf57389c3581fffaa443d53db63e1910c57a9e8072e",
+    "status": ""
+  },
+  "before": {
+    "digest": "0d986a7cd15d4cd716ed3bf57389c3581fffaa443d53db63e1910c57a9e8072e",
+    "status": ""
+  },
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "python3",
+    "-u",
+    "-B",
+    "scripts/check_teeth_mutations.py",
+    "--finding",
+    "334",
+    "--jobs",
+    "2",
+    "--worker-log-dir",
+    "/tmp/veldo0334-fix1/workers-334",
+    "--diff-dir",
+    "/tmp/veldo0334-fix1/diffs-334"
+  ],
+  "digest_of": "git ls-files -z | xargs -0 sha256sum | sha256sum",
+  "exit": 0,
+  "seconds": 67,
+  "supervisors": []
+}

@@ -113,3 +113,10 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   released, so its unit is judged again on its next offer and no bytes stay held. The service start record
   gains a holds_recovered field (control_service.py, both copies) listing the holds released. Owner
   acknowledgement of this start-log addition is asked at landing. Acceptance criteria unchanged.
+
+### Space V1 assembly, 2026-11-25
+
+Owner order 43607 retains the newer candidate implementation and integrates signed
+dispositions. See `proof/VELDO-0316/assembly-v1.md` for explicit implementation
+retirements and their evidence. Historical receipts retain their original binding;
+joined-tree suite and mutation validation is pending Gate 18 completion.

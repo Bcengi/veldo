@@ -20,6 +20,8 @@ THE REMOVERS, by the table's action and the item's kind (REMOVERS):
   remove_tag        image_tag               the engine's image remove, on the tag
   drop_caches       evidence                the folder remover on each sub-folder the project declares as
                                             a cache, and on nothing else
+  save              worktree                settled Save, snapshot, owner commit, non-forced removal
+  discard           worktree                settled Discard, kept detached branch, snapshot, forced removal
   remove_held       evidence                each file whose digest, read again at its removal, the store
                                             or a commit of the trunk or a kept ref holds (VELDO-0347)
 
@@ -27,7 +29,7 @@ Any other pair has no remover and is refused. A branch is marked, never removed,
 write. Review scratch is saved by the keep step, compared file by file and removed before the
 non-forced worktree remove (VELDO-0336). Discard is VELDO-0318.
 
-NO REMOVER HERE PASSES A FORCE OPTION, AND NONE RUNS A PRUNE COMMAND. Each names the one thing it
+Only the settled Discard passes a force option. No remover runs a prune command. Each names the one thing it
 removes to the owning tool and lets the tool refuse. Every command a call ran, the probes' reads
 included, is returned under commands, in order.
 
@@ -923,7 +925,9 @@ def _r_agent_repository(ctx, identity, record, answer):
 
 
 def _worktree_remove(ctx, repository, path):
-    """git's own worktree remove, with no force option: (exit code, output)."""
+    """git's worktree remove; only the authenticated Discard context permits force."""
+    if ctx.get('disposition') == 'discard':
+        return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', '--force', path)
     return _git(ctx['commands'], '-C', repository, 'worktree', 'remove', path)
 
 
@@ -965,7 +969,16 @@ def _r_worktree(ctx, identity, record, answer):
         use = _second_probe(ctx, name)
         if use is not None:
             raise _Refusal(IN_USE, 'the worktree is in use under its marked name', found=use)
-        _last_look(ctx, record, kept, name)
+        if ctx.get('disposition'):
+            nested = ctx['probe'].nested(name)
+            if not nested.get('read') or nested.get('repositories'):
+                raise _Refusal(IN_USE, 'the worktree now holds a repository', found=nested)
+        if ctx.get('disposition') == 'discard':
+            _snapshot_equal(ctx, record, kept, name)
+        else:
+            _last_look(ctx, record, kept, name)
+            if ctx.get('disposition') == 'save':
+                _save_equal(ctx, record, kept, name)
         code, out = _worktree_remove(ctx, repository, name)
         if code != 0:
             raise _Refusal(REFUSED, 'git refused the remove: ' + str(out)[:300], code=code)
@@ -977,6 +990,349 @@ def _r_worktree(ctx, identity, record, answer):
             stopped.more.update(left_at=name, not_put_back=stuck)
         raise
     _after(ctx, pools, answer)
+
+
+def disposition_files(ledger, record, path):
+    """The uncommitted files Discard would remove, as the owner is shown them.
+
+    These are the names the snapshot saves: changed, untracked and ignored work, and deleted names
+    too, because the index and the deletion are part of that state. A clean tracked file is in a
+    commit and is not listed: a clean tree whose only unique work is unlanded commits has an empty
+    list here and is asked about by its commits (VELDO-0327 AC2).
+    """
+    keeper = _sibling('control_space_keep')
+    listing = keeper.listing(ledger, record, path)
+    return sorted(set(listing['files']) | set(listing['deleted_worktree']) | set(listing['deleted_index']))
+
+
+def disposition_commits(probe, path, landed=(), shared=None, run=None):
+    """The tips of the unlanded commits that make the work unique (rule 5, case 5), or None when
+    the worktree cannot be read."""
+    facts = probe.unique_work(path, landed, shared, run)
+    if facts.get('read') is not True:
+        return None
+    return [facts['unlanded']] if facts.get('unlanded') else []
+
+
+def disposition_branch(record, taken=None):
+    """The kept branch Save writes: named for the ticket, or for the owning run. With `taken`, the
+    first such name it does not refuse: the name itself, then the name with -2, -3 and so on, so a
+    second worktree of one ticket is saved beside the first and never onto it."""
+    space = _sibling('control_space')
+    owner = record.get('owner') or {}
+    base = 'space-saved-' + space.kept_part(owner.get('ticket') or (owner.get('run') or {}).get('id') or 'none')
+    if taken is None:
+        return base
+    for number in range(1, BRANCH_NAMES + 1):
+        name = base if number == 1 else '%s-%d' % (base, number)
+        if not taken(name):
+            return name
+    raise _Refusal(REFUSED, 'no kept branch name is free for this ticket')
+
+
+BRANCH_NAMES = 1000
+BRANCH_LEAVING = ('due', 'deferred', 'removing')  # a live branch item keep_branch does not record onto
+
+
+def _kept_home(ledger, identity, record, path):
+    """The repository the kept branch of a Discard is written in. A worktree of the main repository
+    reaches it through its own path. A worktree inside an agent repository does not: that repository
+    is private and is removed later, so its kept branch goes in the main repository, where the keep
+    step has already put the commit on a kept ref (design 0.2, VELDO-0343 fix round 1). With no main
+    repository at its path there is nowhere to keep the branch, and that is a refusal."""
+    parent = ledger.item(record['parent']) if record.get('parent') else None
+    if parent is None or parent.get('kind') != 'agent_repository':
+        return path
+    main = ledger.main_repository(identity)
+    if not main or not os.path.isdir(main):
+        raise _Refusal(REFUSED, 'no main repository is at its path to hold the kept branch of an agent worktree')
+    return main
+
+
+def _branch_holds(commands, path, branch, home=None):
+    """What the kept branch `branch` is to the worktree at `path`: None when no such branch exists,
+    False when it holds exactly the worktree's HEAD, True when it holds other work. The branch is
+    read in the repository at `home`, or in the worktree's own."""
+    code, held = _git(commands, '-C', home or path, 'rev-parse', '--verify', '--quiet', 'refs/heads/' + branch)
+    if code == 1 and not str(held).strip():
+        return None
+    if code != 0:
+        raise _Refusal(REFUSED, 'git could not read the kept branch: ' + str(held)[:200])
+    code, head = _git(commands, '-C', path, 'rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
+    return not (code == 0 and held.strip() == head.strip())
+
+
+def _free_branch(ledger, identity, record, path, commands):
+    """The next kept branch name free for this worktree: one that no branch holding other work has,
+    that no other item's open request has named for its detached commits, and that no branch item
+    on its way out (due, deferred or removing) has: the Ledger records no kept branch onto such an
+    item, so its name is taken whether or not the branch holds this commit (VELDO-0343 fix round 2)."""
+    named = set()
+    main = ledger.main_repository(identity)
+    for other, item in ledger.items().items():
+        if (item.get('kind') == 'branch' and item.get('state') in BRANCH_LEAVING
+                and (item.get('locator') or {}).get('repository') == main):
+            named.add(item['locator'].get('ref'))
+        decision = item.get('disposition') or {}
+        if other != identity and decision.get('state') in ('requested', 'authorized'):
+            for tree in (decision.get('proposal') or {}).get('worktrees') or ():
+                if tree.get('kept_branch'):
+                    named.add(tree['kept_branch'])
+    home = _kept_home(ledger, identity, record, path)
+    if home != path:
+        # An agent worktree's name is free in both repositories: Save writes it in the agent
+        # repository, and the kept branch of a Discard is written in the main one.
+        return disposition_branch(record, lambda name: name in named or any(
+            _branch_holds(commands, path, name, where) is True for where in (path, home)))
+    return disposition_branch(record, lambda name: name in named or _branch_holds(commands, path, name) is True)
+
+
+def disposition_head(path, commands=None):
+    """The commit the worktree's HEAD names as the request is built, or None for a HEAD with no
+    commit. The request records it beside its terms, and Save and Discard run only at that commit."""
+    code, head = _git(commands or [], '-C', path, 'rev-parse', '--verify', '--quiet', 'HEAD^{commit}')
+    if code == 0:
+        return head.strip()
+    if code == 1 and not str(head).strip():
+        return None
+    raise _Refusal(KEEP_FAILED, 'git could not read the commit of the worktree')
+
+
+def disposition_proposal(ledger, identity, record, commits):
+    import shlex
+    settlement = _sibling('control_request_settlement')
+    path = record['locator']['path']
+    code, branch = _git([], '-C', path, 'symbolic-ref', '-q', '--short', 'HEAD')
+    if code not in (0, 1):
+        raise _Refusal(KEEP_FAILED, 'git could not read the branch')
+    branch = branch.strip() if code == 0 else None
+    return {'discard': settlement.SPACE_DISCARD, 'worktrees': [{
+        'item': identity, 'path': path, 'branch': branch, 'unheld_commits': branch is None,
+        'kept_branch': _free_branch(ledger, identity, record, path, []) if branch is None else None,
+        'files': disposition_files(ledger, record, path), 'commits': list(commits),
+        'restore': 'veldo space restore ' + shlex.quote(identity)}]}
+
+
+def _snapshot_equal(ctx, record, kept, path):
+    keeper = _sibling('control_space_keep')
+    try:
+        now = keeper.listing(ctx['ledger'], record, path)
+        if keeper._comparable(now) != keeper._comparable(kept.get('snapshot') or {}):
+            raise _Refusal(KEEP_FAILED, 'the worktree differs from the saved snapshot')
+        if tips(path, 'worktree', ctx['commands']) != kept['tips']:
+            raise _Refusal(KEEP_FAILED, 'the commits differ from the keep record')
+    except keeper._Failed as error:
+        raise _Refusal(KEEP_FAILED, str(error)) from error
+
+
+def _save_equal(ctx, record, kept, path):
+    changed, work = _looked(ctx, record, path)
+    saved = {name: row for name, row in (kept.get('snapshot') or {}).get('files', {}).items()
+             if row.get('what') == 'ignored_work'}
+    if changed or set(work) != set(saved) or _unsaved(path, work, {'files': saved}):
+        raise _Refusal(KEEP_FAILED, 'the ignored work differs from the saved snapshot')
+    # Rule 5 is read again under the marked name. The saved branch holds this HEAD.
+    facts = ctx['probe'].unique_work(path, (), None, ctx['run'])
+    cases = set(facts.get('cases') or [])
+    if not facts.get('read') or facts.get('operation') or cases - {3}:
+        raise _Refusal(KEEP_FAILED, 'rule 5 refused the saved worktree', found=facts)
+
+
+def _r_disposition(ctx, identity, record, answer):
+    ledger = ctx['ledger']
+    current = ledger.item(identity) or {}
+    decision = current.get('disposition') or {}
+    choice = ctx['action']
+    if (current.get('state') != 'removing' or decision.get('state') != 'authorized'
+            or decision.get('choice') != choice):
+        raise _Refusal(REFUSED, 'no signed disposition authorizes this removal')
+    try:
+        effect, owner = ledger.disposition_effect(identity, decision['request'])
+    except Exception as error:
+        raise _Refusal(REFUSED, 'the disposition is not settled: ' + _said(error)) from error
+    if effect['choice'] != 'accept ' + choice or owner != decision['by']:
+        raise _Refusal(REFUSED, 'the settled choice is not this removal')
+    path = _plain(record['locator']['path'])
+    shown = decision['proposal']['worktrees'][0]
+    if 'head' not in decision:
+        raise _Refusal(KEEP_FAILED, 'the request does not record the commit it was shown at')
+    keeper = _sibling('control_space_keep')
+    ctx['keep'] = keeper.keeper(ledger, event='space_disposition', snapshot=True)
+    before = _kept(ctx, identity, record)
+    saved = before.get('snapshot') or {}
+    attempts = (ledger.item(identity).get('kept') or {}).get('snapshots') or []
+    if saved.get('path'):
+        attempt = next((one for one in attempts if one['path'] == saved['path']), None)
+        manifest = keeper._manifest(attempt) if attempt else None
+        if manifest is None:
+            raise _Refusal(KEEP_FAILED, 'the saved manifest cannot be read back')
+    else:
+        manifest = {'files': {}, 'deleted_worktree': [], 'deleted_index': []}
+    # What the owner was shown is compared with what was saved, never with a look made before the
+    # save: a file written, or a commit made, at any moment up to the snapshot is in the manifest
+    # and the keep record, and is not in the terms. Nothing runs, the worktree stays with everything
+    # in it, and the next request names it. Below, the worktree is compared with this same snapshot,
+    # here and again under the marked name, so what is removed is exactly what was shown.
+    saved_names = sorted(set(manifest['files']) | set(manifest['deleted_worktree']) | set(manifest['deleted_index']))
+    if saved_names != shown['files']:
+        raise _Refusal(KEEP_FAILED, 'the file list differs from the list shown to the owner')
+    if before['tips'].get('head') != decision['head']:
+        raise _Refusal(KEEP_FAILED, 'the commits differ from the commits shown to the owner')
+    before = dict(before, snapshot=manifest)
+    _snapshot_equal(ctx, record, before, path)
+    if choice == 'discard':
+        # Discard never loses a commit (design 6.5, VELDO-0343): the kept branch of a detached
+        # worktree is there, read back and on the Ledger before anything is moved or removed.
+        _discard_branch(ctx, identity, record, path, answer, shown, before['tips'])
+    if choice == 'save':
+        _save_commit(ctx, identity, record, path, answer, shown)
+        ctx['keep'] = keeper.keeper(ledger, event='space_disposition')
+        after = _kept(ctx, identity, record)
+        before = dict(after, snapshot=before['snapshot'])
+    ctx['keep'] = lambda item, current: before
+    ctx['disposition'] = choice
+    _r_worktree(ctx, identity, record, answer)
+
+
+# Only a branch holds a commit for a Discard: Veldo never deletes one. A tag can be moved or deleted
+# and a remote-tracking ref goes with a prune (design 0), so neither is trusted alone, and a kept ref
+# and a stash hold nothing (lead decision, VELDO-0343 fix round 2).
+HOLDING_REFS = ('refs/heads/',)
+
+
+def _discard_branch(ctx, identity, record, path, answer, shown, kept):
+    """Only the settled Discard path calls this, before the worktree is moved or removed. For a
+    detached worktree whose checked-out commit no branch of its repository reaches, create the kept
+    branch at that commit, read it back, and have the Ledger record it as a branch item in state kept.
+    A commit only a tag or a remote-tracking ref reaches gets a kept branch like any other. The branch
+    is written in the main repository, for an agent's worktree too (_kept_home): never in the agent
+    repository, which is removed later. The branch is named as Save names one: the name the terms
+    showed, or the next one free. It is a ref write: no commit is made and nothing is removed. Any failure is the
+    refusal remove_refused, and the worktree stays with everything in it.
+
+    A worktree on a branch needs none: Discard removes the worktree and never the branch, in an agent
+    repository as anywhere else. `kept` is what the keep step read: the commit is the one it recorded,
+    which the caller has compared with the commit the owner was shown."""
+    commit = kept.get('head')
+    if kept.get('branch') is not None or not commit:
+        return  # on a branch, which holds its commits and stays; or no commit at all
+    commands = ctx['commands']
+    home = _kept_home(ctx['ledger'], identity, record, path)
+    branch = shown.get('kept_branch') or _free_branch(ctx['ledger'], identity, record, path, commands)
+    ref = 'refs/heads/' + branch
+    holders = []
+    for where in dict.fromkeys((path, home)):
+        code, out = _git(commands, '-C', where, 'for-each-ref', '--format=%(refname)', '--contains', commit,
+                         *(prefix.rstrip('/') for prefix in HOLDING_REFS))
+        if code != 0:
+            raise _Refusal(REFUSED, 'git could not say which refs hold the commit: ' + str(out)[:200])
+        holders += [name for name in out.split('\n')[:-1] if name.startswith(HOLDING_REFS)]
+    # None: no such branch; False: it is at this commit. A branch at this commit under the kept name
+    # is the one a Discard that stopped before its record left: it is recorded, never counted a holder.
+    holds = _branch_holds(commands, path, branch, home)
+    if holds is not False:
+        if holders:
+            answer['commit_held_by'] = holders[:NAMED]
+            return  # a branch reaches the commit: it survives the worktree
+        if holds:
+            raise _Refusal(REFUSED, 'the kept branch name is taken by a branch that does not hold the commit',
+                           kept_branch=branch, commit=commit)
+        code, out = _git(commands, '-C', home, 'check-ref-format', '--branch', branch)
+        if code != 0:
+            raise _Refusal(REFUSED, 'git refused the kept branch name: ' + str(out)[:200], kept_branch=branch)
+        # Created and never moved: the empty old value lets the write through only when no such ref is there.
+        code, out = _git(commands, '-C', home, 'update-ref', '-m', 'veldo: kept branch before a Discard',
+                         ref, commit, '')
+        if code != 0:
+            raise _Refusal(REFUSED, 'git refused the kept branch: ' + str(out)[:300], kept_branch=branch,
+                           commit=commit)
+    code, out = _git(commands, '-C', home, 'rev-parse', '--verify', '--quiet', ref + '^{commit}')
+    if code != 0 or out.strip() != commit:
+        raise _Refusal(REFUSED, 'the kept branch was not read back at the commit', kept_branch=branch, commit=commit)
+    try:
+        recorded = ctx['ledger'].keep_branch(identity, branch, commit)
+    except Exception as error:  # noqa: BLE001 - a branch the Ledger did not record is not a kept branch
+        raise _Refusal(REFUSED, 'the kept branch could not be recorded: ' + _said(error), kept_branch=branch)
+    if not isinstance(recorded, dict) or recorded.get('ok') is not True:
+        raise _Refusal(REFUSED, 'the Ledger did not record the kept branch', kept_branch=branch, found=recorded)
+    answer['kept_branch'], answer['kept_branch_item'] = branch, recorded.get('branch_item')
+
+
+def record_left_branch(ledger, identity, record, commands=None):
+    """Reconcile calls this for a removing item it is about to defer. A Discard that stopped between
+    its kept branch's write and the Ledger's record left a branch no item records. When the item is
+    a worktree removing under an authorized Discard and the kept branch its terms named is there at
+    the worktree's HEAD, the Ledger records it now, so an owner's Keep that follows cannot leave it
+    unrecorded (VELDO-0343 fix round 2). It writes no ref and removes nothing; the Ledger reads the
+    HEAD, the attachment and the branch itself and refuses what it does not find. Returns the
+    Ledger's answer, or None when there is nothing to record or it could not be read."""
+    decision = record.get('disposition') or {}
+    if (record.get('kind') != 'worktree' or record.get('state') != 'removing'
+            or decision.get('state') != 'authorized' or decision.get('choice') != 'discard'):
+        return None
+    try:
+        branch = decision['proposal']['worktrees'][0].get('kept_branch')
+        if not branch:
+            return None
+        commands = [] if commands is None else commands
+        path = _plain(record['locator']['path'])
+        home = _kept_home(ledger, identity, record, path)
+        if _branch_holds(commands, path, branch, home) is not False:
+            return None  # no such branch, or one that holds other work
+        commit = disposition_head(path, commands)
+        held = record.get('kept_branch') or {}
+        if not commit or (held.get('branch'), held.get('commit')) == (branch, commit):
+            return None  # no commit, or already recorded
+        return ledger.keep_branch(identity, branch, commit)
+    except Exception:  # noqa: BLE001 - reconcile defers the item whatever this read found
+        return None
+
+
+def _save_commit(ctx, identity, record, path, answer, shown):
+    """Only the settled Save path calls this. Ignored files are never added."""
+    def git(*args):
+        code, out = _git(ctx['commands'], '-C', path, *args)
+        if code != 0:
+            raise _Refusal(REFUSED, 'Save refused: ' + str(out)[:300])
+        return out.strip()
+    ledger = ctx['ledger']
+    # A detached worktree's terms name its kept branch, and Save writes that name or nothing. A
+    # worktree on a branch is shown no kept name: Save takes the next one free for the ticket.
+    branch = shown.get('kept_branch') or _free_branch(ledger, identity, record, path, ctx['commands'])
+    git('check-ref-format', '--branch', branch)
+    identity = _sibling('control_git_identity')
+    bound = []
+    if identity.exists(ledger.conn, 'git_identity_repositories'):
+        bound = ledger.conn.execute('SELECT domain, repository FROM git_identity_repositories WHERE path=?',
+                                    (ledger._main_of(record),)).fetchall()
+    if len(bound) == 1:
+        configured = identity.resolve(ledger.conn, *bound[0], path=ledger._main_of(record))
+        name, email = identity.author(configured)
+    elif record['owner']['scope']['type'] == 'plain_repository' and not bound:
+        name, email = git('config', 'user.name'), git('config', 'user.email')
+    else:
+        raise _Refusal(REFUSED, 'the owner git identity is not configured for this repository')
+    if not name or not email:
+        raise _Refusal(REFUSED, 'the owner git identity is not configured')
+    changed, _work = _looked(ctx, record, path)
+    if ctx['probe'].unique_work(path, (), None, ctx['run']).get('operation'):
+        raise _Refusal(REFUSED, 'Save does not finish a git operation in progress')
+    holds = _branch_holds(ctx['commands'], path, branch)
+    if holds:
+        raise _Refusal(REFUSED, 'the kept branch already holds other work')
+    exists = holds is not None
+    if changed:
+        git('switch', *([branch] if exists else ['-c', branch]))
+        git('add', '-A')
+        git('-c', 'user.name=' + name, '-c', 'user.email=' + email,
+            'commit', '-m', 'Save work for ' + branch)
+        answer['commit'] = git('rev-parse', 'HEAD')
+        git('switch', '--detach')
+    else:
+        # No invented commit for a worktree whose unique work is already committed.
+        if not exists:
+            git('branch', branch, 'HEAD')
+    answer['kept_branch'] = branch
 
 
 def _review_scratch(ctx, identity, record, kept, answer):
@@ -1456,12 +1812,13 @@ def remove(ledger, probe, identity, record, action='remove', free=None, keep=Non
         return given(argv, cwd)
 
     ctx = {'ledger': ledger, 'probe': probe, 'free': free, 'keep': keep, 'run': logged, 'proc': proc,
-           'commands': commands, 'review_check': review_check, 'held': held, 'landing': landing}
+           'commands': commands, 'review_check': review_check, 'held': held, 'landing': landing, 'action': action}
     answer = {'item': identity, 'action': action, 'kind': record.get('kind'), 'method': None, 'bytes': None,
               'bytes_source': None, 'pool': record.get('pool'), 'pool_free_before': None,
               'pool_free_after': None, 'freed': None, 'host': None, 'commands': commands}
     try:
-        remover = REMOVERS.get((action, record.get('kind')))
+        remover = (_r_disposition if action in ('save', 'discard') and record.get('kind') == 'worktree'
+                   else REMOVERS.get((action, record.get('kind'))))
         if remover is None:
             raise _Refusal(REFUSED, 'no remover for the action %s on the kind %s' % (action, record.get('kind')))
         if free is None:

@@ -375,6 +375,11 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
     done = {'item': identity, 'action': action, 'outcome': None}
     if record is None or record.get('state') != 'due':
         return dict(done, reason='not_due')
+    if (record.get('disposition') or {}).get('state') == 'authorized':
+        result = disposition(ledger, probe, remover, identity, **given)
+        current = ledger.item(identity) or {}
+        return dict(done, outcome=current.get('state'), result=result,
+                    deferral=(current.get('deferral') or {}).get('rule'))
     facts = {'event': event, 'emitter': _plain(given['emitter']), 'action': action, 'carrier': given['carrier']}
     retry = list((record.get('ends_on') or {}).get('events') or ())
 
@@ -461,7 +466,90 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
                      rule=judged['rule'])
     if judged['rule'] == 'ledger' and found.get('missing') is True and _missing(probe, record, given['run']):
         return write('gone', {})
-    return write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])
+    result = write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])
+    if (result.get('outcome') == 'deferred' and judged['deferral'] == 'unique_work'
+            and record['kind'] == 'worktree' and not _is_review_worktree(record)
+            and (event in ('ticket_ended', 'project_ended', 'worktree_abandoned', 'released')
+                 or event == 'run_finished' and not _is_review_worktree(record))):
+        # The deferral is written. A request that cannot be built is said and leaves it deferred:
+        # the next event asks again, and nothing is removed meanwhile.
+        try:
+            asked = _request(ledger, probe, remover, identity, record, given['landed'], given['run'])
+        except Exception as error:
+            result['request_refusal'] = _raised(error)
+            return result
+        result['decision_request'] = asked
+        publish = getattr(ledger, 'disposition_publish', None)
+        if asked.get('ok') and publish is not None:
+            result['presentation'] = publish(identity)
+    return result
+
+
+def disposition(ledger, probe, remover, identity, free=None, owner_live=None, run=None, proc=None, **unused):
+    """Carry a signed, settled disposition in the space worker, under the item lock.
+
+    A refusal spends this authorization. A later event can raise a fresh request;
+    it can never silently retry the old Discard against a new file list.
+    """
+    if ledger.config.get('enabled') is not True:
+        return {'ok': False, 'reason': 'space_disabled'}
+    with ledger.item_lock(identity):
+        record = ledger.item(identity) or {}
+        decision = record.get('disposition') or {}
+        if record.get('state') != 'due' or decision.get('state') != 'authorized':
+            return {'ok': False, 'reason': 'space_disposition_state'}
+        choice = decision.get('choice')
+        if choice not in ('save', 'discard'):
+            return {'ok': False, 'reason': 'space_disposition_choice'}
+        effect, owner = ledger.disposition_effect(identity, decision['request'])
+        if effect['choice'] != 'accept ' + choice or owner != decision['by']:
+            return {'ok': False, 'reason': 'space_disposition_unsettled'}
+        facts = {'event': (record.get('due') or {}).get('event'), 'action': choice, 'carrier': _carrier(probe, None)}
+        said = {}
+        def tool(item, current):
+            began = ledger.outcome(item, 'removing', facts)
+            if not began.get('ok'):
+                return {'ok': False, 'deferral': 'remove_refused', 'said': began}
+            said.update(remover.remove(ledger, probe, item, current, action=choice, free=free,
+                                       run=run, proc=proc))
+            return said
+        judged = rules(ledger, probe, identity, record, purpose=DISCARD, tool=tool,
+                       owner_live=owner_live, run=run, proc=proc)
+        if judged['ok']:
+            return ledger.outcome(identity, 'removed', dict(facts, **said))
+        found = judged.get('found') or {}
+        said = found.get('said') if isinstance(found.get('said'), dict) else {}
+        if said.get('left_at'):
+            return ledger.outcome(identity, 'removing', dict(facts, left_at=said['left_at']))
+        result = ledger.outcome(identity, 'deferred', dict(facts, rule=judged['deferral'],
+                                found=_plain(found), retry=[]))
+        if result.get('ok'):
+            current = ledger.item(identity)
+            try:
+                result['decision_request'] = _request(ledger, probe, remover, identity, current,
+                                                      unused.get('landed') or (), run)
+            except Exception as error:
+                result['request_refusal'] = _raised(error)
+        return result
+
+
+def _request(ledger, probe, remover, identity, record, landed, run):
+    """Reserve the item's request: its terms, and the commit the worktree was at when they were read.
+    The commit is read first, so a commit made while the lists are read leaves a request whose
+    recorded commit is not the worktree's, and Save and Discard refuse it."""
+    head = remover.disposition_head(record['locator']['path'])
+    commits = _unlanded(ledger, probe, remover, record, landed, run)
+    if commits is None:
+        raise ValueError('the worktree cannot be read for its unlanded commits')
+    return ledger.request_disposition(
+        identity, remover.disposition_proposal(ledger, identity, record, commits), head)
+
+
+def _unlanded(ledger, probe, remover, record, landed, run):
+    """The unlanded commits a disposition request names, read as rule 5 reads them: against the
+    shared repository for an agent's worktree, against the other refs of its own otherwise."""
+    shared = _scope_repository(ledger, record) if _agent_repository(ledger, record) else None
+    return remover.disposition_commits(probe, record['locator']['path'], landed, shared, run)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -674,6 +762,11 @@ def _rule_unique_work(ledger, probe, identity, record, given):
     if kind not in ('worktree', 'agent_repository'):
         return None
     path = record['locator']['path']
+    # A no-space end protects retained work before review/clone disposal exceptions.
+    for failure in ledger.no_space_ends():
+        tree = failure['worktree']
+        if tree == path or tree.startswith(path.rstrip('/') + '/'):
+            return {'no_space_worktree': tree, 'classification': failure['classification']}
     # What the project declares as build output, and whether reconcile adopted the item, go to the
     # probe's reading of ignored paths (VELDO-0347); named only when there is something to say.
     declared = {key: value for key, value in (('patterns', tuple(_project_declares(ledger, record, 'build_output'))),

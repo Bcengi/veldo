@@ -1,0 +1,97 @@
+{
+  "fixed-suite": {
+    "command": [
+      "python3",
+      "scripts/selftest.py",
+      "--suite",
+      "150_veldo_0316_admission"
+    ],
+    "exit": 2,
+    "seconds": 10.69,
+    "supervisors": [],
+    "own_survivors": 0,
+    "stdout_sha256": "f3d46ac1baa72053a057969e9543df485d964f4b58ed00c0dec4de106f672eca",
+    "tree_note": "Final implementation and test tree."
+  },
+  "checked-validate": {
+    "command": [
+      "python3",
+      ".veldo/validate.py",
+      "all"
+    ],
+    "exit": 0,
+    "seconds": 6.04,
+    "supervisors": [],
+    "own_survivors": 0,
+    "stdout_sha256": "709ca47a23378d55f731e33976377d3417a99565c1be231a543a55cc24aeced2",
+    "tree_note": "Final implementation and test tree."
+  },
+  "checked-docs": {
+    "command": [
+      "bash",
+      "scripts/check_docs.sh"
+    ],
+    "exit": 0,
+    "seconds": 0.65,
+    "supervisors": [],
+    "own_survivors": 0,
+    "stdout_sha256": "eaf932f74c6a45653f007ca942ca41342e80e86d0a992ccee97495aaed9ada12",
+    "tree_note": "Final implementation and test tree."
+  },
+  "checked-template": {
+    "command": [
+      "bash",
+      "scripts/check_template_sync.sh"
+    ],
+    "exit": 0,
+    "seconds": 0.24,
+    "supervisors": [],
+    "own_survivors": 0,
+    "stdout_sha256": "31f485c4f6c848349ff684a8e8bc7d641c0de5fb6cc39102447b161ef398f1a7",
+    "tree_note": "Final implementation and test tree."
+  },
+  "generated": {
+    "command": [
+      "bash",
+      "scripts/check_generated.sh"
+    ],
+    "exit": 0,
+    "seconds": 0.59,
+    "supervisors": [],
+    "own_survivors": 0,
+    "stdout_sha256": "f11b77ff165398767a2894fd34d9592c5d6d516b2828368d967fa7663a9d1217",
+    "tree_note": "Before the four-line test robustness fix; production bytes unchanged."
+  },
+  "lint": {
+    "command": [
+      "bash",
+      "scripts/check_lint.sh"
+    ],
+    "exit": 0,
+    "seconds": 2.84,
+    "supervisors": [],
+    "own_survivors": 0,
+    "stdout_sha256": "12e620eda851d9a7293fea6e3b5d0edcd4e0151ac40b33f2b24d95538e15b446",
+    "tree_note": "Before the four-line test robustness fix; production bytes unchanged."
+  },
+  "final-teeth": {
+    "command": [
+      "python3",
+      "scripts/check_teeth_mutations.py",
+      "--finding",
+      "316",
+      "--jobs",
+      "1",
+      "--worker-log-dir",
+      "/tmp/veldo0316-final-teeth-workers",
+      "--diff-dir",
+      "/tmp/veldo0316-final-teeth-diffs"
+    ],
+    "exit": 0,
+    "seconds": 157.04,
+    "supervisors": [],
+    "own_survivors": 0,
+    "stdout_sha256": "d9254b49f85b4f91c30ae657b58966d2ac31e9f0597d741788e5207160a7f146",
+    "tree_note": "Final implementation and test tree."
+  }
+}
