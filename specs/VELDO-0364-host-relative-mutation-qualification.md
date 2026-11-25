@@ -67,3 +67,19 @@ under the existing host lock and memory cap. The native probes and selected work
 to that host. Threat model: accidental unsupported hosts and incomplete evidence, not malicious
 same-account replacement of authority code or forged local receipts. Independent review and a
 canonical gate remain outstanding; the owner explicitly excludes running that gate in this task.
+
+## Bounded evidence and remaining blockers
+
+Admission is implemented. On the second host the 100-case drive at `27d3d2630` completed
+in 286.08 seconds with 100 rejections, 136 cleaned workers and seven peak workers. All
+named case verdicts and controls match gate 15. The stricter full-observation comparator
+remains red: the `signing-truncated-clock` mutant has one different off-target
+`signing/kill-after-rotation` assertion (false on the first host, true on the second).
+No assertion, comparison or baseline was relaxed to hide that difference.
+
+Final native qualification at `f3b2f3739` passes cgroups, Landlock and the confined child
+interpreter, namespaces, ptrace and pidfds, but refuses the worker toolchain: Node and
+npm exist only for the remote supervisor, not for workers. Owner installation and a fresh
+qualification are required. The five guard mutants are killed; census, personal setup,
+stale anchors and template sync pass. The ticket stays ready, with partial proof; no
+canonical gate, independent review or landing approval is claimed.

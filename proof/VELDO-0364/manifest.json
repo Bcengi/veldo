@@ -1,0 +1,98 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0364",
+  "commit": "f3b2f373983d65f3c4f98866eb6d3ad6ab5efdc5",
+  "producer": "bounded native execution on the second host",
+  "status": "partial",
+  "scope": "Admission implemented; complete host qualification blocked; no canonical gate or landing claim.",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0364/targeted.json"
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0364/guard-receipt.json.gz"
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "failed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0364/qualification.json.gz",
+          "detail": "Kernel checks pass; worker-visible node and npm are absent, so full qualification refuses."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "failed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0364/comparison.json",
+          "detail": "All 100 cases killed and named verdicts match; strict full-observation equality refuses one off-target row difference."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0364/comparator-controls.json"
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "unit.selected",
+      "status": "passed",
+      "detail": "Nine direct ticket assertions; five registered guard mutants killed."
+    },
+    {
+      "name": "integration.selected",
+      "status": "failed",
+      "detail": "100 cases completed; one off-target observation differs. Native host qualification is blocked by missing Node/npm."
+    },
+    {
+      "name": "wallclock",
+      "status": "passed"
+    },
+    {
+      "name": "personal_setup",
+      "status": "passed",
+      "findings": 0
+    },
+    {
+      "name": "stale_mutants",
+      "status": "passed",
+      "findings": 0
+    },
+    {
+      "name": "template_sync",
+      "status": "passed"
+    },
+    {
+      "name": "canonical_gate",
+      "status": "not_run",
+      "detail": "Excluded by owner instruction."
+    },
+    {
+      "name": "independent_review",
+      "status": "not_run"
+    },
+    {
+      "name": "protected_path_approval",
+      "status": "pending"
+    }
+  ],
+  "protected_paths": [
+    "engine/scripts/gate_schedule.py",
+    "scripts/gate_schedule.py"
+  ],
+  "rollback": "Revert this ticket; no host tools or privileged configuration were installed."
+}

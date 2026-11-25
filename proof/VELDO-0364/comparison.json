@@ -1,0 +1,33 @@
+{
+  "cases": 100,
+  "checks": {
+    "clean": true,
+    "complete": true,
+    "fresh": true,
+    "validated": true,
+    "verdicts": false
+  },
+  "elapsed": 286.0775518879527,
+  "implementation_digest": "c00a5491ee7abb374b14f8066baa8207b682a09522769e04d82d9c052c6bb8f2",
+  "input_digest": "967fb2d6ce08700fd18eba10e7cba900275ac591df69c5325c50c1d82e6e495d",
+  "ledger": {
+    "capacity": {
+      "cpu": 8.0,
+      "manager": 16,
+      "memory": 16106127360
+    },
+    "floor": {
+      "cpu": 8.0,
+      "memory": 9663676416
+    },
+    "held": {},
+    "peak": {
+      "cpu": 7.25,
+      "manager": 0,
+      "memory": 7784628224
+    }
+  },
+  "passed": false,
+  "peak_workers": 7,
+  "workers": 136
+}

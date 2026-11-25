@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "checks": {
+    "positive": true,
+    "status": true,
+    "executed": true,
+    "registered": true,
+    "reused": true,
+    "invalid_results": true,
+    "surviving_workers": true,
+    "case_receipts": true,
+    "qualification_ledger": true,
+    "worker_outcomes": true,
+    "missing": true,
+    "duplicate": true,
+    "observation": true,
+    "digest": true
+  }
+}

@@ -1,0 +1,6 @@
+qualification delegation: passed
+qualification landlock: passed
+qualification namespaces: passed
+qualification ptrace: passed
+qualification pidfds: passed
+qualification toolchain: required tools absent from worker runtime: node, npm

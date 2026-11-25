@@ -1,0 +1,69 @@
+{
+  "batch_commit": "27d3d26301e477b5e0ebf3e13caf986b696c954b",
+  "batch_scratch_removed": true,
+  "batch_status": "passed",
+  "case_verdicts_matching": 100,
+  "checks": {
+    "delegation": true,
+    "landlock": true,
+    "namespaces": true,
+    "pidfds": true,
+    "ptrace": true,
+    "toolchain": false
+  },
+  "differences": [
+    {
+      "case": "check_teeth_mutations.py:signing-truncated-clock",
+      "current": true,
+      "mode": "mutant",
+      "prior": false,
+      "row": "VELDO-0027 signing/kill-after-rotation",
+      "target": false
+    }
+  ],
+  "elapsed_seconds": 286.0775518879527,
+  "executed": 100,
+  "full_observation_cases_matching": 99,
+  "host_qualification": "failed",
+  "implementation_commit": "f3b2f373983d65f3c4f98866eb6d3ad6ab5efdc5",
+  "ledger": {
+    "capacity": {
+      "cpu": 8.0,
+      "manager": 16,
+      "memory": 16106127360
+    },
+    "floor": {
+      "cpu": 8.0,
+      "memory": 9663676416
+    },
+    "held": {},
+    "peak": {
+      "cpu": 7.25,
+      "manager": 0,
+      "memory": 7784628224
+    }
+  },
+  "missing": [
+    "node",
+    "npm"
+  ],
+  "peak_workers": 7,
+  "personal_setup_findings": 0,
+  "raw_sha256": {
+    "batch-qualification.json.gz": "c42928f5759e3b08d51b74b3fc4b50e109e0de07db6ad509b675b09dfed181f4",
+    "batch.json.gz": "34e23993ff5484a5ce3fcbe0ff9fc2a0cebc302e7b0a5349ada75122ce9ffed7",
+    "guard-receipt.json.gz": "1ed7b8998c592fbb665f08251e01e961fd8742ece2f0ee64a395b6c050c09ee6",
+    "qualification.json.gz": "4da1985af949c52292af30250a621d3a81cdd19ed5e58eadf13a7e1e0efbb1dd"
+  },
+  "registered": 100,
+  "rejected": 100,
+  "reused": 0,
+  "scope_counters": {
+    "cpu.stat": "usage_usec 1911634907\nuser_usec 1676559827\nsystem_usec 235075080\nnice_usec 1670711000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+    "memory.peak": "1267060736\n"
+  },
+  "stale_mutants": 0,
+  "surviving_workers": 0,
+  "workers": 136
+}
