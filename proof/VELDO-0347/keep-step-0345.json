@@ -1,0 +1,818 @@
+{
+ "base_commit": "7e457e85",
+ "method": "The suite file of an exported copy of each commit was given a wrapper around the keeper module's keep function (the one every keeper calls), and nothing else. For each row it counts the calls of the keep step, the calls that answered ok, the calls asked for a snapshot, the numbered snapshot folders with a manifest that appeared in the store during a call, and the kept refs under refs/veldo/kept/ that appeared in the main repository during a call. A kill inside the keep step is counted too. The worktree of this ticket was not changed for it.",
+ "now_commit": "e31646da (the suite and every module are the same at 1f8aaebb)",
+ "reading": "All 31 rows are green on both. Each of the 19 rows that were red at f347196e makes the same number of keep step calls as on the base, the same number answer ok and the same number of snapshots is written. 13 of the 19 call the keep step; the other 6 never did (ac4/store-protected reads the snapshot ac4/outside-git made, ac6/three-deferrals, signal/removing-while-the-remover-runs, keep/ledger-reads-itself, keep/names, keep/canon). Where the item became a worker clone more kept refs are written, never fewer: a clone keeps every ref it has.",
+ "rows": {
+  "ac1/agent-worktree-in-shared": {
+   "base": {
+    "items": [
+     "worktree:None",
+     "agent_repository:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 2,
+    "kept_refs_written": 10,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None",
+     "agent_repository:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 2,
+    "kept_refs_written": 10,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac1/kept-before-remove": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 4,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 4,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac1/ledger-reads-the-head": {
+   "base": {
+    "items": [
+     "agent_repository:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "agent_repository:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac1/removed-needs-keep-record": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac2/private-repository": {
+   "base": {
+    "items": [
+     "agent_repository:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 12,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "agent_repository:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 12,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac3/fetch-fails": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac3/kept-ref-holds-nothing": {
+   "base": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac3/kept-ref-per-attempt": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 3,
+    "keep_ok": 3,
+    "kept_refs_written": 4,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 3,
+    "keep_ok": 3,
+    "kept_refs_written": 4,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac3/main-repository-gone": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 3,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 3,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac3/record-of-this-attempt": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 2,
+    "kept_refs_written": 4,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 2,
+    "kept_refs_written": 4,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac3/ref-at-another-commit": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 0,
+    "kept_refs_written": 3,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 0,
+    "kept_refs_written": 3,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac3/ref-unwritable": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac3/second-attempt-after-crash": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac3/verify-reads-current-tips": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 1,
+    "kept_refs_written": 4,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 1,
+    "kept_refs_written": 4,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac4/modes-kept": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 3,
+    "keep_ok": 3,
+    "kept_refs_written": 4,
+    "snapshot_asked": 3,
+    "snapshots_written": 3
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "agent_repository:worker_clone",
+     "worktree:None"
+    ],
+    "keep_calls": 3,
+    "keep_ok": 3,
+    "kept_refs_written": 10,
+    "snapshot_asked": 3,
+    "snapshots_written": 3
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac4/nothing-touched": {
+   "base": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac4/outside-git": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 1,
+    "snapshots_written": 1
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "agent_repository:worker_clone"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 7,
+    "snapshot_asked": 1,
+    "snapshots_written": 1
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac4/plain-files-with-manifest": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 1,
+    "snapshots_written": 1
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 1,
+    "snapshots_written": 1
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": false
+  },
+  "ac4/store-protected": {
+   "base": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac5/every-attempt-listed": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 3,
+    "keep_ok": 3,
+    "kept_refs_written": 0,
+    "snapshot_asked": 2,
+    "snapshots_written": 1
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 3,
+    "keep_ok": 3,
+    "kept_refs_written": 0,
+    "snapshot_asked": 2,
+    "snapshots_written": 1
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac5/failed-save-removes-nothing": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 7,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 7,
+    "snapshots_written": 1
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "agent_repository:worker_clone"
+    ],
+    "keep_calls": 7,
+    "keep_ok": 1,
+    "kept_refs_written": 7,
+    "snapshot_asked": 7,
+    "snapshots_written": 1
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac5/folders-synced": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 2,
+    "snapshots_written": 1
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "agent_repository:worker_clone"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 1,
+    "kept_refs_written": 8,
+    "snapshot_asked": 2,
+    "snapshots_written": 1
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac5/kill-points": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 6,
+    "keep_ok": 3,
+    "kept_refs_written": 6,
+    "snapshot_asked": 6,
+    "snapshots_written": 4
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "agent_repository:worker_clone"
+    ],
+    "keep_calls": 6,
+    "keep_ok": 3,
+    "kept_refs_written": 21,
+    "snapshot_asked": 6,
+    "snapshots_written": 4
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac5/never-replaced": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 2,
+    "snapshots_written": 1
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 2,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 2,
+    "snapshots_written": 1
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac5/retry-compares": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 3,
+    "keep_ok": 2,
+    "kept_refs_written": 2,
+    "snapshot_asked": 3,
+    "snapshots_written": 2
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "agent_repository:worker_clone"
+    ],
+    "keep_calls": 3,
+    "keep_ok": 2,
+    "kept_refs_written": 7,
+    "snapshot_asked": 3,
+    "snapshots_written": 2
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac6/removing-put-back": {
+   "base": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [
+     "worktree:None"
+    ],
+    "keep_calls": 1,
+    "keep_ok": 1,
+    "kept_refs_written": 2,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "ac6/three-deferrals": {
+   "base": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "keep/canon": {
+   "base": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "keep/ledger-reads-itself": {
+   "base": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "keep/names": {
+   "base": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  },
+  "signal/removing-while-the-remover-runs": {
+   "base": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "green_now": true,
+   "green_on_base": true,
+   "kept_refs_not_fewer": true,
+   "now": {
+    "items": [],
+    "keep_calls": 0,
+    "keep_ok": 0,
+    "kept_refs_written": 0,
+    "snapshot_asked": 0,
+    "snapshots_written": 0
+   },
+   "same_calls_ok_and_snapshots": true,
+   "was_red_at_f347196e": true
+  }
+ },
+ "teeth_345": "finding 345 on the changed suite: 22 registered, 22 executed, 22 rejected (checks.json)",
+ "what": "Suite 140_veldo_0345_space_keep, the keep step row by row, on the base and after the fix round."
+}

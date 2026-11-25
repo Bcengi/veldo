@@ -1259,9 +1259,16 @@ def _v305_space_census_suite():
                 def __getattr__(self, attribute):
                     return getattr(L, attribute)
 
+            def accepted(ticket, run):
+                # The contract of an accepted dispatch: since VELDO-0302 the receiver declares the run
+                # directory before it makes it, for the owner this contract names (space_owner).
+                return {'station': run['run']['station'], 'dispatch_id': run['run']['id'], 'unit': ticket,
+                        'reservation': {'project': A['id']}, 'input': {'context': {'lane': 'lane-census'}}}
+
             path, item, ticket, run = worktree()
             dispatch_id = run['run']['id']
             R = receiver(space(ledger=Rooted(STATE)), path)
+            R.contract = accepted(ticket, run)
             R.config = {'state_root': str(STATE)}
             R.contract.update(dispatch_id=dispatch_id, unit=ticket)
             made = R._run_directories(dispatch_id)
@@ -1285,9 +1292,11 @@ def _v305_space_census_suite():
             path, item, ticket, run = worktree()
             dispatch_id = run['run']['id']
             R = receiver(space(), path)
+            R.contract = accepted(ticket, run)
             R.config = {'runs': str(SCRATCH / 'run-scratch')}
             R.contract.update(dispatch_id=dispatch_id, unit=ticket)
             made = R._run_directories(dispatch_id)
+            own = dict(R.space_items)
             TOKEN = plant(Path(made['config']) / 'token', 'the run\'s subscription token\n')
             length, raised = journal_length(), None
             run_items = items_at(made['root'])
@@ -1300,6 +1309,8 @@ def _v305_space_census_suite():
                        'the detail [%s]' % (raised,),
                   getattr(raised, 'code', None) == 'invalid_state:space_folder_run_directory'
                   and made['root'] in getattr(raised, 'detail', ''))
+            # The run directory is an item of its own since VELDO-0302, declared by the receiver before
+            # it made the folder. It is the one item there, as it was before the refusal.
             check(row, 'nothing was declared, no variable points anywhere and the token is byte for byte',
                   journal_length() == length and (R.space_run or {}).get('environment') == {}
                   and items_at(made['root']) == run_items and text_of(Path(made['config']) / 'token') == TOKEN)

@@ -348,7 +348,7 @@ def _v310_suite():
         put('authority', 'membership', {'principal_type': 'service', 'roles': [], 'scope': [REPO],
                                         'revoked_at': None, 'expires_at': None})
         put('olga', 'membership', {'principal_type': 'person', 'roles': ['project_owner'], 'scope': '*',
-                                   'revoked_at': None, 'expires_at': None})
+                                   'independence_group': 'olga', 'revoked_at': None, 'expires_at': None})
         put('key-olga', 'verification_key', {'principal': 'olga', 'public_key': public['olga'], 'effective_at': 0})
         put('authority:' + DOMAIN, 'authority', {'state': 'active', 'generation': 1})
         for sid in UNITS:
@@ -1502,8 +1502,34 @@ def _v310_suite():
         git(caller, 'branch', 'side/kept', FIRST)
         held = planted('kept', 'side/kept', T_KEPT)
         moved_past(held, SEED)
+        # What the owner keeps the worktree for: a file in no commit. A request is raised only for a
+        # worktree with something in it that is nowhere else.
+        (held['path'] / 'owner-notes.txt').write_text('the owner keeps this\n')
         due = L.signal('contained', {'items': [{'item': held['worktree'], 'version': version_of(held['worktree'])}]})
-        mark = L.outcome(held['worktree'], 'kept', {'owner_keep': {'at': time.time(), 'answer': 'keep'}}, principal='olga')
+        # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318): the
+        # outcome that claims the mark is refused, and the worktree is kept through its request, the
+        # owner's settled answer and the owner's packet (support/space_owner_keep.py). The desk's two
+        # services are made members as this fixture makes its own.
+        claimed = L.outcome(held['worktree'], 'kept', {'owner_keep': {'at': time.time(), 'answer': 'keep'}}, principal='olga')
+        check(R, 'an outcome that claims the owner\'s mark is refused and writes nothing [%s]' % (claimed.get('reason'),),
+              claimed.get('ok') is False and claimed.get('reason') == 'not_authorized'
+              and state_of(held['worktree']) == 'due' and (L.item(held['worktree']) or {}).get('owner_keep') is None)
+        KEEP = load('v310_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
+
+        def member(who, key):
+            put(who, 'membership', {'principal_type': 'service', 'roles': [], 'scope': '*', 'independence_group': who,
+                                    'revoked_at': None, 'expires_at': None})
+            put('key-' + who, 'verification_key', {'principal': who, 'public_key': key, 'effective_at': 0})
+
+        desk = KEEP.Desk(mods, S, CM, AC, writer, ids, sign, lambda message: sign_as('olga', message), private,
+                         time.time(), owner='olga', tag='v310_desk', member=member)
+        # The request names the commits Signal would name: the worktree's, read as rule 5 reads them.
+        asked = KEEP.reserve(L, RM, held['worktree'],
+                             commits=SIG._unlanded(L, P, RM, L.item(held['worktree']), (), None) or ())
+        settled, edge_alone, mark = (desk.owner_keeps(L, held['worktree'], SP.ITEM_KIND) if asked.get('ok')
+                                     else ({}, {'ok': False}, asked))
+        check(R, 'the settled answer alone marks nothing [%s %s]' % (asked.get('reason'), settled.get('reason')),
+              asked.get('ok') is True and settled.get('outcome') == 'settled' and not edge_alone['ok'])
         kept_version = version_of(held['worktree'])
         read = {identity: version_of(identity) for identity in (held['branch_item'], held['build'])}
         record = L.item(held['worktree']) or {}
@@ -1539,7 +1565,8 @@ def _v310_suite():
               record.get('state') == 'kept' and (record.get('owner_keep') or {}).get('by') == 'olga'
               and version_of(held['worktree']) == kept_version
               and os.path.isdir(str(held['path'])) and listed(caller, held['path']) and head_of(held['path']) == SEED
-              and text_of(held['path'] / 'README.md') is not None)
+              and text_of(held['path'] / 'README.md') is not None
+              and text_of(held['path'] / 'owner-notes.txt') == 'the owner keeps this\n')
 
         R = 'ac3/other-project-untouched'
         check(R, 'after every landing the other project\'s branch and worktree are as they were',

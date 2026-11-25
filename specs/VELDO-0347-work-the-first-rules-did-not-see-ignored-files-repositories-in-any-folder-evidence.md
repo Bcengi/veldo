@@ -43,6 +43,27 @@ footprint:
   - "scripts/suites/140_veldo_0345_space_keep.py"
   - "scripts/suites/156_veldo_0315_reconcile.py"
   - "scripts/suites/*_veldo_0347_*.py"
+  - "scripts/suites/135_veldo_0298_space_kinds.py"
+  - "scripts/suites/136_veldo_0299_space_probe.py"
+  - "scripts/suites/138_veldo_0300_space_remove.py"
+  - "scripts/suites/139_veldo_0301_space_signal.py"
+  - "scripts/suites/140_veldo_0345_space_keep.py"
+  - "scripts/suites/142_veldo_0303_space_paths.py"
+  - "scripts/suites/134_veldo_0331_space_mode.py"
+  - "scripts/suites/141_veldo_0344_process_reader.py"
+  - "scripts/suites/143_veldo_0305_space_census.py"
+  - "scripts/suites/144_veldo_0306_space_docker.py"
+  - "scripts/suites/145_veldo_0307_space_docker_ownership.py"
+  - "scripts/suites/146_veldo_0308_run_finished.py"
+  - "scripts/suites/147_veldo_0310_landed_contained.py"
+  - "scripts/suites/151_veldo_0313_space_run.py"
+  - "scripts/suites/153_veldo_*.py"
+  - "scripts/suites/154_veldo_*.py"
+  - "scripts/suites/155_veldo_0304_space_boundary.py"
+  - "scripts/suites/156_veldo_0315_reconcile.py"
+  - "scripts/suites/support/space_owner_keep.py"
+  - "engine/.veldo/init_scaffold.py"
+  - ".veldo/init_scaffold.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -246,3 +267,8 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   a repository whose work tree has any modified, staged or untracked entry or any ignored path that is
   work: a dead run's worker clone with a snapshot (AC3) needs the per-file comparison with the manifest
   before each delete, which this ticket adds to that remover together with the exception.
+
+### Space V1 assembly, 2026-11-25
+
+Owner order 43607 retains the candidate implementation and ports clone Keep requests.
+Explicit supersession evidence and validation status: `proof/VELDO-0347/assembly-v1.md`.

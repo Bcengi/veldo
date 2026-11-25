@@ -69,6 +69,7 @@ def _v328_images_suite():
         RM = load('v328_control_space_remove', PRODUCTION['control_space_remove.py'])
         KP = load('v328_control_space_keep', VELDO / 'control_space_keep.py')
         AC = CM.AC
+        KEEP = load('v328_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
         NOW = 1000.0
 
         keys = temp / 'keys'
@@ -343,7 +344,14 @@ def _v328_images_suite():
         adapter.built('default', 'fixture/owner-kept:1', 'build-a', image['Id'])
         item = at('default', 'fixture/owner-kept:1')[0]
         L.signal('ticket_ended', {'items': [{'item': item, 'version': version(item)}]})
-        marked = L.outcome(item, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+        # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318). The
+        # Ledger raises no request for an item of this kind, so the settled request is planted; the
+        # owner's signature, the membership check and the one transition are the Ledger's own.
+        claimed = L.outcome(item, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+        check('ac1/owner-keep', 'an outcome that claims the owner mark is refused',
+              not claimed['ok'] and claimed.get('reason') == 'not_authorized'
+              and not L.item(item).get('owner_keep') and L.item(item)['state'] == 'due')
+        marked = KEEP.keep_planted(L, S, CM, conn, SP.ITEM_KIND, item, owner_sign, NOW)
         before = version(item), len(removals())
         signal('ticket_ended', owners['build-a'])
         refused = signal('landed', owners['build-a'], [item])

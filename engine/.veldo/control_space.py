@@ -444,6 +444,14 @@ class Refused(Exception):
         self.code, self.detail = code, detail
 
 
+# The forms of an agent repository item (design 4.1), and the names the lifecycle table may hold the
+# events of a form under: a form with a row of its own in the kind registry (VELDO-0347).
+FORMS = ('agent', 'worker_clone', 'batch_clone', 'candidate_workspace')
+CLONE_FORMS = FORMS[1:]
+# A clone's request offers Keep and nothing else: no remover carries a Save or a Discard of one.
+REQUEST_FORMS = ('batch_clone', 'candidate_workspace')
+
+
 def _is_str(value):
     return isinstance(value, str) and value.strip() != ''
 
@@ -1381,6 +1389,8 @@ class Ledger:
         retires its authorization; the next request has its own number and file list.
         `head` is the commit the worktree was at when the terms were read (None for a HEAD
         with no commit). It is recorded beside the terms: Save and Discard run only there.
+        A batch clone and a candidate workspace are asked about as clones (VELDO-0347): their
+        terms name the clone with its form and offer Keep alone.
         """
         record = self.item(item) or {}
         prior = record.get('disposition') or {}
@@ -1391,11 +1401,20 @@ class Ledger:
             result['request'] = self.item(item)['disposition']
         return result
 
+    def _clone_row(self, record):
+        """Use the form row of the lifecycle version that declared this item."""
+        return ((record.get('ends_on') or {}).get('version') == self.lifecycle['version']
+                and record.get('form') in (self.lifecycle.get('forms') or {}))
+
     def _t_disposition_request(self, conn, params, before):
         identity, record = self._stored(params, before)
         prior = record.get('disposition') or {}
-        if record['state'] != 'deferred' or record['kind'] != 'worktree' or record.get('owner_keep'):
-            raise Refused('space_disposition_state', 'a deferred worktree without an owner Keep')
+        clone = (record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS
+                 and self._clone_row(record))
+        if (record['state'] != 'deferred' or not (record['kind'] == 'worktree' or clone)
+                or record.get('owner_keep')):
+            raise Refused('space_disposition_state', 'a deferred worktree, batch clone or candidate workspace '
+                                                     'without an owner Keep')
         if prior and prior.get('state') != 'refused':
             raise Refused('space_disposition_exists', 'the item already has its request')
         proposal = params.get('proposal')
@@ -1404,9 +1423,11 @@ class Ledger:
             settlement.space_presentation(proposal)
         except settlement.Refused as error:
             raise Refused(error.code, error.detail) from error
-        tree = proposal['worktrees'][0]
-        if tree['item'] != identity or tree['path'] != record['locator']['path']:
-            raise Refused('space_disposition_item', 'the request names this worktree')
+        # A clone is named as a clone, with its form, and a worktree as a worktree: never one as the other.
+        tree = settlement.space_target(proposal)
+        if (tree['item'] != identity or tree['path'] != record['locator']['path']
+                or ('clones' in proposal) != clone or (clone and tree['form'] != record['form'])):
+            raise Refused('space_disposition_item', 'the request names this item as what it is')
         head = params.get('head')
         if 'head' not in params or head is not None and not (
                 _is_str(head) and len(head) in (40, 64) and not set(head) - set('0123456789abcdef')):
@@ -1506,6 +1527,9 @@ class Ledger:
         if record['state'] != 'deferred' or (record.get('disposition') or {}).get('state') != 'requested':
             raise Refused('space_disposition_state', 'the request has already been applied')
         choice = effect['choice'].split(' ')[1]
+        if record['kind'] != 'worktree' and choice != 'keep':
+            # No remover carries a Save or a Discard of a private repository: only Keep is offered.
+            raise Refused('space_disposition_choice', 'a clone is kept; nothing saves or discards one')
         record['disposition'] = dict(record['disposition'], state='authorized', choice=choice,
                                      request=request, by=owner)
         if choice == 'keep':
@@ -1554,7 +1578,7 @@ class Ledger:
             if not result.get('ok'):
                 return result
         result = presenter.frame(packet('frame', alias=alias, request_version=1,
-                                        risk_statement=st.SPACE_DISCARD))
+                                        risk_statement=st.space_risk(proposal)))
         return {'ok': result.get('outcome') == 'accepted', 'request': rid, 'framing': result}
 
     def snapshot_folder(self, item):

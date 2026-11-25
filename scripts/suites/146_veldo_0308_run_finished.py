@@ -1241,6 +1241,13 @@ def _v308_run_finished_suite():
             check(row, 'its pin is held through the hand-over and the sweeps [%s]' % (C2._pins_held(clone_id),),
                   len(C2._pins_held(clone_id)) == 1 and not [event for event in N.observations
                                                              if event.get('operation') == 'release_pins'])
+            # Since VELDO-0304 (fb5d0f89) a pin is released through the ref remover, which refuses a pin
+            # whose item has not ended. A release asked for too early therefore leaves the pin where it
+            # is, and the pin being held no longer says that nobody asked. The provisioner records every
+            # answer it was given for a ref (ref_outcomes); none is recorded for this pin.
+            check(row, 'and nobody asked for its release: the pin is not held by the remover\'s refusal alone [%s]'
+                  % (sorted(getattr(C2, 'ref_outcomes', {})),),
+                  not getattr(C2, 'ref_outcomes', {}))
             check(row, 'after the cache was collected the work tree\'s commit is still readable through it',
                   readable(work, head) and git(work, 'rev-parse', 'HEAD') == head
                   and git(work, 'show', 'HEAD:tracked.txt') == 'base')
@@ -1250,6 +1257,11 @@ def _v308_run_finished_suite():
             N.sweep()
             check(row, 'a work tree that is not at its path while its item is not removed releases nothing',
                   len(C2._pins_held(clone_id)) == 1)
+            check(row, 'and its release is not asked for either: no answer for the pin, no release observed [%s %s]'
+                  % (sorted(getattr(C2, 'ref_outcomes', {})),
+                     [event for event in N.observations if event.get('operation') == 'release_pins']),
+                  not getattr(C2, 'ref_outcomes', {})
+                  and not [event for event in N.observations if event.get('operation') == 'release_pins'])
             os.rename(marked, work)
             # VELDO-0304: the release itself is the remover's now, and it refuses any item that is not
             # removed. So a release asked too early no longer takes the pin; it is still a defect of the
@@ -2043,12 +2055,21 @@ def _v308_run_finished_suite():
                   and states(clone_items) == ['removed'] * 3 and not os.path.lexists(root)
                   and C5._pins_held(clone_id) == [] and state_of(run_item) == 'present' and place.is_dir())
 
+            KEEP = load('v308_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
+
             def owner_kept(identity):
                 """The owner marked the item Keep: it is made due by a signal that names it and written kept
                 with the owner's mark, as the owner (the owner's settled answer, in one command, is
                 VELDO-0318's). Returns its version afterwards."""
                 due = L.signal('run_finished', {'items': [{'item': identity, 'version': version_of(identity)}]})
-                marked = L.outcome(identity, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+                # VELDO-0318 is built: the outcome that claims the mark is refused, and the mark is the
+                # owner's signed space_disposition packet. The items kept here are a sandbox's private
+                # repository and a clone's scratch folder, for which no request is raised, so the
+                # settled request is planted (support/space_owner_keep.py, keep_planted).
+                claimed = L.outcome(identity, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+                if claimed.get('ok') or claimed.get('reason') != 'not_authorized' or (L.item(identity) or {}).get('owner_keep'):
+                    raise RuntimeError('the outcome wrote the owner mark: %s' % (claimed,))
+                marked = KEEP.keep_planted(L, S, CM, conn, SP.ITEM_KIND, identity, owner_sign, NOW)
                 if not (due.get('ok') and marked.get('ok')):
                     raise RuntimeError('the fixture could not mark Keep: %s %s' % (due.get('reason'), marked.get('reason')))
                 return version_of(identity)

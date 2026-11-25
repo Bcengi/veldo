@@ -216,6 +216,8 @@ NAMED = 20  # the most entries of one list written into an outcome
 
 
 CARRY_OUT_REFUSED = 'space_carry_out_refused'
+# What the evidence remover says of the files it removed and of those it kept (VELDO-0347 AC4).
+EVIDENCE_FACTS = ('removed_files', 'kept_files', 'removed', 'kept', 'copies', 'unread')
 
 
 def signal(ledger, event, subject, carry_out=None, principal=None, command_id=None, probe=None, kinds=None,
@@ -432,7 +434,7 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
     try:
         judged = rules(ledger, probe, identity, record, purpose=REMOVE, tool=tool, owner_live=given['owner_live'],
                        landed=given['landed'], run=given['run'], proc=given['proc'],
-                       borrow_root=given['borrow_root'])
+                       borrow_root=given['borrow_root'], row=entry.get('row'))
     except Exception as error:  # noqa: BLE001 - what could not be judged is refused, never removed
         judged = {'ok': False, 'rule': 'error', 'order': None, 'deferral': DEFERRAL['tool'],
                   'found': {'raised': _raised(error)}}
@@ -442,7 +444,8 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
         return write('removed' if action in REMOVALS else 'kept',
                      dict({key: _plain(said.get(key)) for key in ('method', 'bytes', 'bytes_source', 'pool',
                                                              'pool_free_before', 'pool_free_after', 'freed',
-                                                             'host')}, **scratch))
+                                                             'host')},
+                          **dict(scratch, **{key: _plain(said[key]) for key in EVIDENCE_FACTS if key in said})))
     if seen.get('not_begun'):
         # The ledger admits one removing write for an item. When it refused this one because the item
         # is not due any more, another carrier holds the removal: nothing is written over its record.
@@ -467,6 +470,26 @@ def _carry_one(ledger, probe, remover, event, identity, entry, given):
     if judged['rule'] == 'ledger' and found.get('missing') is True and _missing(probe, record, given['run']):
         return write('gone', {})
     result = write('deferred', refusal, deferral=judged['deferral'], rule=judged['rule'])
+    if (result.get('outcome') == 'deferred' and judged['deferral'] == 'unique_work'
+            and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS
+            and _clone_row(record) and found.get('cases')):
+        # A batch clone or a candidate workspace with files in no commit raises one request, as a
+        # worktree does (VELDO-0347 AC3). It names the clone as a clone and offers Keep alone. Only
+        # an item whose own table gave it the clone's row is asked about, and table 1 names no
+        # request: rule 5 says work_tree of such an item alone (CLONE_ROW), and the Ledger takes a
+        # clone's request for no other.
+        try:
+            asked = ledger.request_disposition(
+                identity, remover.clone_proposal(ledger, probe, identity, record, given['run']),
+                remover.disposition_head(record['locator']['path']))
+        except Exception as error:  # noqa: BLE001 - a request that cannot be built leaves the item deferred
+            result['request_refusal'] = _raised(error)
+            return result
+        result['decision_request'] = asked
+        publish = getattr(ledger, 'disposition_publish', None)
+        if asked.get('ok') and publish is not None:
+            result['presentation'] = publish(identity)
+        return result
     if (result.get('outcome') == 'deferred' and judged['deferral'] == 'unique_work'
             and record['kind'] == 'worktree' and not _is_review_worktree(record)
             and (event in ('ticket_ended', 'project_ended', 'worktree_abandoned', 'released')
@@ -585,6 +608,7 @@ OWN_REPOSITORY_KINDS = ('worktree', 'agent_repository')
 # snapshot and is not deferred for what is in its work tree (VELDO-0347 AC3).
 CLONE_FORMS = ('worker_clone', 'batch_clone', 'candidate_workspace')
 SNAPSHOT_FORMS = ('worker_clone',)
+REQUEST_FORMS = ('batch_clone', 'candidate_workspace')
 # The kind registry's tables that have no row for a clone's form (control_space_kinds: table 1). An item
 # keeps the table it was declared under: an agent repository declared under one of them is judged as
 # that table says, its branches against the shared repository, whatever its form (review F2).
@@ -614,6 +638,9 @@ def _scope_repository(ledger, record):
         if scope.get('type') == 'project' and project.get('project') == scope.get('id'):
             return project.get('repository')
     return None
+
+
+
 
 
 def _agent_repository(ledger, record):
@@ -804,8 +831,11 @@ def _rule_unique_work(ledger, probe, identity, record, given):
     facts = probe.unique_work(path, given['landed'], shared, given['run'], **declared)
     if facts['read'] is not True or facts['unique_work'] is None:
         return {'unread': facts.get('said')}
+    # In a review worktree an untracked file git does not ignore is review scratch, which the remover
+    # saves. An ignored path that is work is not: it is unique work there as anywhere (VELDO-0347 AC1).
     cases = [case for case in facts['cases']
-             if not (case == REVIEW_SCRATCH_CASE and _is_review_worktree(record))]
+             if not (case == REVIEW_SCRATCH_CASE and _is_review_worktree(record)
+                     and not facts.get('ignored'))]
     if cases:
         return {'cases': cases, 'branch': facts['branch'], 'commit': facts['commit'],
                 'modified': facts['modified'], 'staged': facts['staged'], 'untracked': facts['untracked'],
@@ -886,7 +916,7 @@ RULES = {'ledger': _rule_ledger, 'protect': _rule_protect, 'owner_live': _rule_o
 
 
 def rules(ledger, probe, identity, record, purpose=REMOVE, tool=None, owner_live=None, landed=(), run=None,
-          proc=None, borrow_root=None):
+          proc=None, borrow_root=None, row=None):
     """Judge one removal of the item `identity`, whose ledger record is `record`, by the safety rules
     in their order, and stop at the first that refuses.
 
@@ -896,11 +926,13 @@ def rules(ledger, probe, identity, record, purpose=REMOVE, tool=None, owner_live
     with {conclusive, group_empty}; with no answer the run is not known to have ended, and rule 3
     refuses. `landed` holds the source commits of completed landings (rule 5). `run`, `proc` and
     `borrow_root` are the probes' own parameters: the client runner, the process table and the
-    launcher's journal root."""
+    launcher's journal root. `row` is the row the kind registry answered for the item, read from the
+    table of the item's own version: rule 5 reads a clone's work tree only when it is CLONE_ROW, and
+    with none an agent repository is read as its own row reads it, whatever its form."""
     if purpose not in APPLIES:
         raise ValueError('not a purpose of removal: %r' % (purpose,))
     given = {'tool': tool, 'owner_live': owner_live, 'landed': landed, 'run': run, 'proc': proc,
-             'borrow_root': borrow_root}
+             'borrow_root': borrow_root, 'row': row}
     passed = []
     for order, name in enumerate(ORDER, 1):
         if name not in APPLIES[purpose] or (name == 'tool' and tool is None):

@@ -924,6 +924,24 @@ def _r_agent_repository(ctx, identity, record, answer):
     _after(ctx, pools, answer)
 
 
+def clone_proposal(ledger, probe, identity, record, run=None):
+    """The terms of the request a batch clone or a candidate workspace with files in no commit raises
+    (VELDO-0347 AC3): the clone named as a clone, with its form and those files, read now. No remover
+    carries a Save or a Discard of a private repository, so the terms offer Keep alone."""
+    settlement = _sibling('control_request_settlement')
+    path = record['locator']['path']
+    patterns = [list(project.get('build_output') or ()) for project in ledger.projects
+                if ((record.get('owner') or {}).get('scope') or {}).get('type') == 'project'
+                and project.get('project') == record['owner']['scope'].get('id')]
+    tree = probe.unique_work(path, (), None, run, patterns=patterns[0] if patterns else (),
+                             adopted=bool(record.get('adopted')))
+    files = disposition_files(ledger, record, path)
+    if tree.get('read') is not True or not files:
+        raise _Refusal(KEEP_FAILED, 'the clone\'s work tree could not be read for its files')
+    return {'keep': settlement.SPACE_CLONE_KEEP,
+            'clones': [{'item': identity, 'path': path, 'form': record.get('form'), 'files': files}]}
+
+
 def _worktree_remove(ctx, repository, path):
     """git's worktree remove; only the authenticated Discard context permits force."""
     if ctx.get('disposition') == 'discard':

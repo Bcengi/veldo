@@ -91,16 +91,24 @@ def _v323_suite():
 
         conn = S.open_store(str(state / 'store.sqlite3'))
         journal_sign = lambda data: 'fixture:' + S.digest_of(data.decode())
-        for who, typ, roles in [('owner', 'person', ['project_owner']), (SP.OBSERVER, 'service', [])]:
+        def member(who, public, typ='service', roles=()):
             for identity, kind, data in [
-                (who, 'membership', dict(principal_type=typ, roles=roles, scope='*',
-                                         revoked_at=None, expires_at=None)),
-                ('key:' + who, 'verification_key', dict(principal=who, public_key=Path(str(key) + '.pub').read_text(),
-                                                       effective_at=0))]:
+                (who, 'membership', dict(principal_type=typ, roles=list(roles), scope='*',
+                                         independence_group=who, revoked_at=None, expires_at=None)),
+                ('key:' + who, 'verification_key', dict(principal=who, public_key=public, effective_at=0))]:
                 cid = uuid.uuid4().hex
                 S.execute(conn, dict(command_id=cid, principal='authority', operation='upsert_entity',
                     nonce=cid, artifact_digests=[], expected_versions={identity: 0},
                     parameters=dict(entity_id=identity, kind=kind, data=data)), 'authority', journal_sign, 1)
+
+        member('owner', Path(str(key) + '.pub').read_text(), 'person', ['project_owner'])
+        member(SP.OBSERVER, Path(str(key) + '.pub').read_text())
+        # The owner's Keep is the signed space_disposition command (VELDO-0318): the owner's desk of
+        # the space suites on this store, its two services made members as the two above are.
+        KEEP = load('v323_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
+        desk = KEEP.Desk(mods, S, CM, CM.AC, conn,
+                         {'domain_uuid': 'domain', 'repository_uuid': 'repository', 'store_uuid': 'store'},
+                         journal_sign, sign, base, 100, tag='v323_desk', member=member)
         scope = {'type': 'project', 'id': 'orchard'}
         project = dict(project='orchard', repository=str(repo), worktree_root=str(trees),
                        landing_refs=['landing'], protect=[], build_output=['build/'])
@@ -237,9 +245,16 @@ def _v323_suite():
         protected, protected_path, _b, _o = worktree('owner-kept')
         (protected_path / 'draft').write_text('owner work')
         ledger.signal('contained', {'items': [{'item': protected, 'version': ledger._row(protected, SP.ITEM_KIND)[0]}]})
-        answer = ledger.outcome(protected, 'kept', {'owner_keep': {'at': 100}}, principal='owner')
+        claimed = ledger.outcome(protected, 'kept', {'owner_keep': {'at': 100}}, principal='owner')
+        asked = KEEP.reserve(ledger, RM, protected)
+        if not asked['ok']:
+            raise RuntimeError(asked)
+        settled, edge_alone, answer = desk.owner_keeps(ledger, protected, SP.ITEM_KIND)
         if not answer['ok']:
-            raise RuntimeError(answer)
+            raise RuntimeError((answer, settled))
+        check('safety/owner-keep', not claimed['ok'] and claimed.get('reason') == 'not_authorized'
+              and settled.get('outcome') == 'settled' and not edge_alone['ok']
+              and ledger.item(protected).get('owner_keep') == {'by': 'owner'}, (claimed, settled, edge_alone))
         def keeper(identity, item):
             if identity == failed:
                 return {'ok': False, 'said': 'fixture cannot save'}

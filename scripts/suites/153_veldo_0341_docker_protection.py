@@ -68,6 +68,7 @@ def _v341_space_docker_ownership_suite():
         RM = load('v341_control_space_remove', VELDO / 'control_space_remove.py')
         KP = load('v341_control_space_keep', VELDO / 'control_space_keep.py')
         AC = CM.AC
+        KEEP = load('v341_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
         NOW = 1000.0
 
         keys = temp / 'keys'
@@ -497,7 +498,14 @@ def _v341_space_docker_ownership_suite():
         ADAPTER.observe('default', 'container', 'owner-kept')
         identity = record_at('default', 'container', 'owner-kept')[0]
         L.signal('run_finished', named(identity), principal='owner')
-        marked = L.outcome(identity, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+        # The owner's Keep is the signed space_disposition command and nothing else (VELDO-0318). The
+        # Ledger raises no request for an item of this kind, so the settled request is planted; the
+        # owner's signature, the membership check and the one transition are the Ledger's own.
+        claimed = L.outcome(identity, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+        check('loss/owner-keep', 'an outcome that claims the owner mark is refused',
+              not claimed['ok'] and claimed.get('reason') == 'not_authorized'
+              and not L.item(identity).get('owner_keep') and L.item(identity)['state'] == 'due')
+        marked = KEEP.keep_planted(L, S, CM, conn, SP.ITEM_KIND, identity, owner_sign, NOW)
         result = send('released', named(identity), principal='owner')
         check('loss/owner-keep', 'the mark and planted content survive a named released event',
               marked.get('ok') and result.get('reason') == 'space_owner_keep:' + identity

@@ -1032,6 +1032,10 @@ def _v306_space_docker_suite():
                    and ast.unparse(node.func) == 'select.select']
         loop_text = ast.unparse(serve)
         asked, joined = 'dockers = service.docker_pipes()', 'pipes = {**pipes, **dockers}'
+        # VELDO-0323 put the space spool's listener in the same poll set, beside the socket. The row
+        # holds what it held: one select, the socket first, every pipe in it, and no other member
+        # than that one listener.
+        waited = ast.unparse(ast.parse(selects[0]).body[0].value.args[0]) if len(selects) == 1 else ''
         check(ROW, 'the service loop has one select, on the listener and the pipes, and the adapter\'s pipes '
               'are read in each iteration and put among them before it [%s]' % selects,
               selects == ['select.select(watched, [], [], wait)']
