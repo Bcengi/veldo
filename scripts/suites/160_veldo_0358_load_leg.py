@@ -477,7 +477,7 @@ def _v358d_load_leg():
             receipt = gscheduler.run(catalog, candidate, out, out / 'legs', out / 'mutation-receipt',
                                      graph_path=graph_path, capacity={'cpu': 4, 'memory': 1 << 30, 'manager': 4},
                                      measurement_store=top / 'graph/store', meter_factory=FixtureMeter,
-                                     guard_factory=lambda root: (lambda: True))
+                                     guard_factory=lambda root: (lambda: True), collect_all=True)
         finally:
             for k, v in saved.items():
                 if v is None:

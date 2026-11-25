@@ -1,0 +1,18 @@
+scheduler:
+selftest (PARTIAL, 1 of 276 suites): 53 passed, 0 failed in 27.83s
+suite:
+selftest (PARTIAL, 1 of 276 suites): 64 passed, 0 failed in 1.05s
+shards:
+selftest (PARTIAL, 1 of 276 suites): 76 passed, 0 failed in 4.64s
+admission:
+  SELFTEST FAIL: VELDO-0219 admission/fits-ledger
+  SELFTEST FAIL: VELDO-0219 admission/abort-releases-every-grant
+  SELFTEST FAIL: VELDO-0219 admission/lifecycle-manager-admission
+  SELFTEST FAIL: VELDO-0219 admission/manifest-and-manager
+  SELFTEST FAIL: VELDO-0219 admission/unmeasured-inventory
+  SELFTEST FAIL: VELDO-0219 admission/same-verdicts
+  SELFTEST FAIL: VELDO-0219 admission/stage-receipts-and-recording
+selftest (PARTIAL, 1 of 276 suites): 51 passed, 7 failed in 1.64s
+Selector exit 2 is expected for passing partial runs; the measured-admission selector exited 1.
+These are diagnostic selector results, not a gate or landing claim.
+The measured-admission failures match the original scheduler source exactly; see admission-baseline.txt.

@@ -130,7 +130,7 @@ Path(a.receipt).write_text(json.dumps(r)); print(json.dumps(r)); raise SystemExi
             with patch.dict(os.environ, V216_FAIL=fail), contextlib.redirect_stdout(log):
                 receipt = scheduler.run(commands or catalog, candidate, out, out / 'legs', out / 'mutation',
                     graph_path=graph_path, capacity=capacity or {'cpu': 32, 'memory': 1048576, 'manager': 16},
-                    measurement_store=store or top / 'store', meter_factory=Meter, guard_factory=guard, serial=serial,
+                    measurement_store=store or top / 'store', meter_factory=Meter, guard_factory=guard, serial=serial, collect_all=True,
                     node_inputs_factory=lambda root,dest: scheduler.NodeInputs(root,dest,mutation))
             return receipt, out, log.getvalue()
 

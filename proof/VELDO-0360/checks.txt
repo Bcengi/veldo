@@ -1,0 +1,9 @@
+lint: pass (1412 python, 44 shell, 3.09s)
+template sync: pass (362 pair(s) compared, 6 declared per-repo, 380 engine-only)
+wallclock: scope: no opened-files record: every file under scripts/ and proof/; 805 file(s) read, 458 with a site
+wallclock: sites: 2844 (R1 249, R2 1309, R3 1247, R4 39); by class: A 39, D1 1017, D2 87, P 205, S1 24, S2 81, S3 8, ST 136, T 1247; excepted by the authority: 35
+wallclock: baseline: 2689 entry(ies), 2809 site(s) in 455 file(s); by rule: R1 215, R2 1309, R3 1247, R4 38
+wallclock: pass (no site over its allowed count, every baseline entry at its required count)
+personal setup: 0 finding(s); explicit base 40301b937; installation absent, built-in shapes checked
+spec structure and ready transition: passed
+No canonical gate, full leg, host-heavy wrapper, load generator or independent reviewer was run.

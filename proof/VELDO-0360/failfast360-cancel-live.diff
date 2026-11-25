@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-cancel-live
+@@ -807,7 +807,7 @@
+             # collector empties their cgroups and releases grants on the next pass.
+             if first_failure is not None and not collect_all:
+                 for name, item in active.items():
+-                    if item['proc'].poll() is None:
++                    if False:
+                         item['cancelled'] = True
+                         item['error'] = 'cancelled after first failure: ' + first_failure['node']
+                         item['proc'].kill()

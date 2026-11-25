@@ -8,6 +8,7 @@ is for trusted coordinators, never for their candidate children. Future shard an
 case dispatchers claim measured needs on that socket in addition to local admission.
 """
 import argparse
+import ctypes
 import hashlib
 import importlib.util
 import json
@@ -32,7 +33,7 @@ CHANNEL = 'VELDO_GATE_LEDGER_FD'
 # not_run: the gate is red already and learns nothing from it), and a node that depends on it is not
 # started when it is red (not_started): so a red leg ends the gate before the mutation stage.
 LOAD = 'load'
-HELD = ('not_run', 'not_started')
+HELD = ('not_run', 'not_started', 'cancelled')
 NAME = re.compile(r'^[a-z][a-z0-9_]*(?:\.(?:confined|unconfined))?$')
 # VELDO-0221: WHAT A LEG NODE HOLDS ONCE ITS DISPATCHER RUNS ITS SUITES AS SHARDS. A leg node's cgroup
 # holds every shard, and every shard claims for itself on this ledger, so a node that kept its
@@ -523,12 +524,15 @@ def command_for(root, stage, leg, command, record, receipt, listing, prior_times
     return [sys.executable, '-I', '-S', str(HERE / 'gate_candidate.py'), '--root', str(root), '--', 'bash', '-c', command]
 
 
-def held(name, depends, results):
-    """(verdict, reason) when a node is not to be started, else None (VELDO-0358 AC13)."""
+def held(name, depends, results, collect_all=False):
+    """Hold every nonpassing dependency; collect-all retains the legacy load-only rule."""
     if name == LOAD:
         red = sorted(d for d in depends[name] if results[d]['verdict'] != 'pass')
         if red:
             return 'not_run', 'a stage before the load-proof leg is red: ' + ', '.join(red)
+    if not collect_all and any(results[d]['verdict'] != 'pass' for d in depends[name]):
+        return 'not_started', 'failed prerequisite: ' + ', '.join(sorted(
+            d for d in depends[name] if results[d]['verdict'] != 'pass'))
     if LOAD in depends[name] and results[LOAD]['verdict'] not in ('pass', 'not_run'):
         return 'not_started', 'the load-proof leg is red'
     return None
@@ -546,7 +550,7 @@ def stage_verdict(verdicts):
 
 def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declaration_path=None,
         capacity=None, measurement_store=None, meter_factory=None, guard_factory=input_guard, serial=False,
-        node_inputs_factory=NodeInputs, load_opened=None):
+        node_inputs_factory=NodeInputs, load_opened=None, collect_all=False):
     """Run the real graph. Explicit injected boundaries are for fixture authorities only.
 
     CLI exposes no graph, capacity, measurement-store, runner or guard override.
@@ -620,13 +624,16 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
     next_print = 0
     ordered = list(required)
     failed_tree = False
+    first_failure = None
     try:
         while pending or active:
             settled = False  # a node held this pass may free another: look again before waiting
             for name in list(pending):
                 if not depends[name] <= results.keys():
                     continue
-                hold = held(name, depends, results)
+                hold = held(name, depends, results, collect_all)
+                if hold is None and first_failure is not None and not collect_all:
+                    hold = ('not_started', 'first failure: ' + first_failure['node'])
                 if hold is not None:
                     at = max((results[d]['end'] for d in depends[name]), default=0.0)  # when it was decided
                     (directory / (name + '.log')).write_text('%s: %s\n' % (hold[0].replace('_', ' '), hold[1]))
@@ -769,10 +776,13 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                         ledger.release(claimant)
                 elapsed = end - item['started']
                 result = dict(start=item['started'] - started, end=end - started, wall_seconds=elapsed,
-                              verdict='pass' if code == 0 and error is None else 'FAIL',
+                              verdict='cancelled' if item.get('cancelled') else (
+                                  'pass' if code == 0 and error is None else 'FAIL'),
                               returncode=code, error=error, inputs_unchanged=tree_ok,
                               input_snapshot=bool(item['inputs']), **metrics)
                 results[name] = result
+                if result['verdict'] == 'FAIL' and first_failure is None:
+                    first_failure = dict(node=name, **result)
                 if result['verdict'] == 'pass' and measurement_store is None:
                     try:
                         if name in leg_nodes and item['handed_off']:
@@ -793,6 +803,15 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                 del active[name]
                 print('node %s end %.6f %s %.3fs%s' % (name, result['end'], result['verdict'], elapsed,
                       ' ' + error if error else ''), flush=True)
+            # All graph nodes are required. Reap stopped roots here; the normal completion
+            # collector empties their cgroups and releases grants on the next pass.
+            if first_failure is not None and not collect_all:
+                for name, item in active.items():
+                    if item['proc'].poll() is None:
+                        item['cancelled'] = True
+                        item['error'] = 'cancelled after first failure: ' + first_failure['node']
+                        item['proc'].kill()
+                        item['proc'].wait()
             while next_print < len(ordered) and ordered[next_print] in results:
                 name = ordered[next_print]
                 print('== ' + name, flush=True)
@@ -814,6 +833,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
         return dict(schema='veldo.gate-schedule/v1', graph=digest, stages=stages, nodes=results,
                     checks_run=len(stages), inputs_unchanged=not failed_tree,
                     original_inputs_unchanged=original_unchanged,
+                    first_failure=first_failure, collect_all=collect_all,
                     error=None if original_unchanged else 'candidate_tree_changed_outside_node_inputs',
                     wall_seconds=time.monotonic() - started, critical_path_seconds=chain(critical) if critical else 0,
                     critical_path_end=critical, capacities=capacity, peak_granted=ledger.peak,
@@ -838,6 +858,15 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
             raise Refused('node cleanup failed: ' + '; '.join(cleanup_errors))
 
 
+def reap_children():
+    """CLI owns only its graph children; run() has already emptied every node cgroup."""
+    while True:
+        try:
+            os.waitpid(-1, 0)
+        except ChildProcessError:
+            return
+
+
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
     if argv[:1] == ['--enter-node']:
@@ -857,8 +886,15 @@ def main(argv=None):
     try:
         if len(dict(args.stage)) != len(args.stage):
             raise Refused('duplicate catalog stage')
-        result = run(dict(args.stage), args.root, args.directory, args.record, args.receipt,
-                     load_opened=args.load_opened)
+        # Adopt orphaned workers so cgroup cancellation also reaps them, including zombies.
+        if ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0) != 0:
+            raise Refused('cannot become the scheduler child subreaper')
+        try:
+            result = run(dict(args.stage), args.root, args.directory, args.record, args.receipt,
+                         load_opened=args.load_opened,
+                         collect_all=os.environ.get('VELDO_GATE_COLLECT_ALL') == '1')
+        finally:
+            reap_children()
         (args.directory / 'receipt.json').write_text(json.dumps(result, indent=2) + '\n')
         (args.directory / 'graph-field').write_text(',"graph":' + json.dumps(result['graph']))
         for stage, verdict in result['stages'].items():

@@ -1,0 +1,137 @@
+[
+  {
+    "case": "failfast360-prerequisite",
+    "rows": [
+      "failfast/held-chain"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "334990c785e91374a9aab02581bb47bb66867152a430ce83d63dda0fc9d88fe9"
+  },
+  {
+    "case": "failfast360-prerequisite-diagnostic",
+    "rows": [
+      "failfast/held-diagnostic"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "0db03512a27063e87123ed8721d3a866e64f09b6254f951982cafd2d254e87e2"
+  },
+  {
+    "case": "failfast360-prerequisite-green",
+    "rows": [
+      "failfast/held-green"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "1101b3b23d62799b39f15307a72212067b0608cb2a0e4ad0aa836698699748f2"
+  },
+  {
+    "case": "failfast360-pending",
+    "rows": [
+      "failfast/early/stopped"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "aa71c6ad4051ca11b087898bd3b16ddbc8f0b5e72bec71df8708cce637df4e01"
+  },
+  {
+    "case": "failfast360-pending-load",
+    "rows": [
+      "failfast/early/stopped"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "0ca9c0994d45d1fee64b4d58b3854f71c0a4a852d1a36c9027a3c9e64f126b4c"
+  },
+  {
+    "case": "failfast360-pending-diagnostic",
+    "rows": [
+      "failfast/collect-all"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "e9db9b8690dac745540e7b34b46fffbb0432ee55f4ace0b48a44192306fd0c37"
+  },
+  {
+    "case": "failfast360-first-red",
+    "rows": [
+      "failfast/diagnostic/first-red"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "1c44864d25ca310104cbd907b3575cbc8c179e0771eb06f2727c48d08ccfefcc"
+  },
+  {
+    "case": "failfast360-first-pass",
+    "rows": [
+      "failfast/green/first-red"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "9f7511f4ebfd1c39ccfc2510bb3a6c73e13be814e13fbf6494ce041ad200b76c"
+  },
+  {
+    "case": "failfast360-cancel",
+    "rows": [
+      "failfast/early/stopped"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "dfe880fce281ba26e5b982bf4802771ccb4bc7d6d713eb863df0d55411283faa"
+  },
+  {
+    "case": "failfast360-cancel-diagnostic",
+    "rows": [
+      "failfast/collect-all"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "788555bf99729d8eb79014349bfd944cb2d26e4cbb3739525250e245816a6304"
+  },
+  {
+    "case": "failfast360-cancel-live",
+    "rows": [
+      "failfast/early/stopped"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "5753febb5eb62fbd2597d78f62e9dce27d94c142dfe4bf5cd76e425a7c37f6a7"
+  },
+  {
+    "case": "failfast360-cancel-verdict",
+    "rows": [
+      "failfast/early/stopped"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "f8e983fda8df2744fcb4f1fc9d9a3fbd0512ae59efdb42adbf2175d6de40e2f7"
+  },
+  {
+    "case": "failfast360-subreaper-refusal",
+    "rows": [
+      "failfast/subreaper-refused"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "5d28f180f1ff42203132b40e63a3f8ea392be7cb44e10e6cbb9377ca8a7c3e18"
+  },
+  {
+    "case": "failfast360-collect-opt-in",
+    "rows": [
+      "failfast/not-opted-in/stopped"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "6160328284e690a34d88066cd4265a0f8ccfa93f5d7f4fdd94fe29e6c2598917"
+  },
+  {
+    "case": "failfast360-reap",
+    "rows": [
+      "failfast/error-cleanup"
+    ],
+    "rejected": true,
+    "original_sha256": "619738d9395ed4df34ddcb8d40b0e7869794f220ada022b4696d8e93d54493eb",
+    "mutant_sha256": "6ce6cbc8324eb08f5fb3c240392f56c2529c7546b144b6f26aeb49093e41a8ef"
+  }
+]

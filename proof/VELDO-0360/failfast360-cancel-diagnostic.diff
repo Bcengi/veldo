@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-cancel-diagnostic
+@@ -805,7 +805,7 @@
+                       ' ' + error if error else ''), flush=True)
+             # All graph nodes are required. Reap stopped roots here; the normal completion
+             # collector empties their cgroups and releases grants on the next pass.
+-            if first_failure is not None and not collect_all:
++            if first_failure is not None:
+                 for name, item in active.items():
+                     if item['proc'].poll() is None:
+                         item['cancelled'] = True

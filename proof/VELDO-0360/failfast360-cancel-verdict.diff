@@ -1,0 +1,11 @@
+--- scripts/gate_schedule.py
++++ failfast360-cancel-verdict
+@@ -776,7 +776,7 @@
+                         ledger.release(claimant)
+                 elapsed = end - item['started']
+                 result = dict(start=item['started'] - started, end=end - started, wall_seconds=elapsed,
+-                              verdict='cancelled' if item.get('cancelled') else (
++                              verdict='pass' if item.get('cancelled') else (
+                                   'pass' if code == 0 and error is None else 'FAIL'),
+                               returncode=code, error=error, inputs_unchanged=tree_ok,
+                               input_snapshot=bool(item['inputs']), **metrics)

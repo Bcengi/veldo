@@ -1,0 +1,17 @@
+baseline: 63 rows, zero failures
+failfast360-prerequisite: noop green; named row red
+failfast360-prerequisite-diagnostic: noop green; named row red
+failfast360-prerequisite-green: noop green; named row red
+failfast360-pending: noop green; named row red
+failfast360-pending-load: noop green; named row red
+failfast360-pending-diagnostic: noop green; named row red
+failfast360-first-red: noop green; named row red
+failfast360-first-pass: noop green; named row red
+failfast360-cancel: noop green; named row red
+failfast360-cancel-diagnostic: noop green; named row red
+failfast360-cancel-live: noop green; named row red
+failfast360-cancel-verdict: noop green; named row red
+failfast360-subreaper-refusal: noop green; named row red
+failfast360-collect-opt-in: noop green; named row red
+failfast360-reap: noop green; named row red
+15/15 mutants rejected
