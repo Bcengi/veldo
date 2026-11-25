@@ -324,7 +324,13 @@ def _v317_suite():
                         failure = rec.get('space_failure') or {}
                         check('ac1/not-charged', f.dispatches.charged('unit', 'build') == 0
                               and f.dispatches.attempts('unit', 'build') == 1
-                              and ADM.finished(f.ledger, f.dispatches, 'project', 'build') == [])
+                              and len(ADM.finished(f.ledger, f.dispatches, 'project', 'build')) == 1)
+                        # finished() lists failed runs too (its contract); a no-space end gives no measurement.
+                        history = ADM.finished(f.ledger, f.dispatches, 'project', 'build')
+                        if history != [{}]:
+                            print('space317 finished', mode, history)
+                        check('ac1/not-charged', ADM.finished(f.ledger, f.dispatches, 'project', 'build') == [{}]
+                              and ADM.needs(f.ledger, f.dispatches, 'project', 'build', {})[1].get('host') == 'default')
                         # The fixture's host pool reads 0 only while the run directory exists, so the
                         # recorded numbers prove the read came before cleanup; the end is conclusive.
                         check('ac1/numbers-before-cleanup', rec['state'] == 'exited'
