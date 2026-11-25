@@ -10456,11 +10456,8 @@ def cases():
         '                   if p in candidates or p == PJ.FACTORY_PROJECT}\n',
         '        records = {p: read(PJ.project_id(p)) for p in served}\n',
         ['intake/scoped-context'])
-    add(152, 'v152-intake-companions-missing', '93_veldo_0152_intake_routes.py', 'check_teeth_mutations.py',
-        "        if case['module'] == 'control_intake.py':\n",
-        "        if False:  # defect: intake copies lose their project dependencies\n",
-        ['proof/intake-companions'])
-    result[-1]['dir'] = 'scripts'
+    # VELDO-0152: v152-intake-companions-missing retired: complete production
+    # trees supply intake dependencies; see the spec retirement record.
 
     # VELDO-0167: installed records, current subscribers, additive setup.
     add(167, 'records-api-key-omitted', '91_veldo_0167_setup_records.py', 'control_factory_setup.py',
@@ -10947,11 +10944,8 @@ def cases():
     for case in result:
         if case['finding'] == 174 and case['module'] in ('control_conversation.py', 'control_service.py'):
             case['siblings'] = True
-    add(174, 'v174-mutation-siblings-missing', S174, 'check_teeth_mutations.py',
-        "        if case['finding'] == 174 and case['module'] in ('control_conversation.py', 'control_service.py'):\n",
-        '        if False:  # defect: isolated conversation mutants lose their dependencies\n',
-        ['proof/mutation-dependencies'])
-    result[-1]['dir'] = 'scripts'
+    # VELDO-0174: v174-mutation-siblings-missing retired: complete production
+    # trees supply conversation dependencies; see the spec retirement record.
     add(174, 'v174-signed-commands-bypass-mutant', S174, S174,
         '    CS.CV = CV\n', '', ['proof/signed-command-module'])
     result[-1]['dir'] = 'scripts/suites'

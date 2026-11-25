@@ -1199,6 +1199,7 @@ class Workers:
                     self.invocations += 1
                     self.peak = max(self.peak, len(self.active))
                     self.driver_spans.setdefault(job['case']['driver'], [time.monotonic(), time.monotonic()])
+                active_before_reap = len(self.active)
                 for name, (proc, out, err, started) in list(self.active.items()):
                     if name in self.meters:
                         self.meters[name].sample(self.homes[name], self.ledgers[name])
@@ -1213,6 +1214,10 @@ class Workers:
                     results[name] = self.finish(name)
                     if on_result is not None:
                         on_result(name, results[name])
+                # A completion released claims after the admission attempt above.
+                # Retry pending work before deciding that nobody can free capacity.
+                if pending and len(self.active) < active_before_reap:
+                    continue
                 if self.active or pending:
                     self.wait_for_progress()
             self.check()

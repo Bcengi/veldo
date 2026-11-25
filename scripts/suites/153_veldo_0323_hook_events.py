@@ -523,6 +523,17 @@ def _v323_suite():
         event('session_ended', dict(session='scratch-repository', cwd=str(base), **dead))
         check('safety/session-work-kept', nested_path.is_dir()
               and git(nested_path, 'rev-parse', 'HEAD') == nested_tip)
+        # The event's earlier safety rule already refuses this repository.
+        # Also prove the descriptor walk's last guard, used after the rename,
+        # before it can authorize deleting a session folder that became a repo.
+        stopped = False
+        try:
+            RM.measure(str(nested_path), own=False)
+        except RM._Stop as refusal:
+            stopped = 'git repository' in str(refusal)
+        check('safety/session-work-kept', stopped and nested_path.is_dir()
+              and git(nested_path, 'rev-parse', 'HEAD') == nested_tip,
+              'the final descriptor walk must refuse a repository in session scratch')
         none, none_path = session('no-project', {'type': 'no_project'}, dead)
         other, other_path = session('other-project', {'type': 'project', 'id': 'other'}, dead)
         alive, alive_path = session('alive', scope, {'pid': live['pid'], 'started': live['start']})
