@@ -1,0 +1,352 @@
+[
+ {
+  "baseline_failed": [],
+  "criterion": "AC1",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space342/ac1/changed-member",
+   "space342/ac1/last-member",
+   "space342/ac1/member-discard",
+   "space342/ac1/member-keep",
+   "space342/ac1/offer",
+   "space342/ac1/request-closed",
+   "space342/ac2/next",
+   "space342/ac3/one-open",
+   "space342/ac3/pending-join",
+   "space342/worker/member-pick"
+  ],
+  "name": "space342-member-pick-reaches-the-whole-group",
+  "new": "            elif False:",
+  "new_digest": "e18843af9f5a0f818eaf246e9cd20779bf0f3cb6765902931b6ef86faad3c11a",
+  "noop_failed": [],
+  "old": "            elif picked is not None and member['index'] != picked:",
+  "old_digest": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/ac1/member-discard"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space342/ac2/fit",
+   "space342/ac2/next"
+  ],
+  "name": "space342-every-member-pick-whatever-the-size",
+  "new": "            return True",
+  "new_digest": "f053e14c3c3ea6cdfd7ec498604879e9ff2253411eac8e8e572d61cd7da82f90",
+  "noop_failed": [],
+  "old": "            return shown.utf16_units(shown.TEXT.visible(tail)) <= room",
+  "old_digest": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/ac2/fit"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space342/ac1/last-member",
+   "space342/ac3/next-sequence"
+  ],
+  "name": "space342-reuse-the-day-key",
+  "new": "                return identity, version\n            return identity, 0",
+  "new_digest": "a5b5c31f11c4fddad89cdf13212f06cb052efe925f5836c327577a6914a18539",
+  "noop_failed": [],
+  "old": "                return identity, version\n            sequence += 1",
+  "old_digest": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": true,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/ac3/next-sequence"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1 (the Ledger: a member pick names one member)",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space342/pick/ledger"
+  ],
+  "name": "space342-ledger-takes-a-pick-for-another-member",
+  "new": "        return True",
+  "new_digest": "83d2a730f352b218c4cc5b92b7bda7a499484249fe192c5ded177997881ffdc6",
+  "noop_failed": [],
+  "old": "        return len(indexes) == len(listed) and indexes[listed.index(mine)] == index",
+  "old_digest": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/pick/ledger"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1 (Signal: a member pick names one member)",
+  "final_run_executions": 1,
+  "module": "control_space_signal.py",
+  "mutant_failed": [
+   "space342/pick/signal"
+  ],
+  "name": "space342-signal-carries-a-pick-for-another-member",
+  "new": "        if owner != decision['by']:",
+  "new_digest": "da83dfae624c590a48dcf80332e6c6ae03b454e92f152013e9cbe1be4e175531",
+  "noop_failed": [],
+  "old": "        if ledger.settled_action(effect, decision) != choice or owner != decision['by']:",
+  "old_digest": "e766441bfa6716feeb5dd9673a474d41791b93d2372f42b42fd040d45b83130a",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/pick/signal"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1 (the remover: a member pick names one member)",
+  "final_run_executions": 1,
+  "module": "control_space_remove.py",
+  "mutant_failed": [
+   "space342/pick/remover"
+  ],
+  "name": "space342-remover-takes-a-pick-for-another-member",
+  "new": "    if False:",
+  "new_digest": "0de3e642ee49b03ba7bab246ab7486f7ecdaa5cf371531e26af22b960e8498e6",
+  "noop_failed": [],
+  "old": "    if picked[1] is not None and (not decision.get('group') or decision.get('index') != picked[1]):",
+  "old_digest": "5cef280b130fd12a84f9267702ad61c3ec2c0ceffc1c4dcd8457255c439191b0",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/pick/remover"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1 (a request for one worktree takes no member pick)",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space342/pick/single"
+  ],
+  "name": "space342-one-worktree-request-takes-a-member-pick",
+  "new": "            return shown == request.get('proposal') and target.get('ref') == identity",
+  "new_digest": "b64fbdfc92395c5eb2f7e6db071a03d9944e2454b68ef5a5266fdf281622669a",
+  "noop_failed": [],
+  "old": "            return index is None and shown == request.get('proposal') and target.get('ref') == identity",
+  "old_digest": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/pick/single"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1 (Keep is the owner signed packet)",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space342/ac1/member-keep"
+  ],
+  "name": "space342-authority-keeps-by-a-member-pick",
+  "new": "            if effect['choice'] == 'accept keep':",
+  "new_digest": "3f07c4c781442b4590414be21e22b8db51b45e06e71e9afb22ead1f3bde4b61c",
+  "noop_failed": [],
+  "old": "            if _settlement().space_pick(effect['choice'])[0] == 'keep':",
+  "old_digest": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/ac1/member-keep"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1 (the new request is raised by the pick)",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space342/ac1/last-member",
+   "space342/ac1/member-discard",
+   "space342/ac1/member-keep",
+   "space342/ac3/pending-join",
+   "space342/worker/member-pick"
+  ],
+  "name": "space342-next-request-while-the-pick-can-be-applied",
+  "new": "                if False:\n                    raise Refused('space_disposition_state', 'the member the pick names",
+  "new_digest": "6fb1aba0dd53284f1482816e98547dedb92c29e15c248d116a92f2365e303798",
+  "noop_failed": [],
+  "old": "                if member['index'] == index:\n                    raise Refused('space_disposition_state', 'the member the pick names",
+  "old_digest": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/ac1/member-discard"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1 (the members left get their request)",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space342/next/gone"
+  ],
+  "name": "space342-no-next-request-when-the-named-member-is-gone",
+  "new": "            raised = {'ok': False}",
+  "new_digest": "8bd28cd7c5d4cdd7d80ad500d6cda2bd677c4751b9ad25b78abe3d75b2f64dff",
+  "noop_failed": [],
+  "old": "            raised = self._group_next(gid)",
+  "old_digest": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/next/gone"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1 (a member that changed is deferred again)",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space342/ac1/changed-member"
+  ],
+  "name": "space342-answered-member-cannot-join-again",
+  "new": "        if any(member['item'] == identity for member in group['members']):",
+  "new_digest": "962b160d1560e97f1958894633a3e455a2ecc31ba9bb94f22e7dd0c18b94dfe1",
+  "noop_failed": [],
+  "old": "        if any(member['item'] == identity and in_group(member) for member in group['members']):",
+  "old_digest": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/ac1/changed-member"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC3 (one open group per scope and day)",
+  "final_run_executions": 1,
+  "module": "control_space.py",
+  "mutant_failed": [
+   "space342/ac3/pending-join"
+  ],
+  "name": "space342-join-in-the-window-opens-a-second-group",
+  "new": "        if False:\n            # A settled member pick leaves",
+  "new_digest": "dfe7a68a902bc3a31d614a23520ee3fc38f2a1b09c6bd6cf8301371a8976f46c",
+  "noop_failed": [],
+  "old": "        if group['state'] == 'open' and self._awaited(group) is not None:\n            # A settled member pick leaves",
+  "old_digest": "a8a0a76e665974f2abc5c39e479ebf60615be40bc28cbd5098b33ccd0638df19",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/ac3/pending-join"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC1 (each worktree named beside its index)",
+  "final_run_executions": 1,
+  "module": "control_request_settlement.py",
+  "mutant_failed": [
+   "space342/ac1/member-discard",
+   "space342/terms/indexes"
+  ],
+  "name": "space342-worktrees-numbered-by-their-place",
+  "new": "    for index, tree in enumerate(trees, 1):",
+  "new_digest": "63637c13b33e942e9e17bee13863db25a7a4f981f6596cb977e0936397fd98d1",
+  "noop_failed": [],
+  "old": "    for index, tree in zip(indexes, trees):",
+  "old_digest": "3784aa6a0e1392f505b7f0da8b386f1e2e7567c382dd0d17bace0c9c6e71d35f",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/terms/indexes",
+   "space342/ac1/member-discard"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2 (the text names the members without a pick)",
+  "final_run_executions": 1,
+  "module": "control_request_settlement.py",
+  "mutant_failed": [
+   "space342/ac2/fit",
+   "space342/ac2/next",
+   "space342/terms/indexes"
+  ],
+  "name": "space342-members-without-a-pick-not-named",
+  "new": "    if False:",
+  "new_digest": "2812b840dbe09df6d835173a215100888ec522a851dc8411f41d0a03463fe28d",
+  "noop_failed": [],
+  "old": "    if without:",
+  "old_digest": "3784aa6a0e1392f505b7f0da8b386f1e2e7567c382dd0d17bace0c9c6e71d35f",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/ac2/fit",
+   "space342/terms/indexes"
+  ]
+ },
+ {
+  "baseline_failed": [],
+  "criterion": "AC2 (the picks of the lowest indexes)",
+  "final_run_executions": 1,
+  "module": "control_request_settlement.py",
+  "mutant_failed": [
+   "space342/terms/indexes"
+  ],
+  "name": "space342-picks-for-any-indexes",
+  "new": "    if not isinstance(picks, list):",
+  "new_digest": "94b3f38bcf7b9d911d8d07a80c55f5dbf4aa2bd0a75a99be51e5f8351fab8c7c",
+  "noop_failed": [],
+  "old": "    if not isinstance(picks, list) or picks != indexes[:len(picks)]:",
+  "old_digest": "3784aa6a0e1392f505b7f0da8b386f1e2e7567c382dd0d17bace0c9c6e71d35f",
+  "replacement_count": 1,
+  "source": "fresh",
+  "specification_falsifier": false,
+  "suite": "150_veldo_0342_member_picks.py",
+  "target_rows": [
+   "space342/terms/indexes"
+  ]
+ }
+]

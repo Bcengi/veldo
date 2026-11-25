@@ -1,0 +1,530 @@
+{
+  "implementation": "edeaac5af72f75d0937720a38278a9225fc65e54",
+  "reviewed_base": "bf962cfc90a7dc11e31701d2cc98dcdadcdf46f7",
+  "checks": [
+    {
+      "name": "342",
+      "exit": 2,
+      "seconds": 28.63,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "378afdf6e78a4ff3b4d0090374e705ca6ac9a23f8c81a08d4877643249c960be",
+      "suite_rows": {
+        "150_veldo_0342_member_picks": 22
+      },
+      "failed_rows": [],
+      "status": "diagnostic_rows_green"
+    },
+    {
+      "name": "suite:150_veldo_0340_review_groups",
+      "exit": 2,
+      "seconds": 13.12,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "467754577898f52f2d9451e62442d2513177e96c75834a15f8d6c061d38921a9",
+      "suite_rows": {
+        "150_veldo_0340_review_groups": 16
+      },
+      "failed_rows": [],
+      "status": "diagnostic_rows_green"
+    },
+    {
+      "name": "suite:153_veldo_0336_run_worktree",
+      "exit": 2,
+      "seconds": 10.36,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "90df7fc40c94a2824728f4585d06cf47912d677eb32218d397ae979b6b102987",
+      "suite_rows": {
+        "153_veldo_0336_run_worktree": 21
+      },
+      "failed_rows": [],
+      "status": "diagnostic_rows_green"
+    },
+    {
+      "name": "suite:150_veldo_0318_unique_work",
+      "exit": 2,
+      "seconds": 27.02,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "b8fdc8c4b00c81122c9b4b3a53bdd27e27c2f7b497f7ba4d2bd58346d4da6d20",
+      "suite_rows": {
+        "150_veldo_0318_unique_work": 45
+      },
+      "failed_rows": [],
+      "status": "diagnostic_rows_green"
+    },
+    {
+      "name": "suite:150_veldo_0327_disposition",
+      "exit": 2,
+      "seconds": 5.27,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "ca13aae65d5507cd57057579c233a69a2ff28819832a1320a120da3c2944f691",
+      "suite_rows": {
+        "150_veldo_0327_disposition": 27
+      },
+      "failed_rows": [],
+      "status": "diagnostic_rows_green"
+    },
+    {
+      "name": "suite:140_veldo_0345_space_keep",
+      "exit": 2,
+      "seconds": 8.41,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "3b308adf1d85862fcbc1607342fdeb76357147917c3e770e2d92a9d4c18bf255",
+      "suite_rows": {
+        "140_veldo_0345_space_keep": 31
+      },
+      "failed_rows": [],
+      "status": "diagnostic_rows_green"
+    },
+    {
+      "name": "suite:138_veldo_0300_space_remove",
+      "exit": 2,
+      "seconds": 4.38,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "a8684b903b55fa2558787de2da3f7d30f9d72b3a81f6b26f2f53c42643b0cf64",
+      "suite_rows": {
+        "138_veldo_0300_space_remove": 39
+      },
+      "failed_rows": [],
+      "status": "diagnostic_rows_green"
+    },
+    {
+      "name": "validate",
+      "exit": 0,
+      "seconds": 7.26,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "8f7f2c57862cb4e9328744eeef9713f761caa4967cb2e64cc88c6798814cf7a8",
+      "status": "passed"
+    },
+    {
+      "name": "docs",
+      "exit": 0,
+      "seconds": 2.44,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "eaf932f74c6a45653f007ca942ca41342e80e86d0a992ccee97495aaed9ada12",
+      "status": "passed"
+    },
+    {
+      "name": "template",
+      "exit": 0,
+      "seconds": 0.23,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "31f485c4f6c848349ff684a8e8bc7d641c0de5fb6cc39102447b161ef398f1a7",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "exit": 0,
+      "seconds": 2.81,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "1d8a28dc927e3d255c15322562cd631eb8ef4aee41999f4036d450a160d5b616",
+      "status": "passed"
+    },
+    {
+      "name": "space-boundary",
+      "exit": 0,
+      "seconds": 5.43,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "c765f4cb582622d9410266a9eea2b02d14ac01fcb2b8085aeb7d789909a2d119",
+      "status": "passed"
+    },
+    {
+      "name": "git-boundary",
+      "exit": 0,
+      "seconds": 3.41,
+      "surviving_supervisors": [],
+      "nice": 10,
+      "log_sha256": "456267e1484d4c7facd9b1e167f547896f762f173f076ecf04c90efcd641ae83",
+      "status": "passed"
+    }
+  ],
+  "sources": {
+    ".veldo/control_space.py": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+    "engine/.veldo/control_space.py": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+    ".veldo/control_request_settlement.py": "400f675b2908a6704f8fffcc139138bf8469d430b9ed1906ce2126de5b9c6b6d",
+    "engine/.veldo/control_request_settlement.py": "400f675b2908a6704f8fffcc139138bf8469d430b9ed1906ce2126de5b9c6b6d",
+    "scripts/suites/150_veldo_0342_member_picks.py": "2b9b8c5a75f5670d2c1eb1ae9e339219909444e7cca7812a3269e2ac30e43e19",
+    "scripts/check_teeth_mutations.py": "6615f0eab5205c3a6b99b207542c84007c197cea0098b9ed21313e350763149d"
+  },
+  "teeth": {
+    "status": "passed",
+    "registered": 20,
+    "executed": 20,
+    "rejected": 20,
+    "reused": 0,
+    "invalid_results": [],
+    "surviving_workers": 0,
+    "worker_invocations": 28,
+    "elapsed": 573.939761206042,
+    "implementation_digest": "bafed0bc975882b623ccc9ce78b8805ad1c883eecee176cd176cd2ac78266edc",
+    "input_digest": "feb7677e74142b451dc24db7b0f8ac732e2595c85bb97febd81ec4c71d1c43f7"
+  },
+  "teeth_nice": 10,
+  "teeth_last": true,
+  "tree_unchanged_during_teeth": true,
+  "teeth_surviving_supervisors": [],
+  "teeth_receipt_sha256": "f7c88584cbb0b600f5702b669609363de65caadd787e9c24201091fc95c0f434",
+  "cases": [
+    {
+      "name": "space342-member-pick-reaches-the-whole-group",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/ac1/member-discard"
+      ],
+      "failed_rows": [
+        "space342/ac1/changed-member",
+        "space342/ac1/last-member",
+        "space342/ac1/member-discard",
+        "space342/ac1/member-keep",
+        "space342/ac1/offer",
+        "space342/ac1/request-closed",
+        "space342/ac2/next",
+        "space342/ac3/one-open",
+        "space342/ac3/pending-join",
+        "space342/next/left-member",
+        "space342/worker/member-pick"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "b74f3ba39459c89cd3b00c3ce3ae82a2b4dd49d1690f9e441a4eb04757d62819",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-every-member-pick-whatever-the-size",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/ac2/fit"
+      ],
+      "failed_rows": [
+        "space342/ac2/fit",
+        "space342/ac2/next"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "2f41a00f0b1d09cc490dde77e43524fa7c585bc97ff6299cc95e12224e765f13",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-reuse-the-day-key",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/ac3/next-sequence"
+      ],
+      "failed_rows": [
+        "space342/ac1/last-member",
+        "space342/ac3/next-sequence"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "5ec456798caabee8db4dd80473cf64d65e677dcc3c4e79600deef4215605cd32",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-ledger-takes-a-pick-for-another-member",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/pick/ledger"
+      ],
+      "failed_rows": [
+        "space342/pick/ledger"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "e33d6984e835bb68ada08c81fb2f57a48bd0277ec01383341b5ba09c10adba32",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-signal-carries-a-pick-for-another-member",
+      "module": "control_space_signal.py",
+      "target_rows": [
+        "space342/pick/signal"
+      ],
+      "failed_rows": [
+        "space342/pick/signal"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "e766441bfa6716feeb5dd9673a474d41791b93d2372f42b42fd040d45b83130a",
+      "new_digest": "da83dfae624c590a48dcf80332e6c6ae03b454e92f152013e9cbe1be4e175531",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-remover-takes-a-pick-for-another-member",
+      "module": "control_space_remove.py",
+      "target_rows": [
+        "space342/pick/remover"
+      ],
+      "failed_rows": [
+        "space342/pick/remover"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "5cef280b130fd12a84f9267702ad61c3ec2c0ceffc1c4dcd8457255c439191b0",
+      "new_digest": "0de3e642ee49b03ba7bab246ab7486f7ecdaa5cf371531e26af22b960e8498e6",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-one-worktree-request-takes-a-member-pick",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/pick/single"
+      ],
+      "failed_rows": [
+        "space342/pick/single"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "75a38f01a5587a8af485a90b255793a733fc537c54e81b8414986d297d84245c",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-authority-keeps-by-a-member-pick",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/ac1/member-keep"
+      ],
+      "failed_rows": [
+        "space342/ac1/member-keep",
+        "space342/worker/member-pick"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "d06f524a7b3d75ec9acc323d49cb91e6467ad89744bdc4afb12c8e80f4ae31e7",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-next-request-while-the-pick-can-be-applied",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/ac1/member-discard"
+      ],
+      "failed_rows": [
+        "space342/ac1/last-member",
+        "space342/ac1/member-discard",
+        "space342/ac1/member-keep",
+        "space342/ac3/pending-join",
+        "space342/worker/member-pick"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "c4576d39aee57ebe1de2c64dd09b810c4eac2b4541770df9646e091a3361e3ae",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-no-next-request-when-the-named-member-is-gone",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/next/gone"
+      ],
+      "failed_rows": [
+        "space342/next/gone",
+        "space342/next/keep-join",
+        "space342/next/keep-text",
+        "space342/next/settled-keep",
+        "space342/worker/member-pick"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "f6284b21b5271e7bf7a82f67a4ed3ed1b89ed11c999ff747c91489e212757552",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-answered-member-cannot-join-again",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/ac1/changed-member"
+      ],
+      "failed_rows": [
+        "space342/ac1/changed-member",
+        "space342/next/left-member"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "2dd42d1827fd442f9b7085c29f149bc667dafd50df820a11a45e1be3c72a81a6",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-join-in-the-window-opens-a-second-group",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/ac3/pending-join"
+      ],
+      "failed_rows": [
+        "space342/ac3/pending-join"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "37579f647bc699565ca5b7c87f2369859d4ad1d92f92369f11f69c6ecb689ec7",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-keep-waits-for-application",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/next/settled-keep",
+        "space342/next/keep-join"
+      ],
+      "failed_rows": [
+        "space342/next/keep-join",
+        "space342/next/keep-text",
+        "space342/next/settled-keep",
+        "space342/worker/member-pick"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "edb691d9322bc453211f6cd36fe0e058ec38cef62dcaa2f33a87716e42fc23a6",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-pending-keep-loses-its-original-request",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/next/settled-keep"
+      ],
+      "failed_rows": [
+        "space342/next/settled-keep"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "b5f424ca73eabe28a85ed469461774d044641689bd88b0e7764f61b386fb8199",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-keep-text-omits-settlement",
+      "module": "control_request_settlement.py",
+      "target_rows": [
+        "space342/next/keep-text"
+      ],
+      "failed_rows": [
+        "space342/next/keep-text"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "400f675b2908a6704f8fffcc139138bf8469d430b9ed1906ce2126de5b9c6b6d",
+      "new_digest": "2a81c7044f9809e0566b2eb7025c3566453f7c1f54bb43c3e2a67cc37d69bbc3",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-departed-member-not-marked-gone",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/next/left-member"
+      ],
+      "failed_rows": [
+        "space342/next/left-member"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "01fa8045f1b05d43e4f1f6a5f318aea5852fbca00958c6a32176f44d2f45e909",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-departed-member-replays-old-request",
+      "module": "control_space.py",
+      "target_rows": [
+        "space342/next/left-member"
+      ],
+      "failed_rows": [
+        "space342/next/left-member"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "8b96202d85c62315a6e5ca451ba0f0a92ee81e427c80bbb0b91db42b305e71fa",
+      "new_digest": "f90c1ffd30a57b46d06a773611499f4bb62582eda4decb90d1615ffc77eb1b69",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-worktrees-numbered-by-their-place",
+      "module": "control_request_settlement.py",
+      "target_rows": [
+        "space342/terms/indexes",
+        "space342/ac1/member-discard"
+      ],
+      "failed_rows": [
+        "space342/ac1/member-discard",
+        "space342/terms/indexes"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "400f675b2908a6704f8fffcc139138bf8469d430b9ed1906ce2126de5b9c6b6d",
+      "new_digest": "7d660adbbecfbe457bb048d40fdf90f77f04e82ef07849e6ea32424741f4d2e9",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-members-without-a-pick-not-named",
+      "module": "control_request_settlement.py",
+      "target_rows": [
+        "space342/ac2/fit",
+        "space342/terms/indexes"
+      ],
+      "failed_rows": [
+        "space342/ac2/fit",
+        "space342/ac2/next",
+        "space342/terms/indexes"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "400f675b2908a6704f8fffcc139138bf8469d430b9ed1906ce2126de5b9c6b6d",
+      "new_digest": "eb374200994328a2434cd665992a49bca8da569290a074e6979144793efc96ca",
+      "source": "fresh"
+    },
+    {
+      "name": "space342-picks-for-any-indexes",
+      "module": "control_request_settlement.py",
+      "target_rows": [
+        "space342/terms/indexes"
+      ],
+      "failed_rows": [
+        "space342/terms/indexes"
+      ],
+      "baseline_failed_rows": [],
+      "noop_failed_rows": [],
+      "replacement_count": 1,
+      "old_digest": "400f675b2908a6704f8fffcc139138bf8469d430b9ed1906ce2126de5b9c6b6d",
+      "new_digest": "fdd7658849e4e7e1e89f4feea9b9192ff5ef32b49dbde66b3f857bde34141229",
+      "source": "fresh"
+    }
+  ]
+}

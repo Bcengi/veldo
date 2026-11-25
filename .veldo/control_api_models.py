@@ -31,6 +31,25 @@ engine's secret scanner finds by its own full detection (secret_scan.scan_text: 
 shapes and its entropy detector, which catches a key no pattern covers yet). The paths redacted are
 returned with the value.
 
+THE SPACE READS (VELDO-0319, design 6.6 and 10). SPACE_MODEL names the space ledger's kinds the console's
+Space screen is served from, each with its project rule, and SPACE_VIEWS the four reads made of them:
+
+  space.usage    bytes and item counts by scope, then ticket, then kind, over every item that is still
+                 there (SPACE_LIVE: declared, present, due, deferred, removing and kept), so a deferred item
+                 counts until it is removed. Each plain repository and no project is a row of its own.
+  space.pending  every due and every deferred item with its reason in words (deferral_words), the event it
+                 was refused at, the events that retry it and its decision request; the requests, each with
+                 the members it lists by index.
+  space.removed  every removed item, newest first by the journal record that last wrote it, with its event,
+                 its size and the pool's free space before and after.
+  space.pools    every pool with its floor and what is held on it (admitted and advised holds, each need less
+                 what the run's own items already use: control_space_admission.held), and under it the
+                 waiting and the advised holds with need, free, held and floor as the ledger recorded them.
+
+They are computed here, from one read_model of SPACE_MODEL at one watermark, and are plain data: no figure
+is measured in a read, so the read touches no filesystem. An item that is not a project's (a plain
+repository's, or no project's) is served only to a member whose scope is universal.
+
 WHAT IT IS NOT. Not the transport, not a writer, not a cache. Standard library only.
 """
 import collections
@@ -139,10 +158,33 @@ IDENTITY_METADATA = ('id', 'label', 'author_name', 'author_email', 'remote_host'
                      'default_visibility')
 SCOPE = _organ('control_api_models_scope')
 
+# VELDO-0319 (design 6.6): the space ledger's kinds the Space screen is served from. An item, a hold and a
+# review group name their scope (control_space.checked_scope: a project, a plain repository or no project),
+# and a pool is the installation's. The four views below are made of one read of this model.
+SPACE_MODEL = ReadModel('space', None, 'space ledger', (
+    Kind('space_item', 'control_space', 'ITEM_KIND', 'VELDO-0297', ('field', 'owner.scope.id')),
+    Kind('space_pool', 'control_space', 'POOL_KIND', 'VELDO-0297', ('shared',)),
+    Kind('space_hold', 'control_space', 'HOLD_KIND', 'VELDO-0297', ('field', 'scope.id')),
+    Kind('space_review_group', 'control_space', 'GROUP_KIND', 'VELDO-0340', ('field', 'scope.id'))))
+SPACE_VIEWS = collections.OrderedDict((
+    ('space.pools', 'pools'), ('space.usage', 'usage'), ('space.pending', 'pending'), ('space.removed', 'removed')))
+SPACE_SCHEMA = 'veldo.api_space/v1'
+# An item's states in which its thing is still there (control_space.LIVE), and those the owner is shown
+# as pending removal.
+SPACE_LIVE = ('declared', 'present', 'due', 'deferred', 'removing', 'kept')
+SPACE_PENDING = ('due', 'deferred')
+# The states in which a worktree takes the owner's Abandon (control_space.SIGNALLED), and its event.
+SPACE_ABANDONED_FROM = ('present', 'kept', 'deferred')
+SPACE_ABANDON_EVENT = 'worktree_abandoned'
+# The holds whose promise is counted (control_space_admission.COUNTED), and those the screen lists.
+SPACE_COUNTED = ('admitted', 'advised')
+SPACE_LISTED = ('waiting', 'advised')
+
+
 def reader_scope(conn, membership, scope, principal=None):
     """The reader's scope; `principal` names the reader, the only one a conversation of his is visible to
     (VELDO-0178)."""
-    return SCOPE.ReaderScope(conn, membership, scope, {k.kind: k.project_rule for m in READ_MODELS + METADATA_READS
+    return SCOPE.ReaderScope(conn, membership, scope, {k.kind: k.project_rule for m in READ_MODELS + METADATA_READS + (SPACE_MODEL,)
                                                        for k in m.kinds}, principal=principal)
 
 # THE UI ACTION CONTRACT. An action with a route executes the named existing command; an action without
@@ -183,6 +225,8 @@ ACTIONS = (
     # VELDO-0180: the owner's typed command making a conversation a project's work, recorded by intake.
     Action('conversation_make_project', 'conversations.make_project', 'make_conversation_project', 'control_intake',
            'RECORD', 'VELDO-0180'),
+    # VELDO-0319 (AC5 to AC7): the owner's Keep packet for a request settled as Keep, signed by the owner's passkey.
+    Action('worktree_keep', 'space.keep', 'keep_worktree', 'control_space', 'DISPOSITION', 'VELDO-0319'),
 )
 
 GAPS = (
@@ -225,8 +269,10 @@ def watermark(conn):
         {'seq': 0, 'record_digest': None, 'committed_at': None}
 
 
-def _item(store, conn, row, scope=None):
-    """(served item, redacted paths), or (None, the problem) for an entity that does not verify."""
+def _item(store, conn, row, scope=None, plain=False):
+    """(served item, redacted paths), or (None, the problem) for an entity that does not verify. With
+    `plain` the data is not redacted here: the space views are computed from the records and redacted as
+    views (space_view), since a redacted alias or path could no longer be joined or counted."""
     identity, kind, version, digest, text = row
     data = json.loads(text)
     if store.digest_of({'kind': kind, 'data': data, 'version': version}) != digest:
@@ -242,7 +288,7 @@ def _item(store, conn, row, scope=None):
     if kind == 'credential':
         data = {k: data[k] for k in CREDENTIAL_METADATA if k in data}
     served_data = scope.project_data(kind, data) if scope is not None else data
-    served, paths = redact(served_data, '$.' + identity)
+    served, paths = (served_data, []) if plain else redact(served_data, '$.' + identity)
     # A route's dispatch is a public authority identity, even when its random suffix
     # resembles entropy in a credential. Retain only a dispatch that the store owns.
     route = data.get('route') if kind == 'intake_proposal' else None
@@ -254,10 +300,13 @@ def _item(store, conn, row, scope=None):
     return {'id': identity, 'kind': kind, 'version': version, 'digest': digest, 'data': served}, paths
 
 
-def read_model(store, conn, name, scope=None):
+def read_model(store, conn, name, scope=None, plain=False):
     """One read model (or metadata read) from the authority's connection, in one read transaction at one
-    watermark. The repositories read's Git identities are added by the authority (`identities`)."""
-    model = MODELS.get(name) or METADATA[name]
+    watermark. The repositories read's Git identities are added by the authority (`identities`). `plain` is
+    for the space model alone, whose records are never served themselves (space_view redacts what is)."""
+    if plain and name != SPACE_MODEL.name:
+        raise ValueError('only the space model is read unredacted, for its views')
+    model = MODELS.get(name) or METADATA.get(name) or {SPACE_MODEL.name: SPACE_MODEL}[name]
     kinds = [k.kind for k in model.kinds]
     items, problems, redacted = {k: [] for k in kinds}, [], []
     opened = not conn.in_transaction
@@ -269,7 +318,7 @@ def read_model(store, conn, name, scope=None):
                                 'ORDER BY kind, id' % ','.join('?' * len(kinds)), kinds).fetchall():
             if scope is not None and not scope.visible(row[0], row[1], json.loads(row[4])):
                 continue
-            item, extra = _item(store, conn, row, scope=scope)
+            item, extra = _item(store, conn, row, scope=scope, plain=plain)
             if item is None:
                 problems.append(extra)
                 continue
@@ -329,6 +378,384 @@ def machines(dispatches):
         if item['data'].get('state') == 'running':
             entry['running'].append(item['id'])
     return [found[k] for k in sorted(found, key=lambda k: (str(k[0]), str(k[1])))]
+
+
+# ---------------------------------------------------------------------------------------------
+# VELDO-0319: the space views. Plain functions of the served items of SPACE_MODEL.
+
+def _mapping(value):
+    return value if isinstance(value, dict) else {}
+
+
+def _count(value):
+    return value if type(value) is int and value >= 0 else 0
+
+
+def _plural(count, one, many):
+    return '%d %s' % (count, one if count == 1 else many)
+
+
+def space_scope_key(scope):
+    """(type, id) of a recorded scope; anything unreadable is no project."""
+    scope = _mapping(scope)
+    kind = scope.get('type') if scope.get('type') in ('project', 'plain_repository') else 'no_project'
+    return kind, scope.get('id') if kind != 'no_project' and isinstance(scope.get('id'), str) else None
+
+
+def space_locator(kind, locator):
+    """An item's locator as one line: the path, the repository and ref of a branch, or the engine and
+    name of a Docker object."""
+    locator = _mapping(locator)
+    if isinstance(locator.get('path'), str):
+        return locator['path']
+    if kind == 'branch':
+        return '%s %s' % (locator.get('repository') or 'unknown repository', locator.get('ref') or 'unknown ref')
+    if 'engine' in locator:
+        return '%s on %s' % (locator.get('name') or locator.get('id') or 'unnamed', locator.get('engine'))
+    return ''
+
+
+def _owner_view(owner):
+    owner = _mapping(owner)
+    kind, identity = space_scope_key(owner.get('scope'))
+    run = _mapping(owner.get('run'))
+    return {'scope': {'type': kind, 'id': identity}, 'ticket': owner.get('ticket'),
+            'run': run.get('id'), 'station': run.get('station'), 'gate': owner.get('gate'),
+            'lane': owner.get('lane'), 'session': owner.get('session')}
+
+
+def _unique_work_words(found):
+    if found.get('no_space_worktree'):
+        return 'kept after a run that ended with no space left'
+    if 'unread' in found and 'cases' not in found and 'not_across' not in found:
+        return 'its work could not be read'
+    parts = []
+    more = _mapping(found.get('more'))
+    files = sum(len(found.get(name) or ()) + _count(more.get(name)) for name in ('modified', 'staged', 'untracked'))
+    if files:
+        parts.append('uncommitted changes in ' + _plural(files, 'file', 'files'))
+    if found.get('operation'):
+        parts.append('a git operation in progress (%s)' % found['operation'])
+    if found.get('unlanded'):
+        parts.append('commits that are not landed')
+    if found.get('not_across'):
+        refs = len(found['not_across']) + (_count(found.get('more')) if type(found.get('more')) is int else 0)
+        parts.append('%s with commits the shared repository does not hold' % _plural(refs, 'ref', 'refs'))
+    if found.get('stashes'):
+        stashes = found['stashes']
+        parts.append(_plural(len(stashes), 'stash', 'stashes') if isinstance(stashes, list) else 'stashed changes')
+    return '; '.join(parts) or 'work that is in no other place'
+
+
+def _in_use_words(deferral, found):
+    refused_by = deferral.get('refused_by')
+    if refused_by == 'registry' or 'held_by' in deferral:
+        held = deferral.get('held_by')
+        return ('waits for %s inside it' % _plural(len(held), 'item', 'items') if isinstance(held, (list, dict)) and held
+                else 'waits for what is inside it')
+    if refused_by == 'children' or 'items' in found:
+        return 'holds %s that are still there' % _plural(len(found.get('items') or ()), 'item', 'items')
+    process = _mapping(found.get('process'))
+    if process.get('pid') is not None:
+        return 'in use by process %s' % process['pid']
+    if 'run' in found or 'gate' in found:
+        run = _mapping(found.get('run'))
+        if run.get('id'):
+            return 'its run %s is not known to have ended' % run['id']
+        return ('its gate %s is not known to have ended' % found['gate'] if found.get('gate')
+                else 'its owner is not known to have ended')
+    parts = []
+    pids = [entry.get('pid') for entry in found.get('processes') or () if isinstance(entry, dict) and 'pid' in entry]
+    if len(pids) == 1:
+        parts.append('in use by process %s' % pids[0])
+    elif pids:
+        shown = ', '.join(str(pid) for pid in pids[:4]) + (' and more' if len(pids) > 4 else '')
+        parts.append('in use by %d processes (%s)' % (len(pids), shown))
+    containers = found.get('containers') or ()
+    if containers:
+        parts.append('mounted by ' + _plural(len(containers), 'container', 'containers'))
+    git = _mapping(found.get('git'))
+    if git.get('files') or git.get('worktree_locked'):
+        parts.append('locked by git')
+    if _mapping(found.get('scratch')).get('in_use'):
+        parts.append('its scratch is borrowed by a running launcher')
+    if not parts:
+        return 'whether it is in use could not be read'
+    return '; '.join(parts)
+
+
+def deferral_words(deferral):
+    """Why an item was not removed, in words the owner reads (design 10): the deferral the first refusing
+    rule named (control_space_signal.DEFERRAL and the removers' own three), from what that rule found."""
+    deferral = _mapping(deferral)
+    rule, found = deferral.get('rule'), _mapping(deferral.get('found'))
+    if rule == 'in_use':
+        return _in_use_words(deferral, found)
+    if rule == 'unique_work':
+        return _unique_work_words(found)
+    if rule == 'protected':
+        return ('on the protect list (%s)' % found['entry'] if isinstance(found.get('entry'), str)
+                else 'whether it is protected could not be read')
+    if rule == 'not_in_ledger':
+        return 'what is at its place is not what the ledger recorded'
+    if rule == 'keep_failed':
+        return 'its work could not be saved first, so it was not removed'
+    if rule == 'remove_refused':
+        return 'the remover refused it'
+    return 'deferred by the rule %s' % rule if isinstance(rule, str) and rule else 'no reason is recorded'
+
+
+def _sum(rows):
+    return {'bytes': sum(row['bytes'] for row in rows), 'items': sum(row['items'] for row in rows),
+            'unmeasured': sum(row['unmeasured'] for row in rows)}
+
+
+def space_usage(items):
+    """Bytes and item counts by scope, then ticket, then kind (design 6.6 and 10), over every item that is
+    still there. An item never measured counts as an item and adds no bytes; `unmeasured` says how many.
+    `worktrees` lists each worktree the owner's Abandon can be sent for (design 6.6: worktree abandoned,
+    for one worktree), with the version a command names and whether it holds the owner's Keep."""
+    cells, worktrees = {}, []
+    for item in items:
+        data = item['data']
+        if data.get('state') not in SPACE_LIVE:
+            continue
+        owner, size = _mapping(data.get('owner')), _mapping(data.get('size'))
+        if (data.get('kind') == 'worktree' and data.get('state') in SPACE_ABANDONED_FROM
+                and SPACE_ABANDON_EVENT in (_mapping(data.get('ends_on')).get('events') or ())):
+            worktrees.append({'id': item['id'], 'version': item['version'], 'state': data['state'],
+                              'owner': _owner_view(owner), 'locator': space_locator('worktree', data.get('locator')),
+                              'branch': data.get('branch'),
+                              'bytes': size.get('bytes') if type(size.get('bytes')) is int else None,
+                              'owner_keep': bool(data.get('owner_keep'))})
+        key = (space_scope_key(owner.get('scope')), owner.get('ticket') if isinstance(owner.get('ticket'), str) else None,
+               str(data.get('kind')))
+        cell = cells.setdefault(key, {'bytes': 0, 'items': 0, 'unmeasured': 0, 'measured_at': set()})
+        cell['items'] += 1
+        if type(size.get('bytes')) is int:
+            cell['bytes'] += size['bytes']
+            if isinstance(size.get('event'), str):
+                cell['measured_at'].add(size['event'])
+        else:
+            cell['unmeasured'] += 1
+    order = {'project': 0, 'plain_repository': 1, 'no_project': 2}
+    scopes = []
+    for scope in sorted({key[0] for key in cells}, key=lambda one: (order[one[0]], one[1] or '')):
+        tickets = []
+        for ticket in sorted({key[1] for key in cells if key[0] == scope}, key=lambda one: (one is None, one or '')):
+            kinds = [dict(kind=key[2], bytes=cell['bytes'], items=cell['items'], unmeasured=cell['unmeasured'],
+                          measured_at=sorted(cell['measured_at']))
+                     for key, cell in sorted(cells.items(), key=lambda pair: pair[0][2])
+                     if key[0] == scope and key[1] == ticket]
+            tickets.append(dict(_sum(kinds), ticket=ticket, kinds=kinds))
+        scopes.append(dict(_sum(tickets), scope={'type': scope[0], 'id': scope[1]}, tickets=tickets))
+    worktrees.sort(key=lambda row: (order[row['owner']['scope']['type']], row['owner']['scope']['id'] or '',
+                                    row['owner']['ticket'] or '', row['locator'], row['id']))
+    return {'scopes': scopes, 'total': _sum(scopes), 'worktrees': worktrees}
+
+
+def space_pending(items, groups, asked=None):
+    """Every due and every deferred item (design 6.6 and 10) with its reason in words, the event it was
+    refused at, the events that retry it and its decision request, and the requests: a single worktree's
+    own, and a review group's one request with the members it lists, each by its index.
+
+    `asked` is {alias: {'id': the request's store id, 'keep': None, True or a member index}} as the
+    authority read it (VELDO-0319 AC7): each row names its request's id, which the owner's Keep command
+    names, and `answered` is 'keep' when that request has settled as Keep for this item and the item is
+    still deferred, so the Keep was answered and no signed packet has applied it. A group member's
+    request is the alias its own record holds, which stays the settled one when the group moves on."""
+    asked = asked or {}
+    rows, requests = [], {}
+    records = {group['id']: group['data'] for group in groups}
+    for item in items:
+        data = item['data']
+        if data.get('state') not in SPACE_PENDING:
+            continue
+        deferral = _mapping(data.get('deferral')) if data.get('state') == 'deferred' else {}
+        disposition = _mapping(data.get('disposition'))
+        open_request = disposition.get('state') == 'requested' and isinstance(disposition.get('alias'), str)
+        size = _mapping(data.get('size'))
+        row = {'id': item['id'], 'version': item['version'], 'state': data.get('state'), 'kind': data.get('kind'),
+               'owner': _owner_view(data.get('owner')), 'locator': space_locator(data.get('kind'), data.get('locator')),
+               'pool': data.get('pool'), 'bytes': size.get('bytes') if type(size.get('bytes')) is int else None,
+               'measured_at': size.get('event'), 'due_event': _mapping(data.get('due')).get('event'),
+               'rule': deferral.get('rule'), 'reason': deferral_words(deferral) if deferral else None,
+               'refused_at': deferral.get('event'), 'attempts': deferral.get('attempts'),
+               'retry': [event for event in deferral.get('retry') or () if isinstance(event, str)],
+               'request': disposition['alias'] if open_request else None,
+               'group': disposition.get('group') if open_request else None,
+               'index': disposition.get('index') if open_request else None}
+        known = _mapping(asked.get(row['request'])) if open_request else {}
+        keep = known.get('keep')
+        row['request_id'] = known.get('id')
+        row['answered'] = 'keep' if data.get('state') == 'deferred' and known.get('id') and (
+            keep is True or type(keep) is int and keep == row['index']) else None
+        rows.append(row)
+        if not open_request:
+            continue
+        group = _mapping(records.get(row['group'])) if row['group'] else {}
+        current = _mapping(group.get('request'))
+        # A member whose own request is not the group's current one waits for the request the Ledger
+        # raises next: it is listed under the alias its own record names.
+        proposal = _mapping(current.get('proposal')) if current.get('alias') == row['request'] else {}
+        request = requests.setdefault(row['request'], {
+            'alias': row['request'], 'group': row['group'],
+            'day': group.get('day') if row['group'] else None, 'sequence': group.get('sequence') if row['group'] else None,
+            'picks': [index for index in proposal.get('picks') or () if type(index) is int], 'members': []})
+        request['members'].append({'item': item['id'], 'index': row['index']})
+    for request in requests.values():
+        request['members'].sort(key=lambda member: (member['index'] is None, member['index'] or 0, member['item']))
+    rows.sort(key=lambda row: (row['state'] != 'deferred', row['owner']['scope']['type'], row['owner']['scope']['id'] or '',
+                               row['owner']['ticket'] or '', row['locator'], row['id']))
+    return {'items': rows, 'requests': [requests[alias] for alias in sorted(requests)]}
+
+
+def space_removed(items, written):
+    """Every removed item, newest first (design 6.6 and 10): what, whose, which event, how much and the
+    pool's free space before and after. `written` is {item: (journal sequence, commit time)} of the record
+    that removed each (space_written); an engine pool's host figure is served apart."""
+    rows = []
+    for item in items:
+        data = item['data']
+        if data.get('state') != 'removed':
+            continue
+        removal, size = _mapping(data.get('removal')), _mapping(data.get('size'))
+        seq, at = written.get(item['id'], (None, None))
+        kept = _mapping(data.get('kept'))
+        measured = removal.get('bytes') if type(removal.get('bytes')) is int else size.get('bytes')
+        rows.append({'id': item['id'], 'version': item['version'], 'kind': data.get('kind'),
+                     'owner': _owner_view(data.get('owner')),
+                     'locator': space_locator(data.get('kind'), data.get('locator')),
+                     'pool': removal.get('pool') or data.get('pool'), 'event': removal.get('event'),
+                     'emitter': removal.get('emitter'), 'method': removal.get('method'),
+                     'bytes': measured if type(measured) is int else None,
+                     'freed': removal.get('freed') if type(removal.get('freed')) is int else None,
+                     'free_before': removal.get('pool_free_before'), 'free_after': removal.get('pool_free_after'),
+                     'host': removal.get('host') if isinstance(removal.get('host'), dict) else None,
+                     'kept_refs': len(_mapping(kept.get('refs'))), 'snapshots': len(kept.get('snapshots') or ()),
+                     'seq': seq, 'at': at})
+    rows.sort(key=lambda row: (-(row['seq'] or 0), row['id']))
+    return {'items': rows}
+
+
+def space_written(conn, items):
+    """Removal order is on the item, stamped by the Ledger in its write transaction. The
+    publication time is a primary-key lookup. Older unstamped records keep an unknown order;
+    a read never scans or backfills their history."""
+    found = {}
+    for item in items:
+        if item['data'].get('state') != 'removed':
+            continue
+        seq = _mapping(item['data'].get('removal')).get('seq')
+        if type(seq) is not int or seq <= 0:
+            found[item['id']] = (None, None)
+            continue
+        row = conn.execute('SELECT committed_at FROM publication WHERE seq=?', (seq,)).fetchone()
+        found[item['id']] = (seq, row[0] if row else None)
+    return found
+
+
+def space_pools(pools, holds, carried=None):
+    """Every pool with its floor and what is held on it, and under it the waiting and the advised holds
+    with need, free, held and floor as numbers (design 6.6, 6.7 and 10). `carried` is {hold: the run that
+    carries it} for the holds a dispatch record names (the authority reads them)."""
+    carried = carried or {}
+    out = []
+    for pool in sorted(pools, key=lambda one: one['id']):
+        data, name = pool['data'], pool['data'].get('name')
+        held, listed = 0, {state: [] for state in SPACE_LISTED}
+        for hold in holds:
+            record = hold['data']
+            needs, used = _mapping(record.get('needs')), _mapping(record.get('used'))
+            if record.get('state') in SPACE_COUNTED and name in needs:
+                held += max(0, _count(needs.get(name)) - _count(used.get(name)))
+            reason = _mapping(record.get('reason'))
+            if record.get('state') in SPACE_LISTED and reason.get('pool') == name:
+                kind, identity = space_scope_key(record.get('scope'))
+                listed[record['state']].append(dict(
+                    {field: reason.get(field) for field in ('need', 'free', 'held', 'floor')},
+                    id=hold['id'], version=hold['version'], state=record['state'], pool=name,
+                    scope={'type': kind, 'id': identity}, source=_mapping(record.get('source')).get(name),
+                    run=carried.get(hold['id'])))
+        out.append({'id': pool['id'], 'version': pool['version'], 'name': name, 'host': data.get('host'),
+                    'type': data.get('type'), 'engine': data.get('engine'), 'backing': data.get('backing'),
+                    'floor': data.get('floor'), 'returns_space': data.get('returns_space'), 'held': held,
+                    'waiting': sorted(listed['waiting'], key=lambda one: one['id']),
+                    'advised': sorted(listed['advised'], key=lambda one: one['id'])})
+    return {'pools': out}
+
+
+def space_view(conn, view, answer, universal, carried=None, asked=None, signing=None):
+    """One space view from `answer`, the plain read of SPACE_MODEL at one watermark. A member whose scope is
+    not universal is served the items, holds and groups of projects only: a plain repository and no
+    project have no project a scope could cover. Every value is redacted like a read model's; the
+    identities, which name what a command is sent for, are kept."""
+    def served_to(scope):
+        return universal or space_scope_key(scope)[0] == 'project'
+    items = [item for item in answer['items']['space_item']
+             if served_to(_mapping(item['data'].get('owner')).get('scope'))]
+    holds = [hold for hold in answer['items']['space_hold'] if served_to(hold['data'].get('scope'))]
+    groups = [group for group in answer['items']['space_review_group'] if served_to(group['data'].get('scope'))]
+    if view == 'usage':
+        body = space_usage(items)
+    elif view == 'pending':
+        # `signing` is the relying-party id a Keep is signed for, None where no passkey-signed Keep is taken.
+        body = dict(space_pending(items, groups, asked), signing=signing)
+    elif view == 'removed':
+        body = space_removed(items, space_written(conn, items))
+    elif view == 'pools':
+        body = space_pools(answer['items']['space_pool'], holds, carried)
+    else:
+        raise KeyError(view)
+    kept = _identities(body)
+    served, paths = redact(body, '$.' + view)
+    _restore(served, kept)
+    # A locator is a path, and the scanner reads a whole path as one long token. It is judged part by
+    # part instead: a part the scanner finds is replaced, the rest of the path is served.
+    located = [(path, _locator_served(text)) for path, text in _identities(body, fields=('locator',))]
+    _restore(served, located)
+    kept = kept + [(path, text) for path, text in located if MARKER not in text]
+    named = {'$.' + view + ''.join('[%d]' % part if type(part) is int else '.' + part for part in path)
+             for path, _original in kept}
+    return dict(served, schema=SPACE_SCHEMA, view=view, problems=answer['problems'],
+                redacted=sorted(set(paths) - named), watermark=answer['watermark'], freshness=answer['freshness'])
+
+
+_IDENTITY_FIELDS = ('id', 'item', 'request', 'request_id', 'signing', 'alias', 'group', 'run', 'dispatch')
+
+
+def _identities(value, path=(), fields=_IDENTITY_FIELDS):
+    """Every identity field of a view with its place, so the redaction can be undone for them alone: a store
+    identity may look like a credential to the scanner, and a command names its subject by it."""
+    found = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key in fields and isinstance(item, str):
+                found.append((path + (key,), item))
+            else:
+                found.extend(_identities(item, path + (key,), fields))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            found.extend(_identities(item, path + (index,), fields))
+    return found
+
+
+def _locator_served(text):
+    """A locator with each of its parts judged by the secret scanner alone: the parts between separators
+    of a path, and the words of any other locator. A part the scanner finds is the marker."""
+    def parts(piece, separators):
+        if not separators:
+            return MARKER if piece and SCAN.scan_text(piece) else piece
+        return separators[0].join(parts(one, separators[1:]) for one in piece.split(separators[0]))
+    return parts(text, ('/', ' '))
+
+
+def _restore(value, kept):
+    for path, original in kept:
+        target = value
+        for part in path[:-1]:
+            target = target[part]
+        target[path[-1]] = original
 
 
 def contract():

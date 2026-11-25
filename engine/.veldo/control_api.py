@@ -12,7 +12,8 @@ THE ROUTES are one published table, ROUTES: each route's name, method, path, fam
 session, its exact body fields and the authority operation it asks for. The handlers are registered by
 route name, and `route_problems` compares the two, so a route without a handler or a handler without a
 route is a defect the suite names. The families are auth, messages, decisions, reads (the published
-contract and every read model of control_api_models.READ_MODELS), configuration (a workflow revision's
+contract, every read model of control_api_models.READ_MODELS and, VELDO-0319, the four reads of the console's
+Space screen: space.pools, space.usage, space.pending and space.removed), configuration (a workflow revision's
 read and its save), work (VELDO-0131: the owner's backlog priority, worker stop and account cap; VELDO-0312:
 space.abandon, the owner's Abandon of one worktree at the version the screen showed) and events
 (the event read and the live stream). A GET's query parameters are its
@@ -236,6 +237,15 @@ ROUTES = (
     # VELDO-0180: the owner's typed command making a conversation a new or existing project's work.
     Route('conversations.make_project', 'POST', '/api/v1/domains/{domain}/conversations/project', 'conversations',
           True, ('conversation', 'version', 'project'), ('objective', 'identity'), 'make_conversation_project'),
+    # VELDO-0319 (AC5 to AC7): the owner's Keep packet for one worktree whose request settled as Keep. The
+    # packet is {command, signature}: the Ledger's space_disposition command for this item, version and
+    # request, and the owner's passkey assertion over its digest. The answer itself went through decisions.answer.
+    Route('space.keep', 'POST', '/api/v1/domains/{domain}/space/keep', 'work', True,
+          ('item', 'version', 'request', 'packet'), (), 'keep_worktree'),
+) + tuple(Route(name, 'GET', '/api/v1/domains/{domain}/space/' + view, 'reads', True, (), (), None)
+          # VELDO-0319 (design 6.6): the four reads of the console's Space screen, each one view of the space
+          # ledger's records (control_api_models.SPACE_VIEWS), served by the authority for the session's member.
+          for name, view in MO.SPACE_VIEWS.items()) + (
     Route('events.read', 'GET', '/api/v1/domains/{domain}/events', 'events', True, (), ('after',), None),
     Route('events.stream', 'GET', '/api/v1/domains/{domain}/events/stream', 'events', True, (), ('after',), None),
     # VELDO-0141: one run's execution record, read from a cursor and followed live.
@@ -509,6 +519,8 @@ class ControlApi:
                               'conversations.make_project': self._write})
         # VELDO-0178: conversation route calls by route and outcome.
         self.conversation_counts = {}
+        self.handlers.update({'space.keep': self._write})
+        self.handlers.update({name: self._space_read for name in MO.SPACE_VIEWS})
         self.handlers.update({m.route: self._read for m in MO.READ_MODELS})
         self.handlers.update({m.route: self._metadata_read for m in MO.METADATA_READS})
 
@@ -823,7 +835,7 @@ class ControlApi:
             expected = {'dispatch:' + str(parameters['dispatch']): parameters['dispatch_version']}
         elif route.operation == 'set_account_cap':
             expected = {'account:' + str(parameters['account']): parameters['account_version']}
-        elif route.operation == 'abandon_worktree':
+        elif route.operation in ('abandon_worktree', 'keep_worktree'):
             expected = {str(parameters['item']): parameters['version']}
         elif route.operation in ('close_conversation', 'change_conversation_role', 'attach_conversation_project',
                                  'make_conversation_project'):
@@ -840,7 +852,7 @@ class ControlApi:
                   'close_conversation': 'conversation:' + str(parameters.get('conversation')),
                   'change_conversation_role': 'conversation:' + str(parameters.get('conversation')),
                   'attach_conversation_project': 'conversation:' + str(parameters.get('conversation')),
-                  'make_conversation_project': 'conversation:' + str(parameters.get('conversation'))}[route.operation]
+                  'make_conversation_project': 'conversation:' + str(parameters.get('conversation')), 'keep_worktree': str(parameters.get('item'))}[route.operation]
         assertion = dict(self.ids, schema=AS.SCHEMA, domain=self.domain, channel=AS.CHANNEL, edge=self.edge,
                          edge_key_id=AC.edge_channel(AS.CHANNEL)['edge_key_id'], request_id=request_id,
                          principal=session['principal'], credential_id=session['credential_id'],
@@ -908,6 +920,9 @@ class ControlApi:
 
     def _read(self, route, body, session, extra, headers):
         return 200, self._ask(self.authority.read, route.name.split('.', 1)[1], session['principal'])
+
+    def _space_read(self, route, body, session, extra, headers):
+        return 200, self._ask(self.authority.read, route.name, session['principal'])
 
     def _metadata_read(self, route, body, session, extra, headers):
         model = next(m.name for m in MO.METADATA_READS if m.route == route.name)

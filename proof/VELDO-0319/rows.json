@@ -1,0 +1,96 @@
+{
+ "all_green": true,
+ "count": 34,
+ "criteria": {
+  "AC1": [
+   "space319/ac1/per-project-ticket-kind",
+   "space319/ac1/totals",
+   "space319/ac1/deferred-counts",
+   "space319/ac1/plain-and-no-project",
+   "space319/ac1/worktrees",
+   "space319ui/ac1/usage-table-1280",
+   "space319ui/ac1/usage-table-390"
+  ],
+  "AC2": [
+   "space319/ac2/in-use-folder",
+   "space319/ac2/every-pending",
+   "space319/ac2/requests",
+   "space319/ac2/removed",
+   "space319ui/ac2/pending-removed"
+  ],
+  "AC3": [
+   "space319/ac3/routes-signed",
+   "space319/ac3/unsigned-refused",
+   "space319/ac3/not-owner-refused",
+   "space319/ac3/owner-accepted",
+   "space319/ac3/no-dead-route",
+   "space319ui/ac3/owner-commands",
+   "space319ui/ac3/answer-path"
+  ],
+  "AC4": [
+   "space319/ac4/pools-numbers",
+   "space319/ac4/record-reaches-read",
+   "space319ui/ac4/live-no-clock",
+   "space319ui/ac4/runs-list"
+  ],
+  "the member scope, a broken digest, the redaction of a path, the words of a deferral, the synced copies": [
+   "space319/scope/member",
+   "space319/scope/digest",
+   "space319/redact/locator",
+   "space319/words/deferrals",
+   "space319/canon/synced"
+  ],
+  "the screen states at four widths, the API as the only source, the unit specs": [
+   "space319ui/ui/states-360",
+   "space319ui/ui/states-390",
+   "space319ui/ui/states-1280",
+   "space319ui/ui/states-1440",
+   "space319ui/ui/api-only",
+   "space319ui/unit/space"
+  ]
+ },
+ "falsifier_rows": {
+  "AC1": "space319/ac1/totals",
+  "AC2": "space319/ac2/in-use-folder",
+  "AC3": "space319/ac3/unsigned-refused",
+  "AC4": "space319ui/ac4/live-no-clock"
+ },
+ "limitation": "A partial selftest is diagnostic only. The lead runs the gate.",
+ "rows": [
+  "space319/ac1/deferred-counts",
+  "space319/ac1/per-project-ticket-kind",
+  "space319/ac1/plain-and-no-project",
+  "space319/ac1/totals",
+  "space319/ac1/worktrees",
+  "space319/ac2/every-pending",
+  "space319/ac2/in-use-folder",
+  "space319/ac2/removed",
+  "space319/ac2/requests",
+  "space319/ac3/no-dead-route",
+  "space319/ac3/not-owner-refused",
+  "space319/ac3/owner-accepted",
+  "space319/ac3/routes-signed",
+  "space319/ac3/unsigned-refused",
+  "space319/ac4/pools-numbers",
+  "space319/ac4/record-reaches-read",
+  "space319/canon/synced",
+  "space319/redact/locator",
+  "space319/scope/digest",
+  "space319/scope/member",
+  "space319/words/deferrals",
+  "space319ui/ac1/usage-table-1280",
+  "space319ui/ac1/usage-table-390",
+  "space319ui/ac2/pending-removed",
+  "space319ui/ac3/answer-path",
+  "space319ui/ac3/owner-commands",
+  "space319ui/ac4/live-no-clock",
+  "space319ui/ac4/runs-list",
+  "space319ui/ui/api-only",
+  "space319ui/ui/states-1280",
+  "space319ui/ui/states-1440",
+  "space319ui/ui/states-360",
+  "space319ui/ui/states-390",
+  "space319ui/unit/space"
+ ],
+ "source": "scripts/suites/150_veldo_0319_space_screen.py and 150_veldo_0319_space_ui.py at 5f3afd347f7e72ccc7dd0bce5b1ace739ac90773"
+}

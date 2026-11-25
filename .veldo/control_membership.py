@@ -113,13 +113,122 @@ def _is_num(v):
 # The committed authority state, read from the store's entities.
 # ---------------------------------------------------------------------------------------------
 
+AUTHORITY_KINDS = ("membership", "delegation", "verification_key", "authority_versions")
+_WHOLE = ("__iter__", "__len__", "__eq__", "__ne__", "__repr__", "__reversed__", "__or__", "__ror__", "__ior__", "__setitem__",
+          "__delitem__", "keys", "values", "items", "copy", "setdefault", "pop", "popitem", "update", "clear")
+
+
+def _entity(row):
+    return {"kind": row[0], "version": row[1], "digest": row[2], "data": json.loads(row[3])}
+
+
+class _Entities(dict):
+    """The entities of ONE committed snapshot (the journal head `head`), read as they are asked for.
+
+    The authority's own records are held from the start. Any other record is one read by its id
+    when it is first asked for; a question about the whole map (iteration, length, equality, a
+    copy, a change) reads the rest once, in id order, and from then on this is the plain mapping
+    store.materialized_state gave. The answers are the snapshot's: every entity write appends a
+    journal record in its own transaction and no entity is deleted, so a record read while the
+    head is still `head` is the snapshot's record, and one written since is taken back from the
+    journal (its last transition at or before `head`, or absent when its first later record found
+    it at version 0). The connection must still be open when a record is asked for."""
+
+    def __init__(self, conn, head, held):
+        super().__init__(held)
+        self._conn, self._head, self._absent, self._all = conn, head, set(), False
+
+    def _rewound(self, found):
+        """`found` ({id: entity} as the store holds them NOW, the head having moved) as the snapshot held them."""
+        first = {}
+        for before, after in self._conn.execute("SELECT before_versions, transition FROM journal WHERE seq>? ORDER BY seq", (self._head,)):
+            versions, written = json.loads(before), json.loads(after)
+            for eid in found:
+                if eid in written and eid not in first:
+                    first[eid] = versions.get(eid, 0)
+        out = {eid: e for eid, e in found.items() if eid not in first}
+        wanted = {eid for eid, version in first.items() if version > 0}
+        if wanted:
+            for (after,) in self._conn.execute("SELECT transition FROM journal WHERE seq<=? ORDER BY seq DESC", (self._head,)):
+                written = json.loads(after)
+                for eid in [x for x in wanted if x in written]:
+                    out[eid] = {k: written[eid][k] for k in ("kind", "version", "digest", "data")}
+                    wanted.discard(eid)
+                if not wanted:
+                    break
+        return out
+
+    def _one(self, eid):
+        if self._all or dict.__contains__(self, eid) or not isinstance(eid, str) or eid in self._absent:
+            return
+        row = self._conn.execute("SELECT kind, version, digest, data, (SELECT COALESCE(MAX(seq), 0) FROM journal) FROM entities WHERE id=?", (eid,)).fetchone()
+        found = {} if row is None else {eid: _entity(row)}
+        if row is not None and row[4] != self._head:
+            found = self._rewound(found)
+        if eid in found:
+            dict.__setitem__(self, eid, found[eid])
+        else:
+            self._absent.add(eid)
+
+    def _whole(self):
+        if self._all:
+            return
+        rows = self._conn.execute("SELECT id, kind, version, digest, data, (SELECT COALESCE(MAX(seq), 0) FROM journal) FROM entities ORDER BY id").fetchall()
+        found = {r[0]: _entity(r[1:5]) for r in rows if not dict.__contains__(self, r[0])}
+        if rows and rows[0][5] != self._head:
+            found = self._rewound(found)
+        held = dict(dict.items(self))
+        dict.clear(self)
+        for eid in sorted(set(held) | set(found), key=lambda x: x.encode()):
+            dict.__setitem__(self, eid, held[eid] if eid in held else found[eid])
+        self._all = True
+
+    def __getitem__(self, eid):
+        self._one(eid)
+        return dict.__getitem__(self, eid)
+
+    def __contains__(self, eid):
+        self._one(eid)
+        return dict.__contains__(self, eid)
+
+    def get(self, eid, default=None):
+        self._one(eid)
+        return dict.get(self, eid, default)
+
+    def __bool__(self):
+        return len(self) > 0
+
+
+def _whole_first(name):
+    def method(self, *args, **kwargs):
+        self._whole()
+        return getattr(dict, name)(self, *args, **kwargs)
+    method.__name__ = name
+    return method
+
+
+for _name in _WHOLE:
+    setattr(_Entities, _name, _whole_first(_name))
+_Entities.__reduce_ex__ = lambda self, protocol: (dict, (dict(self),))
+
+
 def authority_state(store, conn):
     """{membership, delegations, keyring, membership_version, delegation_version} from committed
     entities: kind membership (id = principal), kind delegation (id = delegation id), kind
-    verification_key (id = key:<principal>:<n>), and the one versions entity."""
-    st = store.materialized_state(conn)["entities"]
+    verification_key (id = key:<principal>:<n>), and the one versions entity.
+
+    The read costs what the authority's own records cost, not what the store holds: ONE statement
+    reads the journal head and the records of AUTHORITY_KINDS by kind (through the store's
+    (kind, id) index where the installation has one), and "entities" is the same snapshot read as
+    it is asked for (_Entities): every answer is the one a read of the whole store gave."""
+    rows = conn.execute("SELECT NULL, NULL, NULL, NULL, NULL, COALESCE(MAX(seq), 0) FROM journal UNION ALL "
+                        "SELECT id, kind, version, digest, data, NULL FROM entities WHERE kind IN (%s)" % ",".join("?" * len(AUTHORITY_KINDS)),
+                        AUTHORITY_KINDS).fetchall()
+    head = next(r[5] for r in rows if r[0] is None)
+    held = {r[0]: _entity(r[1:5]) for r in sorted((r for r in rows if r[0] is not None), key=lambda r: r[0].encode())}
+    st = _Entities(conn, head, held)
     membership, delegations, keyring = [], [], []
-    for eid, e in st.items():
+    for eid, e in held.items():
         if e["kind"] == "membership":
             membership.append(dict(e["data"], principal=eid, entity_version=e["version"]))
         elif e["kind"] == "delegation":

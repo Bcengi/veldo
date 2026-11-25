@@ -12,6 +12,9 @@ export function runLamp(state: string): { lamp: LampState; word: string } {
       return { lamp: 'done', word: 'Done' }
     case 'refused':
       return { lamp: 'stop', word: 'Refused' }
+    // VELDO-0319: a run that has a hold and no dispatch yet (runs.ts SPACE_WAIT).
+    case 'space_wait':
+      return { lamp: 'waiting', word: 'Waiting for space' }
     default:
       return { lamp: 'stop', word: 'Unknown' }
   }

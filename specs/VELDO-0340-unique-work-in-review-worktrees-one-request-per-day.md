@@ -18,7 +18,10 @@ footprint:
   - ".veldo/control_space_signal.py"
   - "engine/.veldo/control_space_remove.py"
   - ".veldo/control_space_remove.py"
+  - "engine/.veldo/control_request_settlement.py"
+  - ".veldo/control_request_settlement.py"
   - "scripts/suites/*_veldo_0340_*.py"
+  - "scripts/suites/153_veldo_0336_run_worktree.py"
   - "scripts/suites/manifest.json"
   - "scripts/suites/requires.json"
   - "scripts/check_teeth_mutations.py"
@@ -106,3 +109,91 @@ components, each engine file with its synced copy, and the ticket's suite, proof
   store under the state root, and never in a repository's object store, so a secret in an ignored file
   does not enter git; commits stay on kept refs (design 0.3). AC3: a group's Discard saves each member's
   uncommitted state in the snapshot store, where it said on a kept ref. The falsifier is unchanged.
+- 2026-11-16: BLOCKER, recorded by the builder before any code was written. Status stays ready; nothing
+  is built. A group's request must name every member with its file list (design 7, VELDO-0327 AC2), and
+  the only path to a space disposition request refuses that outside this ticket's footprint. In
+  engine/.veldo/control_request_settlement.py, space_presentation refuses terms whose worktrees list
+  does not hold exactly one entry (read on the base d0e2461a: two entries give invalid_input, "space
+  terms name one worktree"), the terms command requires the target to be a space_item equal to that one
+  entry's item, and request_problem binds the request's brief and choices to space_presentation of the
+  signed proposal at every open and revise. So no request for two worktrees can be signed, opened or
+  settled, and AC1, AC2 and AC3 cannot be met by the Ledger, Signal and the Removers alone. The one
+  way inside the footprint is to write a group as one worktree entry, with the group's identity as its
+  item and the members' files joined in its list: the owner would then be shown one path for several
+  worktrees and a restore command that names no item, which is terms that differ from what is acted
+  on, so it was not built. Needed from the lead: the footprint widened by
+  engine/.veldo/control_request_settlement.py and its synced copy (space_presentation for one or more
+  worktrees, and a target kind for a review group), with the VELDO-0327 suite if a row of it holds the
+  one-entry refusal. engine/.veldo/control_service.py does not need to change: its disposition task
+  can reach a group through the members' own records.
+- 2026-11-16: LEAD DECISION on the blocker above: the footprint widening is accepted. This ticket may
+  change engine/.veldo/control_request_settlement.py and its synced copy so the space terms carry one
+  or more worktrees and a group target kind, every member listed with its own path, files, commits
+  and restore command, and the target naming the group and every member item; and the VELDO-0327
+  suite where a row asserts the one-entry refusal. Every single-worktree behavior of VELDO-0327 and
+  VELDO-0318 stays as it is. A group is never written as one worktree entry.
+  engine/.veldo/control_service.py does not change. The two settlement files are added to the
+  footprint above. The VELDO-0327 suite was not changed: terms without a group still name exactly
+  one worktree, so no row of it asserted anything that moved.
+- 2026-11-16: built. What the build decided where the design leaves room:
+  - Terms. Space terms with a `group` (the review group record's identity) list one or more
+    worktrees and are targeted as space_group, with `members` naming every item in the order
+    listed. Terms without a group are what they were, one worktree targeted as space_item.
+  - The record (design 4.9): space:group:<scope>:<day>:<sequence>, with the day, the sequence, the
+    members (index, review run, file list, kept branch, the commit read, the whole entry shown),
+    the current request with its version, and the state. Each member's own disposition holds its
+    own entry alone and names the group, so Save and Discard compare each worktree with what was
+    shown for that worktree, through the same remover checks as a single request.
+  - The day is read once, as the deferral is recorded, through the Ledger's clock in the
+    installation's time zone. Signal still imports nothing and names no clock. Nothing is opened,
+    closed or sent when the clock moves.
+  - A new version is a new terms record (terms are immutable) and a revision of the one request,
+    then its framing. The settlement refuses an answer bound to the earlier presentation as
+    stale_presentation, before and after the new version is presented.
+  - A join is taken by the day's first group that is open and whose request no answer has ended.
+    So a deferral after the answer, and before it is applied, opens the next sequence number. The
+    sequence number is built here because AC3 defers a changed member "into a new group"; the
+    rest of VELDO-0342 (member picks, the size rule) is not built.
+  - A group pick is one write: every member still in the group (deferred, its requested
+    disposition naming the group) that the settled terms list gets the pick, and the group closes.
+    A member that joined after the presentation the owner answered was never shown: the pick does
+    not reach it, and it joins a new group at its next publish. Save and Discard are authorized by
+    the service's disposition task as for one worktree and carried per member by Signal; Keep is
+    the owner's signed space_disposition packet naming any member with the group's request, as
+    VELDO-0318 AC4 has it for one worktree.
+  - The owner's Save and Discard of a review worktree do not run the review scratch remover: Save
+    has committed the untracked files and Discard removes exactly what its snapshot holds.
+  - Not built, and why: member picks and the one-message size rule (VELDO-0342); a client that
+    signs the owner's Keep packet (none exists in the repository, as VELDO-0318 found); a group
+    whose request was canceled or declined keeps its members without a live request until their
+    next deferral, which no criterion here names.
+- 2026-11-16: fix round 1, after the independent review (verdict FIX, three low findings, no lost work).
+  - Finding 1: row ac2/join-races-answer. The owner's answer settles between a deferral's read of the
+    group it joins and its write; the write reads again, and the deferral opens the next sequence
+    number. Falsifier space340-join-without-the-read-in-the-write.
+  - Finding 2: row terms/ledger-target. A settled effect whose group target names fewer items than
+    its terms list, written past the Settlement, is no settled answer for the Ledger. Falsifier
+    space340-ledger-takes-a-target-short-of-the-listed-items.
+  - Finding 3: whether a group's request was answered is no longer found by reading every request in
+    the store. The group record's request holds the identity of the one request (`id`), written by
+    the Ledger's own transition space_review_group_request before the request is opened and never
+    changed after; a join reads that one row by its key. The Ledger is not given the repository
+    identity, so it cannot derive the request's identity from the alias: the publisher, which holds
+    it, hands it over. A group whose request was never opened holds no identity and is read as not
+    answered, with no read at all. Row cost/answered-by-id: the read costs the same number of
+    database steps with 400 more requests in the store, for a request not opened yet and for an open
+    one. Falsifier space340-answered-read-scans-every-request.
+  - LEAD DECISION on the review's answer (c): the VELDO-0336 rows loss/owner-keep and loss/kept-child
+    were left stale by VELDO-0318 (first build a9628b86), which made Ledger.outcome refuse an
+    owner_keep fact: the owner's Keep is the signed space_disposition command alone (VELDO-0318 AC4).
+    The rows still marked Keep through the outcome. No work was lost (the file stayed on disk). The
+    footprint is widened by scripts/suites/153_veldo_0336_run_worktree.py, above, and the two rows
+    now drive the Keep through VELDO-0318's path: the review worktree with a tracked edit is
+    deferred as unique work, the owner answers Keep to its request, and the owner's signed packet
+    writes the mark. Each row still proves what it did: the owner's Keep keeps the worktree and its
+    files (loss/owner-keep), and a child of the kept worktree that run finished reaches stays with
+    it (loss/kept-child). Each also asserts that the outcome which claims the mark is refused and
+    that the settled answer alone marks nothing. Before VELDO-0318 the mark could be put on the
+    child itself; a request is raised only for a worktree, so the row's mark is on the worktree.
+  - The review's answers (a) and (b) need nothing here: the AC4 row stands, and a group whose request
+    was canceled or declined belongs to VELDO-0342.

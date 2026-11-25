@@ -18947,6 +18947,326 @@ def cases():
         if case['module'] == 'control_containment.py' and not case.get('siblings'):
             case['companions'] = sorted(set(case.get('companions', ())) | {'timers.py'})
 
+    # VELDO-0340: review worktrees with unique work share one request per scope and day.
+    groups340 = '150_veldo_0340_review_groups.py'
+    # AC1, declared: one request per worktree.
+    add(340, 'space340-one-request-per-worktree', groups340, 'control_space_signal.py',
+        "    if _is_review_worktree(record):\n        # One request per scope and day for review worktrees",
+        "    if False:\n        # One request per scope and day for review worktrees",
+        ['space340/ac1/one-request'])
+    add(340, 'space340-one-day-for-every-deferral', groups340, 'control_space.py',
+        "        return datetime.datetime.fromtimestamp(at, zone).date().isoformat()",
+        "        return '2026-11-16'",
+        ['space340/ac1/next-day'])
+    # AC2, declared: the worktree is added without a new version of the request.
+    add(340, 'space340-join-without-a-new-version', groups340, 'control_space.py',
+        "        elif (assignment.get('subject') or {}).get('ref') != tid:",
+        "        elif False:",
+        ['space340/ac2/new-version'])
+    add(340, 'space340-pick-reaches-an-unseen-member', groups340, 'control_space.py',
+        "            elif member['entry'] not in shown or decision['proposal']['worktrees'][0] != member['entry']:",
+        "            elif False:",
+        ['space340/ac2/unseen-member'])
+    # AC3, declared: the comparison per worktree is skipped.
+    add(340, 'space340-discard-without-the-comparison-per-worktree', groups340, 'control_space_remove.py',
+        "    if saved_names != shown['files']:",
+        "    if False:",
+        ['space340/ac3/discard'])
+    add(340, 'space340-pick-reaches-one-member', groups340, 'control_space.py',
+        "        if record['disposition'].get('group'):\n            return self._group_change(",
+        "        if False:\n            return self._group_change(",
+        ['space340/ac3/save', 'space340/ac3/keep'])
+    add(340, 'space340-answered-group-takes-a-join', groups340, 'control_space.py',
+        "        return group['state'] == 'open' and not self._group_answered(group)",
+        "        return group['state'] == 'open'",
+        ['space340/ac3/answered-takes-no-join'])
+    add(340, 'space340-scratch-removal-inside-a-disposition', groups340, 'control_space_remove.py',
+        "    if review and not ctx.get('disposition'):",
+        "    if review:",
+        ['space340/ac3/save', 'space340/ac3/discard'])
+    # AC4, declared: every run-owned worktree is treated as a review worktree.
+    add(340, 'space340-every-run-worktree-is-a-review-worktree', groups340, 'control_space_signal.py',
+        "    return (record.get('kind') == 'worktree' and run.get('station') == 'review'",
+        "    return (record.get('kind') == 'worktree' and bool(run)",
+        ['space340/ac4/builder'])
+    # The widened terms: a group's target names every member item.
+    add(340, 'space340-group-target-without-its-members', groups340, 'control_request_settlement.py',
+        "            or target.get('members') != items):",
+        "            or False):",
+        ['space340/terms/group'])
+    # Fix round (review findings 1 to 3).
+    add(340, 'space340-join-without-the-read-in-the-write', groups340, 'control_space.py',
+        "        if gid != self._group_to_join(scope, day)[0]:\n            raise Refused('space_group_closed', 'not the",
+        "        if False:\n            raise Refused('space_group_closed', 'not the",
+        ['space340/ac2/join-races-answer'])
+    add(340, 'space340-ledger-takes-a-target-short-of-the-listed-items', groups340, 'control_space.py',
+        "                and target.get('members') == [tree.get('item') for tree in listed])",
+        "                and True)",
+        ['space340/terms/ledger-target'])
+    add(340, 'space340-answered-read-scans-every-request', groups340, 'control_space.py',
+        "        request = self._row(rid, 'assignment')[1] if _is_str(rid) else None",
+        "        request = next((one for one in (json.loads(raw) for (raw,) in self.conn.execute(\n"
+        "            \"SELECT data FROM entities WHERE kind='assignment'\")) if one.get('alias') == alias), None)",
+        ['space340/cost/answered-by-id'])
+
+    # VELDO-0342: an answer for one worktree of a review group, and a second group on the same day.
+    picks342 = '150_veldo_0342_member_picks.py'
+    # AC1, declared: a member pick is applied to the whole group.
+    add(342, 'space342-member-pick-reaches-the-whole-group', picks342, 'control_space.py',
+        "            elif picked is not None and member['index'] != picked:",
+        "            elif False:",
+        ['space342/ac1/member-discard'])
+    # AC2, declared: every member pick is offered whatever the size.
+    add(342, 'space342-every-member-pick-whatever-the-size', picks342, 'control_space.py',
+        "            return shown.utf16_units(shown.TEXT.visible(tail)) <= room",
+        "            return True",
+        ['space342/ac2/fit'])
+    # AC3, declared: the day key is reused.
+    add(342, 'space342-reuse-the-day-key', picks342, 'control_space.py',
+        "                return identity, version\n            sequence += 1",
+        "                return identity, version\n            return identity, 0",
+        ['space342/ac3/next-sequence'])
+    # A member pick is an answer for no other member: the Ledger, Signal and the remover, each alone.
+    add(342, 'space342-ledger-takes-a-pick-for-another-member', picks342, 'control_space.py',
+        "        return len(indexes) == len(listed) and indexes[listed.index(mine)] == index",
+        "        return True",
+        ['space342/pick/ledger'])
+    add(342, 'space342-signal-carries-a-pick-for-another-member', picks342, 'control_space_signal.py',
+        "        if ledger.settled_action(effect, decision) != choice or owner != decision['by']:",
+        "        if owner != decision['by']:",
+        ['space342/pick/signal'])
+    add(342, 'space342-remover-takes-a-pick-for-another-member', picks342, 'control_space_remove.py',
+        "    if picked[1] is not None and (not decision.get('group') or decision.get('index') != picked[1]):",
+        "    if False:",
+        ['space342/pick/remover'])
+    add(342, 'space342-one-worktree-request-takes-a-member-pick', picks342, 'control_space.py',
+        "            return index is None and shown == request.get('proposal') and target.get('ref') == identity",
+        "            return shown == request.get('proposal') and target.get('ref') == identity",
+        ['space342/pick/single'])
+    add(342, 'space342-authority-keeps-by-a-member-pick', picks342, 'control_space.py',
+        "            if _settlement().space_pick(effect['choice'])[0] == 'keep':",
+        "            if effect['choice'] == 'accept keep':",
+        ['space342/ac1/member-keep'])
+    # The request for the members left.
+    add(342, 'space342-next-request-while-the-pick-can-be-applied', picks342, 'control_space.py',
+        "                if member['index'] == index:\n                    raise Refused('space_disposition_state', 'the member the pick names",
+        "                if False:\n                    raise Refused('space_disposition_state', 'the member the pick names",
+        ['space342/ac1/member-discard'])
+    add(342, 'space342-no-next-request-when-the-named-member-is-gone', picks342, 'control_space.py',
+        "            raised = self._group_next(gid)",
+        "            raised = {'ok': False}",
+        ['space342/next/gone'])
+    add(342, 'space342-answered-member-cannot-join-again', picks342, 'control_space.py',
+        "        if any(member['item'] == identity and in_group(member) for member in group['members']):",
+        "        if any(member['item'] == identity for member in group['members']):",
+        ['space342/ac1/changed-member'])
+    add(342, 'space342-join-in-the-window-opens-a-second-group', picks342, 'control_space.py',
+        "        if group['state'] == 'open' and self._awaited(group) is not None:\n            # A settled member pick leaves",
+        "        if False:\n            # A settled member pick leaves",
+        ['space342/ac3/pending-join'])
+    # Review fixes: Keep settlement must not wait for its owner packet; departed members can rejoin.
+    add(342, 'space342-keep-waits-for-application', picks342, 'control_space.py',
+        "        keep = self._settled_choice(group) == ('keep', index)",
+        "        keep = False",
+        ['space342/next/settled-keep', 'space342/next/keep-join'])
+    add(342, 'space342-pending-keep-loses-its-original-request', picks342, 'control_space.py',
+        "        if pending and pending.get('request') == request and effect['choice'] == pending['choice']:",
+        "        if False:",
+        ['space342/next/settled-keep'])
+    add(342, 'space342-keep-text-omits-settlement', picks342, 'control_request_settlement.py',
+        "For Keep, the others get their new request after settlement",
+        "For Keep, the others wait for application",
+        ['space342/next/keep-text'])
+    add(342, 'space342-departed-member-not-marked-gone', picks342, 'control_space.py',
+        "                                dict(member, gone=True) if member['index'] in left else member",
+        "                                member if member['index'] in left else member",
+        ['space342/next/left-member'])
+    add(342, 'space342-departed-member-replays-old-request', picks342, 'control_space.py',
+        "            member['index'] == prior.get('index') and member.get('gone')",
+        "            False",
+        ['space342/next/left-member'])
+    # The terms: a worktree is named by its member index, and the members without a pick are named.
+    add(342, 'space342-worktrees-numbered-by-their-place', picks342, 'control_request_settlement.py',
+        "    for index, tree in zip(indexes, trees):",
+        "    for index, tree in enumerate(trees, 1):",
+        ['space342/terms/indexes', 'space342/ac1/member-discard'])
+    add(342, 'space342-members-without-a-pick-not-named', picks342, 'control_request_settlement.py',
+        "    if without:",
+        "    if False:",
+        ['space342/ac2/fit', 'space342/terms/indexes'])
+    add(342, 'space342-picks-for-any-indexes', picks342, 'control_request_settlement.py',
+        "    if not isinstance(picks, list) or picks != indexes[:len(picks)]:",
+        "    if not isinstance(picks, list):",
+        ['space342/terms/indexes'])
+
+    # VELDO-0319: the console's Space screen. The API rows, then the browser rows.
+    api319 = '150_veldo_0319_space_screen.py'
+    # AC1, declared: sum only present items and leave out deferred ones.
+    add(319, 'space319-usage-sums-only-present-items', api319, 'control_api_models.py',
+        "        if data.get('state') not in SPACE_LIVE:",
+        "        if data.get('state') != 'present':",
+        ['space319/ac1/totals', 'space319/ac1/deferred-counts'])
+    # AC2, declared: hide deferred items.
+    add(319, 'space319-pending-hides-deferred-items', api319, 'control_api_models.py',
+        "SPACE_PENDING = ('due', 'deferred')",
+        "SPACE_PENDING = ('due',)",
+        ['space319/ac2/in-use-folder'])
+    # AC3, declared: accept Abandon as a plain read route.
+    add(319, 'space319-abandon-as-a-plain-read-route', api319, 'control_api.py',
+        "    Route('space.abandon', 'POST', '/api/v1/domains/{domain}/space/abandon', 'work', True,\n"
+        "          ('item', 'version'), (), 'abandon_worktree'),",
+        "    Route('space.abandon', 'GET', '/api/v1/domains/{domain}/space/abandon', 'reads', False,\n"
+        "          ('item', 'version'), (), None),",
+        ['space319/ac3/unsigned-refused'],
+        also=[("        self.handlers.update({'space.abandon': self._write, 'space.reconcile': self._write,\n"
+               "                              'space.keep': self._write})",
+               "        self.handlers.update({'space.abandon': lambda route, body, session, extra, headers: (\n"
+               "            200, self.authority.space_abandon(body['item'], version=int(body['version']), by=None,\n"
+               "                                              cause='owner_abandon')), 'space.reconcile': self._write,\n"
+               "                              'space.keep': self._write})")])
+    # The owner of a space command: a member who is not the owner reaches the service's reconcile.
+    add(319, 'space319-reconcile-for-any-member', api319, 'control_api_authority.py',
+        "            if SPACE_OWNER_ROLE not in (person.get('roles') or []) or not self.CM.scope_covers(person.get('scope'), SPACE_SCOPE):\n"
+        "                raise Refused('unauthorized:not_owner', 'Reconcile is the owner action')",
+        "            if False:\n"
+        "                raise Refused('unauthorized:not_owner', 'Reconcile is the owner action')",
+        ['space319/ac3/not-owner-refused'])
+    # Removed is newest first; held counts only the holds whose promise is counted; a credential in a path is replaced.
+    add(319, 'space319-removed-oldest-first', api319, 'control_api_models.py',
+        "    rows.sort(key=lambda row: (-(row['seq'] or 0), row['id']))",
+        "    rows.sort(key=lambda row: (row['seq'] or 0, row['id']))",
+        ['space319/ac2/removed'])
+    add(319, 'space319-held-counts-a-waiting-hold', api319, 'control_api_models.py',
+        "SPACE_COUNTED = ('admitted', 'advised')",
+        "SPACE_COUNTED = ('admitted', 'advised', 'waiting')",
+        ['space319/ac4/pools-numbers'])
+    add(319, 'space319-advised-holds-not-listed', api319, 'control_api_models.py',
+        "SPACE_LISTED = ('waiting', 'advised')",
+        "SPACE_LISTED = ('waiting',)",
+        ['space319/ac4/pools-numbers'])
+    add(319, 'space319-locator-served-with-its-credential', api319, 'control_api_models.py',
+        "            return MARKER if piece and SCAN.scan_text(piece) else piece",
+        "            return piece",
+        ['space319/redact/locator'])
+
+    # Review F2: restoring either history scan must increase the measured read cost.
+    add(319, 'space319-removed-restores-journal-scan', api319, 'control_api_models.py',
+        'def space_written(conn, items):\n'
+        '    """Removal order is on the item, stamped by the Ledger in its write transaction. The\n'
+        '    publication time is a primary-key lookup. Older unstamped records keep an unknown order;\n'
+        '    a read never scans or backfills their history."""\n'
+        '    found = {}\n'
+        '    for item in items:\n'
+        "        if item['data'].get('state') != 'removed':\n"
+        '            continue\n'
+        "        seq = _mapping(item['data'].get('removal')).get('seq')\n"
+        '        if type(seq) is not int or seq <= 0:\n'
+        "            found[item['id']] = (None, None)\n"
+        '            continue\n'
+        "        row = conn.execute('SELECT committed_at FROM publication WHERE seq=?', (seq,)).fetchone()\n"
+        "        found[item['id']] = (seq, row[0] if row else None)\n"
+        '    return found\n',
+        'def space_written(conn, items):\n'
+        '    """{item: (journal sequence, commit time)} of the journal record that last wrote each of `identities`:\n'
+        '    one bounded pass over the journal, newest first, that stops when every one is found."""\n'
+        "    wanted, found = {item['id'] for item in items if item['data'].get('state') == 'removed'}, {}\n"
+        '    if not wanted:\n'
+        '        return found\n'
+        '    rows = conn.execute("SELECT j.seq, j.after_versions, p.committed_at FROM journal j LEFT JOIN publication p "\n'
+        '                        "ON p.seq = j.seq WHERE instr(j.after_versions, \'space:item:\') > 0 ORDER BY j.seq DESC")\n'
+        '    for seq, after, committed in rows:\n'
+        '        try:\n'
+        '            touched = json.loads(after)\n'
+        '        except ValueError:\n'
+        '            continue\n'
+        '        for identity in wanted.intersection(touched if isinstance(touched, dict) else ()):\n'
+        '            found[identity] = (seq, committed)\n'
+        '        wanted.difference_update(found)\n'
+        '        if not wanted:\n'
+        '            break\n'
+        '    return found\n',
+        ['space319/cost/removed-index'])
+    add(319, 'space319-carried-restores-dispatch-scan', api319, 'control_api_authority.py',
+        "AND json_extract(data, '$.contract.space.hold')=?",
+        "AND instr(data, ?)",
+        ['space319/cost/carried-index'])
+    add(319, 'space319-removal-without-ledger-stamp', api319, 'control_space.py',
+        "            record['removal'] = dict(facts, seq=seq)",
+        "            record['removal'] = dict(facts)",
+        ['space319/ac2/removal-stamp'])
+
+    # The amendment (AC5 to AC7): the console signs the owner's Keep. ac3/no-dead-route, restated as a property:
+    # a published route whose command the Ledger has no transition for.
+    add(319, 'space319-keep-route-without-a-transition', api319, 'control_api_authority.py',
+        "                'reconcile_space': 'space_reconcile', KEEP: SPACE_DISPOSITION}",
+        "                'reconcile_space': 'space_reconcile', KEEP: 'space_reject'}",
+        ['space319/ac3/no-dead-route'])
+    # AC6, declared: take the edge's signature in place of the passkey's.
+    add(319, 'space319-keep-takes-the-edge-signature', api319, 'control_space.py',
+        "            return state, member, self._passkey_signer(command, signature, now, state, principal)",
+        "            return state, member, {'key_id': principal}",
+        ['space319/ac6/edge-alone-refused'])
+    # AC6, declared: skip the challenge comparison (the assertion's own challenge is taken for the command's).
+    add(319, 'space319-keep-skips-the-challenge', api319, 'control_space.py',
+        "        challenge = credentials.W.b64url(hashlib.sha256(self.store.canonical_bytes(command)).digest())",
+        "        challenge = json.loads(credentials.W.unb64url(assertion.get('client_data_json')) or b'{}').get('challenge')",
+        ['space319/ac6/other-command-refused'])
+    # AC6, declared: apply whatever the settlement holds.
+    add(319, 'space319-keep-applies-any-settled-choice', api319, 'control_space.py',
+        "        if 'only' in params and _settlement().space_pick(effect['choice'])[0] != params['only']:",
+        "        if False and _settlement().space_pick(effect['choice'])[0] != params['only']:",
+        ['space319/ac6/settled-keep-only'])
+    # AC6: a revoked credential, and a credential of another member, are current for nobody's Keep.
+    add(319, 'space319-keep-takes-any-enrolled-credential', api319, 'control_space.py',
+        "        record, why = credentials.current(state, assertion.get('credential_id'), now, principal=principal)\n"
+        "        if why:",
+        "        record, why = credentials.current(state, assertion.get('credential_id'), now, principal=principal)\n"
+        "        record = record or {}\n"
+        "        if why and record.get('credential_id') is None:",
+        ['space319/ac6/revoked-refused', 'space319/ac6/other-member-refused'])
+    # AC7, declared: list only items with an open request (a settled, unsigned Keep is on no screen).
+    add(319, 'space319-pending-hides-an-answered-keep', api319, 'control_api_models.py',
+        "        keep = known.get('keep')",
+        "        keep = None",
+        ['space319/ac7/answered-not-signed'])
+    # AC7, declared: sign the group's current request for a member.
+    add(319, 'space319-member-under-the-groups-current-request', api319, 'control_api_models.py',
+        "        known = _mapping(asked.get(row['request'])) if open_request else {}",
+        "        known = _mapping(asked.get(_mapping(_mapping(records.get(row['group'])).get('request')).get('alias')\n"
+        "                                   or row['request'])) if open_request else {}",
+        ['space319/ac7/member-own-request'])
+
+    def ui319(name, directory, module, old, new, rows):
+        add(319, name, '150_veldo_0319_space_ui.py', module, old, new, rows)
+        result[-1]['dir'] = directory
+
+    ui319('space319-numeric-cells-lose-to-table-rule', 'engine/ui/src/features/space', 'space.css',
+          "  .space-num,\n  .factory-table td.space-num {",
+          "  .space-num {",
+          ['space319ui/ac1/numeric-alignment-1440'])
+
+    # AC4, declared: poll on an interval. The screen still says it is live; with the page's clock stopped
+    # no timer fires and the row that waits for the new hold sees no update.
+    ui319('space319-poll-on-an-interval', 'engine/ui/src/composables', 'useLiveRead.ts',
+          "    live.value = 'live'\n    follow(currentSeq())",
+          "    live.value = 'live'\n    setInterval(() => void reread(), 2000)",
+          ['space319ui/ac4/live-no-clock'])
+    ui319('space319-run-row-without-its-hold', 'engine/ui/src/features/run', 'runs.ts',
+          "    space: holds.get(dispatch) ?? null,",
+          "    space: null,",
+          ['space319ui/ac4/runs-list'])
+    # AC5, declared: leave out the space.keep call after the answer settles. The answer settles, the screen says
+    # the Keep is applied, and the item stays deferred.
+    ui319('space319-keep-answer-without-the-packet', 'engine/ui/src/features/decisions', 'DecisionDetail.vue',
+          "    const sent = await sendKeep(packet)",
+          "    const sent = packet",
+          ['space319ui/ac5/keep-applied'])
+    # AC7: Sign Keep that signs and sends nothing.
+    ui319('space319-sign-keep-sends-nothing', 'engine/ui/src/features/space', 'keep.ts',
+          "  const sent = await keepWorktree(packet, contractRoute)\n  return sent.sent ? sent.answer : null",
+          "  return { outcome: 'kept', api_request_id: packet.command.command_id, contractRoute } as KeepAnswer",
+          ['space319ui/ac7/sign-keep'])
+
     return result
 
 

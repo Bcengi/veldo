@@ -83,6 +83,10 @@ OPERATIONS = {
     # VELDO-0180: the owner's typed command making a conversation a project's work, an intake request.
     'make_conversation_project': {'parameters': ('conversation', 'version', 'project', 'objective', 'identity'),
                                   'optional': ('objective', 'identity'), 'boundary': 'proposal_commit'},
+    # VELDO-0319 (AC5 to AC7, space.keep): the owner's Keep packet for one worktree, {command, signature},
+    # whose command the owner's passkey signed. The item, version and request are the command's own; the
+    # authority admits the owner only and the space Ledger verifies the passkey itself.
+    'keep_worktree': {'parameters': ('item', 'version', 'request', 'packet'), 'boundary': 'command_acceptance'},
 }
 
 CALL = 'api_call'
@@ -151,7 +155,7 @@ def time_problem(a, now):
 def domain_request(a):
     """The one signed domain request an assertion's operation carries, or None for the operations that execute
     from the verified assertion itself (revoke_credential, save_workflow, stop_worker, set_account_cap,
-    abandon_worktree and the configuration saves)."""
+    abandon_worktree, keep_worktree and the configuration saves)."""
     p = a['parameters']
     if a['operation'] == 'propose_team':
         return dict({f: a[f] for f in IDS}, operation='propose', project=p['project'], team=p['team'],

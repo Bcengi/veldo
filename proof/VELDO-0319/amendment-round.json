@@ -1,0 +1,638 @@
+{
+ "base": "a0e4bc10",
+ "base_comparison": {
+  "133_veldo_0326_space_principals": {
+   "expects_failed": 1,
+   "expects_passed": 55,
+   "failed_rows": [
+    "VELDO-0326 ac2/observer-refused-by-name"
+   ]
+  },
+  "134_veldo_0331_space_mode": {
+   "expects_failed": 14,
+   "expects_passed": 28,
+   "note": "same count as on this head"
+  },
+  "139_veldo_0301_space_signal": {
+   "expects_failed": 1,
+   "expects_passed": 43,
+   "failed_rows": [
+    "VELDO-0301 ac4/no-clock"
+   ]
+  },
+  "143_veldo_0305_space_census": {
+   "expects_failed": 1,
+   "expects_passed": 51,
+   "failed_rows": [
+    "VELDO-0305 review/scratch-apart-from-run-directory"
+   ]
+  },
+  "150_veldo_0319_space_screen": {
+   "detail": "same SQL steps with 4096 more journal entries and dispatches: 2067 -> 108563 and 2070 -> 108567, the same numbers on this head",
+   "expects_failed": 2,
+   "failed_rows": [
+    "VELDO-0319 space319/cost/removed-index",
+    "VELDO-0319 space319/cost/carried-index"
+   ]
+  },
+  "151_veldo_0313_space_run": {
+   "expects_failed": 7,
+   "expects_passed": 56,
+   "failed_rows": [
+    "VELDO-0313 ac1/only-the-runs-own-items",
+    "VELDO-0313 ac2/act-waits-75",
+    "VELDO-0313 ac2/command-status",
+    "VELDO-0313 ac2/report-starts",
+    "VELDO-0313 fix3/handed-outside-the-tree",
+    "VELDO-0313 fix3/rewritten-environment-cwd-in-scratch",
+    "VELDO-0313 fix3/unread-process-holds"
+   ]
+  },
+  "153_veldo_0302_space_creators": {
+   "expects_failed": null,
+   "expects_passed": null,
+   "failed_rows": []
+  },
+  "156_veldo_0315_reconcile": {
+   "expects_failed": 2,
+   "expects_passed": 59,
+   "failed_rows": [
+    "space315/loss/owner-keep",
+    "space315/ac3/startup"
+   ]
+  }
+ },
+ "base_comparison_note": "Every suite red on this head was run on an export of the base a0e4bc10. 133, 134, 139, 143, 153 and 156 are red there with the same rows. 151 is red on both with a different set of process and timing rows on each run (8 here, 7 on the base); it reaches no code this round changed.",
+ "browser_harness_without_a_browser": "engine/ui/e2e/space_harness.py with VELDO_SPACE_SEED=keep was driven from Python through the real API edge, authority and settlement, with the harness's own passkey stand-in: an unsettled request refused missing_evidence:space_disposition_unsettled, a wrong version stale_version:space_item, the settled unsigned Keep applied (kept, owner_keep by owner), then decisions.answer accept keep settled and its packet applied. The Playwright rows themselves were not run.",
+ "commits": {
+  "fix": "a7f98bf3",
+  "implementation": "993e523e",
+  "spec_filed": "b1dfbf10"
+ },
+ "criteria": {
+  "AC5": {
+   "api_rows": [
+    "space319/ac5/keep-applied",
+    "space319/ac5/console-bytes"
+   ],
+   "browser_rows_not_run": [
+    "space319ui/ac5/keep-applied"
+   ],
+   "unit": "engine/ui Vitest: DecisionDetail.spec.ts (sign, answer, then packet; a closed ceremony sends nothing; a refused packet is named), keep.spec.ts"
+  },
+  "AC6": {
+   "api_rows": [
+    "space319/ac6/edge-alone-refused",
+    "space319/ac6/other-member-refused",
+    "space319/ac6/revoked-refused",
+    "space319/ac6/other-command-refused",
+    "space319/ac6/settled-keep-only",
+    "space319/ac6/ssh-as-before",
+    "space319/ac6/owner-only"
+   ]
+  },
+  "AC7": {
+   "api_rows": [
+    "space319/ac7/answered-not-signed",
+    "space319/ac7/member-own-request"
+   ],
+   "browser_rows_not_run": [
+    "space319ui/ac7/sign-keep"
+   ],
+   "unit": "engine/ui Vitest: keep.spec.ts (a member under its own request), space.spec.ts"
+  }
+ },
+ "fast_checks": {
+  "check_docs.sh": "pass",
+  "check_generated.sh": "pass",
+  "check_lint.sh": "pass",
+  "check_space_boundary.py": "pass",
+  "check_template_sync.sh": "pass",
+  "shape_gate.py": "pass",
+  "validate.py all": "see manifest"
+ },
+ "named_rows": {
+  "71 session/forgery-refused": "green (suite 71: 71 expects passed, 0 failed, bodies hold space.keep)",
+  "ac3/no-dead-route": "green",
+  "ac3/routes-signed": "green"
+ },
+ "not_built": [
+  "Ledger.set_mode still takes its packet's signature as text before it calls _mode_signer: the passkey form is in _mode_signer and in the mode transition, and VELDO-0332 opens set_mode's own shape check when it adds the console's mode switch",
+  "A Keep answered over the phone's message channel is not refused there: it waits for Sign Keep, as AC7 says (the amendment's open point 1 for the lead)"
+ ],
+ "not_run": [
+  "150_veldo_0319_space_ui (16 browser rows and unit/space): needs the gate lock and the entry of gate-unconfined-entry.md",
+  "suites 113, 120, 121, 122, 124 (browser)",
+  "scripts/verify.sh",
+  "F1 to F4 under the lock: the job is research/lock-queue/held/99zzP1-veldo-0319-ui.sh"
+ ],
+ "producer": "Claude builder for VELDO-0319; not an independent reviewer.",
+ "recorded": "2026-11-18",
+ "round": "amendment of 2026-11-16: the console signs the owner's Keep (AC5 to AC7)",
+ "runs_at": {
+  "993e523e": [
+   "71_veldo_0130_api",
+   "150_veldo_0318_unique_work",
+   "150_veldo_0342_member_picks",
+   "150_veldo_0340_review_groups",
+   "134_veldo_0331_space_mode",
+   "156_veldo_0315_reconcile",
+   "the UI typecheck and Vitest",
+   "the harness driven from Python"
+  ],
+  "a7f98bf3": [
+   "150_veldo_0319_space_screen",
+   "149_veldo_0312_ticket_ended",
+   "every other suite listed",
+   "the fast checks",
+   "the teeth of finding 319"
+  ],
+  "note": "a7f98bf3 only moves Service.space_keep to another place in control_service.py; the suites run at 993e523e were not run again"
+ },
+ "scheduling": "every run under nice -n 19, one suite at a time; no browser suite and no verify.sh was run on this host",
+ "schema": "veldo.builder_round/v1",
+ "spec_id": "VELDO-0319",
+ "suites": {
+  "104_veldo_0164_scoped_reads": {
+   "expects_failed": 0,
+   "expects_passed": 45,
+   "failed_rows": []
+  },
+  "123_veldo_0174_conversations": {
+   "expects_failed": 0,
+   "expects_passed": 64,
+   "failed_rows": []
+  },
+  "133_veldo_0326_space_principals": {
+   "expects_failed": 1,
+   "expects_passed": 55,
+   "failed_rows": [
+    "VELDO-0326 ac2/observer-refused-by-name"
+   ]
+  },
+  "134_veldo_0331_space_mode": {
+   "expects_failed": 14,
+   "expects_passed": 28,
+   "failed_rows": [
+    "VELDO-0331 ac1/act-beside-report",
+    "VELDO-0331 ac1/history",
+    "VELDO-0331 ac1/ledger-checks-sender",
+    "VELDO-0331 ac1/ledger-checks-signature",
+    "VELDO-0331 ac1/no-record-is-report",
+    "VELDO-0331 ac1/owner-signs",
+    "VELDO-0331 ac2/admission-by-scope",
+    "VELDO-0331 ac2/adoption-by-scope",
+    "VELDO-0331 ac2/advised-counts-as-held",
+    "VELDO-0331 ac2/hold-keeps-its-scope",
+    "VELDO-0331 ac2/signal-by-scope",
+    "VELDO-0331 ac3/switch-back-accepted",
+    "VELDO-0331 ac3/then-due-and-nothing-removed",
+    "VELDO-0331 mode/canon"
+   ]
+  },
+  "135_veldo_0298_space_kinds": {
+   "expects_failed": 0,
+   "expects_passed": 168,
+   "failed_rows": []
+  },
+  "139_veldo_0301_space_signal": {
+   "expects_failed": 1,
+   "expects_passed": 43,
+   "failed_rows": [
+    "VELDO-0301 ac4/no-clock"
+   ]
+  },
+  "142_veldo_0303_space_paths": {
+   "expects_failed": 0,
+   "expects_passed": 64,
+   "failed_rows": []
+  },
+  "143_veldo_0305_space_census": {
+   "expects_failed": 1,
+   "expects_passed": 51,
+   "failed_rows": [
+    "VELDO-0305 review/scratch-apart-from-run-directory"
+   ]
+  },
+  "149_veldo_0312_ticket_ended": {
+   "expects_failed": 0,
+   "expects_passed": 67,
+   "failed_rows": [],
+   "note": "first run at 993e523e had paths/no-delete-and-canon red (the Keep entry read the clock inside the VELDO-0312 region of control_service.py); fixed at a7f98bf3 by moving the entry, rerun green"
+  },
+  "150_veldo_0316_admission": {
+   "expects_failed": 0,
+   "expects_passed": 55,
+   "failed_rows": []
+  },
+  "150_veldo_0317_full_pool": {
+   "expects_failed": 0,
+   "expects_passed": 49,
+   "failed_rows": []
+  },
+  "150_veldo_0318_unique_work": {
+   "expects_failed": 0,
+   "expects_passed": 71,
+   "failed_rows": []
+  },
+  "150_veldo_0319_space_screen": {
+   "expects_failed": 2,
+   "expects_passed": 59,
+   "failed_rows": [
+    "VELDO-0319 space319/cost/carried-index",
+    "VELDO-0319 space319/cost/removed-index"
+   ]
+  },
+  "150_veldo_0334_space_wait": {
+   "expects_failed": 0,
+   "expects_passed": 50,
+   "failed_rows": []
+  },
+  "150_veldo_0340_review_groups": {
+   "expects_failed": 0,
+   "expects_passed": 42,
+   "failed_rows": []
+  },
+  "150_veldo_0342_member_picks": {
+   "expects_failed": 0,
+   "expects_passed": 48,
+   "failed_rows": []
+  },
+  "151_veldo_0313_space_run": {
+   "expects_failed": 8,
+   "expects_passed": 55,
+   "failed_rows": [
+    "VELDO-0313 ac1/build-output-has-item-and-goes",
+    "VELDO-0313 ac1/only-the-runs-own-items",
+    "VELDO-0313 ac2/act-waits-75",
+    "VELDO-0313 ac2/report-starts",
+    "VELDO-0313 fix2/end-follows-their-exit",
+    "VELDO-0313 fix3/unread-process-holds",
+    "VELDO-0313 supervise/report-loss-end-is-made",
+    "VELDO-0313 supervise/stop-after-the-command-end-is-made"
+   ]
+  },
+  "153_veldo_0302_space_creators": {
+   "expects_failed": null,
+   "expects_passed": null,
+   "failed_rows": []
+  },
+  "154_veldo_0335_released": {
+   "expects_failed": 0,
+   "expects_passed": 58,
+   "failed_rows": []
+  },
+  "156_veldo_0315_reconcile": {
+   "expects_failed": 2,
+   "expects_passed": 59,
+   "failed_rows": []
+  },
+  "71_veldo_0130_api": {
+   "expects_failed": 0,
+   "expects_passed": 71,
+   "failed_rows": []
+  }
+ },
+ "teeth_finding_319": {
+  "anchors": "all 23 registered cases of finding 319 match their module exactly once; space319-abandon-as-a-plain-read-route was re-anchored on the same code (the handlers line now also names space.keep), same target row; space319-reconcile-for-any-member did not move",
+  "browser_cases_not_run": [
+   "space319-numeric-cells-lose-to-table-rule",
+   "space319-poll-on-an-interval",
+   "space319-run-row-without-its-hold",
+   "space319-keep-answer-without-the-packet",
+   "space319-sign-keep-sends-nothing"
+  ],
+  "command": "nice -n 19 python3 scripts/check_teeth_mutations.py --finding 319 --case <each of the 18 API cases> --jobs 2",
+  "driver_error": "invalid_baseline",
+  "driver_note": "The driver refuses every case as invalid_baseline: its baseline and no-op runs hold the two red cost rows above. No case is certified by the driver until those rows are green.",
+  "driver_status": "failed",
+  "executed": 18,
+  "mutants_note": "Read from each mutant worker's own observation: every one of the 18 mutants turns its target rows red (mutant_failed leaves out the two rows red at baseline). The two cost cases prove nothing here, because their target rows are red without the mutant. This is builder evidence, not a driver verdict.",
+  "mutants_read_from_the_worker_logs": [
+   {
+    "module": "control_api_models.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac2/every-pending",
+     "VELDO-0319 space319/ac2/in-use-folder",
+     "VELDO-0319 space319/ac2/removal-stamp",
+     "VELDO-0319 space319/ac2/requests",
+     "VELDO-0319 space319/ac5/console-bytes",
+     "VELDO-0319 space319/ac5/keep-applied",
+     "VELDO-0319 space319/ac6/edge-alone-refused",
+     "VELDO-0319 space319/ac6/other-command-refused",
+     "VELDO-0319 space319/ac6/other-member-refused",
+     "VELDO-0319 space319/ac6/owner-only",
+     "VELDO-0319 space319/ac6/revoked-refused",
+     "VELDO-0319 space319/ac6/settled-keep-only",
+     "VELDO-0319 space319/ac6/ssh-as-before",
+     "VELDO-0319 space319/ac7/answered-not-signed",
+     "VELDO-0319 space319/ac7/member-own-request",
+     "VELDO-0319 space319/canon/synced",
+     "VELDO-0319 space319/words/deferrals"
+    ],
+    "name": "space319-pending-hides-deferred-items",
+    "returncode": 0,
+    "seconds": 4.1,
+    "target_rows": [
+     "space319/ac2/in-use-folder"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_models.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac1/deferred-counts",
+     "VELDO-0319 space319/ac1/per-project-ticket-kind",
+     "VELDO-0319 space319/ac1/totals",
+     "VELDO-0319 space319/ac1/worktrees",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/scope/member"
+    ],
+    "name": "space319-usage-sums-only-present-items",
+    "returncode": 0,
+    "seconds": 31.3,
+    "target_rows": [
+     "space319/ac1/totals",
+     "space319/ac1/deferred-counts"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused"
+    ],
+    "name": "space319-abandon-as-a-plain-read-route",
+    "returncode": 0,
+    "seconds": 31.5,
+    "target_rows": [
+     "space319/ac3/unsigned-refused"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_authority.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted"
+    ],
+    "name": "space319-reconcile-for-any-member",
+    "returncode": 0,
+    "seconds": 32.0,
+    "target_rows": [
+     "space319/ac3/not-owner-refused"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_models.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac2/removed"
+    ],
+    "name": "space319-removed-oldest-first",
+    "returncode": 0,
+    "seconds": 29.3,
+    "target_rows": [
+     "space319/ac2/removed"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_models.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac2/removal-stamp",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/canon/synced",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/words/deferrals"
+    ],
+    "name": "space319-advised-holds-not-listed",
+    "returncode": 0,
+    "seconds": 5.5,
+    "target_rows": [
+     "space319/ac4/pools-numbers"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_models.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac4/pools-numbers"
+    ],
+    "name": "space319-held-counts-a-waiting-hold",
+    "returncode": 0,
+    "seconds": 26.4,
+    "target_rows": [
+     "space319/ac4/pools-numbers"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_models.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/redact/locator"
+    ],
+    "name": "space319-locator-served-with-its-credential",
+    "returncode": 0,
+    "seconds": 30.5,
+    "target_rows": [
+     "space319/redact/locator"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_models.py",
+    "mutant_failed": [],
+    "name": "space319-removed-restores-journal-scan",
+    "returncode": 0,
+    "seconds": 30.3,
+    "target_rows": [
+     "space319/cost/removed-index"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_space.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac2/removal-stamp",
+     "VELDO-0319 space319/ac2/removed",
+     "VELDO-0319 space319/ac3/no-dead-route",
+     "VELDO-0319 space319/ac3/not-owner-refused",
+     "VELDO-0319 space319/ac3/owner-accepted",
+     "VELDO-0319 space319/ac3/routes-signed",
+     "VELDO-0319 space319/ac3/unsigned-refused",
+     "VELDO-0319 space319/ac4/pools-numbers",
+     "VELDO-0319 space319/ac4/record-reaches-read",
+     "VELDO-0319 space319/canon/synced",
+     "VELDO-0319 space319/redact/locator",
+     "VELDO-0319 space319/scope/digest",
+     "VELDO-0319 space319/scope/member",
+     "VELDO-0319 space319/words/deferrals"
+    ],
+    "name": "space319-removal-without-ledger-stamp",
+    "returncode": 0,
+    "seconds": 5.1,
+    "target_rows": [
+     "space319/ac2/removal-stamp"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_authority.py",
+    "mutant_failed": [],
+    "name": "space319-carried-restores-dispatch-scan",
+    "returncode": 0,
+    "seconds": 26.3,
+    "target_rows": [
+     "space319/cost/carried-index"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_authority.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac3/no-dead-route"
+    ],
+    "name": "space319-keep-route-without-a-transition",
+    "returncode": 0,
+    "seconds": 30.6,
+    "target_rows": [
+     "space319/ac3/no-dead-route"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_space.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac6/edge-alone-refused",
+     "VELDO-0319 space319/ac6/other-command-refused",
+     "VELDO-0319 space319/ac6/other-member-refused",
+     "VELDO-0319 space319/ac6/revoked-refused",
+     "VELDO-0319 space319/ac6/ssh-as-before"
+    ],
+    "name": "space319-keep-takes-the-edge-signature",
+    "returncode": 0,
+    "seconds": 29.8,
+    "target_rows": [
+     "space319/ac6/edge-alone-refused"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_space.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac6/other-command-refused",
+     "VELDO-0319 space319/ac6/ssh-as-before"
+    ],
+    "name": "space319-keep-skips-the-challenge",
+    "returncode": 0,
+    "seconds": 27.2,
+    "target_rows": [
+     "space319/ac6/other-command-refused"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_space.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac6/settled-keep-only",
+     "VELDO-0319 space319/ac6/ssh-as-before"
+    ],
+    "name": "space319-keep-applies-any-settled-choice",
+    "returncode": 0,
+    "seconds": 27.2,
+    "target_rows": [
+     "space319/ac6/settled-keep-only"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_space.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac6/other-command-refused",
+     "VELDO-0319 space319/ac6/other-member-refused",
+     "VELDO-0319 space319/ac6/revoked-refused"
+    ],
+    "name": "space319-keep-takes-any-enrolled-credential",
+    "returncode": 0,
+    "seconds": 28.6,
+    "target_rows": [
+     "space319/ac6/revoked-refused",
+     "space319/ac6/other-member-refused"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_models.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac5/keep-applied",
+     "VELDO-0319 space319/ac7/answered-not-signed",
+     "VELDO-0319 space319/ac7/member-own-request"
+    ],
+    "name": "space319-pending-hides-an-answered-keep",
+    "returncode": 0,
+    "seconds": 28.4,
+    "target_rows": [
+     "space319/ac7/answered-not-signed"
+    ],
+    "target_rows_red": true
+   },
+   {
+    "module": "control_api_models.py",
+    "mutant_failed": [
+     "VELDO-0319 space319/ac7/member-own-request"
+    ],
+    "name": "space319-member-under-the-groups-current-request",
+    "returncode": 0,
+    "seconds": 23.2,
+    "target_rows": [
+     "space319/ac7/member-own-request"
+    ],
+    "target_rows_red": true
+   }
+  ],
+  "registered": 18,
+  "rejected": 0
+ },
+ "ticket_rows": {
+  "new_rows_green": [
+   "ac5/keep-applied",
+   "ac5/console-bytes",
+   "ac6/edge-alone-refused",
+   "ac6/other-member-refused",
+   "ac6/revoked-refused",
+   "ac6/other-command-refused",
+   "ac6/settled-keep-only",
+   "ac6/ssh-as-before",
+   "ac6/owner-only",
+   "ac7/answered-not-signed",
+   "ac7/member-own-request"
+  ],
+  "restated_rows_green": [
+   "ac3/no-dead-route",
+   "ac3/routes-signed"
+  ],
+  "rows_green": 33,
+  "rows_red": [
+   "cost/removed-index",
+   "cost/carried-index"
+  ],
+  "rows_red_note": "Both are rows of fix round F2 (commit a2166767), red on the base a0e4bc10 with the same numbers; this round did not change them. Cause read in the code: every authority read judges its reader through control_membership.authority_state, which is control_store.materialized_state, a read of every entity, reservation, effect and nonce, so the steps of a whole read grow with the store whatever the view itself reads. control_membership.py and control_store.py are outside this footprint. Needs a lead decision.",
+  "suite": "150_veldo_0319_space_screen"
+ },
+ "ui_unit": {
+  "note": "run before the last documentation edits; no source file changed after it except control_service.py",
+  "typecheck": "vue-tsc --noEmit: exit 0",
+  "vitest": "src/features/space, src/features/run/runs.spec.ts, src/features/decisions: 5 files, 59 tests passed",
+  "where": "a scratch copy of engine/ui with npm ci --prefer-offline (the worktree has no node_modules)"
+ }
+}

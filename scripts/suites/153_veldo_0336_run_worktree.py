@@ -503,7 +503,54 @@ def _v336_suite():
         KEEP = load('v336_owner_keep', ROOT / 'scripts' / 'suites' / 'support' / 'space_owner_keep.py')
         keep_desk = KEEP.Desk(mods, S, CM, AC, conn, IDS, journal_sign, owner_sign, owner_keys, NOW, tag='v336_desk')
 
+        def owner_desk():
+            keep_desk.open()
+            L.disposition_publish = lambda item: keep_desk.publish(L, item)
+
+        def owner_keeps(identity):
+            return keep_desk.owner_keeps(L, identity, SP.ITEM_KIND)
+
         def kept(row, child=False):
+            owner_desk()
+            given, path, identity = begin('kept-child' if child else 'kept')
+            (path / 'tracked.txt').write_bytes(b'owner keeps this')
+            (path / 'notes').write_bytes(b'owner keeps this too')
+            finish(given)
+            check(row, 'run finished leaves the tracked edit for the owner to decide',
+                  status(identity) == ('deferred', 'unique_work') and bool(L.item(identity).get('disposition'))
+                  and (path / 'tracked.txt').read_bytes() == b'owner keeps this')
+            refused = L.outcome(identity, 'kept', {'owner_keep': {'at': NOW, 'answer': 'keep'}}, principal='owner')
+            check(row, 'an outcome that claims the owner mark is refused', not refused['ok']
+                  and not L.item(identity).get('owner_keep') and status(identity)[0] == 'deferred')
+            settled, edge_alone, marked = owner_keeps(identity)
+            check(row, 'the settled answer alone marks nothing', settled.get('outcome') == 'settled'
+                  and not edge_alone['ok'])
+            check(row, 'owner mark accepted', marked['ok'])
+            inside = None
+            if child:
+                # A child of the kept worktree that the run's end reaches by itself.
+                inside = L.declare('evidence', {'path': str(path / 'notes')}, L.item(identity)['owner'],
+                                   'seam', parent=identity)['item']
+                L.confirm(inside)
+                (path / 'build').mkdir()
+                (path / 'build' / 'output').write_bytes(b'built in the kept worktree')
+            end = finish(given)
+            check(row, 'owner work and mark survive', (path / 'tracked.txt').read_bytes() == b'owner keeps this'
+                  and (path / 'notes').read_bytes() == b'owner keeps this too'
+                  and L.item(identity)['owner_keep'] == {'by': 'owner'} and status(identity)[0] == 'kept')
+            reached = [one['item'] for one in end['signal']['outcomes']]
+            if child:
+                check(row, 'run finished reached the child and not the kept worktree',
+                      end['signal']['ok'] and reached == [inside])
+                check(row, 'the child of the kept worktree stays with it',
+                      status(inside)[0] == 'kept' and L.item(inside)['parent'] == identity
+                      and (path / 'build' / 'output').read_bytes() == b'built in the kept worktree')
+            else:
+                check(row, 'run finished does not reach the kept worktree', end['signal']['ok'] and reached == [])
+        one('loss/owner-keep', kept)
+        one('loss/kept-child', lambda row: kept(row, True))
+
+        def kept_evidence(row, child=True):
             given, path, identity = begin('kept-child' if child else 'kept')
             (path / 'notes').write_bytes(b'owner keeps this')
             picked = identity
@@ -534,8 +581,8 @@ def _v336_suite():
             check(row, 'owner work and mark survive', (path / 'notes').read_bytes() == b'owner keeps this'
                   and L.item(picked)['owner_keep']['by'] == 'owner'
                   and status(identity)[0] == ('deferred' if child else 'kept'))
-        one('loss/owner-keep', kept)
-        one('loss/kept-child', lambda row: kept(row, True))
+
+        one('loss/owner-kept-evidence', kept_evidence)
 
         def unique(row, station='review', ignored=False):
             given, path, identity = begin(row.split('/')[-1], station)

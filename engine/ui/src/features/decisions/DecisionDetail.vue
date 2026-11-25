@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import type { KeepPacket } from '@/api/actions'
 import { sendAnswer, type AnswerResult } from '@/api/decisions'
+import { readSpacePending } from '@/api/reads'
 import { ApiRefusal } from '@/api/refusal'
 import UBadge from '@nuxt/ui/components/Badge.vue'
 import RefusalNotice from '@/components/RefusalNotice.vue'
 import VButton from '@/components/VButton.vue'
 import VRadio from '@/components/VRadio.vue'
 import VTextArea from '@/components/VTextArea.vue'
+import { ceremonyMessage } from '@/features/signin/webauthn'
+import { keepPick, keepTarget, sendKeep, signKeep } from '@/features/space/keep'
 import { useDecisionsStore } from '@/stores/decisions'
+import { useSessionStore } from '@/stores/session'
 import { answerBody, choiceLabel, dueText, riskOf, urgencyOf, type PendingDecision, type Presentation } from './inbox'
 
 /**
@@ -16,10 +21,43 @@ import { answerBody, choiceLabel, dueText, riskOf, urgencyOf, type PendingDecisi
  * version and the request's version). When the store later holds another version, nothing changes silently:
  * the screen says the question changed, clears the choice and offers the current version instead of sending.
  * The API settles an answer once, whichever channel answers first; any refusal is shown beside the action.
+ *
+ * A Keep answer to a space request (VELDO-0319 AC5) is applied with no second press. Keep is the one answer the
+ * settlement cannot finish alone: the ledger takes it only as the owner's own signed command. So before the
+ * answer is sent the owner's passkey signs the Keep command for the worktree the answer names, at the version
+ * the space read shows; then the answer is sent; and once it has settled the signed packet is sent on space.keep.
+ * A ceremony the owner closes sends nothing at all. A packet the ledger refuses leaves the answer settled and the
+ * Keep unsigned: the refusal is shown by name, and the Space screen lists the worktree with Sign Keep.
  */
 const props = defineProps<{ decision: PendingDecision }>()
 const emit = defineEmits<{ settled: [result: AnswerResult] }>()
 const store = useDecisionsStore()
+const session = useSessionStore()
+/** What became of the signed Keep: applied, refused by name, or settled with no packet this screen could sign. */
+const keep = shallowRef<{ state: 'kept' | 'refused' | 'unsigned'; refusal: string | null } | null>(null)
+
+/** The signed Keep packet for a Keep answer to a space request, before the answer is sent. Null when the answer
+ * is not Keep, the request is no space request this member can sign for, or the space read is refused: the
+ * answer is then sent as any other. A ceremony that does not finish throws, and nothing is sent. */
+async function keepPacket(requestId: string, picked: string): Promise<{ space: boolean; packet: KeepPacket | null }> {
+  const none = { space: false, packet: null }
+  if (keepPick(picked) === undefined) return none
+  const principal = session.principal
+  const credentialId = session.view?.credential_id
+  if (!principal || !credentialId) return none
+  let pending
+  try {
+    pending = await readSpacePending()
+  } catch (error) {
+    if (error instanceof ApiRefusal) return none
+    throw error
+  }
+  const target = keepTarget(pending, requestId, picked)
+  if (!target) return none
+  // A space request whose Keep this installation cannot take from a passkey: answered here, signed at the host.
+  if (!pending.signing) return { space: true, packet: null }
+  return { space: true, packet: await signKeep({ principal, credentialId, rpId: pending.signing }, target) }
+}
 
 /** The presentation this screen shows and an answer binds to. Replaced only by "Load the current version". */
 const shown = shallowRef<Presentation | null>(props.decision.presentation)
@@ -93,14 +131,36 @@ async function send() {
     return
   }
   pending.value = true
+  let signed: { space: boolean; packet: KeepPacket | null }
   try {
-    result.value = await sendAnswer(answerBody(presentation, choice.value, rationale.value.trim()))
-    emit('settled', result.value)
+    signed = await keepPacket(presentation.requestId, choice.value)
+  } catch (error) {
+    problem.value = `Keep was not signed, so no answer was sent. ${ceremonyMessage(error)}`
+    pending.value = false
+    return
+  }
+  try {
+    const answered = await sendAnswer(answerBody(presentation, choice.value, rationale.value.trim()))
+    if (signed.space) keep.value = await applyKeep(signed.packet, answered)
+    result.value = answered
+    emit('settled', answered)
   } catch (error) {
     refusal.value = error instanceof ApiRefusal ? error : new ApiRefusal(0, 'unavailable:network', 'unavailable')
     if (stale.value) choice.value = null
   } finally {
     pending.value = false
+  }
+}
+
+/** Once the answer has settled, send the signed packet. The answer stands whatever the ledger says of the packet. */
+async function applyKeep(packet: KeepPacket | null, answered: AnswerResult) {
+  if (answered.outcome !== 'settled') return null
+  if (!packet) return { state: 'unsigned' as const, refusal: null }
+  try {
+    const sent = await sendKeep(packet)
+    return sent ? { state: 'kept' as const, refusal: null } : { state: 'refused' as const, refusal: 'missing_evidence:route' }
+  } catch (error) {
+    return { state: 'refused' as const, refusal: error instanceof ApiRefusal ? error.refusal : 'unavailable_service' }
   }
 }
 
@@ -156,6 +216,11 @@ async function loadCurrent() {
       <div v-if="result" class="decision-result" role="status" data-testid="answer-result">
         <p class="decision-result-title">Answer sent</p>
         <p>The factory recorded <strong>{{ choiceLabel(choice ?? '') }}</strong> as {{ result.ruling ?? result.outcome }}.</p>
+        <p v-if="keep?.state === 'kept'" data-testid="keep-applied">Your passkey signed the Keep and the ledger marked the worktree Keep.</p>
+        <p v-else-if="keep" class="answer-problem" role="alert" data-testid="keep-not-applied" :data-refusal="keep.refusal ?? undefined">
+          Your answer is settled, but the Keep is not applied yet<span v-if="keep.refusal">: {{ keep.refusal }}</span>.
+          <RouterLink to="/space">Sign Keep on the Space screen</RouterLink>
+        </p>
       </div>
 
       <form v-else class="answer" :class="{ 'is-picked': choice !== null && !mustReload }" @submit.prevent="send">

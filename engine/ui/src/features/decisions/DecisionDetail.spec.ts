@@ -1,10 +1,14 @@
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import * as actions from '@/api/actions'
 import * as decisions from '@/api/decisions'
 import * as reads from '@/api/reads'
 import { ApiRefusal } from '@/api/refusal'
 import { item, read, receipt } from '@/test/builders'
 import { mountWith } from '@/test/mount'
+import * as keeping from '@/features/space/keep'
+import type { PendingAnswer } from '@/features/space/space'
+import { useSessionStore } from '@/stores/session'
 import DecisionDetail from './DecisionDetail.vue'
 import { pendingDecisions } from './inbox'
 
@@ -123,5 +127,97 @@ describe('DecisionDetail', () => {
     const wrapper = mountWith(DecisionDetail, { props: { decision: unpresented } })
     expect(wrapper.find('[data-testid="unpresented"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="send-answer"]').exists()).toBe(false)
+  })
+
+  /** VELDO-0319 AC5: a Keep answer to a space request is signed by the owner's passkey, answered, then applied. */
+  describe('a Keep answer to a space request', () => {
+    const CHOICES = ['accept save', 'accept keep', 'accept discard']
+    const spaceDecision = () =>
+      pendingDecisions(
+        read({
+          assignment: [item('assignment:r:de1', 'assignment', { alias: 'de1', kind: 'decision', state: 'OFFERED', request_version: 1, owner: 'owner', scope: ['space'] })],
+          channel_presentation: [item('p3', 'channel_presentation', receipt('assignment:r:de1', { presentation_version: 3, presentation_id: 'p-3', brief_digest: 'sha256:brief-3', choices: CHOICES }))],
+        }),
+      )[0]!
+    const pending = (signing: string | null = 'console.example'): PendingAnswer => ({
+      schema: 'veldo.api_space/v1', view: 'pending', problems: [], redacted: [], watermark: { seq: 7, record_digest: 'd', committed_at: 1 }, freshness: 'live', requests: [], signing,
+      items: [{
+        id: 'space:item:a', version: 4, state: 'deferred', kind: 'worktree',
+        owner: { scope: { type: 'project', id: 'p' }, ticket: 'VELDO-9001', run: null, station: null, gate: null, lane: null, session: null },
+        locator: '/srv/w/a', pool: 'main', bytes: 1, measured_at: null, due_event: 'ticket_ended', rule: 'unique_work', reason: 'r', refused_at: 'ticket_ended',
+        attempts: 1, retry: [], request: 'de1', group: null, index: null, request_id: 'assignment:r:de1', answered: null,
+      }],
+    })
+    const packet: actions.KeepPacket = {
+      command: { principal: 'owner', operation: 'space_disposition', command_id: 'c', nonce: 'n', parameters: { item: 'space:item:a', version: 4, request: 'assignment:r:de1' } },
+      signature: { credential_id: 'cred', client_data_json: 'x', authenticator_data: 'y', signature: 'z', user_handle: 'u' },
+    }
+    function mounted() {
+      const wrapper = mountWith(DecisionDetail, { props: { decision: spaceDecision() } })
+      useSessionStore().adopt({ principal: 'owner', credential_id: 'cred', domain: 'd', csrf_token: 't', idle_expires_at: 0, expires_at: 0 })
+      return wrapper
+    }
+
+    it('signs the Keep for the item at the version the space read shows, sends the answer, then sends the packet', async () => {
+      const order: string[] = []
+      vi.spyOn(reads, 'readSpacePending').mockResolvedValue(pending())
+      const sign = vi.spyOn(keeping, 'signKeep').mockImplementation(async () => (order.push('sign'), packet))
+      vi.spyOn(decisions, 'sendAnswer').mockImplementation(async () => (order.push('answer'), { outcome: 'settled', ruling: 'approve', api_request_id: 'a' }))
+      const keep = vi.spyOn(actions, 'keepWorktree').mockImplementation(async () => (order.push('keep'), { sent: true, answer: { outcome: 'kept', api_request_id: 'k' } }))
+      const wrapper = mounted()
+      await answer(wrapper, 'accept keep', 'it holds notes')
+      await flushPromises()
+      expect(order).toEqual(['sign', 'answer', 'keep'])
+      expect(sign).toHaveBeenCalledWith({ principal: 'owner', credentialId: 'cred', rpId: 'console.example' }, expect.objectContaining({ id: 'space:item:a', version: 4, request_id: 'assignment:r:de1' }))
+      expect(keep).toHaveBeenCalledWith(packet, null)
+      expect(wrapper.find('[data-testid="keep-applied"]').exists()).toBe(true)
+      expect(wrapper.emitted('settled')).toHaveLength(1)
+    })
+
+    it('sends no answer when the passkey ceremony does not finish', async () => {
+      vi.spyOn(reads, 'readSpacePending').mockResolvedValue(pending())
+      vi.spyOn(keeping, 'signKeep').mockRejectedValue(Object.assign(new Error('closed'), { name: 'NotAllowedError' }))
+      const send = vi.spyOn(decisions, 'sendAnswer')
+      const keep = vi.spyOn(actions, 'keepWorktree')
+      const wrapper = mounted()
+      await answer(wrapper, 'accept keep', 'why')
+      await flushPromises()
+      expect(send).not.toHaveBeenCalled()
+      expect(keep).not.toHaveBeenCalled()
+      expect(wrapper.text()).toContain('Keep was not signed, so no answer was sent.')
+      expect(wrapper.find('[data-testid="answer-result"]').exists()).toBe(false)
+    })
+
+    it('shows the ledger\'s refusal of the packet by name and never says the worktree is kept', async () => {
+      vi.spyOn(reads, 'readSpacePending').mockResolvedValue(pending())
+      vi.spyOn(keeping, 'signKeep').mockResolvedValue(packet)
+      vi.spyOn(decisions, 'sendAnswer').mockResolvedValue({ outcome: 'settled', ruling: 'approve', api_request_id: 'a' })
+      vi.spyOn(actions, 'keepWorktree').mockRejectedValue(new ApiRefusal(409, 'stale_version:space_item', 'stale_version'))
+      const wrapper = mounted()
+      await answer(wrapper, 'accept keep', 'why')
+      await flushPromises()
+      const note = wrapper.get('[data-testid="keep-not-applied"]')
+      expect(note.attributes('data-refusal')).toBe('stale_version:space_item')
+      expect(note.text()).toContain('Sign Keep on the Space screen')
+      expect(wrapper.find('[data-testid="keep-applied"]').exists()).toBe(false)
+    })
+
+    it('signs nothing for Save or Discard, and nothing for a Keep where no passkey-signed Keep is taken', async () => {
+      const read = vi.spyOn(reads, 'readSpacePending').mockResolvedValue(pending(null))
+      const sign = vi.spyOn(keeping, 'signKeep')
+      vi.spyOn(decisions, 'sendAnswer').mockResolvedValue({ outcome: 'settled', ruling: 'approve', api_request_id: 'a' })
+      const keep = vi.spyOn(actions, 'keepWorktree')
+      const discard = mounted()
+      await answer(discard, 'accept discard', 'why')
+      await flushPromises()
+      expect(read).not.toHaveBeenCalled()
+      expect(discard.find('[data-testid="keep-not-applied"]').exists()).toBe(false)
+      const kept = mounted()
+      await answer(kept, 'accept keep', 'why')
+      await flushPromises()
+      expect(sign).not.toHaveBeenCalled()
+      expect(keep).not.toHaveBeenCalled()
+      expect(kept.find('[data-testid="keep-not-applied"]').exists()).toBe(true)
+    })
   })
 })

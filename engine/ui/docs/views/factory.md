@@ -27,3 +27,7 @@ route, the screen sends it.
 | `FactorySheet` | `src/features/factory/FactorySheet.vue` | A phone's full-width dialog: takes focus, closes on Escape or Close, gives focus back |
 | `LiveMeta` | `src/features/factory/LiveMeta.vue` | The read's source and freshness |
 | `factory.css` | `src/styles/factory.css` | Layout of the factory screens, tokens only; every control is a 44 px target on a phone |
+
+The VELDO-0131 screen-state browser checks subscribe to each screen's data read before navigation.
+Loading waits for the held request, error for its network failure, and ready or empty for the response.
+These waits use the test budget. Held and dropped routes are released even when opening fails.

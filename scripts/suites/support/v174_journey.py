@@ -181,7 +181,7 @@ def loop(f, CS, receiver):
           domain=authority.ids['domain_uuid'],principal='authority',generation=1,sign=authority.journal_sign,
           conversations=lambda:f['conversations'],_log=events.append,
           # Like Service.repositories (VELDO-0161): an installation without work that took on no repository.
-          repositories={},
+          repositories={}, space=None,
           # Like Service.watermark, which main's FactoryLoop.follow_store (VELDO-0188) reads.
           watermark=lambda:authority.conn.execute('SELECT COALESCE(MAX(seq), 0) FROM journal').fetchone()[0])
     wrapper=f['root']/'receiver-driver.py'

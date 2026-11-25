@@ -1255,6 +1255,10 @@ def _v130_checks(base):
         # VELDO-0180: the owner's typed command making a conversation a project's work (suite 136 judges it).
         if 'make_conversation_project' in getattr(AS, 'OPERATIONS', {}):
             bodies['conversations.make_project'] = {'conversation': 'c-none', 'version': 1, 'project': 'project-a'}
+        if any(r.name == 'space.keep' for r in write_routes):
+            # VELDO-0319: the owner's Keep packet. The Ledger verifies its passkey assertion; here it is a body.
+            bodies.update({'space.keep': {'item': 'space:item:none', 'version': 1, 'request': 'assignment:none',
+                                          'packet': {'command': {}, 'signature': {}}}})
 
         def path_of(route, domain=DOMAIN):
             return route.path.replace('{domain}', domain)

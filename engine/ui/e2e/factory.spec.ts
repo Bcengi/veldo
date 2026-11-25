@@ -66,17 +66,43 @@ async function dropData(page: Page) {
 
 const tree = (page: Page) => (isPhone(page) ? '.tree-cards' : '.tree-grid')
 
-const SCREENS: { name: string; path: string; ready: string; primary: (page: Page) => string; empty?: string }[] = [
-  { name: 'projects', path: '/projects', ready: '[data-testid="projects"], [data-testid="project-detail"]', primary: (p) => (isPhone(p) ? '[data-testid="message-open"]' : '[data-testid="message-send"]'), empty: 'cmember' },
-  { name: 'backlog', path: '/backlog', ready: '[data-testid="backlog"]', primary: (p) => `${tree(p)} [data-row="backlog:131-encoding"] [data-testid="move-up"]`, empty: 'cmember' },
-  { name: 'workers', path: '/workers', ready: '[data-testid="workers"]', primary: () => '[data-dispatch*="VELDO-9146"] [data-testid="worker-stop"]', empty: 'cmember' },
-  { name: 'proof', path: '/proof', ready: '[data-testid="proof"]', primary: () => '[data-testid="pane-changes"]', empty: 'cmember' },
-  { name: 'usage', path: '/usage', ready: '[data-testid="usage"]', primary: () => '[data-testid="usage-bucket"]', empty: 'cmember' },
-  { name: 'configuration', path: '/configuration', ready: '[data-testid="roles-table"]', primary: () => '[data-testid="role-edit"]' },
-  { name: 'catalog', path: '/catalog', ready: '[data-testid="catalog"]', primary: () => '[data-testid="server-edit"]' },
-  { name: 'workflows', path: '/workflows/delivery', ready: '[data-testid="workflow-editor"]', primary: () => '[data-testid="add-grooming"]' },
-  { name: 'repositories', path: '/repositories', ready: '[data-testid="repositories"]', primary: () => '[data-repository="billing"]', empty: 'cmember' },
+const SCREENS: { name: string; path: string; read: string; ready: string; primary: (page: Page) => string; empty?: string }[] = [
+  { name: 'projects', path: '/projects', read: 'reads.objectives', ready: '[data-testid="projects"], [data-testid="project-detail"]', primary: (p) => (isPhone(p) ? '[data-testid="message-open"]' : '[data-testid="message-send"]'), empty: 'cmember' },
+  { name: 'backlog', path: '/backlog', read: 'reads.work', ready: '[data-testid="backlog"]', primary: (p) => `${tree(p)} [data-row="backlog:131-encoding"] [data-testid="move-up"]`, empty: 'cmember' },
+  { name: 'workers', path: '/workers', read: 'reads.workers', ready: '[data-testid="workers"]', primary: () => '[data-dispatch*="VELDO-9146"] [data-testid="worker-stop"]', empty: 'cmember' },
+  { name: 'proof', path: '/proof', read: 'reads.proof', ready: '[data-testid="proof"]', primary: () => '[data-testid="pane-changes"]', empty: 'cmember' },
+  { name: 'usage', path: '/usage', read: 'reads.spend', ready: '[data-testid="usage"]', primary: () => '[data-testid="usage-bucket"]', empty: 'cmember' },
+  { name: 'configuration', path: '/configuration', read: 'reads.configuration', ready: '[data-testid="roles-table"]', primary: () => '[data-testid="role-edit"]' },
+  { name: 'catalog', path: '/catalog', read: 'mcp.list', ready: '[data-testid="catalog"]', primary: () => '[data-testid="server-edit"]' },
+  { name: 'workflows', path: '/workflows/delivery', read: 'reads.workflow', ready: '[data-testid="workflow-editor"]', primary: () => '[data-testid="add-grooming"]' },
+  { name: 'repositories', path: '/repositories', read: 'repositories.read', ready: '[data-testid="repositories"]', primary: () => '[data-repository="billing"]', empty: 'cmember' },
 ]
+
+/** Subscribe before navigating. Loaded hosts wait for the screen's own read inside the test
+ * budget. Loading observes the held request; error observes its failed network operation. */
+async function openRead(page: Page, factory: FactoryUi, screen: { path: string; read: string }, state = 'ready') {
+  const matches = (method: string, url: string) => routeOf(method, url, factory.domain) === screen.read
+  const read = state === 'loading'
+    ? page.waitForRequest((request) => matches(request.method(), request.url()), { timeout: 0 })
+    : state === 'error'
+      ? page.waitForEvent('requestfailed', { predicate: (request) => matches(request.method(), request.url()), timeout: 0 })
+      : page.waitForResponse((response) => matches(response.request().method(), response.url()), { timeout: 0 })
+        .then(async (response) => {
+          expect(response.ok(), screen.read).toBe(true)
+          await response.finished()
+        })
+  await Promise.all([page.goto(factory.origin + screen.path, { timeout: 0 }), read])
+}
+
+async function releaseData(page: Page) {
+  const release = (page as unknown as { release?: () => Promise<void> }).release
+  ;(page as unknown as { release?: unknown }).release = undefined
+  try {
+    await release?.()
+  } finally {
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+  }
+}
 
 function renders(): Render[] {
   const out: Render[] = []
@@ -85,9 +111,9 @@ function renders(): Render[] {
       name: `${s.name}-loading`,
       async open(page, factory) {
         const release = await holdData(page)
-        await page.goto(factory.origin + s.path)
-        await expect(page.locator('[data-state="loading"]').first()).toBeVisible()
         ;(page as unknown as { release?: () => Promise<void> }).release = release
+        await openRead(page, factory, s, 'loading')
+        await expect(page.locator('[data-state="loading"]').first()).toBeVisible({ timeout: 0 })
         return { primary: null, axe: false }
       },
     })
@@ -95,9 +121,9 @@ function renders(): Render[] {
       name: `${s.name}-error`,
       async open(page, factory) {
         const undo = await dropData(page)
-        await page.goto(factory.origin + s.path)
-        await expect(page.getByTestId('refusal').first()).toBeVisible()
         ;(page as unknown as { release?: () => Promise<void> }).release = undo
+        await openRead(page, factory, s, 'error')
+        await expect(page.getByTestId('refusal').first()).toBeVisible({ timeout: 0 })
         return { primary: null }
       },
     })
@@ -106,17 +132,17 @@ function renders(): Render[] {
         name: `${s.name}-empty`,
         who: s.empty,
         async open(page, factory) {
-          await page.goto(factory.origin + s.path)
-          await expect(page.locator('[data-state="empty"]').first()).toBeVisible()
+          await openRead(page, factory, s)
+          await expect(page.locator('[data-state="empty"]').first()).toBeVisible({ timeout: 0 })
           return { primary: null }
         },
       })
     out.push({
       name: s.name,
       async open(page, factory) {
-        await page.goto(factory.origin + s.path)
-        await expect(page.locator(s.ready).first()).toBeVisible()
-        await expect(page.getByTestId('live-meta').first()).toHaveAttribute('data-live', /live|idle/)
+        await openRead(page, factory, s)
+        await expect(page.locator(s.ready).first()).toBeVisible({ timeout: 0 })
+        await expect(page.getByTestId('live-meta').first()).toHaveAttribute('data-live', /live|idle/, { timeout: 0 })
         return { primary: s.primary(page) }
       },
     })
@@ -125,44 +151,44 @@ function renders(): Render[] {
     {
       name: 'project-detail',
       async open(page, factory) {
-        await page.goto(factory.origin + '/projects/project-a')
-        await expect(page.getByTestId('project-detail')).toBeVisible()
+        await openRead(page, factory, { path: '/projects/project-a', read: 'reads.objectives' })
+        await expect(page.getByTestId('project-detail')).toBeVisible({ timeout: 0 })
         return { primary: isPhone(page) ? '[data-testid="message-open"]' : '[data-testid="message-send"]' }
       },
     },
     {
       name: 'chat-sheet',
       async open(page, factory) {
-        await page.goto(factory.origin + '/projects/project-a')
+        await openRead(page, factory, { path: '/projects/project-a', read: 'reads.objectives' })
         if (!isPhone(page)) return { primary: '[data-testid="message-send"]' }
-        await page.getByTestId('message-open').click()
-        await expect(page.getByTestId('chat-sheet')).toBeVisible()
+        await page.getByTestId('message-open').click({ timeout: 0 })
+        await expect(page.getByTestId('chat-sheet')).toBeVisible({ timeout: 0 })
         return { primary: '[data-testid="message-send"]' }
       },
     },
     {
       name: 'backlog-detail',
       async open(page, factory) {
-        await page.goto(factory.origin + '/backlog')
-        await page.locator(`${tree(page)} [data-row="backlog:131-report"] [data-testid="backlog-details"]`).click()
-        await expect(page.getByTestId(isPhone(page) ? 'backlog-sheet' : 'backlog-detail')).toBeVisible()
+        await openRead(page, factory, { path: '/backlog', read: 'reads.work' })
+        await page.locator(`${tree(page)} [data-row="backlog:131-report"] [data-testid="backlog-details"]`).click({ timeout: 0 })
+        await expect(page.getByTestId(isPhone(page) ? 'backlog-sheet' : 'backlog-detail')).toBeVisible({ timeout: 0 })
         return { primary: isPhone(page) ? '[data-testid="backlog-sheet"] button' : `${tree(page)} [data-row="backlog:131-report"] [data-testid="move-up"]` }
       },
     },
     {
       name: 'workers-confirm',
       async open(page, factory) {
-        await page.goto(factory.origin + '/workers')
-        await page.locator('[data-dispatch*="VELDO-9146"] [data-testid="worker-stop"]').click()
+        await openRead(page, factory, { path: '/workers', read: 'reads.workers' })
+        await page.locator('[data-dispatch*="VELDO-9146"] [data-testid="worker-stop"]').click({ timeout: 0 })
         return { primary: '[data-testid="worker-stop-confirm"]' }
       },
     },
     {
       name: 'workflow-step',
       async open(page, factory) {
-        await page.goto(factory.origin + '/workflows/delivery')
-        await page.locator('[data-step="wait"] [data-testid="step-select"]').click()
-        await expect(page.getByTestId('node-settings')).toBeVisible()
+        await openRead(page, factory, { path: '/workflows/delivery', read: 'reads.workflow' })
+        await page.locator('[data-step="wait"] [data-testid="step-select"]').click({ timeout: 0 })
+        await expect(page.getByTestId('node-settings')).toBeVisible({ timeout: 0 })
         return { primary: '[data-testid="node-port-admit"]' }
       },
     },
@@ -170,8 +196,8 @@ function renders(): Render[] {
       name: 'run-live',
       async open(page, factory) {
         const ids = await factory.state()
-        await page.goto(factory.origin + '/runs/' + ids.dispatches.live)
-        await expect(page.getByTestId('terminal')).toBeVisible()
+        await openRead(page, factory, { path: '/runs/' + ids.dispatches.live, read: 'runs.record' })
+        await expect(page.getByTestId('terminal')).toBeVisible({ timeout: 0 })
         return { primary: null }
       },
     },
@@ -179,8 +205,8 @@ function renders(): Render[] {
       name: 'decision-inline',
       async open(page, factory) {
         const ids = await factory.state()
-        await page.goto(factory.origin + '/decisions/' + ids.requests.de3)
-        await expect(page.getByTestId('decision')).toBeVisible()
+        await openRead(page, factory, { path: '/decisions/' + ids.requests.de3, read: 'reads.decisions' })
+        await expect(page.getByTestId('decision')).toBeVisible({ timeout: 0 })
         return { primary: '[data-testid="send-answer"]' }
       },
     },
@@ -289,6 +315,7 @@ for (const viewport of WIDTHS) {
         opened = await render.open(page, factory)
       } catch (error) {
         failures.push(`${render.name}: did not open (${String(error).split('\n')[0]})`)
+        await releaseData(page)
         continue
       }
       const problems = await measure(page, opened.primary, phone)
@@ -306,11 +333,7 @@ for (const viewport of WIDTHS) {
         mkdirSync(SCREENS_DIR, { recursive: true })
         await page.screenshot({ path: path.join(SCREENS_DIR, `${viewport.width}-${render.name}.png`), fullPage: true })
       }
-      const release = (page as unknown as { release?: () => Promise<void> }).release
-      if (release) {
-        await release()
-        ;(page as unknown as { release?: unknown }).release = undefined
-      }
+      await releaseData(page)
     }
     for (const page of pages.values()) await page.context().close()
     expect(failures, failures.join('\n')).toEqual([])

@@ -967,7 +967,10 @@ def _r_worktree(ctx, identity, record, answer):
     owner = record.get('owner') or {}
     review = (not record.get('branch') and not owner.get('ticket')
               and (owner.get('run') or {}).get('station') == 'review')
-    if review:
+    if review and not ctx.get('disposition'):
+        # The owner's Save and Discard of a review group member (VELDO-0340) are not the scratch
+        # removal: Save has committed the untracked files, and Discard removes exactly what the
+        # snapshot holds, compared below under the marked name.
         _review_scratch(ctx, identity, record, kept, answer)
     repository = ctx['probe'].repository(path, ctx['run'])
     if repository is None:
@@ -1168,8 +1171,13 @@ def _r_disposition(ctx, identity, record, answer):
         effect, owner = ledger.disposition_effect(identity, decision['request'])
     except Exception as error:
         raise _Refusal(REFUSED, 'the disposition is not settled: ' + _said(error)) from error
-    if effect['choice'] != 'accept ' + choice or owner != decision['by']:
+    # The remover's own reading of the settled choice, whatever the Ledger let through: the action,
+    # and for a member pick (VELDO-0342, accept discard w2) the index, which is this member's.
+    picked = _sibling('control_request_settlement').space_pick(effect.get('choice'))
+    if picked is None or picked[0] != choice or owner != decision['by']:
         raise _Refusal(REFUSED, 'the settled choice is not this removal')
+    if picked[1] is not None and (not decision.get('group') or decision.get('index') != picked[1]):
+        raise _Refusal(REFUSED, 'the settled choice names another member of the group')
     path = _plain(record['locator']['path'])
     shown = decision['proposal']['worktrees'][0]
     if 'head' not in decision:

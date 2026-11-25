@@ -1,0 +1,320 @@
+[
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0342_member_picks"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0342_member_picks",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 18,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0340_review_groups"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0340_review_groups",
+  "note": "Only the row terms/group changed (the lead decision): a group offers the three group picks and then the member picks, and its terms carry the indexes.",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 16,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "153_veldo_0336_run_worktree"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 153_veldo_0336_run_worktree",
+  "note": "The one suite of 151 and up that was run, as the brief names it.",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 21,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0318_unique_work"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0318_unique_work",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 45,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0327_disposition"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0327_disposition",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 27,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "140_veldo_0345_space_keep"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 140_veldo_0345_space_keep",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 31,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "138_veldo_0300_space_remove"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 138_veldo_0300_space_remove",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 39,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "149_veldo_0312_ticket_ended"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 149_veldo_0312_ticket_ended",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 41,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "150_veldo_0317_full_pool"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 150_veldo_0317_full_pool",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 23,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "132_veldo_0297_space_ledger"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 132_veldo_0297_space_ledger",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 31,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "139_veldo_0301_space_signal"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [
+   "VELDO-0301 ac4/no-clock"
+  ],
+  "name": "targeted 139_veldo_0301_space_signal",
+  "note": "ac4/no-clock is red on the base 73c7b832 too (inherited, left).",
+  "processes": "space supervisors: []",
+  "status": "failed_inherited",
+  "ticket_rows_passed": 17,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "69_veldo_0068_settlement"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 69_veldo_0068_settlement",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 8,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/selftest.py",
+   "--suite",
+   "60_veldo_0064_inbox"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "failed_rows": [],
+  "name": "targeted 60_veldo_0064_inbox",
+  "processes": "space supervisors: []",
+  "status": "diagnostic_only",
+  "ticket_rows_passed": 18,
+  "tree_note": "run on the working tree that was then committed as this commit, unchanged"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   ".veldo/validate.py",
+   "all"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "exit_code": 0,
+  "name": "validate",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_docs.sh"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "exit_code": 0,
+  "name": "docs",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_template_sync.sh"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "exit_code": 0,
+  "name": "template-sync",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "bash",
+   "scripts/check_lint.sh"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "exit_code": 0,
+  "name": "lint",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_space_boundary.py"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "exit_code": 0,
+  "name": "space-boundary",
+  "status": "passed"
+ },
+ {
+  "command": [
+   "nice",
+   "-n",
+   "10",
+   "python3",
+   "scripts/check_git_boundary.py"
+  ],
+  "commit": "df1d2c6a937290571ac2d97315ac5cbf9ad15cb4",
+  "exit_code": 0,
+  "name": "git-boundary",
+  "status": "passed"
+ }
+]

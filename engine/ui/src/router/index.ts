@@ -39,6 +39,8 @@ export const routes: RouteRecordRaw[] = [
   { path: '/workers', name: 'workers', component: () => import('@/views/WorkersView.vue'), meta: { session: true, title: 'Workers' } },
   { path: '/proof', name: 'proof', component: () => import('@/views/ProofView.vue'), meta: { session: true, title: 'Gate and review' } },
   { path: '/usage', name: 'usage', component: () => import('@/views/UsageView.vue'), meta: { session: true, title: 'Usage' } },
+  // VELDO-0319: the space ledger's screen.
+  { path: '/space', name: 'space', component: () => import('@/views/SpaceView.vue'), meta: { session: true, title: 'Space' } },
   { path: '/configuration', name: 'configuration', component: () => import('@/views/ConfigurationView.vue'), meta: { session: true, title: 'Configuration' } },
   { path: '/repositories', name: 'repositories', component: () => import('@/views/RepositoriesView.vue'), meta: { session: true, title: 'Repositories and identities' } },
   { path: '/catalog', name: 'catalog', component: () => import('@/views/CatalogView.vue'), meta: { session: true, title: 'MCP catalog' } },

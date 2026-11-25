@@ -1,0 +1,302 @@
+{
+ "changed": [
+  "engine/.veldo/control_membership.py",
+  ".veldo/control_membership.py",
+  "scripts/suites/150_veldo_0319_space_screen.py"
+ ],
+ "compared_with": {
+  "base": "a0e4bc10 (git archive), same failure counts for the suites not compared in amendment-round.json",
+  "before_this_change": "992090dc (git archive)"
+ },
+ "for_the_record": "set_mode still accepts only a text signature before _mode_signer (VELDO-0332).",
+ "not_run": [
+  "scripts/verify.sh",
+  "150_veldo_0319_space_ui (browser, job 99zzP1 held)"
+ ],
+ "on": "992090dc",
+ "round": "the authority read costs what it reads (lead decision of 2026-11-18)",
+ "suite_150_veldo_0319_space_screen": {
+  "before": {
+   "cost/carried-index": "2070 -> 108567",
+   "cost/removed-index": "2067 -> 108563"
+  },
+  "cost_rows": [
+   "cost/same-answers | True | the keys and the authority's own records are the ones a read of the whole store gave, in the same order [6 members, 1 keys]",
+   "cost/same-answers | True | a record that is not the authority's is read by its id when asked for, the same record [3 of 31 in 99 steps]",
+   "cost/same-answers | True | a record the store never held is absent, by every way of asking",
+   "cost/same-answers | True | every record by its id is the whole read's record [38]",
+   "cost/same-answers | True | asked whole, the map is the whole read's: equal, in the same order, the same length, the same canonical bytes, and a plain copy of it too",
+   "cost/same-answers | True | a record rewritten after the read is still the record the read saw, and one created after it is absent: by its id",
+   "cost/same-answers | True | and asked whole: the map is still the one the read saw",
+   "cost/same-answers | True | a read made after the commit sees the commit",
+   "cost/same-answers | True | every space read answers every member the same bytes through the whole-store read and through the indexed one [16 reads, 12 served, differing []]",
+   "cost/removed-index | True | same SQL steps with 4096 more journal entries and dispatches: 689 -> 689",
+   "cost/removed-index | True | the full authority read still serves the same records",
+   "cost/carried-index | True | same SQL steps with 4096 more journal entries and dispatches: 693 -> 693",
+   "cost/carried-index | True | the full authority read still serves the same records",
+   "cost/flat-when-doubled | True | space.removed costs the same SQL steps with the store doubled (4135 to 8270 records): 689 -> 689 -> 689",
+   "cost/flat-when-doubled | True | and space.removed serves the same records",
+   "cost/flat-when-doubled | True | space.pools costs the same SQL steps with the store doubled (4135 to 8270 records): 693 -> 693 -> 693",
+   "cost/flat-when-doubled | True | and space.pools serves the same records"
+  ],
+  "expects_failed": 0,
+  "expects_passed": 63,
+  "residual_found": "after the fix cost/carried-index was 692 -> 693: one statement, the dispatch lookup by hold name, 14 -> 15 steps (the end test of an index range once a later name exists). The fixture now holds one later name before the first count.",
+  "rows_green": 37
+ },
+ "suites_importing_control_membership": {
+  "113_veldo_0145_ui": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 33 passed, 0 failed in 9.51s",
+   "result": "green"
+  },
+  "127_veldo_0241_unit_workflows": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 50 passed, 0 failed in 1.96s",
+   "result": "green"
+  },
+  "128_veldo_0235_land_locally": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 35 passed, 0 failed in 20.33s",
+   "result": "green"
+  },
+  "129_veldo_0254_canary_launch": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 33 passed, 0 failed in 6.52s",
+   "result": "green"
+  },
+  "129_veldo_0260_checkout_in_step": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 44 passed, 0 failed in 25.68s",
+   "result": "green"
+  },
+  "133_veldo_0326_space_principals": {
+   "failed_rows": [
+    "VELDO-0326 ac2/observer-refused-by-name"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 55 passed, 1 failed in 28.84s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "134_veldo_0331_space_mode": {
+   "failed_rows": [
+    "VELDO-0331 ac1/act-beside-report",
+    "VELDO-0331 ac1/history",
+    "VELDO-0331 ac1/ledger-checks-sender",
+    "VELDO-0331 ac1/ledger-checks-signature",
+    "VELDO-0331 ac1/no-record-is-report",
+    "VELDO-0331 ac1/owner-signs",
+    "VELDO-0331 ac2/admission-by-scope",
+    "VELDO-0331 ac2/adoption-by-scope",
+    "VELDO-0331 ac2/advised-counts-as-held",
+    "VELDO-0331 ac2/hold-keeps-its-scope",
+    "VELDO-0331 ac2/signal-by-scope",
+    "VELDO-0331 ac3/switch-back-accepted",
+    "VELDO-0331 ac3/then-due-and-nothing-removed",
+    "VELDO-0331 mode/canon"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 28 passed, 14 failed in 0.45s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "139_veldo_0301_space_signal": {
+   "failed_rows": [
+    "VELDO-0301 ac4/no-clock"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 43 passed, 1 failed in 5.02s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "140_veldo_0345_space_keep": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 57 passed, 0 failed in 6.88s",
+   "result": "green"
+  },
+  "142_veldo_0303_space_paths": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 64 passed, 0 failed in 36.61s",
+   "result": "green"
+  },
+  "143_veldo_0305_space_census": {
+   "failed_rows": [
+    "VELDO-0305 review/scratch-apart-from-run-directory"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 51 passed, 1 failed in 2.25s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "144_veldo_0306_space_docker": {
+   "failed_rows": [
+    "VELDO-0306 ac4/poll-set"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 54 passed, 1 failed in 7.97s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "145_veldo_0307_space_docker_ownership": {
+   "failed_rows": [
+    "VELDO-0307 ownership/removes-nothing"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 50 passed, 1 failed in 1.22s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "146_veldo_0308_run_finished": {
+   "failed_rows": [
+    "VELDO-0308 keep/run-kept-item-not-named",
+    "VELDO-0308 keep/teardown-kept-item-not-named",
+    "VELDO-0308 n2/observations-bounded"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 61 passed, 3 failed in 7.26s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "147_veldo_0310_landed_contained": {
+   "failed_rows": [
+    "VELDO-0310 keep/kept-item-not-named"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 58 passed, 1 failed in 29.82s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "148_veldo_0311_git_hooks": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 57 passed, 0 failed in 8.55s",
+   "result": "green"
+  },
+  "150_veldo_0329_hook_install": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 47 passed, 0 failed in 17.64s",
+   "result": "green"
+  },
+  "151_veldo_0313_space_run": {
+   "failed_rows": [
+    "VELDO-0313 ac1/build-output-has-item-and-goes",
+    "VELDO-0313 ac1/only-the-runs-own-items",
+    "VELDO-0313 ac2/act-waits-75",
+    "VELDO-0313 ac2/command-status",
+    "VELDO-0313 ac2/report-starts",
+    "VELDO-0313 fix3/rule-3-reads-the-kernel",
+    "VELDO-0313 fix3/unread-process-holds",
+    "VELDO-0313 fix4/docker-objects-are-items"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 55 passed, 8 failed in 176.78s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": false
+  },
+  "153_veldo_0302_space_creators": {
+   "failed_rows": [
+    "the suite raised before its rows (see the History)"
+   ],
+   "line": "",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "153_veldo_0309_gate_space": {
+   "failed_rows": [
+    "VELDO-0309 suite/completed"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 41 passed, 1 failed in 22.33s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "153_veldo_0314_session_hooks": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 54 passed, 0 failed in 2.32s",
+   "result": "green"
+  },
+  "153_veldo_0328_images": {
+   "failed_rows": [
+    "VELDO-0328 ac1/owner-keep"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 42 passed, 1 failed in 0.61s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "153_veldo_0336_run_worktree": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 47 passed, 0 failed in 5.04s",
+   "result": "green"
+  },
+  "153_veldo_0337_verdict_recorded": {
+   "failed_rows": [
+    "VELDO-0337 ac2/owner-and-keep"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 46 passed, 1 failed in 2.99s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "153_veldo_0341_docker_protection": {
+   "failed_rows": [
+    "VELDO-0341 loss/owner-keep"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 46 passed, 1 failed in 0.55s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "154_veldo_0324_batch_sandbox": {
+   "failed_rows": [
+    "VELDO-0324 safety/owner-keep-batch",
+    "VELDO-0324 safety/owner-keep-sandbox"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 53 passed, 2 failed in 1.69s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "38_veldo_0025_membership": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 47 passed, 0 failed in 1.76s",
+   "result": "green"
+  },
+  "39_veldo_0026_revocation": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 42 passed, 0 failed in 4.05s",
+   "result": "green"
+  },
+  "56_veldo_0027_signing": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 121 passed, 0 failed in 5.14s",
+   "result": "green"
+  },
+  "58_veldo_0031_claims": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 29 passed, 0 failed in 3.32s",
+   "result": "green"
+  },
+  "59_veldo_0031_review": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 32 passed, 0 failed in 2.89s",
+   "result": "green"
+  },
+  "61_scope_covers": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 28 passed, 0 failed in 0.00s",
+   "result": "green"
+  },
+  "64_veldo_0050_proof": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 40 passed, 0 failed in 15.44s",
+   "result": "green"
+  },
+  "68_veldo_0134_acceptance": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 53 passed, 0 failed in 1.63s",
+   "result": "green"
+  },
+  "71_veldo_0130_api": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 71 passed, 0 failed in 23.69s",
+   "result": "green"
+  },
+  "74_veldo_0140_standing_delegation": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 35 passed, 0 failed in 12.79s",
+   "result": "green"
+  },
+  "82_veldo_0141_execution_record": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 66 passed, 0 failed in 22.28s",
+   "result": "green"
+  },
+  "83_veldo_0154_factory_loop": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 40 passed, 0 failed in 24.10s",
+   "result": "green"
+  },
+  "85_veldo_0158_credential_delivery": {
+   "failed_rows": [
+    "VELDO-0158 delivery/private-dir-removed",
+    "VELDO-0158 orphan/live-run-kept",
+    "VELDO-0158 orphan/start-sweep"
+   ],
+   "line": "selftest (PARTIAL, 1 of 245 suites): 46 passed, 3 failed in 5.28s",
+   "result": "red",
+   "same_rows_before_this_change_992090dc": true
+  },
+  "86_veldo_0148_re_land": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 52 passed, 0 failed in 66.70s",
+   "result": "green"
+  },
+  "95_veldo_0203_owner_revisions": {
+   "line": "selftest (PARTIAL, 1 of 245 suites): 62 passed, 0 failed in 6.41s",
+   "result": "green"
+  }
+ }
+}

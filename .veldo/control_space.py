@@ -181,6 +181,22 @@ a signature of the owner over the command: the Abandon's signature is the API ed
 authority, and the owner's signed Keep is the disposition command of VELDO-0318 (its AC4), which is
 verified as set_mode verifies the mode switch.
 
+THE OWNER'S SIGNATURE HAS TWO FORMS (VELDO-0319 AC6), both checked by _mode_signer and by nothing else.
+The SSH form is a text signature under the owner's active enrolled key over the command's canonical
+bytes. The passkey form is a WebAuthn assertion (a mapping: credential_id, client_data_json,
+authenticator_data, signature, user_handle) by a credential that is current in this store for the
+command's principal (control_api_credentials.current: effective, not revoked, of that person), enrolled
+for this installation's origin and relying-party id, whose challenge is SHA-256 of the same canonical
+bytes, unpadded base64url. The origin, the relying-party id and the folder the verifier works in are
+`passkeys`, which the service that built the Ledger sets from its API configuration; with none, no
+passkey form is taken. A console session, and the API edge's signature over the request that carried
+the command, are neither form: a command with only those is refused not_authorized.
+
+A PACKET THAT MAY ONLY KEEP (VELDO-0319 AC6). disposition(..., only='keep') is the console's space.keep:
+the transition refuses space_disposition_choice, with nothing written, when the settled answer the
+packet names gives this item anything but Keep. Without `only` the packet applies whatever was settled,
+as before.
+
 A SIGNAL THAT NAMES ITEMS (VELDO-0312 fix round; a capability of the ledger, for every sender). The
 subject of a signal is either the parts of an owner, and then every item of that owner the event ends
 is made due, or a list of items: {items: [{item, version}, ...]}, each with the version its sender read.
@@ -197,9 +213,68 @@ report refuse a locator at, above or beneath it as space_protected, and rule 2 r
 
 WHAT IS NOT HERE. The lifecycle table is the kind registry's (VELDO-0298); this module is given it as
 plain data and copies an item's events from it at declaration, with its version. Rules, probes and
-removers, and the wrong-proposal and review group records are separate tickets. The Ledger reads no
-clock: accept and set_mode are given the time. The sending side stamps a packet with the time its caller
-gives it; only the command line entry reads a clock, once, for that.
+removers, and the wrong-proposal record are separate tickets. The Ledger reads no clock to decide
+anything: accept and set_mode are given the time. The sending side stamps a packet with the time its
+caller gives it, and the command line entry reads a clock once for that. One more read is named below:
+the day of a review group is the day of the deferral that asks for it, read through `clock` as that
+deferral is recorded. Nothing is opened, closed or sent because the clock moved.
+
+THE REVIEW GROUP RECORD (VELDO-0340, design 4.9 and 7). A review worktree deferred for unique work other
+than review scratch gets no request of its own. It joins the open group of its scope for the calendar
+day of the deferral, in the installation's time zone: space:group:<scope>:<day>:<sequence>, sequence 1
+for the day's first group. request_group is the one entry. The record holds the day, the sequence, the
+members (each with its index in the order it joined, the review run that owned it, the files the owner
+is shown for it, its kept branch, the commit its terms were read at and its whole entry of the terms),
+the current request (its alias, its version and its terms, which list every member) and the state, open
+or closed. A join adds the member and gives the request its next version, in one write with the
+member's own disposition, which names the group and holds the member's entry alone, so the removers
+compare each worktree with what was shown for that worktree.
+
+A scope has at most one group per day that takes a join. A join is taken by the first group of the day
+that is open and whose request no answer has ended; when there is none it opens the next sequence
+number. So a deferral after the owner answered opens a new group, and an earlier day's group is never
+added to. A closed group is never reopened and never added to.
+
+publish_disposition publishes a member's group: the terms of the current version under their own name
+(terms are immutable), then the request, opened once and revised to each later version, then its
+framing. A revision is a new request version, so an answer bound to an earlier presentation settles
+nothing (stale_presentation).
+
+A group pick applies to every member still in the group, in one write that closes the group. Still in
+the group is: deferred, with its requested disposition naming this group. The pick reaches only the
+members the settled terms list with the entry the record holds: a member that joined after the
+presentation the owner answered was never shown, so it is left as it is and joins a new group at the
+next publish, as a member does that was being judged again while the pick was applied. Save and Discard
+make each member due with the authorization, and Signal carries each through its own remover; Keep,
+by the owner's signed packet naming any member, marks each kept.
+
+MEMBER PICKS (VELDO-0342, design 7 item 4). A group's request also offers an answer for one worktree:
+the group pick with the letter w and the member's index, as in accept discard w2. The index is the
+member's place in the order it joined; it is on the record, in the terms and in the member's own
+disposition, and it never changes or is given again. A member pick applies to the member it names and
+to no other. In one write that member gets the answer and is recorded with it (it has left the group),
+and the members still in the group get a new request: the record's request field holds it, with its own
+alias (the group's alias and the request's number) and version 1, and the settled one is added to the
+record's requests with its answer. It is a new request and not a version of the settled one: the
+settlement refuses any answer to a settled request (request_closed). When the last member leaves, the
+group closes. Save and Discard of the member are authorized and carried as a group pick's are. A
+settled Keep raises the next request at the next publication without waiting for application. Its
+member stays deferred under the original alias until the owner's signed packet applies that Keep,
+even after the group closes. No filesystem work runs on the service loop.
+
+The picks must fit one message part of the channel, with the answer instruction, or the presenter
+refuses to render. The Ledger measures that with the presenter's own limit and counting
+(_picks_that_fit): the terms offer the group picks and the member picks of the lowest indexes that fit,
+and their text names the members without one. Each member pick leaves a shorter list, so the next
+request reaches the members after.
+
+A deferral that comes after a member pick was settled and before it is applied joins the same group:
+the group stays open, so it is the scope's one open group of the day. It is added to the record and to
+no request yet, since the settled one cannot be revised; the request raised when the pick is applied
+lists it. Keep instead advances at the next publication after settlement. When the member a settled
+pick names is no longer in the group (it was removed or judged
+again meanwhile), the pick can never be applied, and the next publish of any member raises the new
+request for the members left (space_review_group_next).
 
 MODE (VELDO-0331, design 2, 4.7 and 6.1). Report or act is one value per scope: each project, each plain
 repository, and no project. It is a record of this store and of nothing else: space:mode:project:<id>,
@@ -312,7 +387,10 @@ import os
 import sqlite3
 import subprocess
 import sys
+import time
 import uuid
+import datetime
+import zoneinfo
 
 SCHEMA = 'veldo.control_space/v1'
 OWNER = 'space_ledger'
@@ -322,6 +400,11 @@ ITEM_KIND, POOL_KIND, HOLD_KIND, RECONCILE_KIND = 'space_item', 'space_pool', 's
 ITEM_PREFIX, POOL_PREFIX, HOLD_PREFIX, RECONCILE_PREFIX = ('space:item:', 'space:pool:', 'space:hold:',
                                                            'space:reconcile:')
 MODE_KIND, MODE_PREFIX = 'space_mode', 'space:mode:'
+# VELDO-0340: the review group record (design 4.9).
+GROUP_KIND, GROUP_PREFIX = 'space_review_group', 'space:group:'
+GROUP_SCHEMA = 'veldo.space_review_group/v1'
+# The request states in which a group's request still takes an answer (the inbox's pending category).
+GROUP_REQUEST_OPEN = ('OFFERED', 'ACCEPTED', 'IN_PROGRESS')
 # VELDO-0326: the run or gate identity the authority issued to a principal, and the record of a signed
 # packet a host principal sent.
 RUN_KIND, RUN_PREFIX = 'space_run', 'space:run:'
@@ -396,8 +479,16 @@ POOL, HOLD, ADMIT, RELEASE, RECONCILE = ('space_pool', 'space_hold', 'space_admi
 KEEP = 'space_keep'
 REQUEST = 'space_disposition_request'
 KEEP_BRANCH = 'space_keep_branch'
+# VELDO-0340: a review worktree joins its scope's review group of the day.
+GROUP = 'space_review_group_join'
+# The identity of a group's one request, written on the group record before the request is opened.
+GROUP_REQUEST = 'space_review_group_request'
+# VELDO-0342: a new request for the members left, when the member a settled pick names has gone.
+GROUP_NEXT = 'space_review_group_next'
 ITEM_OPERATIONS = (DECLARE, CONFIRM, MEASURE, SIGNAL, OUTCOME, ADOPT, REPORT, GONE, REBRANCH, KEEP,
                    REQUEST, 'space_disposition', KEEP_BRANCH)
+# The join is the authority's own write, as the request is, and no command a principal is sent by name.
+ITEM_WRITERS = ITEM_OPERATIONS + (GROUP, GROUP_NEXT)
 # Issue is the authority's: the run or gate identity a principal may then hold, declare for and signal.
 ISSUE = 'space_issue'
 OPERATIONS = ITEM_OPERATIONS + (POOL, HOLD, ADMIT, RELEASE, RECONCILE, ISSUE)
@@ -856,6 +947,33 @@ def checked_scope(scope):
     return {'type': scope['type'], 'id': identity}
 
 
+def group_id(scope, day, sequence):
+    """The identity of a review group record: its scope, its calendar day and its number within both.
+    `scope` is in its recorded form."""
+    return '%s%s%s:%s:%s' % (GROUP_PREFIX, scope['type'], ':' + scope['id'] if 'id' in scope else '', day, sequence)
+
+
+def group_alias(group, number=1):
+    """The alias of a review group's request, whatever its version. `number` counts the group's
+    requests: the first is the group's alone, and each one raised after a member pick (VELDO-0342)
+    adds its number."""
+    alias = 'space-group-' + hashlib.sha256(group.encode()).hexdigest()[:32]
+    return alias if number == 1 else '%s-r%d' % (alias, number)
+
+
+def in_group(member):
+    """Whether a member of a review group record is still one the group's request is about: no
+    member pick answered it, and it was not found gone when a request was raised."""
+    return not member.get('answer') and not member.get('gone')
+
+
+def review_worktree(record):
+    """The row worktree_review_run of the kind registry: a worktree added detached inside a review run."""
+    owner = record.get('owner') or {}
+    return (record.get('kind') == 'worktree' and (owner.get('run') or {}).get('station') == 'review'
+            and not owner.get('ticket') and not record.get('branch'))
+
+
 def mode_id(scope):
     """The identity of a scope's mode record. `scope` is in its recorded form."""
     return MODE_PREFIX + scope['type'] + (':' + scope['id'] if 'id' in scope else '')
@@ -879,7 +997,7 @@ class Ledger:
     Every command returns {'ok': True, ...} or {'ok': False, 'reason': <name>, 'detail': ...}."""
 
     def __init__(self, store, conn, journal_signer, sign, *, config, state_root, lifecycle, host, projects=(),
-                 authority_generation=1, device=device_of, new_id=None, act_checks=None):
+                 authority_generation=1, device=device_of, new_id=None, act_checks=None, clock=None):
         if not isinstance(config, dict) or config.get('present') is not True:
             raise Refused('space_not_configured', 'the installation has no space section: there is no ledger')
         if not _is_str(host) or ':' in host:
@@ -894,12 +1012,21 @@ class Ledger:
                                for part, paths in self.roots.items()}
         self.engines = list(config['engines'])
         self.state_root = canonical_path(state_root)
+        # Install read indexes when the Ledger is opened, before serving live reads. SQLite
+        # maintains them in the same transaction as each entity write, including dispatches.
+        conn.execute('CREATE INDEX IF NOT EXISTS space_entities_kind ON entities(kind, id)')
+        conn.execute("CREATE INDEX IF NOT EXISTS space_dispatch_hold ON entities "
+                     "(json_extract(data, '$.contract.space.hold')) WHERE kind='dispatch'")
         # The snapshot store is protected in every installation: by the Ledger, not by a file.
         self.snapshot_store = snapshot_store(state_root)
         self.protect = protect_list(config, self.projects) + [
             {'type': 'path', 'value': self.snapshot_store, 'engines': []}]
         self.lifecycle = checked_lifecycle(lifecycle)
         self.device = device
+        # Read once per review deferral, for the day of its group; nothing else reads it.
+        self.clock = clock or time.time
+        # The presenter's module, loaded at the first group terms, for its message limit alone.
+        self._presentation = None
         self.new_id = new_id or (lambda: uuid.uuid4().hex)
         self.observations = []
         self.counts = {'accepted': 0, 'refused': 0}
@@ -910,6 +1037,10 @@ class Ledger:
         # The command _send has given the store, while the store runs it: the mode transition reads who
         # sent it. The membership module beside this file, loaded when the mode transition first runs.
         self._outer, self._membership_module = None, None
+        # VELDO-0319 AC6: what a passkey-signed owner command is verified against, {origin, rp_id,
+        # state_dir}, set by the service from its API configuration; None takes no passkey form. The
+        # credential module beside this file, loaded when the first passkey form is checked.
+        self.passkeys, self._credentials_module = None, None
         transitions = {DECLARE: self._t_declare, CONFIRM: self._t_confirm, MEASURE: self._t_measure,
                        SIGNAL: self._t_signal, OUTCOME: self._t_outcome, ADOPT: self._t_adopt,
                        REPORT: self._t_report, GONE: self._t_gone, REBRANCH: self._t_rebranch,
@@ -918,21 +1049,26 @@ class Ledger:
                        PACKET: self._t_packet, KEEP: self._t_keep,
                        REQUEST: self._t_disposition_request, DISPOSITION: self._t_disposition,
                        KEEP_BRANCH: self._t_keep_branch,
+
+                       GROUP: self._t_group_join, GROUP_REQUEST: self._t_group_request,
+                       GROUP_NEXT: self._t_group_next,
                        EVENT: self._t_event, CONSUMED: self._t_consumed}
         # A command a host principal may send writes the record of its packet in its own transaction.
         for operation in COMMAND_PARAMETERS:
             transitions[operation] = self._with_packet(transitions[operation])
         # The mode switch is the owner's action and not one of OPERATIONS, the commands the authority sends.
-        for operation in OPERATIONS + (MODE, PACKET, EVENT, CONSUMED):
+        for operation in OPERATIONS + (MODE, PACKET, EVENT, CONSUMED, GROUP, GROUP_REQUEST, GROUP_NEXT):
             conn.command_registry[operation] = {'transaction_transition': transitions[operation], 'writes': WRITES}
         store.declare_owners(conn, OWNER,
-                             kinds={ITEM_KIND: ITEM_OPERATIONS, POOL_KIND: (POOL,),
+                             kinds={ITEM_KIND: ITEM_WRITERS, POOL_KIND: (POOL,),
                                     HOLD_KIND: (HOLD, ADMIT, RELEASE, OUTCOME, RECONCILE), RECONCILE_KIND: (RECONCILE,),
                                     MODE_KIND: (MODE,), RUN_KIND: (ISSUE,), EVENT_KIND: (EVENT, CONSUMED),
+                                    GROUP_KIND: (GROUP, GROUP_REQUEST, GROUP_NEXT, DISPOSITION),
                                     PACKET_KIND: tuple(COMMAND_PARAMETERS) + (PACKET,)},
-                             prefixes={ITEM_PREFIX: ITEM_OPERATIONS, POOL_PREFIX: (POOL,),
+                             prefixes={ITEM_PREFIX: ITEM_WRITERS, POOL_PREFIX: (POOL,),
                                        HOLD_PREFIX: (HOLD, ADMIT, RELEASE, OUTCOME, RECONCILE), RECONCILE_PREFIX: (RECONCILE,),
                                        MODE_PREFIX: (MODE,), RUN_PREFIX: (ISSUE,), EVENT_PREFIX: (EVENT, CONSUMED),
+                                       GROUP_PREFIX: (GROUP, GROUP_REQUEST, GROUP_NEXT, DISPOSITION),
                                        PACKET_PREFIX: tuple(COMMAND_PARAMETERS) + (PACKET,)},
                              module=__file__)
 
@@ -1406,6 +1542,241 @@ class Ledger:
         return ((record.get('ends_on') or {}).get('version') == self.lifecycle['version']
                 and record.get('form') in (self.lifecycle.get('forms') or {}))
 
+    def group(self, identity):
+        """A review group's record, or None."""
+        return self._row(identity, GROUP_KIND)[1] if _is_str(identity) else None
+
+    def groups(self):
+        """Every review group record, by identity."""
+        return {row[0]: json.loads(row[1]) for row in self.conn.execute(
+            'SELECT id, data FROM entities WHERE kind=? ORDER BY id', (GROUP_KIND,))}
+
+    def day_of(self, at):
+        """The calendar day of the time `at`, in the installation's time zone."""
+        if not _is_time(at):
+            raise _invalid('at', 'the time of the deferral')
+        try:
+            zone = zoneinfo.ZoneInfo(self.config['time_zone'])
+        except (KeyError, TypeError, ValueError, OSError) as error:
+            raise Refused('space_no_time_zone', 'the installation names no time zone a day can be read in') from error
+        return datetime.datetime.fromtimestamp(at, zone).date().isoformat()
+
+    def _group_answered(self, group):
+        """Whether the group's request takes no answer any more: it was answered, declined or
+        canceled. A group whose request was never opened is not answered. The request is read by
+        the identity the group record holds, one row by its key: the record gets that identity
+        before the request is opened (_t_group_request), so no request is open without it."""
+        alias, rid = (group.get('request') or {}).get('alias'), (group.get('request') or {}).get('id')
+        request = self._row(rid, 'assignment')[1] if _is_str(rid) else None
+        return (request is not None and request.get('alias') == alias
+                and request.get('state') not in GROUP_REQUEST_OPEN)
+
+    def _joinable(self, group):
+        if group['state'] == 'open' and self._awaited(group) is not None:
+            # A settled member pick leaves the group open: it is still the day's one open group.
+            return True
+        return group['state'] == 'open' and not self._group_answered(group)
+
+    def _settled_pick(self, group):
+        """The index of the settled member pick, or None."""
+        picked = self._settled_choice(group)
+        return picked[1] if picked else None
+
+    def _settled_choice(self, group):
+        """The settled action and index of the current request. Two rows read by their keys."""
+        current = group.get('request') or {}
+        rid = current.get('id')
+        asked = self._row(rid, 'assignment')[1] if _is_str(rid) else None
+        if asked is None or asked.get('alias') != current.get('alias') or asked.get('state') != 'SATISFIED':
+            return None
+        _, settled = self._row((asked.get('settlement') or {}).get('settlement_id'), 'request_settlement')
+        return _settlement().space_pick((settled or {}).get('choice'))
+
+    def _awaited(self, group):
+        """A settled member pick awaiting the group's next request, with another member left.
+        Keep advances on publication; Save and Discard wait for application. None otherwise."""
+        index = self._settled_pick(group)
+        if index is None or not any(in_group(member) and member['index'] != index for member in group['members']):
+            return None
+        return index
+
+    def _picks_that_fit(self, indexes):
+        """The lowest of `indexes` whose member picks, after the three group picks, fit one message
+        part of the channel with the answer instruction (design 7 item 4). Measured as the
+        presenter measures its last part: its limit, its room for the part line, its counting."""
+        if self._presentation is None:
+            self._presentation = _sibling('control_channel_presentation')
+        shown, st = self._presentation, _settlement()
+        room = shown.MESSAGE_LIMIT - shown.PART_LINE_ROOM
+
+        def fits(count):
+            tail = '\n'.join(['Choices: %s' % ' | '.join(st.space_group_choices(indexes[:count])),
+                              'Answer by replying to this message: <choice>: <your reason>'])
+            return shown.utf16_units(shown.TEXT.visible(tail)) <= room
+        low, high = 0, len(indexes)
+        while low < high:
+            middle = (low + high + 1) // 2
+            if fits(middle):
+                low = middle
+            else:
+                high = middle - 1
+        return list(indexes[:low])
+
+    def _group_proposal(self, gid, members):
+        """The terms of a group's request for `members`, the ones still in the group, in the order
+        of their indexes: every member's entry, its index, and the indexes offered a pick."""
+        indexes = [member['index'] for member in members]
+        return {'discard': _settlement().SPACE_DISCARD, 'group': gid,
+                'worktrees': [member['entry'] for member in members],
+                'indexes': indexes, 'picks': self._picks_that_fit(indexes)}
+
+    def _group_to_join(self, scope, day):
+        """(identity, version) of the group a deferral of `scope` on `day` joins: the first of the
+        day that is open with a request still to answer, or the next sequence number, version 0."""
+        sequence = 1
+        while True:
+            identity = group_id(scope, day, sequence)
+            version, group = self._row(identity, GROUP_KIND)
+            if group is None or self._joinable(group):
+                return identity, version
+            sequence += 1
+
+    def _pending_keep(self, prior, group=None):
+        """A member answered Keep, awaiting its own packet under its original request alias."""
+        if prior.get('state') != 'requested' or not prior.get('group'):
+            return None
+        group = self.group(prior['group']) if group is None else group
+        for member in (group or {}).get('members', []):
+            answer = member.get('answer') or {}
+            if (member['index'] == prior.get('index') and answer.get('pending_application')
+                    and answer.get('choice') == 'accept keep w%d' % member['index']):
+                return answer
+        return None
+
+    def _rejoins(self, prior):
+        """Whether an unanswered member left its old request, including a member marked gone.
+        An answered Keep retains its original request until the owner packet applies it."""
+        if prior.get('state') != 'requested' or not prior.get('group'):
+            return False
+        group = self.group(prior['group']) or {}
+        if self._pending_keep(prior, group):
+            return False
+        return (group.get('state') != 'open' or any(
+            member['index'] == prior.get('index') and member.get('gone')
+            for member in group.get('members', [])))
+
+    def request_group(self, item, entry, head, at=None):
+        """Put a deferred review worktree into its scope's review group of the day, before the
+        group's request is published (VELDO-0340, design 7).
+
+        `entry` is the worktree's own entry of the terms, as the single request's proposal lists
+        one, and `head` the commit it was read at. `at` is the time of the deferral; without it the
+        clock is read here, once. A worktree that already has its request in an open group adds
+        nothing. The first group of the day that still takes a join gets the member and a new
+        request version; when there is none, the next sequence number is opened.
+        """
+        record = self.item(item) or {}
+        prior = record.get('disposition') or {}
+        if prior and prior.get('state') != 'refused' and not self._rejoins(prior):
+            return {'ok': True, 'request': prior, 'replayed': True}
+        try:
+            at = self.clock() if at is None else at
+            day = self.day_of(at)
+            scope = checked_scope((record.get('owner') or {}).get('scope'))
+        except Refused as error:
+            return self._refuse(GROUP, error, {'item': item})
+        while True:
+            identity, version = self._group_to_join(scope, day)
+            result = self._item_command(GROUP, item, {'entry': entry, 'head': head, 'at': at, 'group': identity},
+                                        None, None, also={identity: version})
+            # Another join, or the answer, moved the group between the read and the write.
+            if result.get('reason') not in ('stale_version', 'space_group_closed') or \
+                    (identity, version) == self._group_to_join(scope, day):
+                break
+        if result.get('ok'):
+            result['request'] = self.item(item)['disposition']
+            result['group'] = identity
+        return result
+
+    def _t_group_join(self, conn, params, before):
+        identity, record = self._stored(params, before)
+        prior = record.get('disposition') or {}
+        if record['state'] != 'deferred' or not review_worktree(record) or record.get('owner_keep'):
+            raise Refused('space_disposition_state', 'a deferred review worktree without an owner Keep')
+        if prior and prior.get('state') != 'refused' and not self._rejoins(prior):
+            raise Refused('space_disposition_exists', 'the item already has its request')
+        entry, head, at = params.get('entry'), params.get('head'), params.get('at')
+        settlement = _settlement()
+        own = {'discard': settlement.SPACE_DISCARD, 'worktrees': [entry]}
+        try:
+            settlement.space_presentation(own)
+        except settlement.Refused as error:
+            raise Refused(error.code, error.detail) from error
+        if entry['item'] != identity or entry['path'] != record['locator']['path']:
+            raise Refused('space_disposition_item', 'the request names this worktree')
+        if 'head' not in params or head is not None and not (
+                _is_str(head) and len(head) in (40, 64) and not set(head) - set('0123456789abcdef')):
+            raise _invalid('head', 'the commit the worktree was at when the terms were read, or null')
+        scope, day = checked_scope(record['owner']['scope']), self.day_of(at)
+        gid = params.get('group')
+        if not _is_str(gid) or gid not in before and self._row(gid, GROUP_KIND)[1] is not None:
+            raise _invalid('group', 'the review group the member joins, read in this write')
+        # The join goes to the first group of the day that takes one: every earlier one is closed
+        # or answered, and this one is new, or open with its request still to answer.
+        if gid != self._group_to_join(scope, day)[0]:
+            raise Refused('space_group_closed', 'not the group a deferral of this scope and day joins')
+        group = dict(before[gid]['data']) if gid in before else {
+            'schema': GROUP_SCHEMA, 'scope': scope, 'day': day,
+            'sequence': int(gid.rsplit(':', 1)[1]), 'members': [], 'request': None, 'state': 'open'}
+        # A member a pick answered has left: the same worktree, deferred again after that answer
+        # was refused, joins as a new member under a new index.
+        if any(member['item'] == identity and in_group(member) for member in group['members']):
+            raise Refused('space_disposition_exists', 'the item is a member of this group')
+        index = len(group['members']) + 1
+        members = list(group['members']) + [{
+            'index': index, 'item': identity, 'run': record['owner']['run']['id'],
+            'files': list(entry['files']), 'kept_branch': entry['kept_branch'], 'head': head, 'at': at,
+            'entry': entry}]
+        current = group.get('request') or {}
+        alias = current.get('alias') or group_alias(gid)
+        if self._awaited(group) is not None:
+            # The request is settled by a member pick that is not applied yet, and a settled
+            # request is never revised: the member is on the record, and the request raised when
+            # the pick is applied lists it.
+            group.update(members=members)
+        else:
+            proposal = self._group_proposal(gid, [member for member in members if in_group(member)])
+            try:
+                settlement.space_presentation(proposal)
+            except settlement.Refused as error:
+                raise Refused(error.code, error.detail) from error
+            group.update(members=members, request=dict(
+                current, alias=alias, number=current.get('number', 1), version=current.get('version', 0) + 1,
+                proposal=proposal))
+        number = prior.get('number', 0) + 1
+        record['disposition_history'] = list(record.get('disposition_history') or []) + ([prior] if prior else [])
+        record['disposition'] = {'number': number, 'alias': alias, 'group': gid, 'index': index, 'proposal': own,
+                                 'head': head, 'state': 'requested'}
+        record['deferral'] = dict(record.get('deferral') or {}, decision_request=alias, review_group=gid)
+        return {identity: {'kind': ITEM_KIND, 'data': record}, gid: {'kind': GROUP_KIND, 'data': group}}
+
+    def _t_group_request(self, conn, params, before):
+        """Write the identity of the group's one request on the group record. The authority's own
+        write, made before the request is opened; the identity is written once and never changed."""
+        gid, group = self._stored(params, before, key='group', kind=GROUP_KIND, missing='space_no_group')
+        outer, rid = self._outer, params.get('request')
+        if outer is None or outer['parameters'] is not params or outer['principal'] != self.journal_signer:
+            raise Refused('not_authorized', 'only the authority names the request of a group')
+        request = group.get('request') or {}
+        if group['state'] != 'open' or not _is_str(request.get('alias')):
+            raise Refused('space_group_closed', 'an open group with its request')
+        if not _is_str(rid) or not rid.startswith('assignment:') or not rid.endswith(':' + request['alias']):
+            raise _invalid('request', 'the identity of the request with the alias of this group')
+        if request.get('id') is not None:
+            raise Refused('space_group_request', 'the group record already names its request')
+        group['request'] = dict(request, id=rid)
+        return {gid: {'kind': GROUP_KIND, 'data': group}}
+
     def _t_disposition_request(self, conn, params, before):
         identity, record = self._stored(params, before)
         prior = record.get('disposition') or {}
@@ -1440,11 +1811,13 @@ class Ledger:
         record['deferral'] = dict(record.get('deferral') or {}, decision_request=request['alias'])
         return {identity: {'kind': ITEM_KIND, 'data': record}}
 
-    def disposition(self, packet, membership, now):
+    def disposition(self, packet, membership, now, only=None):
         """One owner-signed command: deferred to kept, or due for a settled Save/Discard.
 
         Neither a caller's principal string nor the authority's journal signature is
         the owner's signature. The transition verifies the packet again in the store.
+        `only`, when given, is the one action the packet may apply (VELDO-0319: 'keep' for the
+        console's space.keep); a request settled as anything else is refused in the transition.
         """
         command = packet.get('command') if isinstance(packet, dict) else None
         try:
@@ -1459,8 +1832,12 @@ class Ledger:
                 raise Refused('space_no_item', identity)
             if version != params['version']:
                 raise Refused('stale_version', identity)
-            return self._send(DISPOSITION, {'item': identity, 'packet': packet, 'at': now},
-                              {identity: version}, command['principal'], command['command_id'],
+            if only is not None and only not in ('save', 'keep', 'discard'):
+                raise _invalid('only', 'save, keep or discard')
+            return self._send(DISPOSITION, dict({'item': identity, 'packet': packet, 'at': now},
+                                                **({'only': only} if only is not None else {})),
+                              dict(self._group_versions(record), **{identity: version}),
+                              command['principal'], command['command_id'],
                               {'item': identity}, command['nonce'])
         except Refused as error:
             return self._refuse(DISPOSITION, error, {}, (command or {}).get('principal'))
@@ -1486,14 +1863,58 @@ class Ledger:
                 or settled.get('request_id') != request_id or effect.get('request_id') != request_id
                 or effect.get('settlement_id') != settled.get('settlement_id')
                 or effect.get('touchpoint') != 'space_disposition' or effect.get('ruling') != 'approve'
-                or effect.get('choice') not in ('accept save', 'accept keep', 'accept discard')
+                or _settlement().space_pick(effect.get('choice')) is None
                 or effect.get('choice') != settled.get('choice')
-                or effect.get('proposal') != request.get('proposal')
-                or (effect.get('target') or {}).get('ref') != identity
+                or not self._effect_names(identity, request, effect)
                 or assignment.get('alias') != request.get('alias')
                 or settled.get('principals') != [assignment.get('owner')]):
             raise Refused('space_disposition_unsettled', 'a settled answer to this item request is required')
         return effect, assignment['owner']
+
+    def _effect_names(self, identity, request, effect):
+        """Whether the settled terms are the ones this item's request was made with. For one
+        worktree: the same terms, targeting the item. For a group member: terms of its group,
+        targeting the group, that list the member with exactly the entry its request holds, so a
+        member the answered presentation did not show is not named."""
+        shown, target = effect.get('proposal') or {}, effect.get('target') or {}
+        index = _settlement().space_pick(effect.get('choice'))[1]
+        if not request.get('group'):
+            # A request for one worktree offers no member pick.
+            return index is None and shown == request.get('proposal') and target.get('ref') == identity
+        mine = ((request.get('proposal') or {}).get('worktrees') or [None])[0]
+        listed = shown.get('worktrees') if isinstance(shown.get('worktrees'), list) else []
+        named = (target.get('kind') == 'space_group' and target.get('ref') == request['group']
+                and shown.get('group') == request['group'] and mine is not None and mine in listed
+                and target.get('members') == [tree.get('item') for tree in listed])
+        if not named or index is None:
+            return named
+        # A member pick (VELDO-0342) names one member: the settled terms list this worktree under
+        # the index the pick names. The Settlement takes only a choice the request offered.
+        indexes = shown.get('indexes') if isinstance(shown.get('indexes'), list) else []
+        return len(indexes) == len(listed) and indexes[listed.index(mine)] == index
+
+    @staticmethod
+    def settled_action(effect, decision):
+        """The action (save, keep or discard) the settled choice gives the item whose disposition
+        is `decision`, or None: a member pick gives it to the member whose index it names."""
+        picked = _settlement().space_pick((effect or {}).get('choice'))
+        if picked is None or picked[1] is not None and (
+                not (decision or {}).get('group') or decision.get('index') != picked[1]):
+            return None
+        return picked[0]
+
+    def _group_versions(self, record):
+        """What a pick on a group member is written against: the group and every member item, at
+        the versions read now. Empty for an item with a request of its own."""
+        gid = ((record or {}).get('disposition') or {}).get('group')
+        version, group = self._row(gid, GROUP_KIND) if gid else (0, None)
+        if group is None:
+            return {}
+        versions = {gid: version}
+        for member in group['members']:
+            if in_group(member):
+                versions[member['item']] = self._row(member['item'], ITEM_KIND)[0]
+        return versions
 
     def _t_disposition(self, conn, params, before):
         identity, record = self._stored(params, before)
@@ -1503,9 +1924,9 @@ class Ledger:
             if (outer is None or outer['parameters'] is not params or outer['principal'] != self.journal_signer):
                 raise Refused('not_authorized', 'only the authority applies settled filesystem effects')
             effect, owner = self.disposition_effect(identity, params.get('request'))
-            if effect['choice'] == 'accept keep':
+            if _settlement().space_pick(effect['choice'])[0] == 'keep':
                 raise Refused('not_authorized', 'Keep requires the owner signed packet')
-            return self._disposition_change(identity, record, effect, owner, params['request'])
+            return self._disposition_change(identity, record, effect, owner, params['request'], before)
         command = packet.get('command') if isinstance(packet, dict) else None
         self._disposition_command(command)
         outer = self._outer
@@ -1518,14 +1939,157 @@ class Ledger:
         effect, owner = self.disposition_effect(identity, command['parameters']['request'])
         if owner != command['principal']:
             raise Refused('not_authorized', 'the answering owner signs the disposition')
-        return self._disposition_change(identity, record, effect, owner, command['parameters']['request'])
+        if 'only' in params and _settlement().space_pick(effect['choice'])[0] != params['only']:
+            # VELDO-0319 AC6: space.keep carries a Keep and nothing else, whatever was settled.
+            raise Refused('space_disposition_choice', 'the request was not settled as ' + str(params['only']))
+        return self._disposition_change(identity, record, effect, owner, command['parameters']['request'], before)
 
     def authorize_disposition(self, identity, request):
-        return self._item_command(DISPOSITION, identity, {'request': request}, None, None)
+        return self._item_command(DISPOSITION, identity, {'request': request}, None, None,
+                                  also=self._group_versions(self.item(identity)))
 
-    def _disposition_change(self, identity, record, effect, owner, request):
+    def _disposition_change(self, identity, record, effect, owner, request, before=None):
         if record['state'] != 'deferred' or (record.get('disposition') or {}).get('state') != 'requested':
             raise Refused('space_disposition_state', 'the request has already been applied')
+        if record['disposition'].get('group'):
+            return self._group_change(identity, record['disposition']['group'], effect, owner, request, before or {})
+        return {identity: {'kind': ITEM_KIND, 'data': self._decided(record, effect, owner, request)}}
+
+    def _group_change(self, identity, gid, effect, owner, request, before):
+        """A group pick, in one write: every member still in the group that the settled terms
+        list gets the pick, and the group closes. A member is still in the group while it is
+        deferred with its requested disposition naming the group. One that is not has left. One
+        the settled terms do not list with its entry was never shown to the owner: it is left
+        untouched, and joins a new group when it is next published.
+
+        A member pick (VELDO-0342), in one write too: the member it names gets the answer and is
+        recorded with it, and every other member still in the group stays as it is under a new
+        request (_next_request). The group closes when none is left."""
+        if gid not in before or before[gid]['kind'] != GROUP_KIND:
+            raise Refused('space_disposition_state', 'the group is read in the write of its pick')
+        group = dict(before[gid]['data'])
+        pending = self._pending_keep((before[identity]['data'].get('disposition') or {}), group)
+        if pending and pending.get('request') == request and effect['choice'] == pending['choice']:
+            group['members'] = [dict(member, answer=dict(pending, pending_application=False))
+                                if member['index'] == before[identity]['data']['disposition']['index']
+                                else member for member in group['members']]
+            return {identity: {'kind': ITEM_KIND, 'data': self._decided(
+                        dict(before[identity]['data']), effect, owner, request)},
+                    gid: {'kind': GROUP_KIND, 'data': group}}
+        if group['state'] != 'open':
+            raise Refused('space_disposition_state', 'the group is closed')
+        shown = effect['proposal']['worktrees']
+        picked = _settlement().space_pick(effect['choice'])[1]
+        changes, applied, left, unseen, waiting = {}, [], [], [], []
+        for member in group['members']:
+            if not in_group(member):
+                continue
+            row = before.get(member['item'])
+            if row is None or row['kind'] != ITEM_KIND:
+                raise Refused('space_disposition_state', 'every member is read in the write of the pick')
+            data = dict(row['data'])
+            decision = data.get('disposition') or {}
+            if (data['state'] != 'deferred' or decision.get('state') != 'requested'
+                    or decision.get('group') != gid):
+                left.append(member['index'])
+            elif picked is not None and member['index'] != picked:
+                # A member pick is the answer for the member it names and for no other.
+                waiting.append((member, data))
+            elif member['entry'] not in shown or decision['proposal']['worktrees'][0] != member['entry']:
+                unseen.append(member['index'])
+            else:
+                changes[member['item']] = {'kind': ITEM_KIND, 'data': self._decided(data, effect, owner, request)}
+                applied.append(member['index'])
+        if identity not in changes:
+            raise Refused('space_disposition_unsettled', 'the settled terms do not list this member')
+        answer = {'choice': effect['choice'], 'request': request, 'by': owner,
+                  'applied': applied, 'left': left, 'unseen': unseen}
+        if picked is None:
+            group.update(state='closed', answer=answer)
+        else:
+            group['members'] = [dict(member, answer={'choice': effect['choice'], 'request': request, 'by': owner})
+                                if in_group(member) and member['index'] == picked else
+                                dict(member, gone=True) if member['index'] in left else member
+                                for member in group['members']]
+            changes.update(self._next_request(gid, group, waiting, dict(answer, member=picked)))
+        changes[gid] = {'kind': GROUP_KIND, 'data': group}
+        return changes
+
+    def _next_request(self, gid, group, waiting, answer):
+        """After a member pick settled the group's request: the settled request goes to the
+        record's `requests` with its answer, and the members still in the group (`waiting`, each
+        with its item record read in this write) get a new request, named in the record's request
+        field and in each member's own disposition. With no member left the group closes. Changes
+        `group` in place and returns the member items' changes."""
+        settled = group['request']
+        group['requests'] = list(group.get('requests') or []) + [dict(
+            {key: settled.get(key) for key in ('alias', 'id', 'version')}, number=settled.get('number', 1),
+            answer=answer)]
+        if not waiting:
+            group.update(state='closed')
+            return {}
+        number = settled.get('number', 1) + 1
+        alias = group_alias(gid, number)
+        proposal = self._group_proposal(gid, [member for member, _ in waiting])
+        settlement = _settlement()
+        try:
+            settlement.space_presentation(proposal)
+        except settlement.Refused as error:
+            raise Refused(error.code, error.detail) from error
+        group['request'] = {'alias': alias, 'number': number, 'version': 1, 'proposal': proposal}
+        changes = {}
+        for member, data in waiting:
+            data['disposition'] = dict(data['disposition'], alias=alias)
+            data['deferral'] = dict(data.get('deferral') or {}, decision_request=alias, review_group=gid)
+            changes[member['item']] = {'kind': ITEM_KIND, 'data': data}
+        return changes
+
+    def _t_group_next(self, conn, params, before):
+        """The authority's own write: the group's request was settled by a member pick, and the
+        member it names is gone or answered Keep. Keep has no filesystem effect, so its settlement
+        advances the others while its member retains the old alias awaiting the owner's packet.
+        Everything is read in this write; a live Save or Discard still waits for application."""
+        gid, group = self._stored(params, before, key='group', kind=GROUP_KIND, missing='space_no_group')
+        outer = self._outer
+        if outer is None or outer['parameters'] is not params or outer['principal'] != self.journal_signer:
+            raise Refused('not_authorized', 'only the authority raises the next request of a group')
+        index = self._settled_pick(group) if group['state'] == 'open' else None
+        if index is None:
+            raise Refused('space_group_closed', 'an open group whose request a member pick settled')
+        waiting, gone, pending = [], [], None
+        keep = self._settled_choice(group) == ('keep', index)
+        for member in group['members']:
+            if not in_group(member):
+                continue
+            row = before.get(member['item'])
+            if row is None or row['kind'] != ITEM_KIND:
+                raise Refused('space_disposition_state', 'every member is read in the write of the next request')
+            data = dict(row['data'])
+            decision = data.get('disposition') or {}
+            if (data['state'] == 'deferred' and decision.get('state') == 'requested'
+                    and decision.get('group') == gid):
+                if member['index'] == index and keep:
+                    effect, owner = self.disposition_effect(member['item'], group['request']['id'])
+                    pending = {'choice': effect['choice'], 'request': group['request']['id'],
+                               'by': owner, 'pending_application': True}
+                    continue
+                if member['index'] == index:
+                    raise Refused('space_disposition_state', 'the member the pick names is in the group: '
+                                  'the pick is applied by its disposition')
+                waiting.append((member, data))
+            else:
+                gone.append(member['index'])
+        group['members'] = [dict(member, answer=pending) if pending and member['index'] == index else
+                            dict(member, gone=True) if in_group(member) and member['index'] in gone else member
+                            for member in group['members']]
+        # Nothing was applied: the answer is recorded with the member it named and no member reached.
+        changes = self._next_request(gid, group, waiting, {
+            'member': index, 'request': group['request'].get('id'), 'applied': [], 'left': gone, 'unseen': []})
+        changes[gid] = {'kind': GROUP_KIND, 'data': group}
+        return changes
+
+    def _decided(self, record, effect, owner, request):
+        """The item's record after the settled choice: kept by the owner, or due for Save or Discard."""
         choice = effect['choice'].split(' ')[1]
         if record['kind'] != 'worktree' and choice != 'keep':
             # No remover carries a Save or a Discard of a private repository: only Keep is offered.
@@ -1539,15 +2103,114 @@ class Ledger:
         else:
             record['state'] = 'due'
             _new_removal(record)
-        return {identity: {'kind': ITEM_KIND, 'data': record}}
+        return record
+
+    def _publish_group(self, identity, settlement, inbox, presenter, requester, owner):
+        """Publish the current version of a member's group request: its terms under the version's
+        own name, the request opened once and revised to every later version, and its framing.
+        Each boundary has a deterministic identity per version, so a worker lost between two of
+        them resumes the same version. A member whose group closed without it joins a new group
+        first, with the entry and the deferral time its record holds."""
+        record = self.item(identity) or {}
+        request = record.get('disposition') or {}
+        if record.get('state') != 'deferred' or request.get('state') != 'requested':
+            return {'ok': False, 'reason': 'space_disposition_state'}
+        pending = self._pending_keep(request)
+        if pending:
+            return {'ok': False, 'reason': 'space_group_answered', 'request': pending['request'],
+                    'group': request['group']}
+        if self._rejoins(request):
+            member = next((one for one in reversed((self.group(request['group']) or {}).get('members') or ())
+                           if one['item'] == identity), None)
+            if member is None:
+                return {'ok': False, 'reason': 'space_disposition_state'}
+            joined = self.request_group(identity, member['entry'], member['head'], member['at'])
+            if not joined.get('ok'):
+                return joined
+            request = self.item(identity)['disposition']
+        gid = request['group']
+        stored, group = self._row(gid, GROUP_KIND)
+        current = group['request']
+        alias, version, proposal = current['alias'], current['version'], current['proposal']
+        st = _sibling('control_request_settlement')
+        principal, sign = requester
+        ids = inbox.ids
+        name = '%s-v%d' % (alias, version)
+        def packet(operation, **fields):
+            command = dict(ids, operation=operation, principal=principal, command_id=name + ':' + operation,
+                           nonce=name + ':' + operation, **fields)
+            return {'command': command, 'signature': sign(self.store.canonical_bytes(command))}
+        rid = presenter.inbox_request(alias)
+        if current.get('id') != rid:
+            # Before the request is opened: a join reads whether it was answered by this identity.
+            named = self._send(GROUP_REQUEST, {'group': gid, 'request': rid}, {gid: stored}, None, None,
+                               {'group': gid})
+            if not named.get('ok'):
+                return {'ok': False, 'reason': named.get('reason'), 'group': gid}
+        _, assignment = self._row(rid, 'assignment')
+        if assignment is not None and assignment.get('state') not in GROUP_REQUEST_OPEN:
+            # Answered at an earlier version. The pick is applied to the members it showed; the
+            # others join a new group after that (above). A member pick leaves the others in this
+            # group. Keep advances here at settlement, retaining its own pending alias. Save and
+            # Discard advance at application, or here when the named member has gone.
+            raised = self._group_next(gid)
+            if not raised.get('ok'):
+                return {'ok': False, 'reason': 'space_group_answered', 'request': rid, 'group': gid}
+            return self._publish_group(identity, settlement, inbox, presenter, requester, owner)
+        tid = st.terms_id(ids['repository_uuid'], name)
+        _, terms = self._row(tid, st.TERMS_KIND)
+        if terms is None:
+            result = settlement.terms(packet('terms', terms=name, touchpoint='space_disposition',
+                target={'kind': st.SPACE_GROUP_TARGET, 'ref': gid, 'digest': st.digest(proposal),
+                        'members': [tree['item'] for tree in proposal['worktrees']]},
+                proposal=proposal, required_roles=[], quorum=None))
+            if result.get('outcome') != 'recorded':
+                return {'ok': False, 'reason': result.get('reason'), 'group': gid}
+            _, terms = self._row(tid, st.TERMS_KIND)
+        content = st.space_presentation(proposal)
+        subject = {'kind': st.SUBJECT_KIND, 'ref': tid, 'digest': st.digest(terms)}
+        if assignment is None:
+            content.update(owner=owner, scope=['space'], deadline='2099-01-01T00:00:00Z',
+                           budget={'owner_minutes': 1}, subject=subject)
+            result = inbox.apply(packet('open', alias=alias, assignment=content))
+            if not result.get('ok'):
+                return dict(result, group=gid)
+        elif (assignment.get('subject') or {}).get('ref') != tid:
+            # A new version of the request: an answer bound to the earlier presentation is stale.
+            result = inbox.apply(packet('revise', alias=alias, request_version=assignment['request_version'],
+                                        changes={'subject': subject, 'brief': content['brief'],
+                                                 'choices': content['choices']}))
+            if not result.get('ok'):
+                return dict(result, group=gid)
+        _, assignment = self._row(rid, 'assignment')
+        result = presenter.frame(packet('frame', alias=alias, request_version=assignment['request_version'],
+                                        risk_statement=st.SPACE_DISCARD))
+        return {'ok': result.get('outcome') == 'accepted', 'request': rid, 'framing': result, 'group': gid,
+                'version': version}
+
+    def _group_next(self, gid):
+        """Raise the next request of a group whose settled member pick names a member that is no
+        longer in it, or has answered Keep. Refused, with nothing written, in every other case."""
+        version, group = self._row(gid, GROUP_KIND)
+        index = self._settled_pick(group) if group is not None and group['state'] == 'open' else None
+        if index is None:
+            return {'ok': False, 'reason': 'space_group_closed'}
+        versions = {gid: version}
+        for member in group['members']:
+            if in_group(member):
+                versions[member['item']] = self._row(member['item'], ITEM_KIND)[0]
+        return self._send(GROUP_NEXT, {'group': gid}, versions, None, None, {'group': gid})
 
     def publish_disposition(self, identity, settlement, inbox, presenter, requester, owner):
         """Publish the reserved request with the ordinary signed terms and inbox path.
 
         Each durable boundary has a deterministic identity. A worker lost between
         terms, opening and framing resumes the same request on reconnect.
+        A review group member publishes its group's request (_publish_group).
         """
         request = (self.item(identity) or {}).get('disposition') or {}
+        if request.get('group'):
+            return self._publish_group(identity, settlement, inbox, presenter, requester, owner)
         alias, proposal = request.get('alias'), request.get('proposal')
         if not alias or request.get('state') != 'requested':
             return {'ok': False, 'reason': 'space_disposition_state'}
@@ -1847,25 +2510,56 @@ class Ledger:
             raise _invalid('command', 'the mode command: a principal, a scope and a mode, a command id and a nonce')
 
     def _mode_signer(self, command, signature, now, membership):
-        """The owner behind one mode command, read from this store: (authority state, member, key).
-        Refused not_authorized unless the command's principal is an active person member holding
-        project_owner whose scope covers the space scope, and `signature` is that principal's, under its
-        active key, over the command. set_mode calls this before it sends, and the transition calls it
-        again inside the transaction."""
+        """The owner behind one signed space command, read from this store: (authority state, member,
+        key). Refused not_authorized unless the command's principal is an active person member holding
+        project_owner whose scope covers the space scope, and `signature` is that principal's over the
+        command, in one of the two forms (the module's THE OWNER'S SIGNATURE HAS TWO FORMS): a text is
+        the SSH signature under the principal's active key, and `key` is that key; a mapping is a
+        passkey assertion, and `key` is the credential's record with its store id as key_id. set_mode
+        and disposition call this before they send, and each transition calls it again inside the
+        transaction."""
         contract, principal = membership.AC, command['principal']
         state = membership.authority_state(self.store, self.conn)
         member = contract.membership_entry(state['membership'], principal)
         active, why = contract.active_member(member, now)
-        key = contract.active_key(state['keyring'], principal, now) if active else None
-        if (not active or key is None or member.get('principal_type') != MODE_SIGNER_TYPE
+        if (not active or member.get('principal_type') != MODE_SIGNER_TYPE
                 or MODE_SIGNER_ROLE not in (member.get('roles') or [])
                 or not membership.scope_covers(member.get('scope'), SCOPE)):
             raise Refused('not_authorized', why or 'the mode switch is the owner\'s signed command')
+        if isinstance(signature, dict):
+            return state, member, self._passkey_signer(command, signature, now, state, principal)
+        key = contract.active_key(state['keyring'], principal, now)
+        if key is None:
+            raise Refused('not_authorized', 'the mode switch is the owner\'s signed command')
         if not isinstance(signature, str) or not signature.isascii() or not contract.ssh_keygen_verify(
                 self.store.canonical_bytes(command), signature,
                 contract.allowed_signers_line(principal, key['public_key'], NAMESPACE), principal, NAMESPACE)[0]:
             raise Refused('not_authorized', 'the command signature is not the owner\'s')
         return state, member, key
+
+    def _passkey_signer(self, command, assertion, now, state, principal):
+        """The passkey form of the owner's signature (VELDO-0319 AC6): the credential's record, with
+        key_id its store id. Refused not_authorized unless the assertion names a credential that is
+        current for `principal` in this store, enrolled for this installation's origin and
+        relying-party id, and verifies with SHA-256 of the command's canonical bytes as its
+        challenge. The verifier is control_api_webauthn's, unchanged."""
+        settings = self.passkeys if isinstance(self.passkeys, dict) else {}
+        origin, rp_id, state_dir = (settings.get(field) for field in ('origin', 'rp_id', 'state_dir'))
+        if not (_is_str(origin) and _is_str(rp_id) and _is_str(state_dir)):
+            raise Refused('not_authorized', 'this Ledger was given no relying party: it takes no passkey')
+        if self._credentials_module is None:
+            self._credentials_module = _sibling('control_api_credentials')
+        credentials = self._credentials_module
+        record, why = credentials.current(state, assertion.get('credential_id'), now, principal=principal)
+        if why:
+            raise Refused('not_authorized', 'the passkey is not the owner\'s current credential: ' + why)
+        if record.get('rp_id') != rp_id or record.get('origin') != origin:
+            raise Refused('not_authorized', 'the passkey was enrolled for another installation')
+        challenge = credentials.W.b64url(hashlib.sha256(self.store.canonical_bytes(command)).digest())
+        problems = credentials.W.assertion_problems(record, assertion, challenge, origin, rp_id, state_dir)
+        if problems:
+            raise Refused('not_authorized', 'the passkey assertion is not over this command: ' + problems[0])
+        return dict(record, key_id=credentials.entity_id(record['credential_id']))
 
     def _owner(self, params, at, what):
         """The owner behind the command the store is running, for the owner's Keep and the owner's Abandon
@@ -2545,8 +3239,13 @@ class Ledger:
             record['deferral'] = dict(facts, attempts=attempts)
             if record.get('disposition'):
                 record['deferral']['decision_request'] = record['disposition']['alias']
+                if record['disposition'].get('group'):
+                    record['deferral']['review_group'] = record['disposition']['group']
         elif outcome == 'removed':
-            record['removal'] = dict(facts)
+            # The store holds its write transaction here. This is the sequence it will append,
+            # just as received is stamped on an event; caller facts cannot choose the order.
+            seq = conn.execute('SELECT COALESCE(MAX(seq), 0) + 1 FROM journal').fetchone()[0]
+            record['removal'] = dict(facts, seq=seq)
             record['confirmed'] = None
         elif outcome == 'removing':
             record['removal'] = dict(facts)
@@ -2899,6 +3598,16 @@ def signed(principal, operation, parameters, folder, canonical, issued_at, comma
     if done.returncode:
         raise Refused('space_no_key:' + principal, 'the key of %s did not sign' % principal)
     return {'command': command, 'signature': done.stdout.decode()}
+
+
+_SETTLEMENT = []
+
+
+def _settlement():
+    """The settlement module, loaded once: the space terms and their picks are read through it."""
+    if not _SETTLEMENT:
+        _SETTLEMENT.append(_sibling('control_request_settlement'))
+    return _SETTLEMENT[0]
 
 
 def _sibling(name):
