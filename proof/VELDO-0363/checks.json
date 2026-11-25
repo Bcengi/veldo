@@ -63,8 +63,10 @@
   },
   {
     "name": "personal",
-    "sha256": "2b0637308fb453f11ffa6d8ab921321767710115dc6157647a5f4165cd55bc17",
-    "output": "veldo installation: none found (looked at /home/dmitry/.config/veldo/installation, the documented default under the configuration root)\npersonal setup: no installation found; ran the built-in shapes only\npersonal setup: 0 finding(s)\n"
+    "sha256": "83334abb714773a2175055e28f368b02bc77c694d78264e7a59cc889a63fbbdd",
+    "output": "veldo installation: none found (looked at <user-home>/.config/veldo/installation, the documented default under the configuration root)\npersonal setup: no installation found; ran the built-in shapes only\npersonal setup: 0 finding(s)\n",
+    "original_sha256": "2b0637308fb453f11ffa6d8ab921321767710115dc6157647a5f4165cd55bc17",
+    "redaction": "Integration: machine-specific home path replaced with <user-home>; original output digest retained."
   },
   {
     "name": "suite104_native",
