@@ -297,7 +297,9 @@ def _v316_suite():
                         f.prepare()
                         check('ac2/pre-reservation', False)
                     except Exception as error:
-                        check('ac2/pre-reservation', getattr(error, 'code', None) == 'space_wait:host')
+                        check('ac2/pre-reservation', getattr(error, 'code', None) == 'space_wait:host'
+                              and f.tables()['dispatch'] == 0 and f.tables()['dispatch_active'] == 0
+                              and not f.slots() and not f.started)
                 check('ac2/stable-hold', len(f.ledger.holds()) == 1 and
                       all('deadline' not in hold and hold['state'] == 'waiting' for hold in f.ledger.holds().values()))
             finally:
@@ -703,6 +705,51 @@ def _v316_suite():
             finally:
                 f.close()
         run('ac2/racing-prepare', racing_prepare)
+
+        def left_backlog():
+            import select
+            f = Fixture('left-backlog')
+            consumer = load('control_space_consumer').Consumer(f.ledger)
+            try:
+                f.free['host'] = 1000
+                service = types.SimpleNamespace(space=f.space, space_consumer=consumer)
+                requests = ADM.Requests(service, types.SimpleNamespace(wake=lambda *args: None), f.dispatches)
+                def pump():
+                    while consumer.active:
+                        ready, _, _ = select.select(list(consumer.pipes()), [], [], WAITS.WAIT_HANG_SECONDS)
+                        assert ready
+                        for fd in ready:
+                            consumer.readable(fd)
+                def given(unit):
+                    return (f.space, f.dispatches, unit, 'build', 'project', str(f.repo))
+                def judged(unit):
+                    try:
+                        requests.prepare(*given(unit))
+                        raise AssertionError('admission answered without the worker')
+                    except Exception as error:
+                        assert getattr(error, 'code', None) == 'space_pending', error
+                    pump()
+                    return requests.prepare(*given(unit))
+                stays, leaves = judged('stays'), judged('leaves')
+                check('fix2/left-backlog', requests.passed() == [] and not consumer.tasks and consumer.active is None
+                      and f.ledger.hold(stays['hold'])['state'] == 'admitted'
+                      and f.ledger.hold(leaves['hold'])['state'] == 'admitted')
+                requests.prepare(*given('stays'))
+                head = f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0]
+                left = requests.passed()
+                check('fix2/left-backlog', [key[0] for key in left] == ['leaves']
+                      and (consumer.active is not None or len(consumer.tasks) == 1)
+                      and f.conn.execute('SELECT MAX(seq) FROM journal').fetchone()[0] == head)
+                pump()
+                check('fix2/left-backlog', f.ledger.hold(leaves['hold'])['state'] == 'released'
+                      and f.ledger.hold(stays['hold'])['state'] == 'admitted')
+                back = judged('leaves')
+                check('fix2/left-backlog', back['hold'] == leaves['hold'] + '/1'
+                      and f.ledger.hold(back['hold'])['state'] == 'admitted')
+            finally:
+                consumer.stop()
+                f.close()
+        run('fix2/left-backlog', left_backlog)
 
         def worker_wait():
             import select

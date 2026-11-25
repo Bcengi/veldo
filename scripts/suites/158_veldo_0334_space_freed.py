@@ -528,7 +528,8 @@ def _v334_suite():
                 identity = next(iter(f.ledger.holds()))
                 hold = f.ledger.hold(identity)
                 again = pass_from(f, 'run_end')
-                asked = f.signals == [('admission_requested', {'pool': 'host'})] and hold['retry_asked']
+                asked = (f.signals == [('admission_requested', {'pool': 'host'})] and hold['retry_asked']
+                         and list(f.ledger.holds()) == [identity])
                 if mode == 'report':
                     check(row, asked and hold['state'] == 'advised' and hold['reason']['pool'] == 'host'
                           and bool(report['offered']) and not report['waiting'] and not again['waiting']
@@ -651,9 +652,16 @@ def _v334_suite():
                     ready = select.select(list(consumer.pipes()), [], [], 120)[0]
                     assert ready, 'worker EOF hang detector'
                     f.service.space_readable(ready[0])
-                report = f.loop.run()
+                started = len(f.started)
+                # The clock is stopped: only the committed removal's space wake can start this pass.
+                with patch.object(SV.time, 'time', return_value=f.now):
+                    report = f.loop.run()
                 check('ac3/worker-wakes', report is not None and 'space' in report['sources']
                       and bool(report['offered']) and f.ledger.hold(identity)['state'] == 'admitted')
+                check('ac3/worker-wakes', (consumer.last_answer or {}).get('ok') is True
+                      and f.ledger.item(removed)['state'] == 'removed'
+                      and len(report['offered']) == 1 and len(f.started) == started + 1
+                      and report['offered'][0]['dispatch_id'] == f.started[-1])
             finally:
                 if consumer is not None:
                     consumer.stop()

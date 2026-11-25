@@ -323,7 +323,12 @@ def _v317_suite():
                         rec, work, run, receiver = end(f)
                         failure = rec.get('space_failure') or {}
                         check('ac1/not-charged', f.dispatches.charged('unit', 'build') == 0
-                              and f.dispatches.attempts('unit', 'build') == 1)
+                              and f.dispatches.attempts('unit', 'build') == 1
+                              and ADM.finished(f.ledger, f.dispatches, 'project', 'build') == [])
+                        # The fixture's host pool reads 0 only while the run directory exists, so the
+                        # recorded numbers prove the read came before cleanup; the end is conclusive.
+                        check('ac1/numbers-before-cleanup', rec['state'] == 'exited'
+                              and f.dispatches.active('unit', 'build') is None)
                         check('ac1/numbers-before-cleanup', failure.get('classification') == ADM.NO_SPACE
                               and failure.get('taxonomy') == 'unavailable_service'
                               and failure.get('pools') == [{'pool': 'host', 'free': 0, 'floor': 20},
@@ -340,9 +345,11 @@ def _v317_suite():
                         retained_states = ('present', 'due', 'deferred', 'kept')
                         if retained_state not in retained_states or not (work / 'unfinished.txt').is_file():
                             print('space317 retention', mode, retained_state, (work / 'unfinished.txt').is_file())
+                        deferral = f.ledger.item(receiver.run_census['worktree']).get('deferral') or {}
                         check('ac3/edit-kept', (work / 'unfinished.txt').is_file()
                               and (work / 'unfinished.txt').read_text() == 'unique uncommitted work'
-                              and retained_state in retained_states)
+                              and retained_state in retained_states
+                              and (retained_state != 'deferred' or deferral.get('rule') == 'unique_work'))
                         # Reconnecting starts the service's reconciler; reconnect is not a
                         # lifecycle event. Use the real service entry and its disk/store read.
                         service = object.__new__(SV.Service)
@@ -355,14 +362,20 @@ def _v317_suite():
                         launch, out = rerun(f, rec)
                         if mode == 'act':
                             check('ac1/behind-admission', launch is None and len(out['waiting']) == 1
-                                  and len(f.started) == 1 and len(f.dispatches.status()['states']) > 0)
+                                  and len(f.started) == 1 and len(f.dispatches.status()['states']) > 0
+                                  and f.conn.execute("SELECT COUNT(*) FROM entities WHERE kind='dispatch'").fetchone()[0] == 1 and f.dispatches.charged('unit', 'build') == 0)
                             f.free['host'] = 1000
+                            # Freeing by hand writes nothing to the ledger: the waiting rerun stays waiting.
+                            manual, out = rerun(f, rec)
+                            check('ac1/behind-admission', manual is None and len(out['waiting']) == 1
+                                  and len(f.started) == 1 and f.conn.execute("SELECT COUNT(*) FROM entities WHERE kind='dispatch'").fetchone()[0] == 1)
                             assert f.ledger.reconcile('console', [], [], {key: 0 for key in SP.RECONCILE_COUNTS})['ok']
                             launch, out = rerun(f, rec)
                         payload = launch.contract['input']['payload'] if launch else {}
                         check('ac3/next-brief', str(work) in payload.get('retained_worktrees', [])
                               and 'uncommitted changes' in payload.get('space_recovery', '')
-                              and (work / 'unfinished.txt').exists())
+                              and (work / 'unfinished.txt').exists()
+                              and (launch is None or D.digest(payload) == launch.contract['input']['payload_digest']))
                         if launch is None:
                             continue
                         # Review finding 1: the rerun has a number of its own, so the floor's newest build is
@@ -455,6 +468,7 @@ def _v317_suite():
                         third, out = rerun(f, second, obj)
                         again, repeated = rerun(f, second, obj)
                         check('ac4/two-stop', third is None and again is None and len(f.started) == 2
+                              and f.conn.execute("SELECT COUNT(*) FROM entities WHERE kind='dispatch'").fetchone()[0] == 2 and f.dispatches.charged('unit', 'build') == 0
                               and bool(out['stopped']) and second['space_failure']['consecutive'] == 2
                               and second['space_failure']['andon'])
                         asked = requests(f.conn)
