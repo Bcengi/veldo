@@ -55,3 +55,19 @@ Owner intent: Telegram 43610, "I need to speedup veldo work". Rank 2 of the supp
 This amends VELDO-0219's whole-stage recording and peer-median fallback only. It authorizes no
 verdict reuse, host cap increase, deadline change, live capture, full gate or full leg. Protected
 path approval is reserved for landing. Targeted evidence is not a full gate claim.
+
+## Bounded implementation evidence
+
+Implementation commit 987b93183245b013c5a86c4bd7710e29d529aadd. The 150-case comparison
+passed with identical validated verdicts and 272 clean workers per drive. Default admission
+took 3543.82 seconds; calibrated admission took 3259.29 seconds (284.53 seconds, 8.03 percent saved).
+Peak workers increased from 14 to 32. Scope total-memory peaks were 11.37 and 15.21 GiB under
+the unchanged 16 GiB cap; worker anonymous-memory bounds were 10.78 and 11.68 GiB. No CPU
+quota throttling, memory-high events, OOMs or worker errors occurred. Socket-throttling
+counters are retained in the comparison, not omitted or described as zero.
+
+All 25 registered guard falsifiers were killed at their named rows. The census is green,
+personal-setup findings and stale-mutant count are zero, and engine copies are identical.
+See proof/VELDO-0362/manifest.json and comparison.json. This is bounded evidence only; the
+canonical gate, full legs and landing approval were not performed. No full-gate speedup
+is inferred from this single pair, whose tail includes long UI mutants.

@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -340 +340 @@
+-        runs = [r for item in members for r in item['resource_runs']]
++        runs = [r for item in members if item['key'] == key for r in item['resource_runs']]

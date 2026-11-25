@@ -1,0 +1,5 @@
+--- a/scripts/check_gate_mutations.py
++++ b/scripts/check_gate_mutations.py
+@@ -261 +261 @@
+-                        or outcome.get('resource_valid') is not True
++                        
