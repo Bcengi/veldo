@@ -1,8 +1,8 @@
 {
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0360",
-  "commit": "6202e7c5ded0b22a3eb8d9aece891d50f30d4254",
-  "tree": "7ac276282997f397d418dbad9dc350005c58701b",
+  "commit": "31a9c930e016bf0009fe52567367243fbb9b5457",
+  "tree": "a6350ec60ef32494e7406dc3050bc1a7a2a8aecf",
   "producer": "implementation",
   "criteria": [
     {
@@ -11,12 +11,12 @@
       "evidence": [
         {
           "type": "integration",
-          "ref": "proof/VELDO-0360/fix-round1/native-early.json",
+          "ref": "proof/VELDO-0360/fix-round2/native-early.json",
           "detail": "Early red leaves mutation and descendants unstarted; independent pending work also held."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0360/fix-round1/mutants.json",
+          "ref": "proof/VELDO-0360/fix-round2/mutants.json",
           "detail": "Prerequisite and pending guards each have a green no-op and red named row."
         }
       ]
@@ -27,13 +27,13 @@
       "evidence": [
         {
           "type": "integration",
-          "ref": "proof/VELDO-0360/fix-round1/native-controls.json",
-          "detail": "Seven native controls include active mutation cancellation, coordinator death and a scheduler exception: all worker and descendant PIDs reaped, nested worker/node cgroups empty and removed before every grant release; original exit 7 and partial receipt retained."
+          "ref": "proof/VELDO-0360/fix-round2/native-controls.json",
+          "detail": "Eight native controls include active mutation cancellation, coordinator death and a scheduler exception. All workers and descendants are gone before grant release; an adopted live helper survives another node completing, and both nodes pass."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0360/fix-round1/mutants.json",
-          "detail": "37 mutants killed at named rows with green no-ops, including 22 new cleanup, worker ownership, release ordering and reaper guards."
+          "ref": "proof/VELDO-0360/fix-round2/mutants.json",
+          "detail": "43 mutants rejected at their named rows with green no-ops, including six new completion and nonblocking reaper falsifiers."
         }
       ]
     },
@@ -43,18 +43,23 @@
       "evidence": [
         {
           "type": "integration",
-          "ref": "proof/VELDO-0360/fix-round1/native-diagnostic.json",
+          "ref": "proof/VELDO-0360/fix-round2/native-diagnostic.json",
           "detail": "Diagnostic mode runs mutation after load not_run and retains first failure across later red."
         },
         {
           "type": "integration",
-          "ref": "proof/VELDO-0360/fix-round1/native-controls.json",
+          "ref": "proof/VELDO-0360/fix-round2/native-controls.json",
           "detail": "Both green modes have identical stage verdicts and no cancellations."
         },
         {
           "type": "unit",
-          "ref": "proof/VELDO-0360/fix-round1/mutants.json",
+          "ref": "proof/VELDO-0360/fix-round2/mutants.json",
           "detail": "Exact opt-in and mode guards falsified, including a non-1 environment value."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0360/fix-round2/native-sibling.json",
+          "detail": "Two concurrent nodes pass; the second exchanges a socket handshake with its adopted descendant after the first node completes."
         }
       ]
     },
@@ -64,28 +69,28 @@
       "evidence": [
         {
           "type": "operational",
-          "ref": "proof/VELDO-0360/fix-round1/lint.txt",
+          "ref": "proof/VELDO-0360/fix-round2/lint.txt",
           "detail": "Lint passed."
         },
         {
           "type": "operational",
-          "ref": "proof/VELDO-0360/fix-round1/templates.txt",
+          "ref": "proof/VELDO-0360/fix-round2/templates.txt",
           "detail": "Engine copies match; template synchronization passed."
         },
         {
           "type": "operational",
-          "ref": "proof/VELDO-0360/fix-round1/census.txt",
-          "detail": "2843 sites; no additions, one polling sleep removed."
+          "ref": "proof/VELDO-0360/fix-round2/census.txt",
+          "detail": "2843 sites; no additions; baseline unchanged."
         },
         {
           "type": "operational",
-          "ref": "proof/VELDO-0360/fix-round1/personal-setup.txt",
+          "ref": "proof/VELDO-0360/fix-round2/personal-setup.txt",
           "detail": "Zero personal setup findings."
         },
         {
           "type": "operational",
-          "ref": "proof/VELDO-0360/fix-round1/invariants.txt",
-          "detail": "Zero stale anchors across 4015 mutants; unconfined declaration and verification shell unchanged."
+          "ref": "proof/VELDO-0360/fix-round2/invariants.txt",
+          "detail": "Zero stale anchors across 4016 mutants; unconfined declaration, verification shell and baseline unchanged."
         }
       ]
     }
@@ -94,12 +99,12 @@
     {
       "name": "native_controls",
       "result": "pass",
-      "ref": "proof/VELDO-0360/fix-round1/native-controls.txt"
+      "ref": "proof/VELDO-0360/fix-round2/native-controls.txt"
     },
     {
       "name": "new_guard_mutants",
       "result": "pass",
-      "ref": "proof/VELDO-0360/fix-round1/mutants.txt"
+      "ref": "proof/VELDO-0360/fix-round2/mutants.txt"
     },
     {
       "name": "legacy_load_graph_guard",
@@ -109,7 +114,7 @@
     {
       "name": "hard_limits",
       "result": "pass",
-      "ref": "proof/VELDO-0360/fix-round1/README.md"
+      "ref": "proof/VELDO-0360/fix-round2/README.md"
     },
     {
       "name": "canonical_gate",
@@ -119,10 +124,10 @@
     {
       "name": "independent_review",
       "result": "pending",
-      "detail": "Prior review found F1; fix round 1 requires fresh independent review. No sub-agents were used."
+      "detail": "Fix round 1 review found N1; fix round 2 requires fresh independent review. No sub-agents were used."
     }
   ],
-  "rollback": "Revert implementation commit 6202e7c5ded0b22a3eb8d9aece891d50f30d4254 and its proof binding.",
+  "rollback": "Revert implementation commit 31a9c930e016bf0009fe52567367243fbb9b5457 and its proof binding.",
   "protected_paths": [
     "scripts/gate_schedule.py",
     "engine/scripts/gate_schedule.py",
@@ -130,6 +135,6 @@
   ],
   "approval": "pending owner approval bound to landing commit and proof",
   "scope": "Targeted implementation evidence only; this bundle is not a green gate or landing authorization.",
-  "fix_round": 1,
-  "binding": "proof/VELDO-0360/fix-round1/binding.json"
+  "fix_round": 2,
+  "binding": "proof/VELDO-0360/fix-round2/binding.json"
 }
