@@ -125,7 +125,7 @@ def ptrace():
         tracing = load('case_trace')
         command(tracing.command(trace, [sys.executable, '-I', '-S', '-c',
                 'import pathlib,sys; assert pathlib.Path(sys.argv[1]).read_text()=="traced"', str(marker)]))
-        if str(marker) not in tracing.opened_paths(trace, successful=True):
+        if marker not in {path for path, _ in tracing.opened_paths(trace, successful=True)}:
             raise RuntimeError('ptrace omitted the child read')
         return dict(observed_read=True, trace_sha256=hashlib.sha256(trace.read_bytes()).hexdigest())
 

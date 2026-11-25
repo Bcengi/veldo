@@ -15,7 +15,9 @@ footprint:
   - engine/scripts/gate_schedule.py
   - scripts/qualify_mutation_host.py
   - engine/scripts/qualify_mutation_host.py
-  - scripts/suites/114_veldo_0216_concurrent_stages.py
+  - scripts/suites/162_veldo_0364_host_relative.py
+  - scripts/suites/manifest.json
+  - scripts/suites/requires.json
   - scripts/check_teeth_mutations.py
   - specs/VELDO-0364-host-relative-mutation-qualification.md
   - specs/index.md

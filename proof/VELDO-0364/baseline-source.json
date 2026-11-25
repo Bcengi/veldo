@@ -1,0 +1,20 @@
+{
+  "gate": 15,
+  "commit": "993f66d91",
+  "source": "/home/dmitry/projects/myday/research/gate-stamps/cand-1122-993f66d91-verify.log",
+  "stage_status": "failed",
+  "stage_error": "admission_stalled",
+  "receipt_sha256": "bc19e4fc7d7e60b2489dccc2d46c51e9e15a3b022bcadeeb263f4978bf445145",
+  "selected": 100,
+  "suites": [
+    "47_veldo_0107_ipc.py",
+    "49_veldo_0109_unavailable.py",
+    "54_veldo_0118_grammar.py",
+    "55_veldo_0119_agreement.py",
+    "56_veldo_0027_signing.py",
+    "57_veldo_0120_policygrammar.py",
+    "58_veldo_0031_claims.py",
+    "58_veldo_0035_snapshots.py",
+    "58_veldo_0036_reservations.py"
+  ]
+}

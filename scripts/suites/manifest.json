@@ -2477,14 +2477,18 @@
   },
   {
    "name": "114_veldo_0113_no_autostart",
-   "requires": ["114_veldo_0113_no_autostart"],
+   "requires": [
+    "114_veldo_0113_no_autostart"
+   ],
    "requires_note": "Only ROOT and expect from shared.py; the fixture loads its production modules explicitly.",
    "file": "114_veldo_0113_no_autostart.py",
    "regions": "VELDO-0113"
   },
   {
    "name": "115_veldo_0113_work_client",
-   "requires": ["115_veldo_0113_work_client"],
+   "requires": [
+    "115_veldo_0113_work_client"
+   ],
    "requires_note": "Only ROOT and expect from shared.py; the fixture loads its production modules explicitly.",
    "file": "115_veldo_0113_work_client.py",
    "regions": "VELDO-0113 work authority boundary"
@@ -2545,6 +2549,15 @@
    "resources": {
     "systemd_user_manager": 1
    }
+  },
+  {
+   "name": "162_veldo_0364_host_relative",
+   "file": "162_veldo_0364_host_relative.py",
+   "requires": [
+    "162_veldo_0364_host_relative"
+   ],
+   "regions": "VELDO-0364 host-relative admission and explicit qualification refusal; fixture capacities only.",
+   "requires_note": "Only ROOT and expect. No native probe runs inside this suite."
   }
  ],
  "resource_capacities": {

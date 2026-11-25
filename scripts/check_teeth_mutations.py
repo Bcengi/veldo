@@ -12025,6 +12025,29 @@ def cases():
         ['declarations/review-record-bound'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0364: reservation elasticity never changes individual demand validation.
+    for name, module, old, new, row in [
+        ('absolute-floor', 'gate_schedule.py',
+         '        self.floor = {r: min(v, capacity[r]) for r, v in requested.items()}',
+         '        self.floor = dict(requested)', 'eight-core'),
+        ('aggregate-unfitted', 'gate_schedule.py',
+         "max(min(demand[r], capacity[r]), node['coordinator'][r])",
+         "max(demand[r], node['coordinator'][r])", 'aggregate-and-mix'),
+        ('worker-fitted', 'gate_schedule.py',
+         '        if any(c[r] > self.capacity[r] for r in self.capacity):',
+         '        c.update({r: min(c[r], self.capacity[r]) for r in self.capacity})\n'
+         '        if any(c[r] > self.capacity[r] for r in self.capacity):', 'worker-too-large'),
+        ('qualification-any', 'qualify_mutation_host.py',
+         "all(checks[n].get('passed') is True for n in REQUIRED)",
+         "any(checks[n].get('passed') is True for n in REQUIRED)", 'qualification-fail-closed'),
+        ('qualification-missing', 'qualify_mutation_host.py',
+         "set(checks) == set(REQUIRED) and all(checks[n].get('passed') is True for n in REQUIRED)",
+         "all(v.get('passed') is True for v in checks.values())", 'qualification-fail-closed'),
+    ]:
+        add(364, 'host364-' + name, '162_veldo_0364_host_relative.py', module,
+            old, new, ['host-relative/' + row])
+        result[-1]['dir'] = 'scripts'
+
     # VELDO-0216: graph completeness, concurrent records, summed claims and serial control.
     suite216 = '114_veldo_0216_concurrent_stages.py'
     add(216, 'concurrent216-missing-stage-runs-nothing', suite216, 'gate_schedule.py',
