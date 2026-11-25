@@ -2306,7 +2306,9 @@ class Runner:
         except BaseException as error:
             if space is not None:
                 if str(getattr(error, 'code', '')).startswith('no_account'):
-                    self.space_waiting_accounts[space_key] = space
+                    # The service's Requests owns its answer. Only a direct Runner needs this cache.
+                    if self.admission is None:
+                        self.space_waiting_accounts[space_key] = space
                 else:
                     self.space_waiting_accounts.pop(space_key, None)
                     # A racing accepted dispatch owns its binding; the losing preparation cannot release it.

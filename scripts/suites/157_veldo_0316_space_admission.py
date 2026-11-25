@@ -504,7 +504,7 @@ def _v316_suite():
                 check('ac2/completion-wakes', len(wakes) == 1 and int(seen.read_text()) == pid
                       and pid != os.getpid() and not Path('/proc/%d' % pid).exists())
                 with patch.object(f.reservations, 'reserve_worker', side_effect=D.Refused('no_account')):
-                    check('ac2/completion-wakes', offer() == 'no_account')
+                    check('ac2/completion-wakes', offer() == 'no_account' and not f.runner.space_waiting_accounts)
                 held = next(iter(f.ledger.holds()))
                 requests.passed()  # this pass asked for the offer
                 left = requests.passed()  # the next pass no longer offers it
