@@ -26,6 +26,7 @@ def _v234_suite():
     import json
     import os
     from pathlib import Path
+    import re
     import tarfile
     import time
 
@@ -81,6 +82,10 @@ def _v234_suite():
         READS = [list(r) for r in (['version'], ['status', '--json'], ['serve', 'status', '--json'], ['debug', 'prefs'],
                                    ['serve', '--help'])]
 
+        def names_443(command):
+            # Compare complete port numbers: the fixture's ephemeral loopback port can be 44431.
+            return any(re.search(r'(?<![0-9])443(?![0-9])', arg) for arg in command)
+
         def status():
             return json.loads(__import__('subprocess').run([ts.path, 'serve', 'status', '--json'], capture_output=True,
                                                            text=True, timeout=30).stdout)
@@ -107,6 +112,26 @@ def _v234_suite():
                   code == 1 and shown.get('reason') == expected and not (changed or added or removed)
                   and not serves and status() == served)
             return shown
+
+        # The Serve command uses only the stand-in, including when a target port contains "443".
+        # No listener is needed for this command/read-back control; the installed API below still
+        # gets its own allocated listener. A real HTTPS 443 argument must remain detectable.
+        for command, wanted in ((['serve', '--bg', '--https=8443', 'http://127.0.0.1:44431'], False),
+                                (['serve', '--bg', '--https=443', TARGET], True),
+                                (['serve', '--https', '443', TARGET], True),
+                                (['serve', '--https=8443', 'http://127.0.0.1:443'], True)):
+            check(SP, '443 detection compares whole port numbers [%s]' % command, names_443(command) == wanted)
+        ts.set('ready', neighbors=NEIGHBOR)
+        ts.clear()
+        h['FA'].serve(h['FA'].Tailscale([ts.path]), NAME, 44431, 8443)
+        collision_log = ts.invocations()
+        check(SP, 'a loopback port containing 443 still writes only HTTPS 8443 [%s]' % collision_log,
+              [c for c in collision_log if c not in READS] ==
+              [['serve', '--bg', '--https=8443', 'http://127.0.0.1:44431']]
+              and not any(names_443(c) for c in collision_log)
+              and status() == {'TCP': {'443': {'HTTPS': True}, '8443': {'HTTPS': True}},
+                               'Web': {NAME + ':443': NEIGHBOR['Web'][NAME + ':443'],
+                                       HOST: {'Handlers': {'/': {'Proxy': 'http://127.0.0.1:44431'}}}}})
 
         # ---- AC1: the option's values, each refused one before anything is written ---------------------------------
         ts.set('ready', neighbors=NEIGHBOR)
@@ -152,8 +177,8 @@ def _v234_suite():
         writes = [c for c in log if c not in READS]
         check(SP, 'the invocation log shows exactly one Serve write, `serve --bg --https=8443 %s` [%s]' % (TARGET, writes),
               writes == [['serve', '--bg', '--https=8443', TARGET]])
-        check(SP, 'nothing invoked names 443 [%s]' % [c for c in log if any('443' in a and '8443' not in a for a in c)],
-              not any(any('443' in a and '8443' not in a for a in c) for c in log))
+        check(SP, 'nothing invoked names 443 [%s]' % [c for c in log if names_443(c)],
+              not any(names_443(c) for c in log))
         now = status()
         check(SP, 'the Serve status keeps the other app\'s root and adds only 8443 to the API [%s]' % now,
               now == {'TCP': {'443': {'HTTPS': True}, '8443': {'HTTPS': True}},
