@@ -298,6 +298,8 @@ def _v334_suite():
                 marked = f.ledger.hold(identity)['freed']
                 f.service.space_pass()
                 wakes = list(f.loop.wakes)
+                f.service.space_pass()
+                check('ac3/' + kind + '-wakes', f.loop.wakes == wakes)
                 with patch.object(SV.time, 'time', return_value=f.now):
                     report = f.loop.run()
                 check('ac3/' + kind + '-wakes', marked and any(w['source'] == 'space' for w in wakes)

@@ -20,6 +20,9 @@ Rows below preserve the required assertion through the named current row(s). Row
 | `ac3/refusal-atomic` | race/own-version-refused |
 | `ac3/release-replay` | ac3/release-replay |
 | `ac3/stopped-clock` | ac3/release-wakes |
+| `ac3/outcome` | ac3/removal-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake. |
+| `ac3/release` | ac3/release-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake. |
+| `ac3/reconcile` | ac3/reconcile-wakes; ac2/clear-after-judgment; ac3/journal-marks. A second service pass emits no duplicate wake. |
 | `ac3/waiting-set-race` | race/release-resent; race/resend-bounded |
 | `compat/one-shot-adapter` | SUPERSEDED fixture-only adapter lacking expected_version; candidate gate/wrapper adapters use the versioned Ledger API (suites 151/153_0309). The externally visible advised behavior remains ac1/retry-removes and report/signal-refused-advised. |
 | `fix1/act-refused-signal` | act/signal-refused-waits |

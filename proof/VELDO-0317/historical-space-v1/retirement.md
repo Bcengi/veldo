@@ -20,6 +20,9 @@ Rows below preserve the required assertion through the named current row(s). Row
 | `ac4/reset` | history/reset |
 | `ac4/two-stop` | ac4/two-stop |
 | `classification/incomplete` | artifact/no-verdict |
+| `classification/floor` | classify/controls: equality with the floor is unconfirmed |
+| `classification/success` | classify/controls: successful process is not classified as no-space |
+| `classification/ordinary` | classify/controls: failure without a no-space token is not classified as no-space |
 | `classification/streams` | classify/streams |
 | `classification/unread` | classify/unread |
 | `fix1/rerun-before-release` | ac1/behind-admission; accept/released-hold (157) |
