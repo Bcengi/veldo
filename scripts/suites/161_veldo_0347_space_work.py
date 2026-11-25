@@ -1900,11 +1900,13 @@ def _v347_space_work_suite():
             agent = declared('agent_repository', {'path': str(home)}, run_owner('run-no-form'))
             tree = SCRATCH / 'agents' / 'no-form-tree'
             git(home, 'worktree', 'add', '-q', '--detach', str(tree), 'HEAD')
-            inner = declared('worktree', {'path': str(tree)}, run_owner('run-no-form'), parent=agent,
+            # The worktree is owned by a ticket, not by the run: under table 2 a worktree the run owns is due at
+            # run finished by its own row, and this row asks only whether the agent repository is.
+            inner = declared('worktree', {'path': str(tree)}, {'scope': A, 'ticket': 'VELDO-9614'}, parent=agent,
                              start=git(tree, 'rev-parse', 'HEAD'))
             done = send('run_finished', {'run': 'run-no-form'})
-            check(ROW, 'run finished does not make it due, its worktree still in place [%s %s %s %s %s %s]'
-                  % (state_of(agent), outcome_of(done, agent), handed(), agent, inner, outcome_of(done, inner)),
+            check(ROW, 'run finished does not make it due, its worktree still in place [%s %s %s %s]'
+                  % (state_of(agent), outcome_of(done, agent), handed(), outcome_of(done, inner)),
                   state_of(agent) == 'present' and outcome_of(done, agent) == {} and agent not in handed()
                   and (home / '.git').is_dir() and (tree / 'tracked.txt').is_file())
 
