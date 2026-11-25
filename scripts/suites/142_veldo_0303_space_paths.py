@@ -409,7 +409,8 @@ def _v303_space_paths_suite():
         TABLE['rows']['agent_repository']['run_finished'] = {'action': 'remove', 'after': ['worktree']}
         TABLE['ends_on']['agent_repository'] = ['run_finished'] + list(TABLE['ends_on']['agent_repository'])
         LIFECYCLE = {'version': REGISTRY['version'], 'events': list(TABLE['events']),
-                     'ends_on': {kind: list(events) for kind, events in TABLE['ends_on'].items()}}
+                     'ends_on': {kind: list(events) for kind, events in TABLE['ends_on'].items()},
+                     'forms': copy.deepcopy(TABLE.get('forms', {}))}
         KINDS = types.SimpleNamespace(
             due=lambda event, items, queued=None, look=None: K.due(event, items, queued=queued, registry=REGISTRY,
                                                                    look=look))
