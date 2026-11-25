@@ -1,0 +1,114 @@
+{
+  "schema": "veldo.space-v1-assembly-static/v1",
+  "revision": "f54b3d0916afde0808f29485f13c29533aa60d26",
+  "base": "95851131e2e33964a5e9a3194062b046e5668786",
+  "checked_at": "2026-11-25T12:10:55.366554+00:00",
+  "joins": [
+    {
+      "ticket": "0343",
+      "source": "9c9e2978c",
+      "merge": "fb69b9aae"
+    },
+    {
+      "ticket": "0347",
+      "source": "652d4e07f",
+      "merge": "07f40b909"
+    },
+    {
+      "ticket": "0319",
+      "source": "84caf97f",
+      "merge": "3904bfc58"
+    }
+  ],
+  "static": {
+    "census": {
+      "status": "passed",
+      "governed_files": 1015
+    },
+    "personal_setup": {
+      "findings": 0,
+      "installation_found": false,
+      "scope": "built-in shapes"
+    },
+    "mutation_registrations": 4137,
+    "stale_mutants": [],
+    "engine_mismatches": [],
+    "protected_paths_changed": []
+  },
+  "runtime": {
+    "status": "not_run",
+    "reason": "Gate 18 completion marker absent",
+    "required_marker": "99zzzS-veldo-cand-1122-gate18 rc=",
+    "suites": [
+      "69_veldo_0133_dispositions",
+      "71_veldo_0130_api",
+      "132_veldo_0297_space_ledger",
+      "133_veldo_0326_space_principals",
+      "134_veldo_0331_space_mode",
+      "135_veldo_0298_space_kinds",
+      "136_veldo_0299_space_probe",
+      "137_veldo_0330_space_rules",
+      "138_veldo_0300_space_remove",
+      "139_veldo_0301_space_signal",
+      "140_veldo_0345_space_keep",
+      "141_veldo_0344_process_reader",
+      "142_veldo_0303_space_paths",
+      "143_veldo_0305_space_census",
+      "144_veldo_0306_space_docker",
+      "145_veldo_0307_space_docker_ownership",
+      "146_veldo_0308_run_finished",
+      "147_veldo_0310_landed_contained",
+      "148_veldo_0311_git_hooks",
+      "149_veldo_0312_ticket_ended",
+      "150_veldo_0350_end_write",
+      "150_veldo_0327_disposition",
+      "150_veldo_0318_unique_work",
+      "150_veldo_0343_discard_keeps_commits",
+      "150_veldo_0340_review_groups",
+      "150_veldo_0342_member_picks",
+      "150_veldo_0319_space_screen",
+      "150_veldo_0319_space_ui",
+      "151_veldo_0313_space_run",
+      "152_veldo_0313_house_group",
+      "153_veldo_0302_space_creators",
+      "154_veldo_0324_batch_sandbox",
+      "153_veldo_0333_leg_time_store",
+      "155_veldo_0304_space_boundary",
+      "153_veldo_0328_images",
+      "153_veldo_0341_docker_protection",
+      "153_veldo_0337_verdict_recorded",
+      "153_veldo_0314_session_hooks",
+      "153_veldo_0336_run_worktree",
+      "153_veldo_0309_gate_space",
+      "153_veldo_0323_hook_events",
+      "154_veldo_0335_released",
+      "156_veldo_0315_reconcile",
+      "150_veldo_0329_hook_install",
+      "157_veldo_0316_space_admission",
+      "158_veldo_0334_space_freed",
+      "159_veldo_0317_no_space",
+      "161_veldo_0347_space_work"
+    ],
+    "mandatory_teeth": [
+      336,
+      319,
+      347,
+      324,
+      323,
+      302
+    ],
+    "additional_reconciled_teeth": [
+      316,
+      317,
+      318,
+      327,
+      334,
+      340,
+      342,
+      343
+    ]
+  },
+  "gate_receipt": false,
+  "landing_receipt": false,
+  "gate_unconfined": "PROPOSAL only: proof/VELDO-0319/gate-unconfined-entry.md"
+}

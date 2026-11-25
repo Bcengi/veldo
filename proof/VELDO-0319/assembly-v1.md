@@ -24,3 +24,7 @@ The protected gate_unconfined browser entry remains a PROPOSAL in
 proof/VELDO-0319/gate-unconfined-entry.md. No protected file was changed.
 Syntax parsed; suites and teeth remain pending Gate 18 completion. Final registration,
 assertion retirement audit and hard-limit checks are pending. This is not a green receipt.
+
+## Static checkpoint and pending runtime evidence
+
+`assembly-static.json` binds the joined production revision, three merge commits, static observations and exact 48-suite/six-mandatory-teeth pending set. It is explicitly neither a gate nor a landing receipt. Gate 18 completion is still absent; no Space suite or teeth job has run. The source tips are contained in the assembly, while gated landing under owner order 43607 remains pending.
