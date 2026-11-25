@@ -179,7 +179,7 @@ def _v342_suite():
                                             'images': [], 'networks': [], 'compose_projects': []}})
         ledger = SP.Ledger(S, conn, 'steward', journal_sign, config=config, state_root=str(state), host='fixture',
             lifecycle={'version': K.REGISTRY['version'], **{k: K.REGISTRY['tables'][K.REGISTRY['version']][k]
-                                                          for k in ('events', 'ends_on')}})
+                                                          for k in ('events', 'ends_on', 'forms')}})
         assert ledger.set_pool('host', 'filesystem', device=ledger.device(str(repo)))['ok']
         scope = {'type': 'plain_repository', 'id': str(repo)}
         # The mode prerequisites belong to their own suites; this fixture starts in act.

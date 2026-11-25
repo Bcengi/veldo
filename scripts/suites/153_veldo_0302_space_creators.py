@@ -94,7 +94,7 @@ def _v302_creators_suite():
         conn = S.open_store(str(state / 'control.sqlite3'))
         L = SP.Ledger(S, conn, 'authority', lambda data: 'stub:' + S.digest_of(data.decode()),
                       config=config, projects=[project], state_root=str(state), lifecycle={'version': K.REGISTRY['version'], **{key: K.REGISTRY['tables'][K.REGISTRY['version']][key]
-                      for key in ('events', 'ends_on')}},
+                      for key in ('events', 'ends_on', 'forms')}},
                       host='fixture', device=lambda path: 'device')
         assert L.set_pool('host', 'filesystem', device='device')['ok']
         space = {'ledger': L}

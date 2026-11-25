@@ -100,7 +100,7 @@ def _v324_suite():
             K.due(event, items, queued=queued, look=look, registry=registry))
         L = SP.Ledger(S, conn, 'authority', lambda data: 'stub:' + S.digest_of(data.decode()),
                       config=config, projects=[project], state_root=str(state),
-                      lifecycle={'version': registry['version'], **{key: table[key] for key in ('events', 'ends_on')}},
+                      lifecycle={'version': registry['version'], **{key: table[key] for key in ('events', 'ends_on', 'forms')}},
                       host='fixture', device=lambda path: 'device')
         assert L.set_pool('host', 'filesystem', device='device')['ok']
         owner = {'scope': {'type': 'project', 'id': project['project']}, 'ticket': 'VELDO-9324',
