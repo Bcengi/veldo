@@ -1,0 +1,122 @@
+{
+  "schema": "veldo.proof/v1",
+  "spec_id": "VELDO-0360",
+  "commit": "241241002b0a70f3e1b30a26f8cb5782d76158bc",
+  "tree": "38f3e7662a10ead4736ebf1f56acfdc8ad080e38",
+  "producer": "implementation",
+  "criteria": [
+    {
+      "id": "AC1",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0360/native-early.json",
+          "detail": "Early red leaves mutation and descendants unstarted; independent pending work also held."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0360/mutants.json",
+          "detail": "Prerequisite and pending guards each have a green no-op and red named row."
+        }
+      ]
+    },
+    {
+      "id": "AC2",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0360/native-controls.json",
+          "detail": "Production cgroup meter and CLI: all descendant PIDs reaped, node cgroups removed and grants released; first red retains return code 7."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0360/mutants.json",
+          "detail": "Cancellation, verdict, first-failure and subreaper/reap guards falsified."
+        }
+      ]
+    },
+    {
+      "id": "AC3",
+      "status": "passed",
+      "evidence": [
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0360/native-diagnostic.json",
+          "detail": "Diagnostic mode runs mutation after load not_run and retains first failure across later red."
+        },
+        {
+          "type": "integration",
+          "ref": "proof/VELDO-0360/native-controls.json",
+          "detail": "Both green modes have identical stage verdicts and no cancellations."
+        },
+        {
+          "type": "unit",
+          "ref": "proof/VELDO-0360/mutants.json",
+          "detail": "Exact opt-in and mode guards falsified, including a non-1 environment value."
+        }
+      ]
+    },
+    {
+      "id": "AC4",
+      "status": "pending",
+      "evidence": [
+        {
+          "type": "operational",
+          "ref": "proof/VELDO-0360/checks.txt",
+          "detail": "Lint, census, mirror and personal-setup checks passed. Full gate intentionally not run."
+        },
+        {
+          "type": "operational",
+          "ref": "proof/VELDO-0360/invariants.txt",
+          "detail": "Zero stale anchors across 3993 mutants; unconfined declaration and verification shell unchanged."
+        },
+        {
+          "type": "operational",
+          "ref": "proof/VELDO-0360/admission-baseline.txt",
+          "detail": "Seven failures in the adjacent admission suite reproduce identically with the original scheduler. Independent review and landing validation remain pending."
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "native_controls",
+      "result": "pass",
+      "ref": "proof/VELDO-0360/native-controls.txt"
+    },
+    {
+      "name": "new_guard_mutants",
+      "result": "pass",
+      "ref": "proof/VELDO-0360/mutants.txt"
+    },
+    {
+      "name": "legacy_load_graph_guard",
+      "result": "pass",
+      "ref": "proof/VELDO-0360/load-graph.txt"
+    },
+    {
+      "name": "hard_limits",
+      "result": "pass",
+      "ref": "proof/VELDO-0360/checks.txt"
+    },
+    {
+      "name": "canonical_gate",
+      "result": "not_run",
+      "detail": "Owner prohibited a full gate or full leg for this branch task."
+    },
+    {
+      "name": "independent_review",
+      "result": "pending",
+      "detail": "Owner prohibited sub-agents; fresh-context review prepared for landing."
+    }
+  ],
+  "rollback": "Revert implementation commit 241241002b0a70f3e1b30a26f8cb5782d76158bc and its proof bundle.",
+  "protected_paths": [
+    "scripts/gate_schedule.py",
+    "engine/scripts/gate_schedule.py"
+  ],
+  "approval": "pending owner approval bound to landing commit and proof",
+  "scope": "Targeted implementation evidence only; this bundle is not a green gate or landing authorization."
+}
