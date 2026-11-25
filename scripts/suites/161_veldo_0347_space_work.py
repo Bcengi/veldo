@@ -124,11 +124,14 @@ def _v347_space_work_suite():
     def check(row, label, condition):
         rows[row].append((label, bool(condition)))
 
+    CURRENT = [None]
+
     def row(name):
         """Run one row's body now, under its own guard: what it raises reds that row alone, so a failure
         in one row cannot hide the rows after it (review F4). Each row plants its own fixtures."""
         def run(body):
             import traceback
+            CURRENT[0] = name
             try:
                 body()
             except Exception as error:  # noqa: BLE001 - a row that raises is red, with what it raised
@@ -302,7 +305,36 @@ def _v347_space_work_suite():
         EMITTER = {'process': 'receiver', 'pid': 4747}
         KEEPER = KP.keeper(L)
 
+        class Recording:
+            """The remover, recording every item it is handed (the incoming suite's `handed` list)."""
+            def __init__(self):
+                self.handed = []
+
+            def __getattr__(self, name):
+                return getattr(RM, name)
+
+            def remove(self, ledger, probe, identity, record, **kwargs):
+                self.handed.append(identity)
+                return RM.remove(ledger, probe, identity, record, **kwargs)
+
         def send(event, subject, **given):
+            recording = None
+            if 'remover' not in given:
+                recording = given['remover'] = Recording()
+            done = _send(event, subject, **given)
+            if recording is not None and CURRENT[0] is not None:
+                # Rules 5 and 6 defer before rule 7: an item they hold is never handed to a remover, and an
+                # item deferred by the tool itself (keep_failed) was handed it.
+                for entry in done.get('outcomes') or ():
+                    if entry.get('outcome') == 'deferred' and entry.get('deferral') in ('unique_work', 'in_use'):
+                        check(CURRENT[0], 'no remover was handed %s, held by %s' % (entry['item'], entry.get('deferral')),
+                              entry['item'] not in recording.handed)
+                    if entry.get('outcome') == 'deferred' and entry.get('rule') == 'tool':
+                        check(CURRENT[0], 'the remover was handed %s and refused it' % (entry['item'],),
+                              entry['item'] in recording.handed)
+            return done
+
+        def _send(event, subject, **given):
             given.setdefault('probe', P)
             given.setdefault('kinds', K)
             given.setdefault('remover', RM)
