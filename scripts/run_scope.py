@@ -333,8 +333,10 @@ def change_selection(root, context, *, manifest=None, requires=None):
     manifest = manifest if manifest is not None else load_manifest()
     requires = requires if requires is not None else load_requires()
     names = [s['name'] for s in fragments(manifest)]
-    plan = changes.select(root, context['store'], context['repository'], context['candidate_commit'],
-                          context['inventory'], context['runtimes'])
+    plan = context.get('plan')
+    if plan is None:
+        plan = changes.select(root, context['store'], context['repository'], context['candidate_commit'],
+                              context['inventory'], context['runtimes'])
     indexed = {i['item_id']: i for i in plan['items']}
     targets, carried = [], {}
     for name in names:
@@ -344,6 +346,7 @@ def change_selection(root, context, *, manifest=None, requires=None):
             carried[name] = item['evidence']
         else:
             targets.append(name)
+    requires = requires.get('requires', requires)
     running = resolve(targets, manifest, requires)[1] if targets else []
     # A carried suite needed for setup actually executes and cannot also claim carry.
     carried = {name: evidence for name, evidence in carried.items() if name not in running}

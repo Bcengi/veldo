@@ -311,8 +311,9 @@ def authenticated_controls(store, key, suite, cases):
 
 class SuiteControls:
     """One control pair per compatible suite per gate, including dependency-based carry."""
-    def __init__(self, store, changed, source_commit):
+    def __init__(self, store, changed, source_commit, runtime_validator=None):
         self.store, self.changed, self.source_commit = store, changed, source_commit
+        self.runtime_validator = runtime_validator
         self.results = {}
 
     def get(self, suite, cases, execute, prior=None):
@@ -326,7 +327,9 @@ class SuiteControls:
             try:
                 previous = authenticated_controls(self.store, prior, suite, cases)
                 dependency = previous['dependency']
-                if (dependency['complete'] and dependency['runtime_digest'] == suite['runtime'] and
+                runtime_ok = (self.runtime_validator(dependency['runtime_digest']) if self.runtime_validator else
+                              dependency['runtime_digest'] == suite['runtime'])
+                if (dependency['complete'] and runtime_ok and
                         not C.intersects(dependency, self.changed)):
                     record = previous
             except (OSError, ValueError, KeyError, TypeError):

@@ -145,6 +145,7 @@ def _v51_suite():
                 _git_process.run(['git', 'init', '-q', '-b', 'main', str(work)], check=True, capture_output=True)
                 # A scaffold that cannot lay a working substrate refuses loudly; that refusal is observed.
                 scaffolded = outcome_of(lambda: IS.scaffold(str(work), templates=str(TEMPLATES)))
+                fixture_legacy_gate(work)
                 laid = scaffolded[1] if scaffolded[0] == 'ok' else {}
                 gate_text = (work / 'scripts' / 'verify.sh').read_text()
                 gate_text = re.sub(r'(?m)^CHECK_unit=.*$', 'CHECK_unit="required:python3 -B check.py"', gate_text)

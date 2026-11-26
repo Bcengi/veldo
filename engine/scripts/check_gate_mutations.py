@@ -892,6 +892,7 @@ class Workers:
         self.leg = None
         self.legs = {}
         self.authority_dependencies = {}
+        self.authority_runtimes = {}
         self.observation_context = {}
         self.budgets = {}
 
@@ -1062,6 +1063,7 @@ class Workers:
                             reads.unknown('observed commit unavailable')
                         native = reads.record(claim['item_id'], claim['observed_commit'])
                         self.authority_dependencies[claim['record_digest']] = native
+                        self.authority_runtimes[native['runtime_digest']] = reads.runtime
                 except (OSError, ValueError, KeyError, TypeError) as observation_error:
                     print('dependency observation not stored: %s' % observation_error, file=sys.stderr)
         if error is not None:
@@ -1847,6 +1849,8 @@ def print_leg(leg, receipt, path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--worker', type=Path)
+    parser.add_argument('--change-run')
+    parser.add_argument('--directory', type=Path)
     parser.add_argument('--root', type=Path, default=ROOT)
     parser.add_argument('--receipt', type=Path)
     parser.add_argument('--resource-capacity', action='append', default=[], metavar='NAME=N')
@@ -1855,6 +1859,9 @@ def main():
     parser.add_argument('--worker-log-dir', type=Path)
     parser.add_argument('--legs-record', type=Path, help="verify.sh's record of the gate's unconfined legs")
     args = parser.parse_args()
+    if args.change_run:
+        return load(ROOT / 'scripts/gate_execution.py').node(
+            args.change_run, 'mutation', args.root, args.directory)
     if args.worker:
         # Developer entry only: no coordinator launches it, so it keeps no ownership ledger.
         # Gate workers start from reuse_worker.py, which reports to the coordinator's ledger.
@@ -1895,7 +1902,7 @@ def main():
 
 
 def run_selected_cases(workers, cases, directory, frozen, *, store, commit, changed,
-                       configurations, registered_cases, prior_kills=None, prior_controls=None, claims=None):
+                       configurations, registered_cases, prior_kills=None, prior_controls=None, claims=None, verify_runtime=False):
     """Increment 3 coordinator seam. Increment 5 supplies the authenticated selection.
 
     Uses the existing confined workers, reservations and cleanup, with controls
@@ -1912,7 +1919,8 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
     for case in registered_cases:
         suite = M.suite_identity(case, configurations[case['identity']])
         groups.setdefault(C.digest(suite), (suite, []))[1].append(case)
-    controls = M.SuiteControls(store, changed, commit)
+    controls = M.SuiteControls(store, changed, commit, runtime_validator=(
+        lambda key: C.runtime_current(store, key, fixed_env('/nonexistent'), ROOT)) if verify_runtime else None)
     results = {}
     for group, (suite, members) in groups.items():
         if not any(c['identity'] in requested for c in members):
@@ -1925,6 +1933,10 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
             observations = workers.run(jobs, directory, frozen)
             baseline, noop = (observations[group + ':' + mode]['result']['observation']
                               for mode in ('baseline', 'noop'))
+            for observation in (baseline, noop):
+                claim = observation['dependency']
+                observation['dependency'] = O.native_dependency(
+                    getattr(workers, 'authority_dependencies', {}).get(claim['record_digest']), claim)
             # Controls also read each target's original bytes and validate its anchor,
             # even when the representative worker targets another module.
             for member in members:
@@ -1942,6 +1954,9 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
                 paths=sorted(set(dependency['paths']) | {
                     ('scripts/fixtures' if c.get('fixture') else c.get('dir', '.veldo')) + '/' + c['module']
                     for c in members}))
+            runtime_keys = sorted({baseline['dependency']['runtime_digest'], noop['dependency']['runtime_digest']})
+            if len(runtime_keys) > 1:
+                C.publish_runtime(store, runtime_keys)
             return baseline, noop, dependency
 
         shared = controls.get(suite, members, execute_controls, prior_controls.get(group))
@@ -1960,6 +1975,9 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
                 if selected is not None:
                     job['selected_rows'] = selected
                 completed = workers.run({case['identity']: job}, directory, frozen)[case['identity']]['result']
+                claim = completed['observation']['dependency']
+                completed['observation']['dependency'] = O.native_dependency(
+                    getattr(workers, 'authority_dependencies', {}).get(claim['record_digest']), claim)
                 return dict(case=case, fixture_version=FIXTURE_VERSION, input_digest=C.digest(case),
                             mutant=completed['observation'],
                             **{k: completed[k] for k in ('replacement_count', 'old_digest', 'new_digest')})
@@ -1979,6 +1997,11 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
             C.require(not workers.active and not workers.meters and not workers.owned_snapshots,
                       'publication before cleanup')
             envelope = C.sealed(M.KILL_RECORD, source_commit=commit, dependency=dependency, result=result)
+            for runtime in getattr(workers, 'authority_runtimes', {}).values():
+                C.publish_runtime(store, runtime)
+            runtime_keys = sorted({d['runtime_digest'] for d in dependencies})
+            if len(runtime_keys) > 1:
+                C.publish_runtime(store, runtime_keys)
             C.require(store.change_put(dependency) and store.change_put(envelope), 'kill publication')
             result_record = C.sealed(C.RESULT_V2, item_id=dependency['item_id'], source_commit=commit,
                 status='passed', complete=True, dependency_record_digest=dependency['record_digest'],
@@ -1994,13 +2017,17 @@ def run_change_stage(root, expected_common, context, *, capacities=None, paralle
                      admission=None, admit=False):
     """Authority-only mutation child of the common plan; no CLI enables it yet."""
     reuse = load(ROOT / 'scripts/case_reuse.py')
-    session = reuse.Session.for_changes(root, context['store'], context['repository'],
-        context['candidate_commit'], context['inventory'], context['runtimes'])
-    C, store = session.changes, context['store']
+    C, store = reuse.M.change_module(), context['store']
+    C.require(C.SELECTION_ENABLED, 'change selection is inactive until increment 5')
+    if 'plan' in context:
+        plan = context['plan']
+    else:
+        plan = reuse.Session.for_changes(root, store, context['repository'],
+            context['candidate_commit'], context['inventory'], context['runtimes']).plan
     cases = inventory(root, expected_common)
     configurations = context['configurations']
     C.require(set(configurations) == {c['identity'] for c in cases}, 'case configuration inventory')
-    selected = {i['item_id']: i for i in session.plan['items']}
+    selected = {i['item_id']: i for i in plan['items']}
     identities = {c['identity']: C.identity('case', 'mutation',
         reuse.M.suite_identity(c, configurations[c['identity']])['leg'], c['suite'], c['driver'], c['name']) for c in cases}
     C.require(set(identities.values()) <= set(selected), 'mutation selection inventory')
@@ -2020,8 +2047,8 @@ def run_change_stage(root, expected_common, context, *, capacities=None, paralle
         claims = ({c['identity']: CaseClaims().claim(c, C.digest([c, configurations[c['identity']]]))
                    for c in cases} if workers.admission else None)
         prior_kills, prior_controls = {}, {}
-        if session.plan['baseline_record_digest'] is not None:
-            baseline = C.historical_gate(store, session.plan['baseline_record_digest'], context['repository'])
+        if not context.get('full') and plan['baseline_record_digest'] is not None:
+            baseline = C.historical_gate(store, plan['baseline_record_digest'], context['repository'])
             old = {i['item_id']: i for i in baseline['receipt']['items']}
             for case in cases:
                 try:
@@ -2042,8 +2069,9 @@ def run_change_stage(root, expected_common, context, *, capacities=None, paralle
                 C.require(inventory(frozen, frozen_common) == cases, 'registry changed while snapshotting')
                 workers.resources = SuiteResources.from_root(frozen, capacities)
                 executed = run_selected_cases(workers, fresh, directory, frozen, store=store, commit=head,
-                    changed=session.plan['changed_paths'], configurations=configurations, registered_cases=cases,
-                    prior_kills=prior_kills, prior_controls=prior_controls, claims=claims)
+                    changed=plan['changed_paths'], configurations=configurations, registered_cases=cases,
+                    prior_kills=prior_kills, prior_controls=prior_controls, claims=claims,
+                    verify_runtime=context.get('verify_runtime', False))
         C.require(inputs_unchanged(root, expected_common, files, head), 'inputs changed during stage')
         items = [*carried, *executed.values()]
         for item in items:

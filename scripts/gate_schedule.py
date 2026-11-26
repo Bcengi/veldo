@@ -525,11 +525,18 @@ def stage_error(receipt):
 
 
 def command_for(root, stage, leg, command, record, receipt, listing, prior_times=None, load_record=None,
-                load_opened=None, opened_parts=None):
+                load_opened=None, opened_parts=None, change_run=None):
     """A node's command. With `opened_parts` (the scheduler's private directory), each unit node's
     gate_legs.py takes its leg's opened-files record into opened.<leg>.json there (VELDO-0358 C18: the
     authority takes it, never the candidate), and the load node is started only after the authority has
     merged those parts into `load_opened` (beside the stamp, replacing what is there), which it reads."""
+    if change_run is not None:
+        if stage == 'mutation':
+            return [sys.executable, '-I', '-S', str(HERE / 'check_gate_mutations.py'), '--root', str(root),
+                    '--change-run', change_run, '--directory', str(opened_parts)]
+        argv = [sys.executable, '-I', '-S', str(HERE / 'gate_legs.py'), '--root', str(root),
+                '--change-run', change_run, '--stage', stage, '--directory', str(opened_parts)]
+        return argv + (['--leg', leg] if leg else [])
     if stage == LOAD:
         argv = [sys.executable, '-I', '-S', str(HERE / 'gate_legs.py'), '--load-proof', '--root', str(root),
                 '--record', str(load_record)]
@@ -583,7 +590,7 @@ def stage_verdict(verdicts):
 
 def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declaration_path=None,
         capacity=None, measurement_store=None, meter_factory=None, guard_factory=input_guard, serial=False,
-        node_inputs_factory=NodeInputs, load_opened=None, collect_all=False):
+        node_inputs_factory=NodeInputs, load_opened=None, collect_all=False, change_run=None):
     """Run the real graph. Explicit injected boundaries are for fixture authorities only.
 
     CLI exposes no graph, capacity, measurement-store, runner or guard override.
@@ -700,7 +707,7 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     node_root = inputs.root if inputs else root
                     meter = meter_factory(name) if meter_factory else Meter(scope, name)
                     argv = command_for(node_root, stage, leg, catalog[stage], record, receipt, declaration, prior_times,
-                                       directory / 'load.record', load_opened, directory)
+                                       directory / 'load.record', load_opened, directory, change_run=change_run)
                     env = {k: v for k, v in os.environ.items() if k not in
                            (legs.LEG, legs.ENTRIES, legs.DIGEST, legs.UNIT_SECONDS, CHANNEL)}
                     if inputs:
@@ -938,6 +945,7 @@ def main(argv=None):
     parser.add_argument('--record', type=Path, required=True)
     parser.add_argument('--receipt', type=Path, required=True)
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--change-run')
     parser.add_argument('--stage', nargs=2, action='append', default=[])
     parser.add_argument('--load-opened', type=Path, help='the opened-files record the load-proof leg reads, '
                         'when it exists by the time the leg starts')
@@ -950,7 +958,7 @@ def main(argv=None):
             raise Refused('cannot become the scheduler child subreaper')
         try:
             result = run(dict(args.stage), args.root, args.directory, args.record, args.receipt,
-                         load_opened=args.load_opened,
+                         load_opened=args.load_opened, change_run=args.change_run,
                          collect_all=os.environ.get('VELDO_GATE_COLLECT_ALL') == '1')
         finally:
             reap_children()

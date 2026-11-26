@@ -1187,6 +1187,8 @@ print(json.dumps(r))
             'sb = importlib.util.module_from_spec(spec); spec.loader.exec_module(sb)\n'
             'with tempfile.TemporaryDirectory() as d:\n'
             '    m.scaffold(d)\n'
+            '    switch = Path(d) / "scripts/gate_changes.py"\n'
+            '    switch.write_text(switch.read_text().replace("SELECTION_ENABLED = True", "SELECTION_ENABLED = False"))\n'
             '    r = subprocess.run(["bash", str(Path(d) / "scripts/verify.sh")], capture_output=True, text=True,\n'
             '                       pass_fds=sb.launcher_fds())\n'
             '    print(r.stdout[-400:] + r.stderr[-400:]); sys.exit(r.returncode)\n')

@@ -323,8 +323,15 @@ def _run_suite(tree, label, *, change_context=None):
         spec = importlib.util.spec_from_file_location('first_use_scope', Path(__file__).with_name('run_scope.py'))
         scope = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(scope)
-        selection = scope.change_selection(change_context['root'], change_context)
+        selection = (change_context['selection'] if 'selection' in change_context else
+                     scope.change_selection(change_context['root'], change_context))
         selection = {key: selection[key] for key in ('running', 'carried', 'rows')}
+    dependency_fds = ()
+    if change_context is not None:
+        descriptor = os.environ.get('VELDO_OPENED_LEDGER_FD', '')
+        if descriptor.isdigit():
+            os.fstat(int(descriptor))
+            dependency_fds = (int(descriptor),)
     t0 = time.monotonic()
     try:
         launcher = ("import importlib.util,sys; p=sys.argv[1]; "
@@ -338,7 +345,7 @@ def _run_suite(tree, label, *, change_context=None):
         proc = heavy_run([sys.executable, "-I", "-X", "faulthandler", "-u", "-c", launcher,
                           str(Path(__file__).resolve().with_name('mutation_observer.py')),
                           "scripts/selftest.py"], cwd=str(tree),
-                         env=_child_env(), seconds=PROCESS_HANG_SECONDS, pass_fds=(*launcher_fds(), *shard_fds(os.environ)))
+                         env=_child_env(), seconds=PROCESS_HANG_SECONDS, pass_fds=(*launcher_fds(), *shard_fds(os.environ), *dependency_fds))
     except TimeoutError as error:
         raise CannotAnswer("the %s run hung without progress: %s" % (label, error)) from error
     except OSError as e:

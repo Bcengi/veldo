@@ -1,0 +1,213 @@
+{
+  "commit": "e90d54eec",
+  "plans": {
+    "scripts/verify.sh": [
+      [
+        "format",
+        "na:no formatter adopted yet"
+      ],
+      [
+        "lint",
+        "required:bash scripts/check_lint.sh"
+      ],
+      [
+        "types",
+        "na:untyped codebase or no checker adopted"
+      ],
+      [
+        "unit",
+        "required:python3 scripts/selftest.py"
+      ],
+      [
+        "integration",
+        "required:python3 scripts/check_first_use.py"
+      ],
+      [
+        "contract",
+        "na:no external API contracts"
+      ],
+      [
+        "journeys",
+        "na:no user interface in this repository"
+      ],
+      [
+        "ui_states",
+        "na:no user interface in this repository"
+      ],
+      [
+        "accessibility",
+        "na:no user interface in this repository"
+      ],
+      [
+        "token_lint",
+        "na:no design system in this repository"
+      ],
+      [
+        "visual_baselines",
+        "na:no user interface in this repository"
+      ],
+      [
+        "build",
+        "na:nothing to build; committed pdf/ artifacts are a manual release act (render_pdfs.py + Chrome CDP)"
+      ],
+      [
+        "dependency_audit",
+        "na:enforcement scripts are stdlib-only (verified); render_pdfs.py imports markdown, websockets, yaml from system python as a manual release act"
+      ],
+      [
+        "licenses",
+        "na:dependencies not redistributed"
+      ],
+      [
+        "security",
+        "required:python3 scripts/secret_inventory.py"
+      ],
+      [
+        "migration",
+        "na:no database in this repository"
+      ],
+      [
+        "generated",
+        "required:bash scripts/check_generated.sh"
+      ],
+      [
+        "docs",
+        "required:bash scripts/check_docs.sh"
+      ],
+      [
+        "performance",
+        "na:no performance thresholds declared"
+      ],
+      [
+        "coverage",
+        "na:no coverage floor declared"
+      ],
+      [
+        "packaging",
+        "required:python3 scripts/check_install_and_run.py"
+      ],
+      [
+        "personal_setup",
+        "required:python3 scripts/check_personal_setup.py"
+      ],
+      [
+        "deploy_dry_run",
+        "na:no automated deployment path yet"
+      ],
+      [
+        "wallclock",
+        "required:python3 scripts/check_wallclock.py"
+      ],
+      [
+        "extra",
+        "required:bash scripts/check_template_sync.sh && python3 scripts/check_space_boundary.py"
+      ],
+      [
+        "load",
+        "required:authority load-proof leg"
+      ],
+      [
+        "mutation",
+        "required:authority mutation stage"
+      ]
+    ],
+    "engine/scripts/verify.sh": [
+      [
+        "format",
+        "na:no formatter adopted yet"
+      ],
+      [
+        "lint",
+        "na:no linter adopted yet"
+      ],
+      [
+        "types",
+        "na:untyped codebase or no checker adopted"
+      ],
+      [
+        "unit",
+        ""
+      ],
+      [
+        "integration",
+        "na:no separate integration suite yet"
+      ],
+      [
+        "contract",
+        "na:no external API contracts"
+      ],
+      [
+        "journeys",
+        "na:no user interface in this repository"
+      ],
+      [
+        "ui_states",
+        "na:no user interface in this repository"
+      ],
+      [
+        "accessibility",
+        "na:no user interface in this repository"
+      ],
+      [
+        "token_lint",
+        "na:no design system in this repository"
+      ],
+      [
+        "visual_baselines",
+        "na:no user interface in this repository"
+      ],
+      [
+        "build",
+        "na:nothing to build (interpreted runtime)"
+      ],
+      [
+        "dependency_audit",
+        ""
+      ],
+      [
+        "licenses",
+        "na:dependencies not redistributed"
+      ],
+      [
+        "security",
+        "required:python3 scripts/secret_inventory.py"
+      ],
+      [
+        "migration",
+        "na:no database in this repository"
+      ],
+      [
+        "generated",
+        "na:no generated code"
+      ],
+      [
+        "docs",
+        "na:no executable documentation"
+      ],
+      [
+        "performance",
+        "na:no performance thresholds declared"
+      ],
+      [
+        "coverage",
+        "na:no coverage floor declared"
+      ],
+      [
+        "packaging",
+        "na:not packaged"
+      ],
+      [
+        "deploy_dry_run",
+        "na:no automated deployment path yet"
+      ],
+      [
+        "wallclock",
+        "na:no wall-clock census adopted yet (scripts/check_wallclock.py and its baseline)"
+      ],
+      [
+        "extra",
+        "na:none"
+      ]
+    ]
+  }
+}

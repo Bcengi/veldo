@@ -794,6 +794,8 @@ class TakeOpened:
         self.observer = dependency_observer()
         self.commit = self.observer.clean_commit(root) if self.observer else '0' * 40
         self.native_runs = []
+        self.observations = []
+        self.observation_error = None
         self.directory = Path(tempfile.mkdtemp(prefix='veldo-opened-'))
         self.ledger = self.directory / 'ledger'
         self.fd = os.open(str(self.ledger), os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_APPEND | os.O_CLOEXEC, 0o600)
@@ -820,8 +822,10 @@ class TakeOpened:
             try:
                 self.publish(stage, code, dependencies, opened, late, overflowed)
             except (OSError, ValueError, KeyError, TypeError) as error:
+                self.observation_error = str(error)
                 print('dependency observation not stored: %s' % error, flush=True)
         except (Invalid, OSError, ValueError, KeyError, TypeError) as error:
+            self.observation_error = str(error)
             print('   %s: the opened-files record was not taken: %s; the stage is RED' % (stage, error), flush=True)
             return 1
         finally:
@@ -865,6 +869,9 @@ class TakeOpened:
         if store is None:
             raise OSError('dependency Store unavailable')
         own = observer.DependencyReads(self.root)
+        for run in self.native_runs:
+            if run is not None:
+                changes['publish_runtime'](store, run[1].runtime)
         # These are the authority's explicit setup inputs, not candidate coverage.
         own.reasons.clear()
         if observer.clean_commit(self.root) != self.commit:
@@ -893,16 +900,27 @@ class TakeOpened:
                 authority = observer.combine_dependencies(
                     [own.record(dependency['item_id'], self.commit), *native], dependency['item_id'], self.commit)
                 dependency = observer.native_dependency(authority, dependency)
+            if native:
+                runtime_keys = sorted({own.record(dependency['item_id'], self.commit)['runtime_digest'],
+                                       *(r['runtime_digest'] for r in native)})
+                if len(runtime_keys) > 1:
+                    changes['publish_runtime'](store, runtime_keys)
             records.append(dependency)
-            observer.publish_dependencies(store, dependency, dict(claim['result'], status='passed', stage_returncode=code))
+            self.observations.append(observer.publish_dependencies(
+                store, dependency, dict(claim['result'], status='passed', stage_returncode=code)))
         item_id = changes['identity']('stage', stage)
         if not self.native_runs or any(run is None for run in self.native_runs):
             own.unknown('native attribution and failed lookup coverage unavailable')
         records.extend(reads.record(item_id, self.commit) for run in self.native_runs if run is not None
                        for name, reads in [run])
         records.append(own.record(item_id, self.commit))
+        changes['publish_runtime'](store, own.runtime)
+        runtime_keys = sorted({r['runtime_digest'] for r in records})
+        if len(runtime_keys) > 1:
+            changes['publish_runtime'](store, runtime_keys)
         combined = observer.combine_dependencies(records, item_id, self.commit)
-        observer.publish_dependencies(store, combined, dict(status='passed', returncode=code, children=[r['item_id'] for r in records[:-1]]))
+        self.observations.append(observer.publish_dependencies(store, combined,
+            dict(status='passed', returncode=code, children=[r['item_id'] for r in records[:-1]])))
 
 
 def dependency_observer():
@@ -916,13 +934,31 @@ def dependency_observer():
 
 
 
+def selected_command(stage, command, selection):
+    """Data-only suite decisions cross confinement; partial exits never certify a gate."""
+    import shlex
+    expected = {'unit': 'python3 scripts/selftest.py', 'integration': 'python3 scripts/check_first_use.py'}
+    if command != expected.get(stage):
+        raise Invalid('suite adapter command differs from catalog')
+    public = {key: selection[key] for key in ('running', 'carried', 'rows')}
+    target = 'scripts/selftest.py' if stage == 'unit' else 'scripts/check_first_use.py'
+    initial = ({'CHANGE_SELECTION': public} if stage == 'unit' else
+               {'CHANGE_CONTEXT': {'selection': public}})
+    program = ("import runpy,sys; sys.argv=[" + repr(target) + "]; "
+               "initial=" + repr(initial) + "\ntry:\n runpy.run_path(" + repr(target) +
+               ",run_name='__main__',init_globals=initial)\nexcept SystemExit as e:\n"
+               " raise SystemExit(0 if e.code == 2 and 'CHANGE_SELECTION' in initial else e.code)")
+    return 'python3 -I -c ' + shlex.quote(program)
+
+
 def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, leg=None, prior=None,
-              take_opened=None, taking=None):
+              take_opened=None, taking=None, change_selection=None):
     """One gate stage (above). With `take_opened`, the authority takes the opened-files record while it runs."""
     if taking is None and (take_opened or dependency_observer() is not None):
         taking = TakeOpened(root, take_opened, stage)
         try:
-            code = run_stage(root, stage, command, record, path, times, leg, prior, taking=taking)
+            code = run_stage(root, stage, command, record, path, times, leg, prior, taking=taking,
+                             change_selection=change_selection)
         except BaseException:
             taking.finish(stage, 1)
             raise
@@ -939,7 +975,10 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
               % (stage, path, error), flush=True)
         return 1
     declared = document['stages'].get(stage)
-    if declared is None or declared != command:
+    split = declared is not None and declared == command
+    if change_selection is not None:
+        command = selected_command(stage, command, change_selection)
+    if not split:
         # Not a declared leg: the whole stage is confined, and no caller variable reaches it.
         return (taking.run(confined, root, command, handed_env(_env()), keep) if taking else
                 confined(root, command, handed_env(_env()), *(() if keep is None else (keep,))))
@@ -1496,6 +1535,8 @@ def load_stamp(record, wall=None):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     parser.add_argument('--root')
+    parser.add_argument('--change-run')
+    parser.add_argument('--directory', type=Path)
     parser.add_argument('--stage')
     parser.add_argument('--record')
     parser.add_argument('--leg', choices=('confined', 'unconfined'))
@@ -1512,6 +1553,12 @@ def main(argv=None):
     parser.add_argument('--wall', type=int)
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
+    if args.change_run:
+        spec = importlib.util.spec_from_file_location('leg_execution', HERE / 'gate_execution.py')
+        execution = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(execution)
+        return execution.node(args.change_run, args.stage + ('.' + args.leg if args.leg else ''),
+                              Path(args.root), args.directory)
     if args.stamp is not None:
         try:
             expected = None if args.expect is None else [s for s in args.expect.split(',') if s]

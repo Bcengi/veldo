@@ -54,7 +54,15 @@ def _v367_weekly():
         store = R.Store(top / 'store', repo)
         weekly = W.Weekly(store, 'repository')
         commit = 'a' * 40
-        row('inactive', W.WEEKLY_ENABLED is False)
+        with patch.object(C, 'SELECTION_ENABLED', False), patch.object(W, 'sibling', return_value=C):
+            row('inactive', W.main([]) == 75)
+        from types import SimpleNamespace
+        commands = []
+        adapter = SimpleNamespace(main=lambda argv: commands.append(argv) or 0)
+        with patch.object(C, 'SELECTION_ENABLED', True), patch.object(W, 'sibling',
+                side_effect=lambda name: C if name == 'gate_changes' else adapter):
+            row('common-entry', W.main(['--candidate', '/fixture/candidate', '--sink', '/fixture/sink']) == 0 and
+                commands == [['--weekly', '--root', '/fixture/candidate', '--sink', '/fixture/sink']])
         request = weekly.request(commit, 'pc2', 100)
         row('two-callers', weekly.request('b' * 40, 'other-host', 101) == request)
         program = '''import importlib.util,json,sys

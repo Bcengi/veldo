@@ -14,6 +14,8 @@ protected_paths:
   - engine/scripts/verify.sh
   - scripts/gate_changes.py
   - engine/scripts/gate_changes.py
+  - scripts/gate_execution.py
+  - engine/scripts/gate_execution.py
   - scripts/gate_weekly.py
   - engine/scripts/gate_weekly.py
   - scripts/gate_reuse.py
@@ -49,6 +51,9 @@ protected_paths:
   - .veldo/policy.yaml
   - engine/.veldo/policy.yaml
 footprint:
+  - .veldo/init_scaffold.py
+  - engine/.veldo/init_scaffold.py
+  - scripts/suites/*.py
   - scripts/*.py
   - engine/scripts/*.py
   - scripts/verify.sh

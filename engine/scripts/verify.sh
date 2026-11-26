@@ -137,6 +137,23 @@ if [ -e .git ] || [ -L .git ]; then
   fi
 fi
 
+# VELDO-0367: the sole authority switch leaves the legacy plan below unchanged when off.
+_veldo_change_switch=off
+if [ -f "$VELDO_AUTHORITY/scripts/gate_changes.py" ]; then
+  _veldo_change_switch=$(python3 -I -S "$VELDO_AUTHORITY/scripts/gate_changes.py" --enabled) || {
+    echo 'GATE: RED (change switch unavailable)'; exit 1;
+  }
+fi
+case "$_veldo_change_switch" in
+  on)
+    _veldo_change_args=(--root "$(pwd -P)")
+    [ -z "$VELDO_SINK" ] || _veldo_change_args+=(--sink "$VELDO_OUT")
+    exec python3 -I -S "$VELDO_AUTHORITY/scripts/gate_execution.py" "${_veldo_change_args[@]}" ;;
+  off) ;;
+  *) echo 'GATE: RED (invalid change switch)'; exit 1 ;;
+esac
+# End VELDO-0367 entry.
+
 # THE HOST LOCK AND THE GATE'S OWN SCOPE (VELDO-0220). The authority's scripts/gate_host.json, when it
 # exists, names the lock every heavy run on this host serializes on and the scope the gate runs in.
 # Before the first check, a gate not yet running under its holder execs scripts/gate_host.py, which

@@ -1008,6 +1008,7 @@ def _v206_suite_reuse():
                 raise RuntimeError('the fixture gate has no %s slot' % other_stage)
             text = text.replace(declared, 'CHECK_%s="required:python3 scripts/stage_probe.py"' % other_stage)
         (gate.root / 'scripts/verify.sh').write_text(text)
+        fixture_legacy_gate(gate.root)
         (gate.root / 'scripts/stage_probe.py').write_text(
             'import os\nwith open(%r, "a") as stream:\n'
             '    stream.write(("reached" if "VELDO_SUITE_REUSE" in os.environ else "absent") + "\\n")\n'

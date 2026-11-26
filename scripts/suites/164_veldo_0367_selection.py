@@ -50,6 +50,8 @@ def _v367_selection():
         (authority / '.veldo').mkdir()
         for name in ('gate_reuse.py', 'case_inputs.py', 'gate_fixtures.py', *sources):
             shutil.copyfile(sources.get(name, ROOT / 'scripts' / name), authority / 'scripts' / name)
+        switch = authority / 'scripts/gate_changes.py'
+        switch.write_text(switch.read_text().replace('SELECTION_ENABLED = True', 'SELECTION_ENABLED = False'))
         shutil.copyfile(evidence_source, authority / '.veldo/reuse_evidence.py')
         C, R, M, G, S, K = (load(authority / 'scripts' / name) for name in
                             ('gate_changes.py', 'gate_reuse.py', 'mutation_reuse.py',

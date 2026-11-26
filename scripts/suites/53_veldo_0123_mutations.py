@@ -144,6 +144,7 @@ def wiring(gate_source):
 def gate_exit(root, gate_source):
     """Run the actual stage through the canonical catalog; unrelated checks stand down."""
     import re
+    fixture_legacy_gate(root)
     text = gate_source.read_text()
     text = re.sub(r'^CHECK_(?!extra=|mutation=)(\w+)=.*$', r'CHECK_\1="na:isolated wiring fixture"',
                   text, flags=re.M)

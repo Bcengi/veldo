@@ -116,6 +116,7 @@ def _v50_suite():
         work.mkdir()
         _git_process.run(['git', 'init', '-q', '-b', 'main', str(work)], check=True, capture_output=True)
         scaffolded = IS.scaffold(str(work), templates=str(ROOT / 'engine'))
+        fixture_legacy_gate(work)
         gate_text = (work / 'scripts' / 'verify.sh').read_text()
         gate_text = re.sub(r'(?m)^CHECK_unit=.*$', 'CHECK_unit="required:python3 -B check.py"', gate_text)
         (work / 'scripts' / 'verify.sh').write_text(gate_text)

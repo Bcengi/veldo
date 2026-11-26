@@ -196,6 +196,7 @@ def _v239_suite():
         seed.mkdir()
         GP.run(['git', 'init', '-q', '-b', 'main', str(seed)], check=True, capture_output=True)
         IS.scaffold(str(seed), templates=str(ROOT / 'engine'))
+        fixture_legacy_gate(seed)
         (seed / 'scripts' / 'verify.sh').write_text(gate_text((seed / 'scripts' / 'verify.sh').read_text()))
         (seed / '.gitignore').write_text('__pycache__/\n')
         (seed / 'check_unit.py').write_text('\n'.join([

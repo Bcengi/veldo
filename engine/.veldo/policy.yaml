@@ -8,6 +8,8 @@ risk_tiers:
              prepare_and_execute: true}
 protected_paths:
   - {path: "scripts/gate_changes.py", floor: high}
+  - {path: "engine/scripts/gate_execution.py", floor: high}
+  - {path: "scripts/gate_execution.py", floor: high}
   - {path: "engine/scripts/gate_changes.py", floor: high}
   - {path: "scripts/gate_weekly.py", floor: high}
   - {path: "engine/scripts/gate_weekly.py", floor: high}

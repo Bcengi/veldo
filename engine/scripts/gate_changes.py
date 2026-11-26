@@ -1,4 +1,4 @@
-"""VELDO-0367 foundations. No gate entry calls this module until increment 5.
+"""VELDO-0367 dependency selection and authenticated receipt contract.
 
 The authority supplies the complete catalog and expanded identities; this module
 never executes candidate catalog commands or infers success from a tree hash.
@@ -138,7 +138,8 @@ def build_inventory(catalog, expanded, manifest, requires, drivers, uncataloged=
     for driver, cases in drivers.items():
         require(isinstance(driver, str) and bool(driver) and isinstance(cases, list), 'driver registry')
         for case in cases:
-            require(case['suite'] in suites and case['leg'] in expanded.get('mutation', ()), 'case coordinates')
+            require((case['suite'] in suites or case['suite'].removesuffix('.py') in suites)
+                    and case['leg'] in expanded.get('mutation', ()), 'case coordinates')
             add(identity('case', 'mutation', case['leg'], case['suite'], driver, case['name']), case)
     for entry in uncataloged:
         add(identity('uncataloged', entry['name']), entry)
@@ -558,3 +559,48 @@ def publish_gate(root, store, repository, current, receipt):
         index = dict(repository=repository, commit=commit, record_digest=gate['record_digest'])
     require(store.put(key, index), 'gate index publication')
     return gate
+
+
+def publish_runtime(store, runtime):
+    """Authority-observed runtime inputs, indexed separately from dependency schemas."""
+    require(isinstance(runtime, (dict, list)), 'runtime observation')
+    key = digest(runtime)
+    require(store.put(digest(['observed-runtime', key]), runtime), 'runtime publication')
+    return key
+
+
+def runtime_current(store, key, environment, authority, seen=()):
+    """Rehash only a recorded item's external consumers. Missing metadata runs it."""
+    from pathlib import Path
+    import os
+    try:
+        require(key not in seen, 'runtime cycle')
+        value = store.get(digest(['observed-runtime', key]))
+        require(isinstance(value, (list, dict)) and digest(value) == key, 'missing runtime observation')
+        if isinstance(value, list):
+            return all(runtime_current(store, child, environment, authority, (*seen, key)) for child in value)
+        current = {'environment': {k: environment[k] for k in
+            ('LANG', 'LC_ALL', 'LC_CTYPE', 'TZ', 'PYTHONHASHSEED', 'PYTHONUTF8') if k in environment}}
+        for name in value:
+            if name == 'environment':
+                continue
+            path = Path(authority) / name[len('authority:'):] if name.startswith('authority:') else Path(name)
+            require(path.is_absolute() and '..' not in path.parts, 'invalid runtime path')
+            if not path.exists():
+                current[name] = ['absent']
+            elif path.is_file():
+                current[name] = ['file', hashlib.sha256(path.read_bytes()).hexdigest(), path.stat().st_mode]
+            elif path.is_dir():
+                current[name] = ['directory', sorted(os.listdir(path))]
+            else:
+                return False
+        return current == value
+    except (OSError, ValueError, TypeError):
+        return False
+
+
+if __name__ == '__main__':
+    import sys
+    if sys.argv[1:] != ['--enabled']:
+        raise SystemExit('gate_changes.py accepts only --enabled; execution belongs to verify.sh')
+    print('on' if SELECTION_ENABLED else 'off')

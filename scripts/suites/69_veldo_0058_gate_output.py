@@ -214,6 +214,7 @@ def _v58_suite():
         seed.mkdir()
         GP.run(['git', 'init', '-q', '-b', 'main', str(seed)], check=True, capture_output=True)
         IS.scaffold(str(seed), templates=str(ROOT / 'engine'))
+        fixture_legacy_gate(seed)
         # The trunk's policy module is the production one, so the installation a land lays down from the
         # trunk carries it (and a registered mutation of it).
         (seed / '.veldo' / 'policy_check.py').write_bytes(PRODUCTION['policy_check.py'].read_bytes())

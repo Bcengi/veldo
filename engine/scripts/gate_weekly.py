@@ -1,17 +1,17 @@
-"""VELDO-0367 weekly authority primitives. No scheduling or live entry until increment 5.
+"""VELDO-0367 weekly authority admission, custody and common execution.
 
 The coordinator supplies authority time and host observations, never candidate values.
 Admission is an event-driven state machine: a waiting return schedules no validation.
 All callers use the same private Store endpoint, repository identity and host enrollment.
 """
 import argparse
+import json
 import copy
 import importlib.util
 import math
 from pathlib import Path
 import secrets
 
-WEEKLY_ENABLED = False
 WEEK_SECONDS = 7 * 24 * 60 * 60
 SCHEMA = 'veldo.weekly-run/v1'
 
@@ -226,15 +226,175 @@ def fresh_plan(root, commit, inventory):
                 controls='once-per-suite', publish=True)
 
 
+def event_module():
+    path = Path(__file__).resolve().parents[1] / '.veldo/events.py'
+    spec = importlib.util.spec_from_file_location('weekly_events', path)
+    events = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(events)
+    return events
+
+
+def authority_now():
+    """Use the existing event clock site; admission stores UTC seconds, not duration guesses."""
+    import datetime
+    return datetime.datetime.fromisoformat(event_module().now_iso().replace('Z', '+00:00')).timestamp()
+
+
+def production(context, store, sink, *, space=None):
+    """Enrolled-host adapter. It is invoked only by an explicit full selection/request.
+
+    One fresh checkout and one delegated scope contain all children. The parent
+    and keeper retain exclusive custody through cgroup cleanup and settlement.
+    Unsupported observation waits before consuming a weekly slot.
+    """
+    import os
+    import select
+    import socket
+    import sys
+    import tempfile
+    H, E, C = (sibling(name) for name in ('gate_host', 'gate_execution', 'gate_changes'))
+    config = H.load()
+    weekly_config = json.loads(H.CONFIG.read_text()).get('weekly', {})
+    weekly = Weekly(store, context['repository'])
+    host = socket.gethostname()
+    if weekly_config.get('enrolled') is not True or weekly_config.get('launchers_enrolled') is not True:
+        print('weekly: waiting (host or launchers are not enrolled; no full run started)', flush=True)
+        return 75
+    if config['scope'] is None:
+        print('weekly: waiting (production requires delegated cgroup cleanup)', flush=True)
+        return 75
+    try:
+        events = H.ProcessEvents()
+    except OSError as error:
+        print('weekly: waiting (all-user process notifications unavailable: %s)' % error, flush=True)
+        return 75
+    reservation = weekly.request(context['candidate_commit'], host, authority_now())
+    if 'run_id' not in reservation or reservation['commit'] != context['candidate_commit'] or reservation['host'] != host:
+        events.close()
+        print('weekly: waiting (' + reservation.get('reason', 'another full request owns admission') + ')', flush=True)
+        return 75
+    scope_key = C.digest(['weekly-scope', reservation['run_id']])
+    owned_pids = {os.getpid()}
+    owned_scopes = set()
+
+    def owned(pid):
+        if pid in owned_pids:
+            return True
+        try:
+            group = H.own_cgroup(pid)
+            if any(group == path or group.startswith(path + '/') for path in owned_scopes):
+                owned_pids.add(pid)
+                return True
+            executable = os.readlink('/proc/%s/exe' % pid)
+            return dict(executable=executable, cgroup=group) in weekly_config.get('allowed_system_services', [])
+        except (OSError, ValueError, IndexError):
+            return False
+
+    def adopt(parent, child):
+        if parent in owned_pids:
+            owned_pids.add(child)
+
+    def observe():
+        if custody.keeper:
+            owned_pids.add(custody.keeper)
+        state = store.get(scope_key)
+        if state and state.get('cgroup'):
+            owned_scopes.add(state['cgroup'])
+        for process in Path('/proc').glob('[0-9]*'):
+            owned(int(process.name))
+        try:
+            events.drain(owned, adopt, owned_pids.discard)
+        except H.Refused as error:
+            return str(error)
+        return H.weekly_occupancy(weekly_config, own_pids=owned_pids)
+
+    custody = H.WeeklyCustody(config['lock'], host, observe)
+
+    def cleanup(groups):
+        # The keeper reads the child's authenticated scope state, including a
+        # partially created scope; it never trusts a candidate output file.
+        state = store.get(scope_key)
+        if state:
+            H.stop_scope(state)
+        H.weekly_stop_groups(groups)
+
+    old = C.eligible_baseline(context['root'], store, context['repository'], context['candidate_commit'])
+    old_results = {i['item_id']: dict(result_digest=i['result_digest'], stage=json.loads(i['item_id'])[1],
+                                     depends_on=[]) for i in old['receipt']['items']
+                   if i['status'] in ('executed', 'carried')} if old else {}
+    full = dict(context, full=True, plan=E.full_plan(context['plan']))
+    try:
+        with tempfile.TemporaryDirectory(prefix='veldo-weekly-') as temporary:
+            directory = Path(temporary)
+
+            def execute(plan, monitor, launch):
+                # Clone committed bytes into a new build tree; never carry ignored outputs.
+                M = E.module('check_gate_mutations')
+                root = directory / 'candidate'
+                source = Path(context['root'])
+                common, files, head = E.source_state(source)
+                M.command([sys.executable, '-I', '-S', str(E.HERE.parent / '.veldo/candidate_git.py'),
+                    '--root', str(source), '--expected-common', str(common), '--clone-to', str(root)],
+                    M.fixed_env('/nonexistent'))
+                fresh_common = M.common_directory(root)
+                M.git(root, fresh_common, 'checkout', '-q', '--detach', head)
+                fresh = dict(full, root=str(root), expected_common=str(fresh_common), scope_key=scope_key)
+                run = E.save_context(store, fresh)
+                environment = dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str(fresh_common))
+                for key in ('VELDO_GATE_CACHE', 'VELDO_SUITE_REUSE', 'VELDO_GATE_FORCE_FRESH'):
+                    environment.pop(key, None)
+                child = launch([sys.executable, '-I', '-S', str(E.HERE / 'gate_execution.py'),
+                    '--root', str(root), '--run', run, '--weekly-execute', '--directory', str(directory / 'graph')],
+                    env=environment)
+                owned_pids.update((child.pid, custody.keeper))
+                descriptor = os.pidfd_open(child.pid)
+                try:
+                    while child.poll() is None:
+                        select.select([descriptor, events], [], [])
+                        monitor()
+                        events.drain(owned, adopt, owned_pids.discard)
+                    C.require(child.wait() == 0, 'weekly common execution failed')
+                finally:
+                    os.close(descriptor)
+                value = store.get(E.result_key(run, 'complete'))
+                C.require(isinstance(value, dict) and value.get('run') == run, 'weekly complete receipt unavailable')
+                # The enclosing gate remains tied to the original immutable candidate.
+                E.recheck(context)
+                return value['receipt']
+
+            gate = weekly.execute(reservation, authority_now(), custody, context['root'], context['inventory'],
+                                  old_results, execute, cleanup)
+            if gate.get('status') == 'waiting':
+                print('weekly: waiting (' + gate['reason'] + ')', flush=True)
+                return 75
+            sink.mkdir(exist_ok=True)
+            if space is not None:
+                space.finish()
+            E.write_outputs(Path(context['root']), sink, store, context, gate)
+            if space is not None:
+                space.step('verdict')
+            return 0
+    finally:
+        custody.close()
+        events.close()
+        weekly.cancel(reservation['run_id'])  # pending cancellation consumes no slot
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--candidate')
     parser.add_argument('--sink')
-    parser.parse_args(argv)
-    if not WEEKLY_ENABLED:
+    args = parser.parse_args(argv)
+    if not sibling('gate_changes').SELECTION_ENABLED:
         print('weekly: waiting (inactive until increment 5; no full run started)')
         return 75
-    raise ValueError('weekly enrollment and common gate adapter required')
+    execution = sibling('gate_execution')
+    command = ['--weekly']
+    if args.candidate or args.sink:
+        if not (args.candidate and args.sink):
+            parser.error('candidate mode needs both --candidate and --sink')
+        command += ['--root', args.candidate, '--sink', args.sink]
+    return execution.main(command)
 
 
 if __name__ == '__main__':

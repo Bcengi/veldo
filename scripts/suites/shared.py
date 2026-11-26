@@ -97,6 +97,20 @@ def _dependency_capture():
 
 _DEPENDENCY_CAPTURE = _dependency_capture()
 
+def fixture_legacy_gate(root):
+    """Keep legacy gate regressions on an explicitly off fixture authority.
+
+    Call during fixture construction, before committing its seed. Production
+    checkouts are never changed; enable/weekly fixtures supply their own switch.
+    """
+    root = Path(root).resolve()
+    if root == ROOT.resolve() or root == (ROOT / 'engine').resolve():
+        raise ValueError('legacy fixture switch cannot change production authority')
+    path = root / 'scripts/gate_changes.py'
+    if path.is_file():
+        path.write_text(path.read_text().replace('SELECTION_ENABLED = True', 'SELECTION_ENABLED = False'))
+
+
 def git_fixture_dependency(path):
     """Copies of runtime modules carry their shared Git dependency beside them."""
     path = Path(path)

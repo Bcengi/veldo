@@ -740,3 +740,60 @@ def main(argv):
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
+
+
+class ProcessEvents:
+    """All-user process lifecycle notifications for enrolled weekly custody.
+
+    A host without the kernel connector capability cannot admit a full run.
+    Overflow, malformed messages and events whose owner cannot be observed are
+    unknown occupancy, never idle. No periodic sampling or timing decision.
+    """
+    def __init__(self):
+        import struct
+        self.struct = struct
+        self.socket = socket.socket(socket.AF_NETLINK, socket.SOCK_DGRAM, 11)
+        try:
+            self.socket.bind((os.getpid(), 1))
+            connector = struct.pack('=IIIIHHI', 1, 1, 0, 0, 4, 0, 1)
+            self.socket.send(struct.pack('=IHHII', 16 + len(connector), 3, 0, 0, os.getpid()) + connector)
+            self.socket.setblocking(False)
+        except BaseException:
+            self.socket.close()
+            raise
+
+    def fileno(self):
+        return self.socket.fileno()
+
+    def drain(self, owned, adopt=None, retire=None):
+        while True:
+            try:
+                data = self.socket.recv(1024 * 1024)
+            except BlockingIOError:
+                return
+            offset = 0
+            while offset < len(data):
+                if len(data) - offset < 16:
+                    raise Refused('unobservable truncated process event')
+                length, kind, flags, seq, pid = self.struct.unpack_from('=IHHII', data, offset)
+                if length < 16 or offset + length > len(data) or kind == 2:
+                    raise Refused('unobservable process event stream')
+                body = data[offset:offset + length]
+                if len(body) < 52:
+                    raise Refused('unobservable short process event')
+                what = self.struct.unpack_from('=I', body, 36)[0]
+                if what:
+                    field = 60 if what == 1 else 52
+                    if len(body) < field + 4:
+                        raise Refused('unobservable process identity')
+                    process = self.struct.unpack_from('=I', body, field)[0]
+                    if what == 1 and adopt is not None:
+                        adopt(self.struct.unpack_from('=I', body, 52)[0], process)
+                    if not owned(process):
+                        raise Refused('weekly unrelated or unobservable process event: ' + str(process))
+                    if what == 0x80000000 and retire is not None:
+                        retire(process)
+                offset += (length + 3) & ~3
+
+    def close(self):
+        self.socket.close()

@@ -18328,8 +18328,8 @@ def cases():
         'if False:', ['timers/table-profile'])
     result[-1]['dir'] = 'engine/.veldo'
     add(358, 'firstuse358-total-budget', '111_veldo_0214_first_use_budget.py', 'check_first_use.py',
-        'env=_child_env(), seconds=PROCESS_HANG_SECONDS, pass_fds=(*launcher_fds(), *shard_fds(os.environ)))',
-        'env=_child_env(), timeout=PROCESS_HANG_SECONDS, pass_fds=(*launcher_fds(), *shard_fds(os.environ)))', ['first-use-budget/measured-budget-used'])
+        'env=_child_env(), seconds=PROCESS_HANG_SECONDS, pass_fds=(*launcher_fds(), *shard_fds(os.environ), *dependency_fds))',
+        'env=_child_env(), timeout=PROCESS_HANG_SECONDS, pass_fds=(*launcher_fds(), *shard_fds(os.environ), *dependency_fds))', ['first-use-budget/measured-budget-used'])
     result[-1]['dir'] = 'scripts'
     add(358, 'verdict358-unproven-lost', '112_veldo_0215_case_deadlines.py', 'check_gate_mutations.py',
         'if baselined(case, dict(mutant, opened_files=opened), baseline):',
@@ -19231,13 +19231,13 @@ def cases():
         "_source = sys.modules['selftest_changes'].row_source(_source, CHANGE['rows'][_s['name']])",
         '_source = _source', ['selftest-selected'])
     repair367('first-use-selected', 'check_first_use.py',
-        "selection = scope.change_selection(change_context['root'], change_context)",
+        "selection = (change_context['selection'] if 'selection' in change_context else\n                     scope.change_selection(change_context['root'], change_context))",
         "selection = scope.change_selection(change_context['root'], change_context)\n        selection['running'] = []", ['first-use-selected'])
     repair367('first-use-carried', 'check_first_use.py',
-        "selection = scope.change_selection(change_context['root'], change_context)",
+        "selection = (change_context['selection'] if 'selection' in change_context else\n                     scope.change_selection(change_context['root'], change_context))",
         "selection = scope.change_selection(change_context['root'], change_context)\n        selection['carried'] = {}", ['first-use-carried'])
     repair367('first-use-unknown', 'check_first_use.py',
-        "selection = scope.change_selection(change_context['root'], change_context)",
+        "selection = (change_context['selection'] if 'selection' in change_context else\n                     scope.change_selection(change_context['root'], change_context))",
         "selection = scope.change_selection(change_context['root'], change_context)\n        selection['running'] = [name for name in selection['running'] if name != 'unknown']", ['first-use-unknown'])
 
     # Suite 48's registered falsifiers target its ordinary confined rows, not the
@@ -20103,6 +20103,8 @@ def cases():
         '            changes.item_evidence(self.store, item)',
         "            changes.require(changes.item_evidence(self.store, item)['complete'], 'unknown seed')",
         ['unknown-seed-green'])
+    weekly367('common-entry', 'gate_weekly.py',
+        "command = ['--weekly']", 'command = []', ['common-entry'])
     # VELDO-0367 increment 5: landing reopens the complete carried baseline chain.
     def enable367(name, module, old, new, rows, directory='scripts'):
         add(367, 'enable367-' + name, '166_veldo_0367_enable.py', module, old, new,
@@ -20123,6 +20125,29 @@ def cases():
     enable367('judge-evidence', 'control_verification.py',
         '    if stamp.get("change_evidence") != event.get("change_evidence"):',
         '    if False:', ['judge-same-evidence'], '.veldo')
+    enable367('cold-empty-plan', 'gate_execution.py',
+        "context['plan'] = reconcile_children(plan)",
+        "context['plan'] = dict(plan, items=[])", ['common-no-seed-all'])
+    enable367('full-retains-baseline', 'gate_execution.py',
+        'return dict(plan, baseline_commit=None, baseline_record_digest=None, changed_paths=None,',
+        "return dict(plan, baseline_commit=plan['baseline_commit'], baseline_record_digest=plan['baseline_record_digest'], changed_paths=None,",
+        ['full-clears-carry'])
+    enable367('child-parent', 'gate_execution.py',
+        "parent.update(status='run', evidence=None, reason='selected child')",
+        "parent.update(status='carried', evidence=None, reason='selected child')", ['selected-child-promotes-parent'])
+    enable367('plan-seal', 'gate_execution.py',
+        "and value.get('record_digest') == key and C.digest({k: v for k, v in value.items()\n                  if k != 'record_digest'}) == key",
+        "and value.get('record_digest') == key", ['common-plan-seal'])
+    enable367('runtime-content', 'gate_changes.py',
+        'return current == value', 'return True', ['runtime-consumer-changed'])
+    enable367('suite-command', 'gate_legs.py',
+        'if command != expected.get(stage):', 'if False:', ['suite-command-binding'])
+    enable367('graph-mutation', 'gate_schedule.py',
+        "str(HERE / 'check_gate_mutations.py'), '--root', str(root),\n                    '--change-run'",
+        "str(HERE / 'gate_candidate.py'), '--root', str(root),\n                    '--change-run'", ['graph-mutation-entry'])
+    enable367('graph-suite', 'gate_schedule.py',
+        "str(HERE / 'gate_legs.py'), '--root', str(root),\n                '--change-run'",
+        "str(HERE / 'gate_candidate.py'), '--root', str(root),\n                '--change-run'", ['graph-suite-entry'])
     return result
 
 

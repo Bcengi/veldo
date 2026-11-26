@@ -274,6 +274,7 @@ Group.members = _v148_sample_members
         seed.mkdir()
         GP.run(['git', 'init', '-q', '-b', 'main', str(seed)], check=True, capture_output=True)
         IS.scaffold(str(seed), templates=str(ROOT / 'engine'))
+        fixture_legacy_gate(seed)
 
         def declare(match):
             return 'CHECK_unit="required:python3 -B check.py"' if match.group(1) == 'unit' else \

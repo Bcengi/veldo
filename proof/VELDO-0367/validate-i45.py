@@ -85,7 +85,18 @@ def main(phase):
                 raise ValueError('new suite red; mutation controls unavailable')
             teeth, coordinator, legs = (load(name) for name in ('check_teeth_mutations', 'check_gate_mutations', 'gate_legs'))
             prefix = 'weekly367-' if phase == 'custody' else 'enable367-'
-            cases = [case for case in teeth.cases() if case['name'].startswith(prefix)]
+            changed = subprocess.check_output(['git', 'diff', '--name-only', 'f3ac43e21', 'HEAD'],
+                                              cwd=ROOT, text=True).splitlines()
+            targets = set(changed)
+            registered = [(driver, case) for driver in coordinator.DRIVERS for case in load(Path(driver).stem).cases()]
+            cases = []
+            for driver, case in registered:
+                target = str(Path('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')) / case['module'])
+                focused_case = case['name'].startswith(prefix)
+                affected = phase == 'common' and target in targets and not case['name'].startswith('weekly367-')
+                if focused_case or affected:
+                    cases.append(dict(case, driver=driver))
+            cases.sort(key=lambda case: (not case['name'].startswith(prefix), case['driver'], case['name']))
             if not cases:
                 raise ValueError('missing registered falsifiers')
             summary['mutation_cases'] = [case['name'] for case in cases]
@@ -94,7 +105,7 @@ def main(phase):
                 name = case['name']
                 print('START single-case', name, flush=True)
                 receipt = coordinator.run_stage(ROOT, coordinator.common_directory(ROOT), names=[name],
-                    drivers=['check_teeth_mutations.py'], parallel=1, leg=legs.mutation_leg(),
+                    drivers=[case['driver']], parallel=1, leg=legs.mutation_leg(),
                     force_fresh=True, log_dir=out / name, diff_dir=out / (name + '-diff'))
                 (out / (name + '.json')).write_text(json.dumps(receipt, sort_keys=True) + '\n')
                 verdict = dict(name=name, valid=(receipt['status'] == 'passed' and receipt['registered'] == 1
@@ -105,8 +116,21 @@ def main(phase):
                 summary['mutations'].append(verdict)
                 save()
                 if not verdict['valid']:
+                    detail = str(receipt.get('detail', ''))
+                    if receipt.get('error') == 'candidate_execution_denied' or re.search(
+                            r'(?:candidate_git|agent sandbox|gate host): REFUSED', detail):
+                        raise RuntimeError('blocked authority guard: ' + name + ': ' + detail)
+                    if case['suite'].removesuffix('.py') not in NEW:
+                        compared = suite(case['suite'].removesuffix('.py'), baseline_ready(), prefix='baseline-case-' + name + '-')
+                        verdict['baseline_comparison'] = dict(returncode=compared['returncode'], passed=compared['passed'])
+                        save()
                     raise ValueError('single-case falsifier failed or guard blocked: ' + name)
-                restored = suite(focused_name, prefix='restored-' + name + '-')
+                restored_name = case['suite'].removesuffix('.py')
+                restored = suite(restored_name, prefix='restored-' + name + '-')
+                if not restored['passed'] and restored_name not in NEW:
+                    compared = suite(restored_name, baseline_ready(), prefix='baseline-restored-' + name + '-')
+                    restored['baseline_comparison'] = dict(returncode=compared['returncode'], passed=compared['passed'])
+                    save()
                 verdict['restored_green'] = restored['passed']
                 save()
                 if not restored['passed']:
@@ -115,7 +139,7 @@ def main(phase):
                 # Restacked increment delta: importer suites for every changed production module.
                 changed = subprocess.check_output(['git', 'diff', '--name-only', 'f3ac43e21', 'HEAD'],
                                                   cwd=ROOT, text=True).splitlines()
-                modules = sorted({Path(path).stem for path in changed if path.endswith('.py')
+                modules = sorted({Path(path).stem for path in changed if path.endswith(('.py', '.sh'))
                     and '/suites/' not in path and not path.startswith('proof/')
                     and Path(path).name != 'check_teeth_mutations.py'})
                 manifest = json.loads((ROOT / 'scripts/suites/manifest.json').read_text())
