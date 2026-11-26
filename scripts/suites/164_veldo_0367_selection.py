@@ -67,7 +67,7 @@ def _v367_selection():
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode().strip()
         git('init', '-q')
         git('config', 'user.name', 'Dmitry Grinberg')
-        git('config', 'user.email', 'dmitry@bcengi.com')
+        git('config', 'user.email', 'dmitry@example.invalid')
         (repo / 'scripts').mkdir()
         (repo / 'scripts/gate_changes.py').write_text('# before\n')
         (repo / 'scripts/verify.sh').write_text('# before\n')
