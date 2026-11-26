@@ -61,7 +61,7 @@ expect('fixture target', namespace['value'] == 1)
             for name, entry in document['cases'].items():
                 entry['proposal'] = {'runs': [{'mode': mode, 'exit': 0, 'reads': 'same', 'trace': 't%d' % index,
                                                'observation': 'seen', 'non_file': []}
-                                              for index, mode in enumerate(C.TRACED_RUNS)],
+                                              for index, mode in enumerate(('baseline', 'baseline', 'noop', 'mutant'))],
                                      'gate_observation': 'seen', 'inputs': 'traced-inputs',
                                      'gate_receipt': {'status': 'passed', 'input_digest': 'traced-inputs'}}
                 entry['review'] = 'proof/VELDO-0217/reviews/fixture.json'

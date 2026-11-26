@@ -729,7 +729,7 @@ def validate_scope(record, case, store, *, baseline=None):
                   'prior case source')
         # Its authenticated result must itself prove a kill, including passing controls.
         validate_result(previous, case, store=store, baseline=baseline)
-        wanted = [k['row'] for k in previous['kills'] if k['kill_by'] in ('assertion', 'terminal')]
+        wanted = [k['row'] for k in previous['kills'] if k['kill_by'] in ('assertion', 'terminal', 'unproven')]
         C.require(wanted and attempts[0]['selected_rows'] == wanted, 'prior kill provenance')
         if len(attempts) == 2 and not attempts[0].get('unavailable'):
             first = observations(attempts[0]['observation'])
@@ -1227,7 +1227,7 @@ class Workers:
                         # fresh worker's own tree nests in it (VELDO-0210 AC6, AC7).
                         worker_env = fixed_env if 'snapshot_root' in job else fresh_env
                         environment = worker_env(home, str(bindir) + ':/usr/bin:/bin')
-                        if (job['case'].get('confined_only') is True or job.get('suite_leg')) and self.leg:
+                        if (job['case'].get('confined_only') is True or job.get('suite_leg') or job.get('row_legs')) and self.leg:
                             # The whole worker stays confined; only the authority's existing
                             # row split omits census rows assigned to its other leg.
                             environment.update(VELDO_GATE_LEG=leg,
@@ -1348,14 +1348,14 @@ def in_leg(leg, case, *, selected_rows=None, row_legs=None, suite_leg=None):
             raise Refused('invalid_suite_leg', 'suite is not in the authority unconfined list')
         return False
     if suite[:-3] in {e.split(':', 1)[0] for e in leg['entries'] if ':' in e}:
-        if suite_leg == 'unconfined':
-            return True  # Workers installs the authority's row split in its environment.
         if selected_rows is not None and row_legs is not None:
             assignments = {row_legs.get(row) for row in selected_rows}
             if assignments == {'confined'}:
                 return False
             if assignments == {'unconfined'}:
                 return True
+        elif suite_leg == 'unconfined':
+            return True  # Workers installs the authority's row split in its environment.
         raise Refused(ROWS_SCOPED_CASE, '%s is a case of %s, which the unconfined list names only for '
                       'some rows, and a case runs its whole suite; refusing rather than running every '
                       'row of it unconfined' % (case.get('identity') or case.get('name'), suite[:-3]))
@@ -1931,6 +1931,11 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
                 base = frozen / ('scripts/fixtures' if member.get('fixture') else member.get('dir', '.veldo'))
                 source = (base / member['module']).read_bytes()
                 C.require(source.count(member['old'].encode()) == 1, 'control target wiring')
+                O.mutate(source, member)
+                if not member.get('fixture'):
+                    suite_source = (frozen / 'scripts/suites' / member['suite']).read_text()
+                    anchor = 'ROOT / "' + member.get('dir', '.veldo') + '" / "' + member['module'] + '"'
+                    C.require(anchor in suite_source, 'control suite production-copy wiring')
             dependency = O.combine_dependencies([baseline['dependency'], noop['dependency']], group, commit)
             dependency = C.sealed(C.DEPENDENCY, **{k: v for k, v in dependency.items()
                 if k not in ('schema', 'record_digest', 'paths')},
@@ -1963,7 +1968,10 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
                 lambda record, definition: validate_result(record, definition, store=store),
                 store=store, prior=prior_kills.get(case['identity']))
             previous = store.get(prior_kills[case['identity']]) if case['identity'] in prior_kills else None
-            dependencies = [shared['dependency'], *(a['observation']['dependency']
+            control_dependency = C.sealed(C.DEPENDENCY, **dict(
+                {k: v for k, v in shared['dependency'].items() if k not in ('schema', 'record_digest')},
+                observed_commit=commit))
+            dependencies = [control_dependency, *(a['observation']['dependency']
                             for a in result['attempts'] if 'observation' in a)]
             dependency = O.combine_dependencies(dependencies, C.identity('case', 'mutation', suite['leg'],
                 case['suite'], case['driver'], case['name']), commit,

@@ -55,7 +55,7 @@ def _v224_stale():
         review = dict(schema=C.REVIEW_SCHEMA, reviewer='fixture reviewer', commit='f' * 40, cases={})
         for name, entry in document['cases'].items():
             entry['proposal'] = dict(runs=[dict(mode=mode, exit=0, reads='same', trace='trace',
-                observation='seen', non_file=[]) for mode in C.TRACED_RUNS], gate_observation='seen',
+                observation='seen', non_file=[]) for mode in ('baseline', 'baseline', 'noop', 'mutant')], gate_observation='seen',
                 inputs='inputs', gate_receipt=dict(status='passed', input_digest='inputs'))
             entry['review'] = 'proof/VELDO-0217/reviews/fixture.json'
             review['cases'][name] = dict(declaration=C.declaration_digest(entry), traces=['trace'] * 4)

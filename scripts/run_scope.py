@@ -320,6 +320,38 @@ def resolve(selector_values, manifest=None, requires=None):
     return asked, [n for n in names if n in wanted]
 
 
+def change_selection(root, context, *, manifest=None, requires=None):
+    """Authority-only adapter; missing evidence runs, and prerequisite setup stays selected.
+
+    The context supplies the Store and pinned inventory, never a caller's skip list.
+    Receipt assembly remains with the authority after child observations settle.
+    """
+    spec = _fixture_import.spec_from_file_location('scope_changes', Path(__file__).with_name('gate_changes.py'))
+    changes = _fixture_import.module_from_spec(spec)
+    spec.loader.exec_module(changes)
+    changes.require(changes.SELECTION_ENABLED, 'change selection is inactive until increment 5')
+    manifest = manifest if manifest is not None else load_manifest()
+    requires = requires if requires is not None else load_requires()
+    names = [s['name'] for s in fragments(manifest)]
+    plan = changes.select(root, context['store'], context['repository'], context['candidate_commit'],
+                          context['inventory'], context['runtimes'])
+    indexed = {i['item_id']: i for i in plan['items']}
+    targets, carried = [], {}
+    for name in names:
+        key = changes.identity('suite', context['stage'], context['leg'], name)
+        item = indexed.get(key)
+        if item is not None and item['status'] == 'carried':
+            carried[name] = item['evidence']
+        else:
+            targets.append(name)
+    running = resolve(targets, manifest, requires)[1] if targets else []
+    # A carried suite needed for setup actually executes and cannot also claim carry.
+    carried = {name: evidence for name, evidence in carried.items() if name not in running}
+    rows = {name: values for name, values in context.get('selected_rows', {}).items()
+            if name in targets and not any(name in requires[other] for other in targets if other != name)}
+    return dict(running=running, carried=carried, rows=rows, plan=plan)
+
+
 # THE GATE'S LEGS (VELDO-0208, owner decision 2026-10-07). The authority's scripts/gate_legs.py
 # runs a declared stage twice and tells the run which leg it is through these three variables:
 # VELDO_GATE_LEG is "confined" or "unconfined", VELDO_GATE_UNCONFINED is the authority's list,

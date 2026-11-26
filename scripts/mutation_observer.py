@@ -650,10 +650,11 @@ def combine_dependencies(records, item_id, commit, *, prior=None, rows=False):
         reasons.add('missing complete suite observation')
     if any(r['observed_commit'] != commit for r in records if r is not prior):
         reasons.add('mixed observed commits')
+    runtimes = sorted({r['runtime_digest'] for r in records})
     return changes['sealed'](changes['DEPENDENCY'], item_id=item_id, observed_commit=commit,
         **{field: sorted({p for r in records for p in r[field]})
            for field in ('paths', 'directories', 'absent_paths')},
-        runtime_digest=changes['digest'](sorted({r['runtime_digest'] for r in records})),
+        runtime_digest=runtimes[0] if len(runtimes) == 1 else changes['digest'](runtimes),
         complete=not reasons, unknown_reason='; '.join(sorted(reasons)) or None)
 
 

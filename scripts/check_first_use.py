@@ -311,19 +311,30 @@ def heavy_run(*args, **kwargs):
         '   nested progress: ' + line.decode(errors='replace'), flush=True), **kwargs)
 
 
-def _run_suite(tree, label):
+def _run_suite(tree, label, *, change_context=None):
     """(passed, failed, [failure names]) from one full nested run, or CannotAnswer.
 
     THE FAILURE NAMES AND THE FAILURE COUNT COME FROM DIFFERENT LINES OF THE SAME OUTPUT, so they
     are asserted EQUAL rather than assumed to agree. They disagree when a suite crashes partway,
     when output is truncated, or when a fragment prints its own lookalike line, and in every one of
     those cases this check does not know what it measured and says so."""
+    selection = None
+    if change_context is not None:
+        spec = importlib.util.spec_from_file_location('first_use_scope', Path(__file__).with_name('run_scope.py'))
+        scope = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(scope)
+        selection = scope.change_selection(change_context['root'], change_context)
+        selection = {key: selection[key] for key in ('running', 'carried', 'rows')}
     t0 = time.monotonic()
     try:
         launcher = ("import importlib.util,sys; p=sys.argv[1]; "
                     "s=importlib.util.spec_from_file_location('nested_observer',p); "
                     "m=importlib.util.module_from_spec(s); s.loader.exec_module(m); "
                     "m.run_python(sys.argv[2])")
+        if selection is not None:
+            launcher = launcher.replace("m.run_python(sys.argv[2])",
+                "import functools; m.runpy.run_path=functools.partial(m.runpy.run_path, "
+                "init_globals={'CHANGE_SELECTION': " + repr(selection) + "}); m.run_python(sys.argv[2])")
         proc = heavy_run([sys.executable, "-I", "-X", "faulthandler", "-u", "-c", launcher,
                           str(Path(__file__).resolve().with_name('mutation_observer.py')),
                           "scripts/selftest.py"], cwd=str(tree),
@@ -336,7 +347,17 @@ def _run_suite(tree, label):
     if "SELFTEST HUNG" in out or "SELFTEST NOT RUN" in out or "Timeout (" in proc.stderr:
         raise CannotAnswer("the %s run has hung or unreached rows: %s" % (label, out[-2000:]))
     names = [ln.split(FAIL_MARK, 1)[1].strip() for ln in out.splitlines() if FAIL_MARK in ln]
-    summary = [ln for ln in out.splitlines() if ln.startswith(SUMMARY_PREFIX) and "passed," in ln]
+    prefix = 'selftest (PARTIAL,' if selection is not None else SUMMARY_PREFIX
+    summary = [ln for ln in out.splitlines() if ln.startswith(prefix) and "passed," in ln]
+    expected_exit = (1 if names else 2) if selection is not None else (1 if names else 0)
+    if proc.returncode != expected_exit:
+        raise CannotAnswer('the %s run exited %d, expected %d' % (label, proc.returncode, expected_exit))
+    if selection is not None:
+        carries = [json.loads(ln.split(': ', 1)[1]) for ln in out.splitlines()
+                   if ln.startswith('selftest change carry: ')]
+        expected = [dict(suite=name, **evidence) for name, evidence in selection['carried'].items()]
+        if sorted(carries, key=lambda item: item['suite']) != sorted(expected, key=lambda item: item['suite']):
+            raise CannotAnswer('nested suite carry provenance differs from the authority plan')
     if len(summary) != 1:
         raise CannotAnswer("the %s run produced %d summary lines, expected exactly 1; its exit was "
                            "%d and its last output line was %r. Without the summary this check "
@@ -430,7 +451,7 @@ def _rmtree(path):
         print("   refusing to remove %s: not a tree this check created" % p, flush=True)
 
 
-def main(argv):
+def main(argv, *, change_context=None):
     keep = "--keep" in argv
     unknown = [a for a in argv if a.startswith("--") and a != "--keep"]
     if unknown:
@@ -461,7 +482,7 @@ def main(argv):
             print("   family %s: %s" % (mut["family"], mut["why"]), flush=True)
             tree = _copy(pristine, tmproot / ("mutated-" + mut["family"]), "mutated")
             _apply(tree, mut)
-            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"])
+            _, failed, names = _run_suite(tree, "mutated(%s)" % mut["family"], change_context=change_context)
             if not failed:
                 print("   %s: PASS. The suite is green with the layer in use." % mut["family"],
                       flush=True)
@@ -469,7 +490,7 @@ def main(argv):
             if baseline is None:
                 print("   %d failure(s): running the untouched tree to separate a regression from "
                       "a failure that was already there" % failed, flush=True)
-                baseline = _run_suite(pristine, "baseline")[2]
+                baseline = _run_suite(pristine, "baseline", change_context=change_context)[2]
             regressions = [n for n in names if n not in baseline]
             preexisting = len(names) - len(regressions)
             if preexisting:
@@ -526,4 +547,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    raise SystemExit(main(sys.argv[1:], change_context=globals().get('CHANGE_CONTEXT')))

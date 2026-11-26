@@ -247,8 +247,12 @@ def _v367_selection():
             return dict(schema=G.SCHEMA, case=case, fixture_version=G.FIXTURE_VERSION, input_digest=C.digest(case),
                         replacement_count=1, old_digest=C.digest('old'), new_digest=C.digest('new'),
                         baseline=honest, noop=honest, mutant=observation(broken))
+        (authority / 'scripts/suites').mkdir(exist_ok=True)
+        census = json.loads((ROOT / 'scripts/suites/wallclock_baseline.json').read_text())
+        census['entries'].append(dict(file='scripts/suites/fixture.py', count=1))
+        (authority / 'scripts/suites/wallclock_baseline.json').write_text(json.dumps(census))
         def validate(result, definition):
-            return G.validate_result(result, definition, baseline=[], store=store)
+            return G.validate_result(result, definition, store=store)
         prior = record([['fixture target', False], ['fixture second', True]])
         validate(prior, case)
         kill = C.sealed(M.KILL_RECORD, source_commit=a, dependency=deps['dependent'], result=prior)
@@ -285,8 +289,6 @@ def _v367_selection():
         store.change_put(outcome)
         entry = dict(item_id=item_id, status='executed', dependency_record_digest=mutation_dep['record_digest'],
                      result_digest=outcome['record_digest'], source_commit=a, source_gate_digest=None)
-        (authority / 'scripts/suites').mkdir(exist_ok=True)
-        (authority / 'scripts/suites/wallclock_baseline.json').write_text('{"entries": []}')
         row('landing-row-kill', C.item_evidence(store, entry) == mutation_dep)
         damaged = copy.deepcopy(result)
         damaged['observed_rows'] = []

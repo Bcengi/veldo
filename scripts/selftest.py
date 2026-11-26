@@ -113,6 +113,22 @@ def _protected(name, path):
     return module
 
 
+def change_selection(selection, fragments):
+    """Apply the authority's child decision before any suite body executes."""
+    changes = _protected('selftest_changes', HERE / 'gate_changes.py')
+    changes.require(changes.SELECTION_ENABLED, 'change selection is inactive until increment 5')
+    names = {s['name'] for s in fragments}
+    running, carried = set(selection['running']), selection['carried']
+    changes.require(running.isdisjoint(carried) and running | set(carried) == names,
+                    'suite selection inventory')
+    for name, evidence in carried.items():
+        changes.require(evidence['status'] == 'carried' and
+                        changes.commit_id(evidence['source_commit']) and
+                        changes.hex_id(evidence['source_gate_digest']), 'suite carry provenance')
+        print('selftest change carry: ' + json.dumps(dict(suite=name, **evidence), sort_keys=True), flush=True)
+    return [s for s in fragments if s['name'] in running]
+
+
 RS = _protected("run_scope", HERE / "run_scope.py")  # what a run of this suite is allowed to claim
 
 MANIFEST = json.loads((SUITES / "manifest.json").read_text())
@@ -238,6 +254,16 @@ elif SUITE_VALUES:
     RUN = [s for s in RUN if s["name"] in WANTED]
     SELECTOR = "--suite %s" % " ".join(ASKED)
 
+# Only an authority invoking this module with runpy can supply this dormant context.
+CHANGE = globals().get('CHANGE_SELECTION')
+if globals().get('CHANGE_CONTEXT') is not None:
+    CHANGE = RS.change_selection(HERE.parent, CHANGE_CONTEXT, manifest=MANIFEST)
+if CHANGE is not None:
+    if SELECTOR is not None:
+        raise ValueError('change selection cannot be combined with a diagnostic selector')
+    RUN = change_selection(CHANGE, RUN)
+    SELECTOR = 'change-selected suites'
+
 # SUITE RESULT REUSE (VELDO-0206). The gate's authority may hand the unit stage's dispatcher a
 # plan: the qualified suites, each of which runs in a process of its own, and of those the ones
 # for which the authority holds an authenticated passing record under exactly their present
@@ -296,7 +322,7 @@ if LEG and SHARD is None:
               % (LEG, _what, ", ".join(_whole) or "none", ", ".join(_rows) or "none",
                  " Not in this manifest: %s." % ", ".join(_absent) if _absent else "",
                  os.environ[RS.GATE_DECLARATION]), flush=True)
-    if not RUN:
+    if not RUN and not (CHANGE is not None and CHANGE["carried"]):
         print("selftest leg %s: LEG_RAN_NOTHING: no suite of this manifest is in the %s leg; "
               "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, LEG))
         sys.exit(2)
@@ -645,7 +671,13 @@ for _i, _s in enumerate(RUN):
         sys.stdout.flush()
         SHARD.send(event="target", mark=_mark)
         print(_mark, flush=True)
-    exec(compile(_p.read_text(), str(_p), "exec"), shared.__dict__)
+    _source = _p.read_text()
+    if CHANGE is not None and _s['name'] in CHANGE['rows']:
+        try:
+            _source = sys.modules['selftest_changes'].row_source(_source, CHANGE['rows'][_s['name']])
+        except ValueError:
+            pass  # Unaddressable or missing rows require the complete suite.
+    exec(compile(_source, str(_p), "exec"), shared.__dict__)
     # THE RESIDUE ROW (VELDO-0358, C7): a suite that leaves a thread alive, a child not reaped or a
     # listening socket open fails a row of its own, naming each one, so nothing it left runs into the
     # next suite. It is a row of that suite: its counts, its account line and its shard verdict carry it,
@@ -695,7 +727,7 @@ if CHILD is not None:
     _account("end", exit=_code, passed=_OWN[0], failed=shared.FAIL)
     sys.exit(_code)
 
-if LEG and shared.PASS + shared.FAIL - _RESIDUE_ROWS == _LEG_FLOOR and not REUSED:
+if LEG and shared.PASS + shared.FAIL - _RESIDUE_ROWS == _LEG_FLOOR and not REUSED and not (CHANGE is not None and CHANGE["carried"]):
     print("selftest leg %s: LEG_RAN_NOTHING: the %d suite(s) of this leg asserted no row; "
           "refusing rather than reporting a pass for a leg that tested nothing" % (LEG, len(RUN)))
     sys.exit(2)

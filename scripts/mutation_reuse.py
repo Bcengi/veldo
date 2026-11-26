@@ -353,7 +353,7 @@ def prior_killing_rows(store, key, case, validate):
         C.require(prior['source_commit'] == prior['dependency']['observed_commit'], 'kill source')
         result = prior['result']
         validate(result, case)
-        rows = [entry['row'] for entry in result['kills'] if entry['kill_by'] in ('assertion', 'terminal')]
+        rows = [entry['row'] for entry in result['kills'] if entry['kill_by'] in ('assertion', 'terminal', 'unproven')]
         C.require(rows and len(rows) == len(set(rows)), 'unusable prior kills')
         return rows
     except Exception as error:

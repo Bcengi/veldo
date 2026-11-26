@@ -2678,6 +2678,15 @@
     "164_veldo_0367_selection"
    ],
    "requires_note": "Only ROOT and expect; private authenticated stores and scratch repositories. No clocks or live services."
+  },
+  {
+   "name": "165_veldo_0367_selection_repairs",
+   "file": "165_veldo_0367_selection_repairs.py",
+   "regions": "VELDO-0367 increment 3 review regressions and inactive runner adapters.",
+   "requires": [
+    "165_veldo_0367_selection_repairs"
+   ],
+   "requires_note": "ROOT and expect; private authenticated stores, scratch Git history, controlled workers and tiny nested dispatchers. No live services or clock sites."
   }
  ],
  "resource_capacities": {

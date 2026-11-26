@@ -251,9 +251,9 @@ SELECTION_ENABLED = False
 def intersects(dependency, changed):
     """Reads, failed lookups and directory discovery all participate in selection."""
     validate_dependency(dependency)
-    return any(path in dependency['paths'] or path in dependency['absent_paths'] or
-               any(directory == '.' or path == directory or path.startswith(directory + '/')
-                   for directory in dependency['directories']) for path in changed)
+    return any(recorded == '.' or path == recorded or path.startswith(recorded + '/') or
+               recorded.startswith(path + '/') for path in changed
+               for recorded in (*dependency['paths'], *dependency['absent_paths'], *dependency['directories']))
 
 
 def referenced(store, key, schema, fields):
@@ -309,8 +309,16 @@ def execution_evidence(store, result, dependency, coordinates):
     except gate.Refused as error:
         raise ValueError('invalid mutation execution: ' + str(error)) from error
     controls = store.get(mutation['control_receipt_digest'])
-    require(controls['suite']['leg'] == coordinates[2] and all(k['kill_by'] in ('assertion', 'terminal')
+    require(controls['suite']['leg'] == coordinates[2] and all(k['kill_by'] in ('assertion', 'terminal', 'unproven')
             for k in mutation['kills']), 'execution leg and rejection')
+    retained = [controls['dependency']]
+    if mutation['execution_scope'] == 'rows':
+        retained.append(store.get(mutation['prior_kill_receipt_digest'])['dependency'])
+    for previous in retained:
+        validate_dependency(previous)
+        require(all(set(previous[field]) <= set(dependency[field])
+                    for field in ('paths', 'directories', 'absent_paths')) and
+                (not dependency['complete'] or previous['complete']), 'execution retained reads')
 
 
 def historical_gate(store, key, repository):
@@ -362,7 +370,9 @@ def green_record(root, store, gate, repository, seen=()):
             expected = dict(source, status='carried', source_gate_digest=(prior['record_digest']
                             if source['status'] == 'executed' else source['source_gate_digest']))
             require(item == expected, 'carried provenance')
-            require(dependency['complete'] and not intersects(dependency, changed), 'stale carried evidence')
+            require(dependency['complete'] and not intersects(dependency, changed) and
+                    not intersects(dependency, changed_paths(root, item['source_commit'], candidate)),
+                    'stale carried evidence')
             origin = historical_gate(store, item['source_gate_digest'], repository)
             require(item['source_commit'] in first_parents(root, candidate), 'source ancestry')
             require(origin['record_digest'] == item['source_gate_digest'] and
@@ -383,8 +393,11 @@ def eligible_baseline(root, store, repository, candidate):
                 previous = index['record_digest']
                 require(previous not in visited, 'index cycle')
                 visited.add(previous)
-                successor = store.get(successor_key(repository, commit, previous))
+                skey = successor_key(repository, commit, previous)
+                successor = store.get(skey)
                 if successor is None:
+                    require(not store._path(skey).exists() and
+                            not store._path(skey).with_suffix('.json.conflict').exists(), 'unusable successor')
                     break
                 require(set(successor) == {'schema', 'repository', 'commit', 'previous_record_digest', 'record_digest'}
                         and successor['schema'] == 'veldo.change-successor/v1'
@@ -431,7 +444,9 @@ def select(root, store, repository, candidate, current, runtimes):
                     dependency = item_evidence(store, source)
                     require(dependency['complete'], 'unknown dependency')
                     require(dependency['runtime_digest'] == runtimes.get(key), 'runtime changed')
-                    require(not intersects(dependency, changed), 'dependency changed')
+                    require(not intersects(dependency, changed) and
+                            not intersects(dependency, changed_paths(root, source['source_commit'], candidate)),
+                            'dependency changed')
                     status, reason = 'carried', 'dependencies unchanged'
                     evidence = dict(source, status='carried', source_gate_digest=(prior['record_digest']
                                     if source['status'] == 'executed' else source['source_gate_digest']))
@@ -482,7 +497,7 @@ def row_source(source, selected_rows):
     import ast
     require(isinstance(selected_rows, list) and selected_rows and
             len(set(selected_rows)) == len(selected_rows), 'selected row inventory')
-    selected = {name.split()[-1] for name in selected_rows}
+    selected = {name.split(':', 1)[0] for name in selected_rows}
     tree = ast.parse(source)
     found = []
     expressions = {id(node.value) for node in tree.body if isinstance(node, ast.Expr)}
@@ -496,7 +511,7 @@ def row_source(source, selected_rows):
             if isinstance(call, ast.Call) and isinstance(call.func, ast.Name) and call.func.id == 'expect':
                 require(call.args and isinstance(call.args[0], ast.Constant) and
                         isinstance(call.args[0].value, str), 'unaddressable row')
-                label = call.args[0].value.split(':', 1)[0].split()[-1]
+                label = call.args[0].value.split(':', 1)[0]
                 if label in selected:
                     found.append(label)
                     return node
@@ -523,8 +538,18 @@ def publish_gate(root, store, repository, current, receipt):
     green_record(root, store, gate, repository)
     commit = receipt['candidate_commit']
     require(store.change_put(gate), 'gate publication')
-    if receipt['baseline_commit'] == commit:
-        previous = receipt['baseline_record_digest']
+    index_key = store.change_gate_key(repository, commit)
+    existing = store.get(index_key)
+    require(existing is not None or (not store._path(index_key).exists() and
+            not store._path(index_key).with_suffix('.json.conflict').exists()), 'unusable gate index')
+    if existing is not None:
+        head = eligible_baseline(root, store, repository, commit)
+        require(head is not None and head['receipt']['candidate_commit'] == commit, 'unusable refresh head')
+        previous = head['record_digest']
+        if previous == gate['record_digest']:
+            return gate
+        if receipt['baseline_commit'] == commit:
+            require(receipt['baseline_record_digest'] == previous, 'stale refresh head')
         key = successor_key(repository, commit, previous)
         index = dict(schema='veldo.change-successor/v1', repository=repository, commit=commit,
                      previous_record_digest=previous, record_digest=gate['record_digest'])

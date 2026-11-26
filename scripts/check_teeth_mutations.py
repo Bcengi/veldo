@@ -19069,10 +19069,10 @@ def cases():
         result[-1]['siblings'] = True
 
     selection367('dependency', 'gate_changes.py',
-        "require(not intersects(dependency, changed), 'dependency changed')",
+        "require(not intersects(dependency, changed) and\n                            not intersects(dependency, changed_paths(root, source['source_commit'], candidate)),\n                            'dependency changed')",
         "require(True, 'dependency changed')", ['dependency-edit'])
     selection367('unrelated', 'gate_changes.py',
-        "require(not intersects(dependency, changed), 'dependency changed')",
+        "require(not intersects(dependency, changed) and\n                            not intersects(dependency, changed_paths(root, source['source_commit'], candidate)),\n                            'dependency changed')",
         "require(not changed, 'dependency changed')", ['unrelated'])
     selection367('unknown', 'gate_changes.py',
         "require(dependency['complete'], 'unknown dependency')",
@@ -19081,7 +19081,7 @@ def cases():
         "evidence = dict(source, status='carried', source_gate_digest=",
         "evidence = dict(source, status='carried', source_commit=candidate, source_gate_digest=", ['provenance'])
     selection367('stale', 'gate_changes.py',
-        "require(dependency['complete'] and not intersects(dependency, changed), 'stale carried evidence')",
+        "require(dependency['complete'] and not intersects(dependency, changed) and\n                    not intersects(dependency, changed_paths(root, item['source_commit'], candidate)),\n                    'stale carried evidence')",
         "require(dependency['complete'], 'stale carried evidence')", ['stale-carry'])
     selection367('scope-bodies', 'gate_changes.py',
         'return ast.copy_location(ast.Pass(), node)', 'return node', ['row-bodies'])
@@ -19138,6 +19138,107 @@ def cases():
     selection367('runtime-local', 'gate_changes.py',
         "require(dependency['runtime_digest'] == runtimes.get(key), 'runtime changed')",
         "require(True, 'runtime changed')", ['runtime-local'])
+
+    # Increment 3 fix round 1: each regression has a broken-copy falsifier.
+    def repair367(name, module, old, new, rows):
+        add(367, 'repair367-' + name, '165_veldo_0367_selection_repairs.py', module, old, new,
+            ['repair/' + row for row in rows])
+        result[-1]['dir'] = 'scripts'
+        result[-1]['confined_only'] = True
+        result[-1]['siblings'] = True
+
+    repair367('prefix', 'gate_changes.py',
+        "recorded == '.' or path == recorded or path.startswith(recorded + '/') or\n               recorded.startswith(path + '/')",
+        'path == recorded', ['prefix-both-ways'])
+    repair367('baselined-prior', 'mutation_reuse.py',
+        "if entry['kill_by'] in ('assertion', 'terminal', 'unproven')",
+        "if entry['kill_by'] in ('assertion', 'terminal')", ['baselined-prior'])
+    repair367('baselined-scope', 'check_gate_mutations.py',
+        "if k['kill_by'] in ('assertion', 'terminal', 'unproven')",
+        "if k['kill_by'] in ('assertion', 'terminal')", ['baselined-scope'])
+    repair367('baselined-landing', 'gate_changes.py',
+        "all(k['kill_by'] in ('assertion', 'terminal', 'unproven')",
+        "all(k['kill_by'] in ('assertion', 'terminal')", ['baselined-landing'])
+    repair367('runtime', 'mutation_observer.py',
+        "runtime_digest=runtimes[0] if len(runtimes) == 1 else changes['digest'](runtimes),",
+        "runtime_digest=changes['digest'](runtimes),", ['runtime-stable'])
+    repair367('control-rebind', 'check_gate_mutations.py',
+        "dependencies = [control_dependency, *(a['observation']['dependency']",
+        "dependencies = [shared['dependency'], *(a['observation']['dependency']", ['carried-control-complete'])
+    repair367('source-selection', 'gate_changes.py',
+        "not intersects(dependency, changed_paths(root, source['source_commit'], candidate))",
+        'True', ['source-range-selection'])
+    repair367('source-landing', 'gate_changes.py',
+        "not intersects(dependency, changed_paths(root, item['source_commit'], candidate))",
+        'True', ['source-range-landing'])
+    repair367('retain-controls', 'gate_changes.py',
+        "retained = [controls['dependency']]",
+        'retained = []', ['retain-controls-paths', 'retain-controls-directories', 'retain-controls-absent_paths', 'retain-controls-complete'])
+    repair367('retain-prior', 'gate_changes.py',
+        "retained.append(store.get(mutation['prior_kill_receipt_digest'])['dependency'])",
+        'pass', ['retain-prior-paths', 'retain-prior-directories', 'retain-prior-absent_paths', 'retain-prior-complete'])
+    repair367('row-label', 'gate_changes.py',
+        "label = call.args[0].value.split(':', 1)[0]",
+        "label = call.args[0].value.split(':', 1)[0].split()[-1]", ['exact-row'])
+    repair367('row-prefix', 'gate_changes.py',
+        "selected = {name.split(':', 1)[0] for name in selected_rows}",
+        'selected = {name.split()[-1] for name in selected_rows}', ['exact-row'])
+    repair367('renamed-row', 'gate_changes.py',
+        "selected = {name.split(':', 1)[0] for name in selected_rows}",
+        'selected = {name.split()[-1] for name in selected_rows}', ['renamed-row'])
+    result[-1]['also'] = [("label = call.args[0].value.split(':', 1)[0]",
+                            "label = call.args[0].value.split(':', 1)[0].split()[-1]")]
+    repair367('successor-conflict', 'gate_changes.py',
+        "not store._path(skey).with_suffix('.json.conflict').exists()",
+        'True', ['successor-conflict'])
+    repair367('successor-corrupt', 'gate_changes.py',
+        'not store._path(skey).exists() and',
+        'True and', ['successor-corrupt'])
+    repair367('full-refresh', 'gate_changes.py',
+        'if existing is not None:',
+        "if receipt['baseline_commit'] == commit:", ['full-refresh'])
+    repair367('row-leg', 'check_gate_mutations.py',
+        '        if selected_rows is not None and row_legs is not None:\n            assignments',
+        "        if suite_leg == 'unconfined':\n            return True\n        if selected_rows is not None and row_legs is not None:\n            assignments", ['row-leg-priority'])
+    repair367('row-environment', 'check_gate_mutations.py',
+        "or job.get('suite_leg') or job.get('row_legs')) and self.leg:",
+        "or job.get('suite_leg')) and self.leg:", ['row-leg-environment'])
+    repair367('secondary-wiring', 'check_gate_mutations.py',
+        '                O.mutate(source, member)',
+        '                pass', ['secondary-wiring'])
+    repair367('production-wiring', 'check_gate_mutations.py',
+        "C.require(anchor in suite_source, 'control suite production-copy wiring')",
+        "C.require(True, 'control suite production-copy wiring')", ['production-wiring'])
+    repair367('scope-selected', 'run_scope.py',
+        '            targets.append(name)',
+        "            if name == 'unknown':\n                targets.append(name)", ['scope-selected'])
+    repair367('scope-carried', 'run_scope.py',
+        "carried[name] = item['evidence']",
+        "carried[name] = dict(item['evidence'], source_commit=context['candidate_commit'])", ['scope-carried'])
+    repair367('scope-unknown', 'run_scope.py',
+        '            targets.append(name)',
+        "            if item is not None and item['reason'] != 'unknown dependency':\n                targets.append(name)", ['scope-unknown'])
+    repair367('selftest-selected', 'selftest.py',
+        "return [s for s in fragments if s['name'] in running]",
+        "return [s for s in fragments if s['name'] in carried]", ['selftest-selected'])
+    repair367('selftest-carried', 'selftest.py',
+        'dict(suite=name, **evidence)',
+        "dict(suite=name, **dict(evidence, source_gate_digest='0' * 64))", ['selftest-carried'])
+    repair367('selftest-unknown', 'selftest.py',
+        "return [s for s in fragments if s['name'] in running]",
+        "return [s for s in fragments if s['name'] in running and s['name'] != 'unknown']", ['selftest-unknown'])
+    repair367('selftest-rows', 'selftest.py',
+        "_source = sys.modules['selftest_changes'].row_source(_source, CHANGE['rows'][_s['name']])",
+        '_source = _source', ['selftest-selected'])
+    repair367('first-use-selected', 'check_first_use.py',
+        "selection = scope.change_selection(change_context['root'], change_context)",
+        "selection = scope.change_selection(change_context['root'], change_context)\n        selection['running'] = []", ['first-use-selected'])
+    repair367('first-use-carried', 'check_first_use.py',
+        "selection = scope.change_selection(change_context['root'], change_context)",
+        "selection = scope.change_selection(change_context['root'], change_context)\n        selection['carried'] = {}", ['first-use-carried'])
+    repair367('first-use-unknown', 'check_first_use.py',
+        "selection = scope.change_selection(change_context['root'], change_context)",
+        "selection = scope.change_selection(change_context['root'], change_context)\n        selection['running'] = [name for name in selection['running'] if name != 'unknown']", ['first-use-unknown'])
 
     # Suite 48's registered falsifiers target its ordinary confined rows, not the
     # ptrace census composite. Explicitly retain the worker boundary for the whole
