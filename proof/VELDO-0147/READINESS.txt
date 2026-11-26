@@ -102,3 +102,52 @@ Resume with the account binding, implement the transport and adapter paths,
 register all four falsifiers in the teeth inventory, then run the real Mac
 matrix and affected suites. Do not mint native evidence from synthetic rows.
 The lead retains the full gate and independent review.
+
+Round 2, 2026-11-26: the Mac Claude leg with a delivered login
+
+Lead decision: no login lives on the Mac. The main node holds every
+login; the dispatch's account profile is delivered to the Mac for the run
+only, in memory, and removed after it. Owner approval: Telegram 43735.
+
+What macOS requires (observed on macOS 26.5.1, Claude Code 2.1.317):
+- With the run's Seatbelt profile denying the SecurityServer lookups, the
+  binary reads its login from CLAUDE_CONFIG_DIR/.credentials.json; auth
+  status answered loggedIn with authMethod claude.ai. No token variable
+  and no keychain entry is needed.
+- The binary makes a per-user folder in the shared system temp unless
+  CLAUDE_CODE_TMPDIR is set;
+  that path is outside every grant (EPERM on the first attempt), so the
+  run environment now sets CLAUDE_CODE_TMPDIR to the run's own temp and
+  admission checks it equal (project_runner_macos run_environment).
+- An unprivileged user can attach a RAM disk (hdiutil ram://) and format
+  it (newfs_hfs). It mounts with noowners, so the private 0700 parent
+  directory, not the volume's modes, is what keeps other users out.
+
+Delivery (engine/.veldo/project_runner_macos_login.py): frame() on the
+main node reads the account's own directory and sends the access
+credential only; the refresh credential never leaves the main node, so a
+Mac refresh cannot rotate the main node's login. The frame goes over SSH
+stdin, the Mac mounts a RAM disk at a private mount point, writes the
+file 0600 and detaches the disk when the run ends.
+
+Real run (proof/VELDO-0147/mac-claude-leg.json, driver mac_leg.py and
+mac_leg_remote.py): account acct7, its lease held by this run's runner
+for the whole run. Pinned 2.1.317 installed on the Mac from the vendor
+manifest (checksum matched, codesign valid). The main node wrote the
+initialize request; the answer confirmed a subscription login before the
+prompt was released. The unit used Bash (its error output reached the
+tool result), Read and Edit (notes.txt edited). Linux kept 63 stdout
+lines identical in order to the Mac copy; stderr was empty on both. No
+credential value in the kept record, the Mac process command lines or
+environments. RAM disk detached, directory removed, keychain Claude items
+unchanged. Only the record's shape is committed: the full record names
+the account and Mac paths.
+
+Still open: the Codex leg (codex2 leased by another run, codex1 at its
+weekly limit; Codex 0.166.0 not yet installed on the Mac); routing these
+legs through the signed relay and the production receiver
+(control_launch invoke_remote, control_worker); capability comparison
+against an accepted revision; the MCP secrets frame; the engine stderr
+leg with a non-empty stream; and the four falsifiers. A run cannot
+outlive the delivered access credential (frame() refuses one that
+expires within 30 minutes).

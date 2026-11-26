@@ -177,6 +177,10 @@ negative controls. It is built after VELDO-0124 and VELDO-0125 in stage 3 of the
 
 ## History
 
+2026-11-26: round 2 (owner Telegram 43735). Lead decision: the main node delivers the dispatch's login to the
+Mac for the run only, on a RAM disk, never the keychain. One real Claude run on the Mac passed its own checks; the Codex
+leg waits for a free login. See `proof/VELDO-0147/READINESS.txt`. No criterion is qualified yet.
+
 2026-11-21: build prerequisite inspection at 9bb58b9b reproduced the retained Mac Claude account's
 missing subscription login with the current Keychain-denying sandbox generator. The retained engines
 also differ from the current Linux-qualified versions. See `proof/VELDO-0147/READINESS.txt` and the
