@@ -102,8 +102,11 @@ def _v124_control():
                 # Production sets the run scoped HOME and TMPDIR, never the owner's.
                 assert born['HOME'] == str(paths['scratch'].resolve()) + '/home'
                 assert born['TMPDIR'].startswith(str(paths['usertemp'].resolve()) + '/veldo-')
-                assert {k: born[k] for k in ('HOME', 'TMPDIR', 'TMP', 'TEMP')} == host.run_environment(
-                    run.dispatch, str(paths['scratch']))
+                # VELDO-0147: CLAUDE_CODE_TMPDIR joins the run's temp, so Claude Code's own folder stays inside the grants.
+                run_env = host.run_environment(run.dispatch, str(paths['scratch']))
+                assert set(run_env) == {'HOME', 'TMPDIR', 'TMP', 'TEMP', 'CLAUDE_CODE_TMPDIR'}
+                assert run_env['CLAUDE_CODE_TMPDIR'] == run_env['TMPDIR']
+                assert {k: born[k] for k in run_env} == run_env
                 assert born['VELDO_DISPATCH_ACCEPTANCE'] == dispatches.receipt(run.dispatch, 'accept')
                 assert receiver.wait(run.dispatch)['state'] == 'exited'
                 assert not D.completed(dispatches.record(run.dispatch))

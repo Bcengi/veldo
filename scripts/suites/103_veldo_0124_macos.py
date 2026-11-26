@@ -376,7 +376,7 @@ def _v124_suite():
     def sync(base):
         pack = T.load('pack')
         names = sorted(p.name for p in (ROOT / 'engine/.veldo').glob('project_runner_macos*.py'))
-        assert len(names) == 5
+        assert len(names) == 6  # VELDO-0147 added project_runner_macos_login.py
         inventory = pack.engine_files(str(ROOT / 'engine'))
         for name in names:
             assert '.veldo/' + name in inventory

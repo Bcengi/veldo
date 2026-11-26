@@ -18826,6 +18826,17 @@ def cases():
         "        result = self.sample()\n        populated = 'populated 1' in (self.path / 'cgroup.events').read_text()\n        empty_group(self.path)\n", ['failfast/meter-error-cleanup'])
     result[-1]['dir'] = 'scripts'
 
+    # VELDO-0147: the spec's falsifiers over the Mac legs that exist on the line. AC1: skip binding the
+    # Mac's pinned executable after its digest changes; the Mac unexpected-launch row must fail. AC2:
+    # leave OPENAI_API_KEY in the Mac engine environment; the Mac paid-API stop row must fail.
+    add(147, 'mac147-skip-executable-binding', '157_veldo_0147_login.py', 'project_runner_macos_profile.py',
+        "    if file_digest(profile['engines'][engine]['argv'][0]) != profile['engines'][engine]['binary_digest']:\n"
+        "        raise Refused('stale_version:engine_binary')\n", '', ['AC1/mac-unexpected-launch'])
+    add(147, 'mac147-openai-key-left', '157_veldo_0147_login.py', 'project_runner_macos_control.py',
+        'CREDENTIALS = frozenset().union(*(e.CREDENTIALS for e in ENGINES))\n',
+        "CREDENTIALS = frozenset().union(*(e.CREDENTIALS for e in ENGINES)) - {'OPENAI_API_KEY'}  # defect\n",
+        ['AC2/mac-paid-api-stop'])
+
     # VELDO-0210 AC6: a stop queued before child registration must be masked, then
     # kill the starting tree. Both controls and mutants run the complete confined suite.
     for name, old, new in (
