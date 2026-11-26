@@ -19060,10 +19060,12 @@ def cases():
                                                                          'proposal/correction-told']},
      '86_veldo_0127_agent_configuration.py': {'86_veldo_0127_init_bound.py': ['review/init-bound']},
      '78_veldo_0160_account_pool.py': {'78_veldo_0160_account_assets.py': ['install/assets']}}
+    # Only the builtins VELDO-0153's registry audit grants this factory (dict, list, repr, set, sorted, tuple).
     for case in result:
         for suite, prefixes in closures.get(case['suite'], {}).items():
-            if case['rows'] and all(any(row == prefix or (prefix.endswith('/') and row.startswith(prefix))
-                                        for prefix in prefixes) for row in case['rows']):
+            covered = [row for row in case['rows'] for prefix in prefixes
+                       if row == prefix or (prefix.endswith('/') and row.startswith(prefix))]
+            if case['rows'] and set(covered) == set(case['rows']):
                 case['suite'] = suite
                 break
     return result
