@@ -386,6 +386,80 @@ def carried_chain(root, store, gate, item, repository, cache=None):
     return source
 
 
+def control_chain(root, store, gate, item, repository, control_digest):
+    """Bind a control to its green origin, reopening every intervening baseline."""
+    controls = referenced(store, control_digest, 'veldo.suite-controls/v1',
+                          ('source_commit', 'dependency', 'suite', 'cases', 'baseline', 'noop'))
+    dependency = controls['dependency']
+    validate_dependency(dependency)
+    require(dependency['complete'] and dependency['observed_commit'] == controls['source_commit'],
+            'control chain dependency')
+    current, source, seen = gate, item, set()
+    while True:
+        require(current['record_digest'] not in seen, 'cyclic control chain')
+        seen.add(current['record_digest'])
+        require(source['status'] in ('executed', 'carried'), 'control chain item')
+        carried_chain(root, store, current, source, repository)
+        item_evidence(store, source)
+        result = store.get(source['result_digest'])
+        execution = store.get(result['execution_record_digest'])
+        require(execution['result']['control_receipt_digest'] == control_digest, 'control chain binding')
+        receipt = current['receipt']
+        if (receipt['candidate_commit'] == controls['source_commit'] and source['status'] == 'executed'
+                and execution['result'].get('control_provenance') is None):
+            require(source['source_commit'] == controls['source_commit'],
+                    'control green origin')
+            return current['record_digest']
+        previous = historical_gate(store, receipt['baseline_record_digest'], repository)
+        require(previous['receipt']['candidate_commit'] == receipt['baseline_commit'] and
+                receipt['baseline_commit'] in first_parents(root, receipt['candidate_commit']),
+                'control chain ancestry')
+        changed = changed_paths(root, receipt['baseline_commit'], receipt['candidate_commit'])
+        require(digest(changed) == receipt['changed_paths_digest'] and not intersects(dependency, changed),
+                'control chain changed dependency')
+        key = source['item_id']
+        definitions = {i['item_id']: i for i in previous['inventory']['items']}
+        require(definitions.get(key) == next((i for i in current['inventory']['items'] if i['item_id'] == key), None),
+                'control chain definition')
+        source = next((i for i in previous['receipt']['items'] if i['item_id'] == key), None)
+        require(source is not None, 'control chain missing item')
+        current = previous
+
+
+def control_candidate(root, store, gate, item, repository, control_digest):
+    return dict(control_digest=control_digest, baseline_gate_digest=gate['record_digest'], item_id=item['item_id'],
+                source_gate_digest=control_chain(root, store, gate, item, repository, control_digest))
+
+
+def validate_control_candidate(root, store, repository, baseline_digest, provenance, controls):
+    require(isinstance(provenance, dict) and provenance['baseline_gate_digest'] == baseline_digest and
+            provenance['control_digest'] == controls['record_digest'], 'control baseline binding')
+    baseline = historical_gate(store, baseline_digest, repository)
+    item = next((i for i in baseline['receipt']['items'] if i['item_id'] == provenance['item_id']), None)
+    require(item is not None and provenance == control_candidate(root, store, baseline, item, repository,
+                                                               controls['record_digest']), 'control origin binding')
+    return True
+
+
+def item_control_chain(root, store, gate, item, repository):
+    """Landing and later selection revalidate the provenance saved by execution."""
+    result = store.get(item['result_digest'])
+    if result['schema'] != RESULT_V2:
+        return
+    mutation = store.get(result['execution_record_digest'])['result']
+    controls = store.get(mutation['control_receipt_digest'])
+    if controls['source_commit'] == item['source_commit'] and mutation.get('control_provenance') is None:
+        return
+    execution_gate = (historical_gate(store, item['source_gate_digest'], repository)
+                      if item['status'] == 'carried' else gate)
+    require(execution_gate['receipt']['candidate_commit'] == item['source_commit'], 'control execution gate')
+    validate_control_candidate(root, store, repository, execution_gate['receipt']['baseline_record_digest'],
+                               mutation.get('control_provenance'), controls)
+    require(not intersects(controls['dependency'], changed_paths(root, controls['source_commit'], item['source_commit']))
+            and not intersects(controls['dependency'], changed_paths(root,
+                execution_gate['receipt']['baseline_commit'], item['source_commit'])), 'control execution changes')
+
+
 def green_record(root, store, gate, repository, seen=()):
     """Validate the entire authenticated chain, including original execution provenance."""
     check_seal(gate, GATE, ('repository', 'inventory', 'receipt', 'status', 'complete'))
@@ -414,6 +488,7 @@ def green_record(root, store, gate, repository, seen=()):
         if item['status'] not in ('executed', 'carried'):
             continue
         dependency = item_evidence(store, item)
+        item_control_chain(root, store, gate, item, repository)
         if item['status'] == 'carried':
             key = item['item_id']
             require(prior is not None and definitions.get(key) == current[key], 'carried definition')
@@ -497,6 +572,7 @@ def select(root, store, repository, candidate, current, runtimes):
                         carried_chain(root, store, prior, source, repository, cache)
                     require(source['status'] in ('executed', 'carried'), 'missing green result')
                     dependency = item_evidence(store, source)
+                    item_control_chain(root, store, prior, source, repository)
                     require(dependency['complete'], 'unknown dependency')
                     require(dependency['runtime_digest'] == runtimes.get(key), 'runtime changed')
                     require(not intersects(dependency, changed) and

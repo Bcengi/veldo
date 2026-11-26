@@ -212,6 +212,7 @@ def _v217_declarations():
             root = top / 'conditions'; root.mkdir()
             names = ['passes', 'unreviewed', 'no-review', 'review-mismatch', 'trace-failed', 'baselines-differ',
                      'one-baseline', 'non-file', 'observation-differs', 'no-gate-observation', 'gate-entry',
+                     'no-receipt', 'receipt-inputs', 'receipt-failed',
                      'toolchain-unreviewed', 'sensitivity-unproved', 'no-rationale',
                      'review-outside', 'review-unbound']
             cases = [fixture_case(n, 'test.py', driver=gate.DRIVERS[1] if n == 'toolchain-unreviewed' else None)
@@ -234,6 +235,9 @@ def _v217_declarations():
             by['non-file']['proposal']['runs'][3]['non_file'] = ['user_bus']
             by['observation-differs']['proposal']['gate_observation'] = 'another'
             by['no-gate-observation']['proposal']['gate_observation'] = None
+            by['no-receipt']['proposal'].pop('gate_receipt')
+            by['receipt-inputs']['proposal']['gate_receipt']['input_digest'] = 'another'
+            by['receipt-failed']['proposal']['gate_receipt']['status'] = 'failed'
             by['no-rationale']['rationale'] = ' '
             by['review-mismatch']['rationale'] = 'Changed after review.'
             qualify(document, files, names={c['identity'] for c in cases if c['name'] not in (
@@ -276,15 +280,20 @@ def _v217_declarations():
                 and not any(current.keys.get(gate.DRIVERS[0] + ':' + n) for n in bound))
             expected = {'passes': 'miss', 'unreviewed': 'unreviewed_declaration', 'no-review': 'review_mismatch',
                         'review-mismatch': 'review_mismatch', 'trace-failed': 'trace_failed',
-                        'baselines-differ': 'miss', 'one-baseline': 'miss',
-                        'non-file': 'user_bus', 'observation-differs': 'miss',
-                        'no-gate-observation': 'miss', 'gate-entry': 'starts_a_gate',
+                        'baselines-differ': 'baseline_reads_differ', 'one-baseline': 'trace_failed',
+                        'non-file': 'user_bus', 'observation-differs': 'observation_differs',
+                        'no-gate-observation': 'observation_differs', 'gate-entry': 'starts_a_gate',
+                        'no-receipt': 'observation_not_current', 'receipt-inputs': 'observation_not_current',
+                        'receipt-failed': 'observation_not_current',
                         'toolchain-unreviewed': 'toolchain_unreviewed',
                         'sensitivity-unproved': 'sensitivity_unproved', 'no-rationale': 'no_rationale'}
             row('review-conditions: %r keyed=%r' % ({k: v for k, v in reasons.items() if v != expected[k]}, keyed),
-                reasons == expected and keyed == sorted(n for n, reason in expected.items() if reason == 'miss')
-                and {n for n in current.snapshots if n.split(':', 1)[1] not in bound}
-                    == {gate.DRIVERS[0] + ':' + n for n, reason in expected.items() if reason == 'miss'})
+                reasons == expected and keyed == ['passes']
+                and {n for n in current.snapshots if n.split(':', 1)[1] not in bound} == {gate.DRIVERS[0] + ':passes'})
+            # X2: legacy Session must retain the exact 68b1c4520 qualification while OFF.
+            for name in ('baselines-differ', 'one-baseline', 'observation-differs', 'no-gate-observation',
+                         'no-receipt', 'receipt-inputs', 'receipt-failed'):
+                row('off-' + name, reasons[name] == expected[name] and not current.keys.get(gate.DRIVERS[0] + ':' + name))
             policy = (ROOT / '.veldo/policy.yaml').read_text()
             row('reviewed-flag-protected', '{path: "' + I.DECLARATIONS + '", floor: high}' in policy)
 
@@ -637,7 +646,8 @@ def _v217_declarations():
                       for n in ('current', 'earlier', 'failed', 'none')}
             row('gate-observation-current: %r %r' % (proposer, judged),
                 proposer == {'current': (['d:case'], 'inputs-now'), 'earlier': ([], None), 'failed': ([], None)}
-                and judged == dict.fromkeys(('current', 'earlier', 'failed', 'none')))
+                and judged == {'current': None, 'earlier': 'observation_not_current',
+                               'failed': 'observation_not_current', 'none': 'observation_not_current'})
 
         # Review F4: the review records a reviewed declaration names are a protected path, as the
         # declarations are: writing one needs the owner's commit-bound approval (.veldo/policy.yaml).

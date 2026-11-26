@@ -271,7 +271,8 @@ def _v367_repairs():
             worker_calls.clear()
             active_commit[0] = c
             try:
-                carried_results = selected([case, other], prior_controls={C.digest(suite): control_key},
+                carried_results = selected([case, other], prior_controls={C.digest(suite): dict(control_digest=control_key)},
+                    control_validator=lambda p, c: True,
                     prior_kills={case['identity']: fresh_kill['record_digest']})
                 carried_dep = store.get(carried_results[case['identity']]['dependency_record_digest'])
             except G.Refused:
@@ -279,6 +280,108 @@ def _v367_repairs():
             row('carried-control-complete', worker_calls == ['mutant'] and carried_dep is not None and
                 carried_dep['complete'] and carried_dep['observed_commit'] == c and
                 carried_dep['runtime_digest'] == runtime)
+            # X3: real green control provenance through two intermediate gates.
+            git('checkout', '-qb', 'control-chain', a)
+            chain_commits = []
+            for value in ('one', 'two', 'three'):
+                (repo / 'unrelated').write_text(value)
+                git('add', '.')
+                git('commit', '-qm', value)
+                chain_commits.append(git('rev-parse', 'HEAD'))
+            middle_commit, last_commit, candidate_commit = chain_commits
+            case_item = fresh[case['identity']]
+            key = case_item['item_id']
+            current_cases = inventory([key])
+            origin = seal(gate(store, current_cases, a, [case_item]), repository='control-fixture')
+            origin = C.publish_gate(repo, store, 'control-fixture', current_cases, origin['receipt'])
+            carried_item = dict(case_item, status='carried', source_gate_digest=origin['record_digest'])
+            middle = seal(gate(store, current_cases, middle_commit, [carried_item], origin), repository='control-fixture')
+            middle = C.publish_gate(repo, store, 'control-fixture', current_cases, middle['receipt'])
+            last = seal(gate(store, current_cases, last_commit, [carried_item], middle), repository='control-fixture')
+            last = C.publish_gate(repo, store, 'control-fixture', current_cases, last['receipt'])
+            healthy = C.select(repo, store, 'control-fixture', candidate_commit, current_cases, {key: runtime})
+            context = dict(repository='control-fixture')
+            reuse = SimpleNamespace(M=M)
+            def acquire(plan):
+                return G.prior_change_evidence(repo, store, context, plan, [case], configs,
+                                             {case['identity']: key}, reuse)
+            previous_kills, previous_controls = acquire(healthy)
+            candidate = previous_controls.get(C.digest(suite))
+            row('control-origin-bound', candidate is not None and candidate['source_gate_digest'] == origin['record_digest']
+                and candidate['baseline_gate_digest'] == last['record_digest'])
+            active_commit[0] = candidate_commit
+            worker_calls.clear()
+            def execute_with(provenance):
+                return selected([case, other], prior_controls={C.digest(suite): provenance},
+                    control_validator=lambda p, controls: C.validate_control_candidate(
+                        repo, store, 'control-fixture', last['record_digest'], p, controls))
+            healthy_execution = execute_with(candidate)
+            landing = seal(gate(store, current_cases, candidate_commit,
+                [healthy_execution[case['identity']]], last), repository='control-fixture')
+            row('control-chain-healthy', worker_calls == ['mutant'] and
+                not refuses(lambda: C.green_record(repo, store, landing, 'control-fixture')))
+            missing = store._path(middle['record_digest'])
+            aside = missing.with_name('aside-' + missing.name)
+            missing.rename(aside)
+            try:
+                broken_plan = C.select(repo, store, 'control-fixture', candidate_commit, current_cases, {key: runtime})
+                # Even an independently offered control candidate cannot override an unusable case chain.
+                with patch.object(C, 'control_candidate', return_value=candidate):
+                    _, broken_controls = acquire(broken_plan)
+                row('control-chain-candidate', broken_plan['items'][0]['status'] == 'run' and not broken_controls)
+                worker_calls.clear()
+                execute_with(candidate)
+                row('control-chain-reuse', worker_calls == ['baseline', 'noop', 'mutant'])
+                row('control-chain-landing', refuses(lambda: C.green_record(repo, store, landing, 'control-fixture')))
+            finally:
+                aside.rename(missing)
+            vanished = store._path(last['record_digest'])
+            saved = vanished.with_name('aside-' + vanished.name)
+            vanished.rename(saved)
+            try:
+                try:
+                    unavailable = acquire(healthy)
+                except (OSError, KeyError, TypeError, ValueError):
+                    unavailable = None
+                row('control-baseline-disappeared', unavailable == ({}, {}))
+            finally:
+                saved.rename(vanished)
+            forged = dict(candidate, source_gate_digest=last['record_digest'])
+            worker_calls.clear()
+            execute_with(forged)
+            row('control-chain-forged-origin', worker_calls == ['baseline', 'noop', 'mutant'])
+            # Endpoint equality cannot hide an intermediate control dependency edit/revert.
+            changed_middle = seal(middle['receipt'], changed_paths_digest=C.digest(['input']))
+            changed_middle = seal(middle, receipt=changed_middle)
+            with patch.object(C, 'changed_paths', side_effect=lambda root, old, new:
+                    ['input'] if new == middle_commit else ['unrelated']):
+                row('control-chain-edit-revert', refuses(lambda: C.control_chain(
+                    repo, store, changed_middle, carried_item, 'control-fixture', control_key)))
+            # Same-commit refreshes still bind reused controls to the earlier green gate.
+            active_commit[0] = a
+            origin_candidate = C.control_candidate(repo, store, origin, case_item, 'control-fixture', control_key)
+            refresh_items = selected([case, other], prior_controls={C.digest(suite): origin_candidate},
+                control_validator=lambda p, controls: C.validate_control_candidate(
+                    repo, store, 'control-fixture', origin['record_digest'], p, controls))
+            refresh = seal(gate(store, current_cases, a, [refresh_items[case['identity']]], origin),
+                           repository='control-fixture')
+            row('control-refresh-healthy', not refuses(lambda: C.green_record(repo, store, refresh, 'control-fixture')))
+            store.change_put(refresh)
+            refreshed = refresh_items[case['identity']]
+            row('control-refresh-origin', C.control_candidate(repo, store, refresh, refreshed,
+                'control-fixture', control_key)['source_gate_digest'] == origin['record_digest'])
+            refresh_result = store.get(refreshed['result_digest'])
+            refresh_kill = store.get(refresh_result['execution_record_digest'])
+            forged_kill = seal(refresh_kill, result=dict(refresh_kill['result'],
+                control_provenance=dict(origin_candidate, source_gate_digest='0' * 64)))
+            store.change_put(forged_kill)
+            forged_result = seal(refresh_result, execution_record_digest=forged_kill['record_digest'])
+            store.change_put(forged_result)
+            forged_refresh = seal(refresh, receipt=seal(refresh['receipt'],
+                items=[dict(refreshed, result_digest=forged_result['record_digest'])]))
+            row('control-refresh-forgery', refuses(lambda: C.green_record(repo, store, forged_refresh, 'control-fixture')))
+            git('checkout', '-q', c)
+            active_commit[0] = c
             # VELDO-0367 F6: a row kill whose runtime differs from its prior publishes the combined set.
             runtime_override[0] = C.digest('row runtime')
             try:

@@ -1,0 +1,16 @@
+{
+  "cases": [
+    "observer367-socket-absence",
+    "repair367-control-provenance",
+    "repair367-control-case-chain",
+    "repair367-control-landing-chain",
+    "repair367-control-hop-chain",
+    "legacy367-baseline-reads",
+    "legacy367-baseline-count",
+    "legacy367-observation",
+    "legacy367-current-observation",
+    "repair367-control-baseline-disappeared",
+    "repair367-control-refresh-binding",
+    "repair367-control-refresh-origin"
+  ]
+}

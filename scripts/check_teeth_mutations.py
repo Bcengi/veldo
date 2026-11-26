@@ -19056,6 +19056,10 @@ def cases():
         'if any(candidate == directory or directory in candidate.parents for directory in self.scratch):',
         'if False:', ['runtime-stable', 'scratch-unknown'])
 
+    observer367('socket-absence', 'mutation_observer.py',
+        "            for path in tracer['absent_sockets'](trace):", "            for path in ():",
+        ['socket-repository', 'socket-external', 'socket-relative', 'socket-descriptor'])
+
     observer367('anchored-markers', 'case_trace.py',
         "RESUMED = re.compile(r'^\\d+ <\\.\\.\\. (?:[a-zA-Z0-9_]+|\\?\\?\\?) resumed>')",
         "RESUMED = re.compile(r'.*<\\.\\.\\. (?:[a-zA-Z0-9_]+|\\?\\?\\?) resumed>')", ['payload-lines', 'payload-complete'])
@@ -19181,6 +19185,46 @@ def cases():
         result[-1]['dir'] = 'scripts'
         result[-1]['confined_only'] = True
         result[-1]['siblings'] = True
+    repair367('control-refresh-binding', 'gate_changes.py',
+        "    if controls['source_commit'] == item['source_commit'] and mutation.get('control_provenance') is None:",
+        "    if controls['source_commit'] == item['source_commit']:", ['control-refresh-forgery'])
+    repair367('control-refresh-origin', 'gate_changes.py',
+        "                and execution['result'].get('control_provenance') is None):",
+        "                and True):", ['control-refresh-origin'])
+    repair367('control-baseline-disappeared', 'check_gate_mutations.py',
+        "            return {}, {}  # lost since selection: fresh cases and controls",
+        "            raise", ['control-baseline-disappeared'])
+    repair367('control-provenance', 'mutation_reuse.py',
+        "                C.require(self.provenance_validator(prior, previous), 'control provenance invalid')",
+        "                pass", ['control-chain-reuse', 'control-chain-forged-origin'])
+    repair367('control-case-chain', 'check_gate_mutations.py',
+        "                C.carried_chain(root, store, baseline, source, context['repository'])",
+        "                pass", ['control-chain-candidate'])
+    repair367('control-landing-chain', 'gate_changes.py',
+        "        item_control_chain(root, store, gate, item, repository)", "        pass", ['control-chain-landing'])
+    repair367('control-hop-chain', 'gate_changes.py',
+        "source_gate_digest=control_chain(root, store, gate, item, repository, control_digest))",
+        "source_gate_digest=(item['source_gate_digest'] or gate['record_digest']))", ['control-chain-reuse', 'control-chain-landing'])
+
+    def legacy367(name, old, new, rows):
+        add(367, 'legacy367-' + name, '157_veldo_0217_declarations.py', 'case_reuse.py', old, new,
+            ['declarations/' + row for row in rows])
+        result[-1].update(dir='scripts', confined_only=True, siblings=True)
+
+    legacy367('baseline-reads',
+        "        if len(baselines) != 2 or baselines[0]['reads'] != baselines[1]['reads']:",
+        "        if False:", ['off-baselines-differ'])
+    legacy367('baseline-count',
+        "sorted(run['mode'] for run in runs) != sorted(TRACED_RUNS)",
+        "{run['mode'] for run in runs} != {'baseline', 'noop', 'mutant'}", ['off-one-baseline'])
+    legacy367('observation',
+        "        if not gate or any(run['observation'] != gate for run in baselines):",
+        "        if False:", ['off-observation-differs', 'off-no-gate-observation'])
+    legacy367('current-observation',
+        "        if (receipt.get('status') != 'passed' or not receipt.get('input_digest')\n"
+        "                or receipt['input_digest'] != declaration['proposal'].get('inputs')):",
+        "        if False:", ['off-no-receipt', 'off-receipt-inputs', 'off-receipt-failed'])
+
     repair367('row-runtime', 'check_gate_mutations.py',
         "            runtime_keys = sorted({d['runtime_digest'] for d in [*dependencies, *(\n                [previous['dependency']] if previous and result['execution_scope'] == 'rows' else [])]})",
         "            runtime_keys = sorted({d['runtime_digest'] for d in dependencies})", ['row-runtime-published'])

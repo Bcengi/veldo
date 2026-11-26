@@ -24,6 +24,8 @@ REVIEW_SCHEMA = 'veldo.case-input-review/v1'
 # declaration binds the exact bytes of the record it names (review_sha256, VELDO-0217 F4).
 REVIEW_DIRECTORY = 'proof/VELDO-0217/reviews/'
 SENSITIVITY_SCHEMA = 'veldo.sensitivity-proof/v1'
+# Legacy Session keeps its original qualification; ChangeSession has its own selector.
+TRACED_RUNS = ('baseline', 'baseline', 'noop', 'mutant')
 
 
 def declaration_digest(declaration):
@@ -79,13 +81,25 @@ def failed_condition(files, name, declaration):
         return 'review_mismatch'
     try:
         runs = declaration['proposal']['runs']
-        if {run['mode'] for run in runs} != {'baseline', 'noop', 'mutant'} or any(run['exit'] != 0 for run in runs):
+        if sorted(run['mode'] for run in runs) != sorted(TRACED_RUNS) or any(run['exit'] != 0 for run in runs):
             return 'trace_failed'
+        baselines = [run for run in runs if run['mode'] == 'baseline']
+        if len(baselines) != 2 or baselines[0]['reads'] != baselines[1]['reads']:
+            return 'baseline_reads_differ'
         for run in runs:
             if run['non_file']:
                 return sorted(run['non_file'])[0]
         if declaration['non_file_inputs'] != 'none':
             return 'non_file_unreviewed'
+        gate = declaration['proposal'].get('gate_observation')
+        if not gate or any(run['observation'] != gate for run in baselines):
+            return 'observation_differs'
+        # The last fresh gate observation of this state: from a passed receipt over exactly the
+        # inputs the proposal traced (VELDO-0217 F5); any other receipt's observation is not current.
+        receipt = declaration['proposal'].get('gate_receipt') or {}
+        if (receipt.get('status') != 'passed' or not receipt.get('input_digest')
+                or receipt['input_digest'] != declaration['proposal'].get('inputs')):
+            return 'observation_not_current'
     except (KeyError, TypeError):
         return 'trace_failed'
     if not isinstance(declaration.get('rationale'), str) or not declaration['rationale'].strip():

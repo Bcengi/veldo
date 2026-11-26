@@ -163,6 +163,24 @@ def _v367_observer():
         # VELDO-0367 N1: real buffers carry markers, forbidden words and truncation; only the
         # anchored call and its non-data text are judged. A Python watchdog thread shares fs.
         module_file = str(repo / 'module367.py')
+        # X1: a closed two-line failed-connect trace must retain its negative lookup.
+        for name, endpoint in [('repository', str(repo / 'endpoint')),
+                               ('external', str(top / 'external-endpoint')),
+                               ('relative', 'endpoint'), ('descriptor', '/proc/self/fd/99')]:
+            trace.write_text('11 connect(3<UNIX-STREAM:[99]>, {sa_family=AF_UNIX, sun_path=' +
+                             json.dumps(endpoint) + '}, 110) = -1 ENOENT (No such file or directory)\n'
+                             '11 +++ exited with 0 +++\n')
+            socket_reads = O.DependencyReads(repo, {}).trace(trace,
+                launched_argv=tracer['command'](trace, ['/bin/true']))
+            socket_dep = socket_reads.record(item, commit)
+            if name == 'repository':
+                row('socket-repository', socket_dep['complete'] and 'endpoint' in socket_dep['absent_paths']
+                    and C['intersects'](socket_dep, ['endpoint']))
+            elif name == 'external':
+                row('socket-external', socket_dep['complete'] and socket_reads.runtime.get(endpoint) == ['absent'])
+            else:
+                row('socket-' + name, not socket_dep['complete'])
+
         payload = ('x <unfinished ...> y\\n11 <... read resumed> mount( ptrace( CLONE_FS CLONE_NEWNS '
                    'def is_mount(... \\"...')
         trace.write_text(

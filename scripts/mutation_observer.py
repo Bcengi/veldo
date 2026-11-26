@@ -664,6 +664,12 @@ class DependencyReads:
                 raise ValueError('lost events or incomplete child coverage')
             for path, kind, success in tracer['accesses'](trace, cwd=self.root):
                 self.read(path, kind, success)
+            # Failed socket probes are dependencies too, before coverage is certified.
+            for path in tracer['absent_sockets'](trace):
+                if not Path(path).is_absolute() or tracer['DESCRIPTOR_PATH'].match(path):
+                    self.unknown('unresolved absent socket path')
+                else:
+                    self.read(path, 'metadata', False)
             # Descriptor inputs (including mmap and inherited descriptors) need
             # their kernel-resolved path too; path-only traces cannot see these.
             for line in tracer['syscall_lines'](trace):

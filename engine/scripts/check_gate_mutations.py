@@ -1936,7 +1936,7 @@ def main():
 
 def run_selected_cases(workers, cases, directory, frozen, *, store, commit, changed,
                        configurations, registered_cases, prior_kills=None, prior_controls=None, claims=None, verify_runtime=False,
-                       changed_since=None):
+                       changed_since=None, control_validator=None):
     """Increment 3 coordinator seam. Increment 5 supplies the authenticated selection.
 
     Uses the existing confined workers, reservations and cleanup, with controls
@@ -1955,7 +1955,7 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
         groups.setdefault(C.digest(suite), (suite, []))[1].append(case)
     controls = M.SuiteControls(store, changed, commit, runtime_validator=(
         lambda key: C.runtime_current(store, key, fixed_env('/nonexistent'), ROOT)) if verify_runtime else None,
-        changed_since=changed_since)
+        changed_since=changed_since, provenance_validator=control_validator)
     results = {}
     for group, (suite, members) in groups.items():
         if not any(c['identity'] in requested for c in members):
@@ -2020,6 +2020,7 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
             result = M.selected_mutation(case, shared, execute,
                 lambda record, definition: validate_result(record, definition, store=store),
                 store=store, prior=prior_kills.get(case['identity']))
+            result['control_provenance'] = controls.provenance.get(group)
             previous = store.get(prior_kills[case['identity']]) if case['identity'] in prior_kills else None
             control_dependency = C.sealed(C.DEPENDENCY, **dict(
                 {k: v for k, v in shared['dependency'].items() if k not in ('schema', 'record_digest')},
@@ -2048,6 +2049,42 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
                 dependency_record_digest=dependency['record_digest'], result_digest=result_record['record_digest'],
                 source_commit=commit, source_gate_digest=None)
     return results
+
+
+def prior_change_evidence(root, store, context, plan, cases, configurations, identities, reuse):
+    C = reuse.M.change_module()
+    prior_kills, prior_controls, executed_controls = {}, {}, set()
+    rejected_controls = set()
+    if not context.get('full') and plan['baseline_record_digest'] is not None:
+        try:
+            baseline = C.historical_gate(store, plan['baseline_record_digest'], context['repository'])
+        except (OSError, KeyError, TypeError, ValueError):
+            return {}, {}  # lost since selection: fresh cases and controls
+        old = {i['item_id']: i for i in baseline['receipt']['items']}
+        for case in cases:
+            group = C.digest(reuse.M.suite_identity(case, configurations[case['identity']]))
+            try:
+                source = old[identities[case['identity']]]
+                C.carried_chain(root, store, baseline, source, context['repository'])
+                C.item_control_chain(root, store, baseline, source, context['repository'])
+                previous = store.get(source['result_digest'])
+                kill = store.get(previous['execution_record_digest'])
+                C.require(kill['result']['case'] == case, 'prior case definition')
+                prior_kills[case['identity']] = previous['execution_record_digest']
+                candidate = C.control_candidate(root, store, baseline, source, context['repository'],
+                                                kill['result']['control_receipt_digest'])
+                # Controls run at the baseline win over older carried ones (VELDO-0367 F7).
+                if old[identities[case['identity']]]['status'] == 'executed':
+                    executed_controls.add(group)
+                    prior_controls[group] = candidate
+                elif group not in executed_controls:
+                    prior_controls.setdefault(group, candidate)
+            except (OSError, KeyError, TypeError, ValueError):
+                rejected_controls.add(group)
+                continue  # an unusable prior means a full case and fresh controls
+    for group in rejected_controls:
+        prior_controls.pop(group, None)
+    return prior_kills, prior_controls
 
 
 def run_change_stage(root, expected_common, context, *, capacities=None, parallel=None, leg=None,
@@ -2083,25 +2120,8 @@ def run_change_stage(root, expected_common, context, *, capacities=None, paralle
                 workers.parallel = worker_count()
         claims = ({c['identity']: CaseClaims().claim(c, C.digest([c, configurations[c['identity']]]))
                    for c in cases} if workers.admission else None)
-        prior_kills, prior_controls, executed_controls = {}, {}, set()
-        if not context.get('full') and plan['baseline_record_digest'] is not None:
-            baseline = C.historical_gate(store, plan['baseline_record_digest'], context['repository'])
-            old = {i['item_id']: i for i in baseline['receipt']['items']}
-            for case in cases:
-                try:
-                    previous = store.get(old[identities[case['identity']]]['result_digest'])
-                    kill = store.get(previous['execution_record_digest'])
-                    C.require(kill['result']['case'] == case, 'prior case definition')
-                    prior_kills[case['identity']] = previous['execution_record_digest']
-                    group = C.digest(reuse.M.suite_identity(case, configurations[case['identity']]))
-                    # Controls run at the baseline win over older carried ones (VELDO-0367 F7).
-                    if old[identities[case['identity']]]['status'] == 'executed':
-                        executed_controls.add(group)
-                        prior_controls[group] = kill['result']['control_receipt_digest']
-                    elif group not in executed_controls:
-                        prior_controls.setdefault(group, kill['result']['control_receipt_digest'])
-                except (KeyError, TypeError, ValueError):
-                    continue  # an unusable prior means a full case and fresh controls
+        prior_kills, prior_controls = prior_change_evidence(
+            root, store, context, plan, cases, configurations, identities, reuse)
         executed = {}
         if fresh:
             with tempfile.TemporaryDirectory(prefix='veldo-selected-mutations-') as temporary:
@@ -2114,7 +2134,9 @@ def run_change_stage(root, expected_common, context, *, capacities=None, paralle
                     changed=plan['changed_paths'], configurations=configurations, registered_cases=cases,
                     prior_kills=prior_kills, prior_controls=prior_controls, claims=claims,
                     verify_runtime=context.get('verify_runtime', False),
-                    changed_since=lambda source: C.changed_paths(root, source, head))
+                    changed_since=lambda source: C.changed_paths(root, source, head),
+                    control_validator=lambda provenance, controls: C.validate_control_candidate(
+                        root, store, context['repository'], plan['baseline_record_digest'], provenance, controls))
         C.require(inputs_unchanged(root, expected_common, files, head), 'inputs changed during stage')
         items = [*carried, *executed.values()]
         for item in items:
