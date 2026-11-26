@@ -57,6 +57,18 @@ def _v367_weekly():
         row('inactive', W.WEEKLY_ENABLED is False)
         request = weekly.request(commit, 'pc2', 100)
         row('two-callers', weekly.request('b' * 40, 'other-host', 101) == request)
+        program = '''import importlib.util,json,sys
+from pathlib import Path
+def load(name):
+ s=importlib.util.spec_from_file_location(name,Path(sys.argv[1])/('scripts/'+name+'.py'))
+ m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
+r=load('gate_reuse');w=load('gate_weekly')
+print(json.dumps(w.Weekly(r.Store(sys.argv[2],sys.argv[3]),'callers').request('a'*40,'pc2',100)),flush=True)
+'''
+        callers = [subprocess.Popen([sys.executable, '-c', program, str(authority), str(top / 'store'),
+                                     str(repo)], stdout=subprocess.PIPE, text=True) for _ in range(2)]
+        answers = [json.loads(child.communicate()[0]) for child in callers]
+        row('concurrent-callers', answers[0] == answers[1] and all(child.returncode == 0 for child in callers))
         weekly.cancel(request['run_id'])
         row('cancel-free', store.weekly_read()['repositories']['repository']['last_full_started_at'] is None)
         request = weekly.request(commit, 'pc2', 102)
@@ -64,7 +76,10 @@ def _v367_weekly():
         row('no-custody', weekly.start(request, 102, custody, {})['status'] == 'waiting')
         row('idle-admission', custody.acquire())
         stale = dict(request, run_id='stale')
+        snapshot = store.weekly_read()
         row('stale-ticket', weekly.start(stale, 102, custody, {})['status'] == 'waiting')
+        with store.weekly_transaction() as ledger:
+            ledger.update(snapshot)
         custody.observe = lambda: 'unobservable occupancy'
         row('unobservable', weekly.start(request, 102, custody, {})['status'] == 'waiting')
         custody.observe = lambda: None
@@ -73,10 +88,15 @@ def _v367_weekly():
         for key, value in old.items():
             store.put(value['result_digest'], dict(item=key))
         run = weekly.start(request, 102, custody, old)
+        snapshot = store.weekly_read()
         row('consumes-once', run['status'] == 'running' and
             weekly.request(commit, 'pc2', 103)['reason'] == 'seven-day limit' and
             weekly.start(request, 103, custody, old)['status'] == 'waiting')
-        row('rolling-week', weekly.request(commit, 'pc2', 102 + W.WEEK_SECONDS - 1)['status'] == 'waiting')
+        with store.weekly_transaction() as ledger:
+            ledger.update(copy.deepcopy(snapshot))
+        row('rolling-week', weekly.request(commit, 'pc2', 102 + W.WEEK_SECONDS - 1).get('reason') == 'seven-day limit')
+        with store.weekly_transaction() as ledger:
+            ledger.update(copy.deepcopy(snapshot))
         ticket = weekly.red(run['run_id'], ['a'], {'a': 'fresh failure'})
         row('revocation', store.get(old['a']['result_digest']) is None and
             store.get(old['b']['result_digest']) is None and store.get(old['c']['result_digest']) is not None)
@@ -115,8 +135,8 @@ def _v367_weekly():
         (p / 'cgroup').write_text('0::/user.slice/job.scope\n')
         config = dict(enrolled=True, launchers_enrolled=True, allowed_system_services=[])
         row('busy-census', H.weekly_occupancy(config, proc_root=proc) == 'busy process 123')
-        row('unenrolled', H.weekly_occupancy(dict(config, enrolled=False), proc_root=proc) is not None)
-        row('launchers-enrolled', H.weekly_occupancy(dict(config, launchers_enrolled=False), proc_root=proc) is not None)
+        row('unenrolled', H.weekly_occupancy(dict(config, enrolled=False), proc_root=proc) == 'host is not enrolled')
+        row('launchers-enrolled', H.weekly_occupancy(dict(config, launchers_enrolled=False), proc_root=proc) == 'launchers are not enrolled')
         services = [dict(executable='/usr/bin/fixture', cgroup='/user.slice/job.scope')]
         row('service-allowlist', H.weekly_occupancy(dict(config, allowed_system_services=services), proc_root=proc) is None)
         (p / 'cgroup').unlink()
@@ -174,8 +194,9 @@ def recover():
     with open(sys.argv[4]) as pipe: pipe.read(1)
     Path(sys.argv[5]).write_text('revoked')
 c.guard(cleanup,recover)
-child=c.launch([sys.executable,'-c',"import os,signal; os.fork(); print('descendant',flush=True); signal.pause()"],stdout=subprocess.DEVNULL)
-print('ready',flush=True)
+child=c.launch([sys.executable,'-c',"import os,signal; os.fork(); print(os.getpid(),flush=True); signal.pause()"],stdout=subprocess.PIPE,text=True)
+assert child.stdout.readline() and child.stdout.readline()
+print('ready',child.pid,flush=True)
 signal.pause()
 '''.replace('import importlib.util,os,signal,sys', 'import importlib.util,os,signal,sys,subprocess'))
         first, second, receipt = top / 'cleanup.pipe', top / 'persist.pipe', top / 'receipt'
@@ -184,12 +205,14 @@ signal.pause()
         worker = subprocess.Popen([sys.executable, str(driver), str(authority / 'scripts/gate_host.py'),
                                    str(top / 'crash.lock'), str(first), str(second), str(receipt)],
                                   stdout=subprocess.PIPE, text=True)
-        assert worker.stdout.readline().strip() == 'ready'
+        ready = worker.stdout.readline().split()
+        assert ready[0] == 'ready'
+        group = int(ready[1])
         worker.kill()
         worker.wait()
         assert worker.stdout.readline().strip() == 'cleanup'
         blocked = H.weekly_workload(top / 'crash.lock')
-        row('lock-custody', blocked is None)
+        row('lock-custody', blocked is None and H.group_live(group))
         if blocked is not None:
             os.close(blocked)
         with first.open('w') as stream:
@@ -204,7 +227,7 @@ signal.pause()
         worker.stdout.read()  # EOF comes only after the keeper releases its descriptors.
         worker.stdout.close()
         admitted = H.weekly_workload(top / 'crash.lock')
-        row('crash-release', admitted is not None and receipt.read_text() == 'revoked')
+        row('crash-release', admitted is not None and receipt.read_text() == 'revoked' and not H.group_live(group))
         if admitted is not None:
             os.close(admitted)
 
@@ -236,10 +259,28 @@ signal.pause()
         fresh = clean.start(pending, 0, holder, {})
         bad = C.sealed(C.RECEIPT, **{k: v for k, v in receipt.items() if k not in ('schema', 'record_digest', 'items')}, items=[])
         row('partial-not-green', refused(lambda: clean.green(fresh['run_id'], repo, inventory, bad)))
+        plan = W.fresh_plan(repo, head, inventory)
+        row('fresh-plan', plan['cache_reads'] is False and plan['fresh_build_outputs'] is True and
+            plan['publish'] is True and plan['mutation_scope'] == 'suite' and
+            plan['controls'] == 'once-per-suite' and [i['action'] for i in plan['items']] == ['execute'])
+        (repo / 'input').write_text('changed')
+        row('dirty-checkout', refused(lambda: W.fresh_plan(repo, head, inventory)))
+        (repo / 'input').write_text('fixture')
         gate = clean.green(fresh['run_id'], repo, inventory, receipt)
-        row('green-refresh', gate['receipt']['items'][0]['source_commit'] == head and
+        row('green-refresh', store.change_gate('refresh', head) is not None and
+            gate['receipt']['items'][0]['source_commit'] == head and
             store.weekly_read()['repositories']['refresh']['runs'][fresh['run_id']]['status'] == 'green')
         holder.close()
+        # The dormant adapter stops only its own work and persists red on intrusion.
+        intrusion = W.Weekly(store, 'intrusion')
+        pending = intrusion.request(head, 'pc2', 0)
+        holder = H.WeeklyCustody(top / 'intrusion.lock', 'pc2', lambda: None)
+        def invaded(plan, monitor, launch):
+            holder.observe = lambda: 'unrelated work appeared'
+            monitor()
+        row('adapter-intrusion', refused(lambda: intrusion.execute(pending, 0, holder, repo, inventory,
+            old, invaded, H.weekly_stop_groups)) and
+            store.weekly_read()['repositories']['intrusion']['runs'][pending['run_id']]['status'] == 'red')
 
 
 _v367_weekly()

@@ -20091,6 +20091,11 @@ def cases():
     weekly367('reservation', 'gate_host.py', "reservation = WeeklyCustody._take(str(lock) + '.weekly', fcntl.LOCK_SH)", "reservation = os.open(str(lock) + '.weekly', os.O_RDWR)", ['reservation-blocks-arrivals'])
     weekly367('shared-run', 'gate_host.py', 'self.fd = self._take(self.lock, fcntl.LOCK_EX)', 'self.fd = self._take(self.lock, fcntl.LOCK_SH)', ['busy-waits'])
 
+    weekly367('fresh-plan', 'gate_weekly.py', "cache_reads=False, fresh_build_outputs=True, mutation_scope='suite',", "cache_reads=True, fresh_build_outputs=False, mutation_scope='rows',", ['fresh-plan'])
+    weekly367('publication', 'gate_weekly.py',
+        "gate = changes.publish_gate(root, self.store, self.repository, inventory, receipt)",
+        "gate = changes.sealed(changes.GATE, repository=self.repository, inventory=inventory, receipt=receipt, status='green', complete=True)",
+        ['green-refresh'])
     return result
 
 

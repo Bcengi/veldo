@@ -58,6 +58,8 @@ class Weekly:
             previous = state['last_full_started_at']
             if previous is not None and now - previous < WEEK_SECONDS:
                 return dict(status='waiting', reason='seven-day limit', eligible_at=previous + WEEK_SECONDS)
+            if any(run['status'] == 'running' for run in state['runs'].values()):
+                return dict(status='waiting', reason='prior full run retains custody')
             reservation = dict(schema=SCHEMA, run_id=secrets.token_hex(16), commit=commit,
                                host=host, status='waiting', reason='exclusive idle-host admission')
             state['reservation'] = reservation
@@ -127,7 +129,7 @@ class Weekly:
     def recover(self, run_id):
         """Keeper calls after descendant cleanup on interruption, before dropping locks."""
         state = self.store.weekly_read()['repositories'][self.repository]
-        if state['runs'][run_id]['status'] == 'running':
+        if run_id in state['runs'] and state['runs'][run_id]['status'] == 'running':
             return self.red(run_id, [], {'interrupted': True}, uncertain=True)
         return None
 
@@ -144,6 +146,41 @@ class Weekly:
             ticket = repository_state(ledger, self.repository)['runs'][run_id]['ticket']
             ticket.update(status='delivered', external_id=external_id)
             return copy.deepcopy(ticket)
+
+    def execute(self, reservation, now, custody, root, inventory, old_results, execute, cleanup):
+        """Dormant common-gate adapter; all workload launches use custody.launch.
+
+        execute receives the fresh plan and a monitor it must service on process/host
+        events. Its build directory must be newly created; no cache-read capability
+        is supplied. Production enrollment requires cgroup cleanup, including escaped
+        descendants. The fixture adapter uses private process groups.
+        """
+        if not custody.acquire():
+            return dict(status='waiting', reason=custody.reason)
+        run_id = reservation['run_id']
+        custody.guard(cleanup, lambda: self.recover(run_id))
+        try:
+            run = self.start(reservation, now, custody, old_results)
+            if run['status'] != 'running':
+                return run
+            def monitor():
+                if not custody.admitted(reservation['host']):
+                    raise ValueError('weekly occupancy changed: ' + str(custody.reason))
+            try:
+                plan = fresh_plan(root, reservation['commit'], inventory)
+                receipt = execute(plan, monitor, custody.launch)
+                cleanup(custody.groups)
+                custody.reap()
+                monitor()
+                fresh_plan(root, reservation['commit'], inventory)  # immutable checkout recheck
+                return self.green(run_id, root, inventory, receipt)
+            except Exception as error:
+                cleanup(custody.groups)
+                custody.reap()
+                self.red(run_id, [], {'error': str(error)}, uncertain=True)
+                raise
+        finally:
+            custody.close()
 
     def green(self, run_id, root, inventory, receipt):
         """Fresh full receipts refresh sources; partial, carried and row-only runs cannot."""
@@ -172,6 +209,21 @@ class Weekly:
         gate = changes.publish_gate(root, self.store, self.repository, inventory, receipt)
         run.update(status='green', gate_digest=gate['record_digest'])
         return gate
+
+
+def fresh_plan(root, commit, inventory):
+    """No selected rows, carried controls, or cache inputs in a weekly execution plan."""
+    changes = sibling('gate_changes')
+    changes.pin(root, commit)
+    if (changes.git(root, 'rev-parse', 'HEAD').decode().strip() != commit
+            or changes.git(root, 'status', '--porcelain', '--untracked-files=all')):
+        raise ValueError('weekly requires a clean immutable checkout')
+    changes.validate_inventory(inventory)
+    return dict(candidate_commit=commit, inventory=inventory,
+                items=[dict(item, action='execute' if item['state'] == 'required' else item['state'])
+                       for item in inventory['items']],
+                cache_reads=False, fresh_build_outputs=True, mutation_scope='suite',
+                controls='once-per-suite', publish=True)
 
 
 def main(argv=None):

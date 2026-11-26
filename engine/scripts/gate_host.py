@@ -540,6 +540,8 @@ def weekly_occupancy(config, own_pids=(), proc_root=Path('/proc')):
     allowed = config.get('allowed_system_services', [])
     try:
         processes = list(Path(proc_root).iterdir())
+        if not any(process.name.isdigit() for process in processes):
+            return 'unobservable empty process census'
         for process in processes:
             if not process.name.isdigit() or int(process.name) in own_pids:
                 continue
@@ -574,6 +576,8 @@ class WeeklyCustody:
         self.lock, self.host, self.observe = str(lock), host, observe
         self.reservation = self.fd = self.channel = self.keeper = None
         self.reason = 'exclusive idle-host admission'
+        self.groups = []
+        self.children = []
 
     @staticmethod
     def _take(path, mode):
@@ -648,8 +652,16 @@ class WeeklyCustody:
         if self.channel is None:
             raise Refused('weekly keeper required before descendants')
         parent = os.getpid()
-        return subprocess.Popen(argv, close_fds=True,
-                                preexec_fn=lambda: prepare_child(self.channel, parent), **kwargs)
+        child = subprocess.Popen(argv, close_fds=True,
+                                 preexec_fn=lambda: prepare_child(self.channel, parent), **kwargs)
+        self.groups.append(child.pid)
+        self.children.append(child)
+        return child
+
+    def reap(self):
+        for child in self.children:
+            child.wait()
+        self.children.clear()
 
     def close(self):
         if self.channel is not None:
@@ -658,6 +670,7 @@ class WeeklyCustody:
         if self.keeper is not None:
             os.waitpid(self.keeper, 0)
             self.keeper = None
+        self.reap()
         for name in ('fd', 'reservation'):
             fd = getattr(self, name)
             if fd is not None:
