@@ -2581,6 +2581,15 @@
     "161_veldo_0360_failfast"
    ],
    "requires_note": "Only ROOT and expect; scratch scheduler CLI with real tiny processes and simulated cgroups. No host lock, manager, load or live services."
+  },
+  {
+   "name": "162_veldo_0367_baseline",
+   "file": "162_veldo_0367_baseline.py",
+   "regions": "VELDO-0367 AC1: schemas, authenticated first-parent baseline and inventory reconciliation.",
+   "requires": [
+    "162_veldo_0367_baseline"
+   ],
+   "requires_note": "Only ROOT and expect; scratch Git repositories and private fixture stores. No live services or clock sites."
   }
  ],
  "resource_capacities": {

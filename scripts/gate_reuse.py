@@ -129,6 +129,78 @@ class Store:
         except (OSError, ValueError, TypeError, KeyError):
             return None
 
+    # VELDO-0367 uses a separate namespace; legacy whole-tree records are historical.
+    def change_put(self, value):
+        """Store a sealed immutable dependency/result/gate record by content digest."""
+        changes = _sibling('gate_changes')
+        key = value['record_digest']
+        if key != changes.digest({k: v for k, v in value.items() if k != 'record_digest'}):
+            raise ValueError('change record digest')
+        return self.put(key, value)
+
+    def change_gate_key(self, repository, commit):
+        return digest(dict(schema='veldo.change-index/v1', repository=repository, commit=commit))
+
+    def change_gate(self, repository, commit):
+        """Read an authenticated index and all immutable references. Errors are misses.
+
+        Increment 1 accepts executed receipts only. Carried evidence is enabled with
+        its full provenance validator in increment 3, never by the schema alone.
+        """
+        changes = _sibling('gate_changes')
+        try:
+            index = self.get(self.change_gate_key(repository, commit))
+            if not isinstance(index, dict) or set(index) != {'repository', 'commit', 'record_digest'}:
+                return None
+            if index['repository'] != repository or index['commit'] != commit:
+                return None
+            gate = self.get(index['record_digest'])
+            self._change_green(gate, repository, commit, changes)
+            if gate['record_digest'] != index['record_digest']:
+                return None
+            return gate
+        except (OSError, ValueError, TypeError, KeyError):
+            return None
+
+    def _change_green(self, gate, repository, commit, changes):
+        changes.check_seal(gate, changes.GATE, ('repository', 'inventory', 'receipt', 'status', 'complete'))
+        changes.require(gate['repository'] == repository and gate['status'] == 'green'
+                        and gate['complete'] is True, 'eligible green gate')
+        receipt = changes.validate_receipt(gate['receipt'], gate['inventory'])
+        changes.require(receipt['candidate_commit'] == commit, 'gate commit')
+        for item in receipt['items']:
+            changes.require(item['status'] in ('executed', 'removed', 'not-applicable', 'waived'),
+                            'executed green evidence required')
+            if item['status'] != 'executed':
+                continue
+            dependency = self.get(item['dependency_record_digest'])
+            changes.validate_dependency(dependency)
+            changes.require(dependency['record_digest'] == item['dependency_record_digest']
+                            and dependency['item_id'] == item['item_id']
+                            and dependency['observed_commit'] == commit, 'dependency reference')
+            result = self.get(item['result_digest'])
+            changes.check_seal(result, changes.RESULT, ('item_id', 'source_commit', 'status', 'complete',
+                                                       'dependency_record_digest'))
+            changes.require(result['record_digest'] == item['result_digest']
+                            and result['item_id'] == item['item_id']
+                            and result['source_commit'] == commit and result['status'] == 'passed'
+                            and result['complete'] is True
+                            and result['dependency_record_digest'] == dependency['record_digest'], 'green result reference')
+
+    def publish_change_gate(self, gate):
+        """Publish references before the authenticated repository/commit index."""
+        changes = _sibling('gate_changes')
+        try:
+            repository, commit = gate['repository'], gate['receipt']['candidate_commit']
+            changes.require(isinstance(repository, str) and bool(repository), 'repository identity')
+            self._change_green(gate, repository, commit, changes)
+            if not self.change_put(gate):
+                return False
+            return self.put(self.change_gate_key(repository, commit),
+                            dict(repository=repository, commit=commit, record_digest=gate['record_digest']))
+        except (OSError, ValueError, TypeError, KeyError):
+            return False
+
     def invalidate(self, key):
         """A mismatch revokes the key before deleting the record, including concurrent writers."""
         if self.secret is None or E.probe(self.directory) != self.secret:

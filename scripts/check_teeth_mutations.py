@@ -18847,6 +18847,80 @@ def cases():
         result[-1]['dir'] = 'scripts'
         result[-1]['confined_only'] = True
 
+    # VELDO-0367 increment 1: inactive schema, baseline and inventory foundations.
+    def baseline367(name, module, old, new, rows):
+        add(367, 'baseline367-' + name, '162_veldo_0367_baseline.py', module, old, new,
+            ['baseline/' + row for row in rows])
+        result[-1]['dir'] = 'scripts'
+        result[-1]['confined_only'] = True
+
+    baseline367('previous-after-red', 'gate_changes.py',
+        'baseline_commit=commit,',
+        'baseline_commit=first_parents(root, candidate)[1] if len(first_parents(root, candidate)) > 1 else commit,',
+        ['intervening-red'])
+    baseline367('other-parent', 'gate_changes.py',
+        "'rev-list', '--first-parent', candidate", "'rev-list', candidate", ['first-parent'])
+    baseline367('oldest-green', 'gate_changes.py',
+        'for commit in first_parents(root, candidate):',
+        'for commit in reversed(first_parents(root, candidate)):', ['nearest-green'])
+    baseline367('empty-diff', 'gate_changes.py',
+        'if before.get(path) != after.get(path)', 'if False', ['tree-changes'])
+    baseline367('added-paths-lost', 'gate_changes.py',
+        'before.keys() | after.keys()', 'before.keys()', ['tree-changes'])
+    baseline367('deleted-paths-lost', 'gate_changes.py',
+        'before.keys() | after.keys()', 'after.keys()', ['tree-changes'])
+    baseline367('mode-lost', 'gate_changes.py',
+        "= metadata.decode('ascii')", "= metadata.decode('ascii').split()[-1]", ['tree-changes'])
+    baseline367('symlink-target-lost', 'gate_changes.py',
+        "= metadata.decode('ascii')", "= 'symlink' if metadata.startswith(b'120000') else metadata.decode('ascii')", ['tree-changes'])
+    baseline367('unchanged-is-change', 'gate_changes.py',
+        'if before.get(path) != after.get(path)', 'if True', ['unchanged', 'identical-tree'])
+    baseline367('catalog-slot-lost', 'gate_changes.py',
+        "add(identity('stage', stage), declaration, state, None if state == 'required' else reason)",
+        "pass  # defect: no catalog identities", ['complete-inventory'])
+    baseline367('suite-leg-lost', 'gate_changes.py',
+        "for stage in ('unit', 'integration'):", "for stage in ('unit',):", ['complete-inventory'])
+    baseline367('case-driver-lost', 'gate_changes.py',
+        "for driver, cases in drivers.items():", "for driver, cases in list(drivers.items())[:1]:", ['complete-inventory'])
+    baseline367('removed-lost', 'gate_changes.py',
+        "for key in sorted(old))", "for key in [])", ['reconcile'])
+    baseline367('definition-change-lost', 'gate_changes.py',
+        "'unchanged' if prior == item else 'definition-changed'", "'unchanged'", ['reconcile'])
+    baseline367('unknown-empty', 'gate_changes.py',
+        "isinstance(value['unknown_reason'], str) and bool(value['unknown_reason'].strip())", "True", ['unknown-not-empty'])
+    baseline367('dependency-digest', 'gate_changes.py',
+        "digest({k: v for k, v in value.items() if k != 'record_digest'})", "value['record_digest']", ['dependency-digest'])
+    baseline367('receipt-missing', 'gate_changes.py',
+        "set(expected) <= seen", "True", ['receipt-missing'])
+    baseline367('receipt-duplicate', 'gate_changes.py',
+        "isinstance(key, str) and key not in seen", "isinstance(key, str)", ['receipt-duplicate'])
+    baseline367('source-commit', 'gate_changes.py',
+        "item['source_commit'] == value['candidate_commit'] if status != 'carried' else", "True if status != 'carried' else", ['receipt-wrong-source'])
+    baseline367('red-eligible', 'gate_reuse.py',
+        "gate['repository'] == repository and gate['status'] == 'green'", "gate['repository'] == repository", ['intervening-red', 'red-miss'])
+    baseline367('incomplete-eligible', 'gate_reuse.py',
+        "and gate['complete'] is True, 'eligible green gate'", "and True, 'eligible green gate'", ['incomplete-miss'])
+    baseline367('index-repository', 'gate_reuse.py',
+        "if index['repository'] != repository or index['commit'] != commit:", "if index['commit'] != commit:", ['wrong-index-miss'])
+    baseline367('references-unchecked', 'gate_reuse.py',
+        "if item['status'] != 'executed':", "if True:", ['missing-result-miss', 'missing-dependency-miss'])
+
+    baseline367('absent-is-baseline', 'gate_changes.py',
+        'baseline_commit=None, baseline_record_digest=None,',
+        'baseline_commit=candidate, baseline_record_digest=None,', ['absent-records', 'divergent'])
+    baseline367('unsigned-gate', 'gate_reuse.py',
+        "gate = self.get(index['record_digest'])", "gate = json.loads(self._path(index['record_digest']).read_text())['payload']['result']", ['unsigned-miss'])
+    baseline367('result-source', 'gate_reuse.py',
+        "and result['source_commit'] == commit and result['status'] == 'passed'",
+        "and result['status'] == 'passed'", ['result-source'])
+    baseline367('result-item', 'gate_reuse.py',
+        "and result['item_id'] == item['item_id']", "and True", ['result-item'])
+    baseline367('result-status', 'gate_reuse.py',
+        "and result['source_commit'] == commit and result['status'] == 'passed'",
+        "and result['source_commit'] == commit", ['result-status'])
+    baseline367('result-completeness', 'gate_reuse.py',
+        "and result['complete'] is True", "and True", ['result-completeness'])
+
     # Suite 48's registered falsifiers target its ordinary confined rows, not the
     # ptrace census composite. Explicitly retain the worker boundary for the whole
     # suite; its census claim still stands down there, and suite 113 proves it in

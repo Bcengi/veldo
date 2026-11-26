@@ -14,6 +14,10 @@ risk_tiers:
 # per-case instruction; no agent may invoke another vendor's model on its own
 # initiative.
 protected_paths:
+  - {path: "scripts/gate_changes.py", floor: high}
+  - {path: "engine/scripts/gate_changes.py", floor: high}
+  - {path: "scripts/gate_weekly.py", floor: high}
+  - {path: "engine/scripts/gate_weekly.py", floor: high}
   - {path: "engine/scripts/gate_space.py", floor: high}
   - {path: "scripts/gate_space.py", floor: high}
   - {path: "scripts/gate_candidate.py", floor: high}
