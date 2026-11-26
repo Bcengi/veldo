@@ -151,3 +151,31 @@ against an accepted revision; the MCP secrets frame; the engine stderr
 leg with a non-empty stream; and the four falsifiers. A run cannot
 outlive the delivered access credential (frame() refuses one that
 expires within 30 minutes).
+
+Round 3 (2026-11-26)
+
+Restacked onto main (67cd6d627). Main does not carry the VELDO-0125 relay line
+(no control_worker*.py, no invoke_remote, no suites 105/106 of VELDO-0125), so
+the login delivery cannot be wired through the signed relay and production
+receiver on this base; that wiring waits for VELDO-0125 on main.
+
+Suites 103/104 (VELDO-0124 AC1 template-sync, accepted-store) pinned the five
+macOS runner modules and the four-key run environment; both now expect the
+login module and CLAUDE_CODE_TMPDIR (equal to TMPDIR).
+
+Falsifiers registered (scripts/check_teeth_mutations.py, finding 147):
+mac147-skip-executable-binding (AC1, row AC1/mac-unexpected-launch) and
+mac147-openai-key-left (AC2, row AC2/mac-paid-api-stop), both rows in suite
+157 over the production Mac modules. AC3 (drop the Mac error stream at the
+relay) and AC4 (credential value in the packet) target the relay transport
+and packet that are not on this base: not registered.
+
+Real Mac Claude leg r3 (mac-claude-leg-r3.json): capability comparison with
+mac-capability-revision.json equal in both directions; engine error stream
+non-empty (206 lines) and identical in order; stdout 72 lines identical; no
+credential value in the kept record, Mac commands, environments or summary.
+The first attempt (mac-claude-leg-r3-plugins-stop.json) was stopped by the
+comparison: the driver had not applied the qualification's engine_plugins.
+
+Open: Codex leg (waiting for a free Codex login); MCP secrets frame (AC4,
+follow-up); relay wiring and the AC3/AC4 falsifiers (need VELDO-0125 on main).

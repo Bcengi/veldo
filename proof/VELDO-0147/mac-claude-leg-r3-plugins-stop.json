@@ -1,0 +1,146 @@
+{
+ "account": "acct7",
+ "capability": {
+  "difference": "configuration_stop:plugins",
+  "equal_both_directions": false,
+  "expected": {
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "Bash",
+    "Edit",
+    "Read"
+   ]
+  },
+  "init_seen": true,
+  "revision": "sha256:76f7127fdd8c3e412b2025f655adedfbca075290ee70a62bd8a0712403269129"
+ },
+ "cleaned": {
+  "cleaned": true
+ },
+ "close": {
+  "base_absent": true,
+  "detached": true,
+  "device": "/dev/disk12",
+  "keychain_claude_items": 2,
+  "keychain_unchanged": true,
+  "removed": true,
+  "status": "closed"
+ },
+ "code_digests": {
+  "mac_leg_remote.py": "sha256:074e34a74f85158114f373b147cbb7fa08ba5fda209464e05dfe7876344bb2c3",
+  "project_runner_macos_login.py": "sha256:fccc7e389cc8c975682c0108ee2f3268003d23bae154df767181cab3acc7977f",
+  "project_runner_macos_profile.py": "sha256:84e91bbda80528df582028dd564fbc8a8a18beb20c251ffdac05beea456fe257"
+ },
+ "engine": "claude_code",
+ "execution_record": {
+  "bash_error_output_seen": false,
+  "init_api_key_source": "none",
+  "init_mcp_servers": [],
+  "init_model": "claude-opus-5-5",
+  "init_plugins": [
+   "cc-plugin-agents-md",
+   "cc-plugin-telemetry",
+   "cc-plugin-privacy",
+   "cc-plugin-plugin-authoring"
+  ],
+  "init_skills": [],
+  "init_slash_commands": [],
+  "init_tools": [
+   "Bash",
+   "Edit",
+   "Read"
+  ],
+  "result_is_error": false,
+  "result_subtype": "success",
+  "stderr_digest": "sha256:f6610d5a650f636e3d7820e2e6ff09b36b79fe56402bda0ee100f5031ec0df1c",
+  "stderr_identical_in_order": true,
+  "stderr_lines": 183,
+  "stdout_digest": "sha256:4244af7b1d6b870faad024cc046962ccb6317c4da51baba68e3c793e6b0bcd36",
+  "stdout_identical_in_order": true,
+  "stdout_lines": 4,
+  "tool_uses": []
+ },
+ "frame": {
+  "bytes": 555,
+  "files": [
+   ".credentials.json"
+  ],
+  "redaction_values": 1,
+  "refresh_credential_sent": false
+ },
+ "guard": {
+  "confirmed": true,
+  "released": false,
+  "source": "none",
+  "stop": "configuration_stop:plugins"
+ },
+ "lease": {
+  "flock_held": true,
+  "named_by_ancestor": true
+ },
+ "leg": "AC1+AC3+AC4-login",
+ "mac": {
+  "binary_bound": true,
+  "binary_digest": "sha256:09f153b46b5df9e8b3454716d682a91901de020cbca630f61dec1a015b32b5e9",
+  "edit_diff": "",
+  "engine_exit": 0,
+  "login_status": {
+   "exit": 0,
+   "logged_in": true,
+   "method": "claude.ai"
+  },
+  "policy_denies_keychain": true,
+  "policy_digest": "sha256:56507a61f0a033aac3d9d882369c03a67d4de71fd83be92050e4887f30d04779",
+  "readback": {
+   "config_dir_is_delivered_profile": true,
+   "names": [
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY",
+    "CLAUDE_CODE_DISABLE_CLAUDE_MDS",
+    "CLAUDE_CODE_TMPDIR",
+    "CLAUDE_CONFIG_DIR",
+    "DISABLE_AUTOUPDATER",
+    "HOME",
+    "LANG",
+    "PATH",
+    "TEMP",
+    "TERM",
+    "TMP",
+    "TMPDIR",
+    "VELDO_DISPATCH_ID"
+   ],
+   "paid_present": [],
+   "profile_on_ram_disk": true
+  },
+  "refusal": null
+ },
+ "note": "Round 3 first attempt: the driver sent only disableAllHooks, not the qualification entry's engine_plugins off; the engine loaded four built-in plugins and the capability comparison stopped the run configuration_stop:plugins before the prompt was released (the comparison working as a stop). Fixed in the driver; see mac-claude-leg-r3.json.",
+ "open": {
+  "account": "acct7",
+  "base_mode": "0o700",
+  "device": "/dev/disk12",
+  "dispatch": "r3-20261126013537",
+  "engine": "claude_code",
+  "files": {
+   ".credentials.json": 370
+  },
+  "profile_mode": "0o700",
+  "ram_disk": true,
+  "status": "open"
+ },
+ "qualification": false,
+ "run": "r3-20261126013537",
+ "scan": {
+  "ps_lines_scanned": 16,
+  "redaction_marker_count": 0,
+  "value_in_mac_process_commands_or_environment": false,
+  "value_in_mac_summary": false,
+  "value_in_raw_stream_before_redaction": false,
+  "value_in_redacted_record": false
+ },
+ "schema": "veldo.macos_qualification_run/v1",
+ "spec": "VELDO-0147"
+}
