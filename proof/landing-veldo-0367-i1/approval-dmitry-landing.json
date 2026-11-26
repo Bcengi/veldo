@@ -1,0 +1,22 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-LANDING-VELDO-0367-I1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0367",
+    "commit": "097226e9483d52b900750e803177ed5be34a056d",
+    "paths": [
+      ".veldo/policy.yaml",
+      "engine/.veldo/policy.yaml",
+      "engine/scripts/gate_changes.py",
+      "engine/scripts/gate_reuse.py",
+      "scripts/gate_changes.py",
+      "scripts/gate_reuse.py"
+    ]
+  },
+  "basis": "Dmitry approved landing VELDO-0367 increment 1 (inactive change-scoped schema, first-parent baseline lookup, Store change namespace, inventory reconciliation) over Telegram on 2026-11-26: 'Approve and land' (43768), answering 43767 which listed the six protected paths above. Validation on what changed (owner orders 43731/43733, no full gate): suite 162_veldo_0367_baseline 51 assertions pass, 29 new mutation cases rejected with valid verdicts, all eight quick stages pass, wall-clock census green; lead review PASS. Selection is inactive: verify.sh unchanged. WHAT IT DOES NOT COVER: any other protected path or commit; it is not a green full gate.",
+  "recorded_at": "2026-11-26T06:52:00Z",
+  "recorded_by": "Claude (recording Dmitry's Telegram approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-26T00:00:00Z"
+}
