@@ -189,6 +189,7 @@ expect('fixture target', namespace['value'] == 1)
                         print('case worker error:', str(error)[-800:])
                         return False
                 if expected_failure:
+                    print('case rejected observation:', suffix, result['one'])
                     return ('undeclared input read' in result['one'].get('declaration_stale', '')
                             and not workers.owned_snapshots
                             and not (parent / 'cases' / '0').exists())
@@ -346,6 +347,7 @@ print(json.dumps(results))
                 def __init__(self, *args, **kwargs):
                     self.invocations = 0; self.driver_spans = {}; self.resources = None
                     self.parallel = 1; self.active = {}; self.outcomes = []; self.peak = 0
+                    self.meters = {}; self.owned_snapshots = {}
                     self.retargeted = {}
                 def check(self): pass
                 def cleanup(self, on_result=None): return []
@@ -367,13 +369,15 @@ print(json.dumps(results))
             path.unlink()
             def run_stage(miss=False):
                 real_session = C.Session
+                real_load = gate.load
                 def construct(*args, **kwargs):
                     return real_session(*args, **kwargs, cache_directory=top/'stage-cache')
                 with patch.object(gate, 'inventory', return_value=cases), \
                      patch.object(gate, 'read_inputs', side_effect=lambda root, common: active[0]), \
-                     patch.object(gate, 'git', return_value='head'), \
+                     patch.object(gate, 'git', return_value='a' * 40), \
                      patch.object(gate, 'snapshot'), patch.object(gate, 'inputs_unchanged', return_value=True), \
-                     patch.object(gate, 'Workers', Workers), patch.object(gate, 'load', return_value=C), \
+                     patch.object(gate, 'Workers', Workers), patch.object(gate, 'load',
+                         side_effect=lambda path: C if path.name == 'case_reuse.py' else real_load(path)), \
                      (patch.object(C.Session, 'lookup', return_value=None) if miss else patch.object(gate, 'PARALLEL', 1)), \
                      patch.object(gate.SuiteResources, 'from_root', return_value=gate.SuiteResources({'suites':[{'file':'test.py'}, {'file':'other_test.py'}]})), \
                      patch.object(C.M, 'runtime_identity', side_effect=runtime), \
