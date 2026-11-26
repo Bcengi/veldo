@@ -23,10 +23,6 @@ import sys
 import time
 import threading
 
-_git_spec = importlib.util.spec_from_file_location('macos_git_process', Path(__file__).with_name('git_process.py'))
-_git_process = importlib.util.module_from_spec(_git_spec)
-_git_spec.loader.exec_module(_git_process)
-
 ENV = {'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'LC_ALL': 'C', 'TZ': 'UTC'}
 # Git runs through the engine's one git seam (check_git_boundary); the module is loaded from beside this file,
 # as the installed runner has no package to import it from.

@@ -112,7 +112,7 @@ class Fixture:
             expected_versions={identity: row[0] if row else 0}, parameters=dict(entity_id=identity, kind=kind, data=data)),
             'authority', lambda b: self.sign('authority', b, 'veldo-journal'), 1)
 
-    def prepare(self, dispatch='dispatch/test', required=None, source=None, engine='codex', deadline_seconds=90, unit='unit'):
+    def prepare(self, dispatch='dispatch/test', required=None, source=None, engine='codex', deadline_seconds=1800, unit='unit'):
         self.res.reserve_worker('slot/' + dispatch, dispatch, 'account', 'project', unit, now=time.time())
         entity = RES.entity('worker', ['domain', dispatch])
         version, digest = self.conn.execute('SELECT version, digest FROM entities WHERE id=?', (entity,)).fetchone()

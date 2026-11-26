@@ -15,7 +15,9 @@ from port_verify import ROOT, sanitize
 def main():
     output = Path(sys.argv[1])
     output.mkdir(parents=True, exist_ok=True)
-    cases = json.loads(Path(__file__).with_name('port-falsifiers.json').read_text())
+    # VELDO_0125_FALSIFIER_CASES names another cases file (the driver's own check of invalid mutants).
+    cases = json.loads(Path(os.environ.get('VELDO_0125_FALSIFIER_CASES',
+                                           Path(__file__).with_name('port-falsifiers.json'))).read_text())
     results, greens = [], {}
     for name, case in cases.items():
         if len(sys.argv) > 2 and name not in sys.argv[2:]:
@@ -31,6 +33,18 @@ def main():
         changed = source.replace(case['before'], case['after'])
         (output / (name + '.diff')).write_text(''.join(difflib.unified_diff(
             source.splitlines(True), changed.splitlines(True), fromfile=case['file'], tofile=case['file'], n=2)))
+        try:
+            # A mutant that does not compile fails at load, never at its row: it is invalid, not a rejection.
+            compile(changed, case['file'], 'exec')
+        except SyntaxError as error:
+            (output / (name + '.txt')).write_text('INVALID MUTANT: ' + type(error).__name__ + ': ' + str(error) + '\n')
+            results.append(dict(case=name, suite=case['suite'], row=case['row'], rejected=False, invalid_mutant=True,
+                                green_exit=green_code, mutant_exit=None,
+                                source_sha256=hashlib.sha256(source.encode()).hexdigest(),
+                                mutant_sha256=hashlib.sha256(changed.encode()).hexdigest()))
+            (output / 'results.json').write_text(json.dumps(results, indent=2) + '\n')
+            print(name, 'INVALID_MUTANT', flush=True)
+            continue
         with tempfile.TemporaryDirectory(prefix='v125-port-mutant-') as temporary:
             target = Path(temporary)
             for path in (ROOT / '.veldo').glob('*.py'):

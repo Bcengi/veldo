@@ -453,14 +453,12 @@ class Run:
         return dict(terminated=self.exit_seen and empty, cleaned=empty,
                     outcome_known=self.state == 'exited', observer='macos_supervisor')
 
-    def release(self, *, allow_unknown=False):
+    def release(self):
         if self.state == 'retired':
             raise P.Refused('stale_version:already_retired')
         observation = self.retirement()
-        # The signed remote cleanup path may release without recovering an exit record.
-        # Other callers keep the default requirement for a known outcome.
-        if (not all(observation[key] for key in ('terminated', 'cleaned'))
-                or (not observation['outcome_known'] and not allow_unknown)):
+        # Every caller, the signed remote cleanup path included, needs a known outcome to release.
+        if not all(observation[key] for key in ('terminated', 'cleaned', 'outcome_known')):
             raise P.Refused('unknown_outcome:retirement')
         with self.supervisor.lock():
             if self.state == 'retired':

@@ -110,8 +110,19 @@ def main(path):
             elif stage == 'terminate' and now >= due:
                 stage, due = 'kill', now + request['settle_seconds']
                 signal_all(signal.SIGKILL, remaining)
+                killed = set(remaining or ())
             elif stage == 'kill' and now >= due:
                 break
+            elif stage == 'kill':
+                # Each wake of the kill stage SIGKILLs a member first seen since the stage began (one a SIGTERM
+                # handler forked between the scan and the group kill), so the wrapper does not settle on it.
+                fresh = [pid for pid in remaining or () if pid not in killed]
+                for pid in fresh:
+                    try:
+                        os.kill(pid, signal.SIGKILL)
+                    except (ProcessLookupError, PermissionError):
+                        pass
+                killed.update(fresh)
             if returncode is not None:
                 if remaining is None:
                     raise OSError('coalition_unreadable')

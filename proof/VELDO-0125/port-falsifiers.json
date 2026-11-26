@@ -540,7 +540,7 @@
   "migration-deferred-to-admission": {
     "file": "project_runner_macos.py",
     "before": "        self.initialize_slots()\n",
-    "after": "        # Migration omitted from startup.\n",
+    "after": "            pass  # Migration omitted from startup.\n",
     "suite": "106_veldo_0125_routing",
     "row": "AC2/upgrade-migrates-before-admission",
     "ticket": "VELDO-0125"

@@ -172,6 +172,17 @@ cannot qualify a real Mac. No security acceptance criterion is weakened.
 See proof/VELDO-0125/PORT-2026-11-21.md and proof/VELDO-0124/PORT-2026-11-21.md;
 existing native observations and outstanding Mac legs retain their recorded scope.
 
+2026-11-26, land preparation: the 2026-11-21 port added scripts/check_space_boundary.py
+(the Mac receiver's scoped cleanup, REVIEWED entry for control_worker.py run, pending a
+design 6.10 review) and scripts/check_teeth_mutations.py (four mutants re-anchored to
+moved code) to the footprint; this line records that. The branch was restacked on the
+line and the port review's low findings were corrected: the invalid
+migration-deferred-to-admission mutant, a compile check in the port falsifier driver,
+fixture deadlines above the hang floor, separate source and line digest maps in the
+VELDO-0124 manifest, the wrapper's kill stage killing members first seen after its scan,
+one git_process load, and Run.release without an unused opt-out. Criteria, risk and
+approval requirements are unchanged. See the land record in proof/VELDO-0125/manifest.json.
+
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,

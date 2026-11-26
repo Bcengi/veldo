@@ -449,6 +449,9 @@ def _v124_suite():
         assert run.wait()['state'] == 'unknown'
         assert host.status()['pending'] == host.status()['stopped'] == 1
         T.refused(run.release, 'unknown_outcome:retirement')
+        # Review F7: no caller can opt out of the known-outcome requirement.
+        import inspect
+        assert list(inspect.signature(run.release).parameters) == []
         T.refused(lambda: host.start(request), 'stale_version:dispatch_already_attempted')
         osx.mode = 'ps_error'
         assert not run.retirement()['cleaned']
@@ -469,6 +472,63 @@ def _v124_suite():
         assert run.steps[0]['stage'] == 'terminate'
         assert not osx.live
         assert [seconds for seconds in waits if seconds] == [run.deadline]
+
+    def wrapper_kill_rescan(base):
+        # Review F4: a member a SIGTERM handler forks after the kill stage's scan is SIGKILLed on a later wake,
+        # so the wrapper does not settle with it left in the coalition.
+        import hashlib
+        import threading
+        import types
+        from unittest.mock import patch
+        wrapper = T.load('project_runner_macos_wrapper')
+        engine = base / 'engine-binary'
+        engine.write_bytes(b'engine')
+        digest = 'sha256:' + hashlib.sha256(b'engine').hexdigest()
+        (base / 'request.json').write_text(json.dumps(dict(
+            argv=[str(engine)], binary_digest=digest, engine='codex', clone=str(base), environment={},
+            sandbox='', startup_seconds=1, kill_grace_seconds=0, settle_seconds=1.0, dispatch_id='dispatch/f4')))
+        (base / 'go').write_text(json.dumps(dict(runtime_seconds=0)))
+        members, sent, gone = [ENGINE_A], [], threading.Event()
+
+        class Child:
+            pid, returncode = 4240, None
+            def poll(self):
+                return self.returncode
+            def wait(self):
+                gone.wait(30)
+                self.returncode = -9
+                return self.returncode
+            def terminate(self):
+                pass
+
+        def kill(pid, number):
+            sent.append((pid, number))
+            if number == signal.SIGKILL and pid in members:
+                members.remove(pid)
+
+        def killpg(pid, number):
+            sent.append(('group', number))
+            if number == signal.SIGKILL:
+                # The group kill lands after the scan; the SIGTERM handler's fork is now in the coalition.
+                members.append(ENGINE_B)
+                gone.set()
+
+        fake_os = types.SimpleNamespace(**{name: getattr(os, name) for name in dir(os) if not name.startswith('__')})
+        fake_os.kill, fake_os.killpg, fake_os.getpgrp = kill, killpg, os.getpid
+        fake_os.getpgid = lambda pid: pid
+        wrapper.identity = lambda pid: dict(pid=pid)
+        wrapper.wait_file = lambda path, timeout: path.exists()
+        wrapper.coalition = lambda pid: 'job'
+        wrapper.coalition_members = lambda job: list(members)
+        wrapper.wait_members = lambda pids, timeout: None
+        with patch.object(wrapper, 'os', fake_os), patch.object(wrapper.subprocess, 'Popen', lambda *a, **k: Child()), \
+                patch.object(wrapper.signal, 'signal', lambda *a: None):
+            assert wrapper.main(base) == 0
+        result = M.read(base / 'result.json')
+        assert (ENGINE_B, signal.SIGKILL) in sent, sent
+        assert result['remaining'] == [] and result['returncode'] == -9, result
+
+    ENGINE_A, ENGINE_B = 4241, 4242
 
     def os_contract(base):
         host, osx, request, paths = T.start(base)
@@ -500,7 +560,8 @@ def _v124_suite():
              'AC1/template-sync': sync, 'AC1/native-declared': native_declared,
              'AC2/deadline': deadline, 'AC2/contract-deadline': contract_deadline,
              'AC3/descendant': descendant, 'AC3/natural': natural, 'AC3/notification-lost': notification_lost,
-             'AC3/cooperative': stop, 'AC3/unknown': unknown, 'AC3/ignoring': ignoring, 'AC3/stalled-wrapper-event-or-runtime-cap': stalled_wrapper}
+             'AC3/cooperative': stop, 'AC3/unknown': unknown, 'AC3/ignoring': ignoring, 'AC3/stalled-wrapper-event-or-runtime-cap': stalled_wrapper,
+             'AC3/wrapper-kill-stage-rescans': wrapper_kill_rescan}
     for name, test in tests.items():
         with tempfile.TemporaryDirectory(prefix='v124-') as directory:
             try:

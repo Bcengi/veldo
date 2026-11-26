@@ -331,7 +331,7 @@ def _v125_routing_suite():
                 requirements[:] = required
                 launch = runner.submit('unit', 'review', holder='authority', source=str(f.repo),
                     revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
-                    configuration=f.configuration, deadline=__import__('time').time() + 60)
+                    configuration=f.configuration, deadline=__import__('time').time() + 1800)
                 assert not local, 'Mac dispatch reached Linux receiver'
                 assert launch.contract['input']['context']['host_route']['host'] == 'mac'
                 assert launch.owned and launch.result == 'pending' and launch.fileno() is not None
@@ -339,7 +339,7 @@ def _v125_routing_suite():
             f.profiles[1]['available'] = False
             T.refused(lambda: runner.prepare('unit', 'review', holder='authority', source=str(f.repo),
                 revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
-                configuration=f.configuration, deadline=__import__('time').time() + 60), 'blocked:')
+                configuration=f.configuration, deadline=__import__('time').time() + 1800), 'blocked:')
             decisions = [__import__('json').loads(row[0]) for row in f.conn.execute(
                 "SELECT data FROM entities WHERE kind='host_routing'")]
             assert any(row['state'] == 'blocked' and row['required'] == ['ios-build'] for row in decisions)
@@ -363,7 +363,7 @@ def _v125_routing_suite():
         try:
             launch = runner.submit('unit', 'review', holder='authority', source=str(f.repo),
                 revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
-                configuration=f.configuration, deadline=__import__('time').time() + 60)
+                configuration=f.configuration, deadline=__import__('time').time() + 1800)
             assert launch.contract['input']['context']['host_route']['host'] == 'mac'
             assert launch.contract['reservation']['account'] == 'account'
             assert launch.contract['input']['decision']['inputs'] == {'source': 'accepted'}
