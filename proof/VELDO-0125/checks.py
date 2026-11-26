@@ -96,9 +96,11 @@ class Fixture:
         self.put('authority:domain', 'authority', dict(state='active', generation=1))
         self.service = W.Service(self.config, self.conn)
         self.ds, self.res = self.service.records('repo')
+        # An accept reserves the contract's remaining time, deadline minus now. The local ceiling holds two
+        # runs at prepare's default deadline (1800 s), as it held two at the 90 s deadline it replaced.
         for scope, subject in (('account', 'account'), ('project', 'project'), ('unit', 'unit')):
             self.res.configure('policy/' + scope, scope, subject,
-                                dict(capacity=20, invocations=20, wall_seconds=1800 if remote else 200), now=time.time())
+                                dict(capacity=20, invocations=20, wall_seconds=1800 if remote else 4000), now=time.time())
         self.child = None
 
     def sign(self, name, data, namespace='veldo-command'):

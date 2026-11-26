@@ -21,7 +21,8 @@
     "control_landing.py": "landing_push",
     "lander.py": "landing_push",
     "control_replica.py": "audit_replica",
-    "installation.py": "installation_repository"
+    "installation.py": "installation_repository",
+    "control_worker.py": "git_transport"
   },
   "local_only": {
     "candidate_git.py": {

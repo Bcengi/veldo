@@ -78,7 +78,7 @@ def _v125_suite():
 
     def binding(f, fields=None):
         f.prepare(required=['ios-build'])
-        f.res.configure('policy/other', 'unit', 'other', dict(capacity=2, invocations=2, wall_seconds=200), now=__import__('time').time())
+        f.res.configure('policy/other', 'unit', 'other', dict(capacity=2, invocations=2, wall_seconds=4000), now=__import__('time').time())
         f.prepare('dispatch/other', ['ios-build'], unit='other')
         f.start()
         client = f.client()
@@ -143,7 +143,7 @@ def _v125_suite():
         before = f.service.watermark()
         T.refused(lambda: client.launch(bound, 'accept', receiver=T.process(), runtime_seconds=-1), 'invalid_input:runtime_seconds')
         assert f.service.watermark() == before and f.ds.record('dispatch/test')['state'] == 'prepared'
-        f.res.configure('exhausted', 'account', 'account', dict(capacity=20, invocations=0, wall_seconds=200), now=__import__('time').time())
+        f.res.configure('exhausted', 'account', 'account', dict(capacity=20, invocations=0, wall_seconds=4000), now=__import__('time').time())
         T.refused(lambda: client.launch(bound, 'accept', receiver=T.process(), runtime_seconds=5), 'usage_cap:')
         assert f.service.get('dispatch/test')['state'] == 'claimed'
         assert f.ds.record('dispatch/test')['state'] == 'prepared'

@@ -56,6 +56,8 @@ footprint:
   - "packs/*/.veldo/control_worker*.py"
   - "engine/.veldo/init_scaffold.py"
   - ".veldo/init_scaffold.py"
+  - "engine/.veldo/control_plane_calls.json"
+  - ".veldo/control_plane_calls.json"
   - "engine/.veldo/control_routing*.py"
   - ".veldo/control_routing*.py"
   - "packs/*/.veldo/control_routing*.py"
@@ -182,6 +184,17 @@ fixture deadlines above the hang floor, separate source and line digest maps in 
 VELDO-0124 manifest, the wrapper's kill stage killing members first seen after its scan,
 one git_process load, and Run.release without an unused opt-out. Criteria, risk and
 approval requirements are unchanged. See the land record in proof/VELDO-0125/manifest.json.
+
+2026-11-26, land preparation, fix round 1: a test by test comparison with the line showed
+four faults from the restack and the fixes above, now corrected. The fixtures' local
+wall-clock ceiling was below the new 1800 s deadline, so every accept was refused; it is
+4000 s. Line.run and the loop's status are driven on stand-in objects by the line's own
+suites, so the run settles through Line.finish_launch named on the class and the status
+reads a missing deadline table as empty. The receiver-role check reads the membership only
+for a packet that names a principal, so a read-only inspect reads none. The Mac receiver's
+clone of its installed source is registered in control_plane_calls.json (VELDO-0258),
+which joins the footprint. The VELDO-0127 live captures bind control_launch.py by digest
+and are stale on this branch; retaking them needs real Claude and Codex runs.
 
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this

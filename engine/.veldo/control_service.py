@@ -2215,7 +2215,10 @@ class Service:
         try:
             if repository not in self.repositories and not is_take_on(packet):
                 raise Refused('missing_authority:repository_not_served', 'this instance does not serve it')
-            member = AC.membership_entry(CM.authority_state(S, self.conn)['membership'], command.get('principal'))
+            # A packet that names no principal (a read-only inspect) has no member to hold to the receiver's
+            # operations, so the membership is not read for it.
+            member = (AC.membership_entry(CM.authority_state(S, self.conn)['membership'], command['principal'])
+                      if command.get('principal') is not None else None)
             if (member and 'worker_receiver' in member.get('roles', [])
                     and command.get('operation') not in ('worker_claim', 'worker_launch', 'worker_result', 'worker_status', 'worker_retired')):
                 raise Refused('not_authorized', 'worker receiver operation only')
@@ -3522,7 +3525,8 @@ class Line:
         for launch in ended:
             # Register and release once (finish_launch): re-adding a released orphan would retry its committed
             # command with a new timestamp. A remote launch's unknown outcome stays held for signed evidence.
-            self.finish_launch(report, launch)
+            # Named on the class, as this pass needs only a line's runner and repository of its caller.
+            Line.finish_launch(self, report, launch)
         # VELDO-0188 AC3: a closed project's line settles its runs and offers nothing, no station and no re-run.
         if getattr(self, 'closing', False):
             self.space_left()
@@ -5127,7 +5131,8 @@ class FactoryLoop:
                 'watched_trees': sorted(self.trees),
                 'running': sorted(d for line in self.lines.values() for d in line.runner.launches),
                 'orphans': sorted(d for line in self.lines.values() for d in line.runner.orphans),
-                'remote_deadlines': {dispatch: entry[0] for dispatch, entry in sorted(self.deadlines.items())},
+                'remote_deadlines': {dispatch: entry[0]
+                                     for dispatch, entry in sorted(getattr(self, 'deadlines', {}).items())},
                 'remote_holds': {repository: line.runner.remote_retirements
                                  for repository, line in sorted(self.lines.items())},
                 'last_sources': (self.last or {}).get('sources'),

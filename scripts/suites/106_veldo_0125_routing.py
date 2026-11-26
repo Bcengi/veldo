@@ -556,7 +556,7 @@ def _v125_routing_suite():
             try:
                 launch, runner, _, _ = stalled_remote(f, state)
                 if state == 'prepared':
-                    f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=1000),
+                    f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=20000),
                                     now=time.time())
                     T.refused(lambda: f.res.reserve_worker('waiting-slot', 'dispatch/waiting', 'account', 'project',
                               'unit', now=time.time()), 'usage_cap:account:capacity')
@@ -1019,7 +1019,7 @@ def _v125_routing_suite():
         for initial in ('accepted', 'running'):
             f = T.Fixture(base / initial)
             try:
-                f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=1000),
+                f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=20000),
                                 now=__import__('time').time())
                 f.prepare(required=['macos'])
                 f.start()
@@ -1099,7 +1099,7 @@ def _v125_routing_suite():
     def remote_signed_cleanup(base):
         f = T.Fixture(base)
         try:
-            f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=1000),
+            f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=20000),
                             now=__import__('time').time())
             f.start()
             client = f.client()
