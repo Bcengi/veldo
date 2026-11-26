@@ -19042,11 +19042,15 @@ def cases():
     observer367('worker-python-complete', 'check_gate_mutations.py',
         "            if dependency['complete']:\n                raise ValueError('Python dependency claim asserts complete native coverage')",
         "            if False:\n                raise ValueError('Python dependency claim asserts complete native coverage')", ['coordinator-python-complete'])
+    # Re-anchored for VELDO-0367 r7: both lines gained the strict condition.
     observer367('watch-failure', 'gate_legs.py',
-        'if ctypes.get_errno() != errno.ENOENT:', 'if False:', ['watch-failure'])
+        'if self.strict and ctypes.get_errno() != errno.ENOENT:', 'if False:', ['watch-failure'])
     observer367('walk-failure', 'gate_legs.py',
-        'def _walk_error(self, error):\n        self.overflowed = True',
-        'def _walk_error(self, error):\n        pass', ['walk-failure'])
+        'if self.strict:\n            self.overflowed = True',
+        'if False:\n            self.overflowed = True', ['walk-failure'])
+    observer367('take-strict', 'gate_legs.py',
+        "OpenWatch(root, areas=('.',), strict=True) if self.observer", "OpenWatch(root, areas=('.',), strict=False) if self.observer",
+        ['take-strict'])
     observer367('failed-status', 'gate_legs.py',
         'if self.observer is None or code != 0:', 'if self.observer is None:', ['failed-stage-status'])
     observer367('runtime-environment', 'mutation_observer.py',

@@ -503,6 +503,16 @@ def _v367_observer():
         with patch.object(G.os, 'walk', failed_walk):
             fake._tree(repo, False)
         row('walk-failure', fake.overflowed)
+        # The two rows above set strict by hand. This one holds the observing take to it, and the
+        # take with change selection off to the plain watch.
+        taking = G.TakeOpened(repo, None, 'strict-fixture', store=store)
+        strict = taking.watch.strict
+        taking.finish('strict-fixture', 1)
+        with patch.object(G, 'dependency_observer', lambda: None):
+            taking = G.TakeOpened(repo, None, 'plain-fixture', store=store)
+            plain = taking.watch.strict
+            taking.finish('plain-fixture', 1)
+        row('take-strict', strict is True and plain is False)
         (repo / 'dirty').write_text('uncommitted')
         taking = G.TakeOpened(repo, None, 'dirty-fixture', store=store)
         row('dirty-stage', taking.commit == '0' * 40)

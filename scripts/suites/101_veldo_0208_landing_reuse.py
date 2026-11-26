@@ -1595,11 +1595,15 @@ def _v208_unconfined_leg():
             locked.chmod(0o700)
             shutil.rmtree(str(locked)); never.unlink()
         walked_output = walked.stdout + walked.stderr
-        expect('VELDO-0367 off/unreadable-directory-under-scripts-is-ignored-not-an-overflow: '
-               + repr((unreadable, walked.returncode, walked_taken, walked_output[-400:])),
-               selection_off and unreadable and walked.returncode == 0 and 'V367-OFF forged' in walked_output
-               and walked_taken == taken and '1 claim dropped (never opened)' in walked_output
-               and 'the kernel dropped events' not in walked_output)
+        if os.geteuid() == 0:
+            # Root reads a mode 0 directory, so nothing refuses the walk and the row has nothing to show.
+            print('   skip VELDO-0367 off/unreadable-directory-under-scripts-is-ignored-not-an-overflow: runs as root')
+        else:
+            expect('VELDO-0367 off/unreadable-directory-under-scripts-is-ignored-not-an-overflow: '
+                   + repr((unreadable, walked.returncode, walked_taken, walked_output[-400:])),
+                   selection_off and unreadable and walked.returncode == 0 and 'V367-OFF forged' in walked_output
+                   and walked_taken == taken and '1 claim dropped (never opened)' in walked_output
+                   and 'the kernel dropped events' not in walked_output)
         # A stage whose runner raises leaves no record, as before VELDO-0367: nothing finishes the take.
         raising = off_driver.replace('sys.exit(', 'def refuse(*a, **k):\n    raise RuntimeError("V367-RAISED")\n'
                                      'm.confined = m.unconfined = refuse\nsys.exit(', 1)
