@@ -91,9 +91,12 @@ def cases(T, helper):
             assert not list((base / '.active').iterdir())
         calls = []
         w.receive_locked = lambda config, request: calls.append(request) or dict(host_released=True)
-        # The clock is moved to the recorded due time; the drain finds the entry due.
+        # The clock is moved to the recorded due time; the drain finds the entry due. A drain that sleeps has
+        # skipped the due entry, so the worker's own sleep fails the row.
         due_clock = types.SimpleNamespace(time=lambda: due)
-        with patch.object(w, 'time', due_clock), patch.object(w.OUT, 'time', due_clock):
+        def slept(seconds):
+            raise AssertionError('the drain slept %r s with the entry due' % (seconds,))
+        with patch.object(w, 'time', due_clock), patch.object(w.OUT, 'time', due_clock), patch.object(w, 'sleep', slept):
             w.resume_pending(config, drain=True)
         assert len(calls) == 1 and not w.OUT.entries(config)
 

@@ -230,6 +230,16 @@ clock, so no clock is injected there. Each of the five rows named in the review 
 a delay longer than its old bound and passes under the same delay now. No assertion changed
 and the baseline gained nothing.
 
+2026-11-26, land preparation, fix round 4: the factory-delivery row no longer has a real
+acceptance deadline. Round 3 said its service and receiver were separate processes on the
+real clock; that was wrong, the authority runs in the row's own process. The row now takes
+one instant and gives it to the fixture, the offer, the launch, the authority and the
+receiver's fake OS, so the 1800-second deadline is judged against that instant however long
+the acceptance takes. With the real clock moved 100000 seconds ahead after the offer the row
+passes, and the round 3 row fails. The two due-time drains of rounds 12 and 13 now fail the
+row if the worker sleeps, so a drain that skips a due entry is a failed row and not a hung
+run. The round 13 retry assertion reads the worker's clock again, as it did before round 3.
+
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,

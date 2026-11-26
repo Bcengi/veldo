@@ -378,11 +378,31 @@ def _v125_routing_suite():
         import time
         P = helper('v125_delivery_host', 'proof/VELDO-0125/macos_event_fixture.py')
         host, backend, request, paths = P.start(base / 'mac')
-        f = T.Fixture(base / 'linux')
         service_module = T.W.SV
         L = service_module.L
+
+        class Clock:
+            """Stands in for the time module of one engine module: time() is the row's instant, the rest is real."""
+            def __init__(self, real, instant):
+                self.real, self.instant = real, instant
+
+            def time(self):
+                return self.instant
+
+            def __getattr__(self, name):
+                return getattr(self.real, name)
+
+        # One instant, taken once, is the only "now" of this row. The fixture, the offer (control_service), the
+        # launch and its deadline check (control_launch), the authority's judgment (control_worker_service) and
+        # the receiver's fake OS all read it, so no real delay between the offer and the acceptance can pass
+        # the contract deadline. The real waits below only detect a hang.
+        instant = T.wall()
+        f = T.Fixture(base / 'linux', clock=lambda: instant)
         L.CFG.bind = lambda conn, domain, repository, configuration: configuration
         launched, line = None, None
+        clocks = [(module, module.time) for module in (service_module, L, T.W)]
+        for module, real in clocks:
+            module.time = Clock(real, instant)
         try:
             host.profile['signing_keys'] = [str(f.keys / 'mac')]
             P.evidence_fixture(host.profile, host.qualification)
@@ -402,7 +422,8 @@ def _v125_routing_suite():
                 ssh_argv=[sys.executable, str(T.MODULES / 'control_relay.py'), f.config['socket']],
                 source=str(f.repo), runs=str(paths['projects'] / 'runs'), accounts={'account': account},
                 fixture_facts=backend.facts(), fixture_temp=str(paths['usertemp']),
-                fixture_marker=str(base / 'contacted.json'), fixture_exchange=str(base / 'exchange'))
+                fixture_marker=str(base / 'contacted.json'), fixture_exchange=str(base / 'exchange'),
+                fixture_wall=instant)
             (base / 'exchange').mkdir()
             endpoint_path = base / 'endpoint.json'
             endpoint_path.write_text(json.dumps(endpoint))
@@ -416,8 +437,8 @@ def _v125_routing_suite():
             line = service_module.Line(loop, 'repo', {}, str(receiver_path))
             f.start()
             report = dict(offered=[], refused=[], waiting=[])
-            # The role's budget is the fixture's 1800 s contract deadline (Fixture.prepare's default). The service
-            # and the receiver are separate processes on the real clock, so the deadline has to outlast any load.
+            # The role's budget is the fixture's 1800 s contract deadline (Fixture.prepare's default). The authority
+            # runs in this process and judges the acceptance against the row's instant, as the offer did.
             role = dict(identity='reviewer', adapter='codex', payload={}, configuration=f.configuration, seconds=1800)
             launched = line.offer(report, 'unit', 'review', role,
                 revision=T.git(f.repo, 'rev-parse', 'HEAD'), context={'reviewer': 'reviewer'})
@@ -450,6 +471,8 @@ def _v125_routing_suite():
             assert stored['dispatch_id'] == launched.dispatch_id and stored['unit'] == 'unit'
             assert stored['charge'] == 'unknown', 'missing usage became invented spend'
         finally:
+            for module, real in clocks:
+                module.time = real
             for pending in list(line.runner.launches.values()) if line else []:
                 pending._end_receiver()
             if launched and launched.child:

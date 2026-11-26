@@ -22,6 +22,13 @@ spec.loader.exec_module(P)
 config = json.loads(Path(sys.argv[1]).read_text())
 request = json.loads(sys.stdin.readline())
 class Backend(P.FakeOS):
+    def wall(self):
+        # The row's one instant when the endpoint supplies it: the contract deadline is judged on the same clock
+        # the offer and the authority read. The fake OS moves it only by its own simulated sleeps.
+        if 'fixture_wall' in config:
+            return config['fixture_wall'] + self.now
+        return super().wall()
+
     def bind_dispatch(self):
         if self.directory:
             for name in ('heartbeat.json', 'result.json'):

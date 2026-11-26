@@ -54,13 +54,16 @@ def cases(T, helper):
                     assert str(error) == 'unavailable_service:slot_migration_required'
             entries = w.OUT.entries(config, ready_only=True)
             assert len(entries) == 1, 'migration refusal parked the dispatch'
-            assert entries[0]['attempts'] == 1 and entries[0]['due'] > fixed.time()
+            assert entries[0]['attempts'] == 1 and entries[0]['due'] > w.time.time()
             assert not output.getvalue(), 'Linux was told the migration refusal was parked'
             # QueueDirectories starts the drain even when bootstrap did not run on upgrade.
             P.M.Supervisor(host.profile, host.qualification, backend=backend)
-        # The clock is moved to the recorded retry time; the drain finds the entry due.
+        # The clock is moved to the recorded retry time; the drain finds the entry due. A drain that sleeps has
+        # skipped the due entry, so the worker's own sleep fails the row.
         due_clock = types.SimpleNamespace(time=lambda: entries[0]['due'])
-        with patch.object(w, 'time', due_clock), patch.object(w.OUT, 'time', due_clock):
+        def slept(seconds):
+            raise AssertionError('the drain slept %r s with the entry due' % (seconds,))
+        with patch.object(w, 'time', due_clock), patch.object(w.OUT, 'time', due_clock), patch.object(w, 'sleep', slept):
             w.resume_pending(config, drain=True)
         assert len(calls) == 1 and not w.OUT.entries(config)
 
