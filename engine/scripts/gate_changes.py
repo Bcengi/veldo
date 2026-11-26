@@ -246,7 +246,7 @@ def baseline(root, candidate, store, repository):
 
 # Only increment 5 changes this authority-owned switch. Environment variables and
 # candidate receipts cannot enable selection.
-SELECTION_ENABLED = False
+SELECTION_ENABLED = True
 
 
 def intersects(dependency, changed):
