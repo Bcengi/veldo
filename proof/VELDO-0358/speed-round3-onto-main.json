@@ -1,0 +1,351 @@
+{
+ "base": "67cd6d6275fa23612c850b55e468e0b95e4baec9",
+ "branch": "speed-integration-3",
+ "engine_sync": true,
+ "head": "f95f6bcc5a52b331cc63120b4c03c026622e43cc",
+ "history": {
+  "alternates_removed": true,
+  "commits": 4476
+ },
+ "host": "dmitry-pc2",
+ "mutation": {
+  "driver": "scripts/check_gate_mutations.py --case x97 (module check_gate_mutations.py), VELDO_GATE_COLLECT_ALL=1",
+  "executed": 0,
+  "first_invalid": {
+   "detail": "98_veldo_0204_mutation_receipts.py:check_gate_mutations.py:False:noop: worker exit 1",
+   "error": "control_failed",
+   "name": "98_veldo_0204_mutation_receipts.py:check_gate_mutations.py:False:noop"
+  },
+  "others": [
+   "worker_cancelled"
+  ],
+  "rejected": 0,
+  "status": "failed"
+ },
+ "origin_main_controls_same_host": {
+  "100_veldo_0207_case_reuse@origin/main": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0207 case/sandbox-caught-undeclared-child",
+    "SELFTEST FAIL: VELDO-0207 case/forced-caught-undeclared-child",
+    "SELFTEST FAIL: VELDO-0207 case/sandbox-caught-undeclared-child-stat",
+    "SELFTEST FAIL: VELDO-0207 case/forced-caught-undeclared-child-stat"
+   ],
+   "summary": "(PARTIAL, 1 of 279 suites): 119 passed, 4 failed in 21.35s",
+   "verdict": "FAIL"
+  },
+  "101_veldo_0208_landing_reuse@origin/main": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0208 git/integrate-rehashes-remapped-object",
+    "SELFTEST FAIL: VELDO-0208 install/planted-remap-not-installed",
+    "SELFTEST FAIL: VELDO-0208 confined-stage/worker-serves-socket-and-terminal: ({'baseline': None, 'mutant': None}, {'baseline': 'le \"~/remote-run/runs/",
+    "SELFTEST FAIL: VELDO-0208 profiles/worker-network-rule-is-gate-rule: ({'inherited-socket': 'EBADF', 'tcp-loopback-bind-and-connect': 'allowed', 'tcp-loopback-ou"
+   ],
+   "summary": "(PARTIAL, 1 of 279 suites): 215 passed, 4 failed in 664.97s",
+   "verdict": "FAIL"
+  },
+  "107_veldo_0153_identity_push@origin/main": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 279 suites): 147 passed, 0 failed in 8.94s",
+   "verdict": "pass"
+  },
+  "110_veldo_0143_new_project@origin/main": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0143 pm/new-project-run",
+    "SELFTEST FAIL: VELDO-0143 pm/graph-stage-own",
+    "SELFTEST FAIL: VELDO-0143 format/fake-lines"
+   ],
+   "summary": "(PARTIAL, 1 of 279 suites): 135 passed, 3 failed in 71.75s",
+   "verdict": "FAIL"
+  },
+  "127_veldo_0259_installation@origin/main": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0259 writers/home-as-tilde: .veldo/fix_validation.py writes the home directory as ~ [None {\"cwd\": \"~/work\", \"log\": \"File \\\"~/x.py\\\"\", \"othe"
+   ],
+   "summary": "(PARTIAL, 1 of 279 suites): 46 passed, 1 failed in 45.52s",
+   "verdict": "FAIL"
+  },
+  "53_veldo_0123_mutations@origin/main": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0123 gate/input-closure-refuses-incomplete-listings: a directory Git cannot list (ls-files warns and lists less) and a directory whose file"
+   ],
+   "summary": "(PARTIAL, 1 of 279 suites): 41 passed, 1 failed in 57.00s",
+   "verdict": "FAIL"
+  },
+  "93_veldo_0152_intake_routes@origin/main": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0152 route/codex-result",
+    "SELFTEST FAIL: VELDO-0152 intake/scoped-context",
+    "SELFTEST FAIL: VELDO-0152 proof/intake-companions",
+    "SELFTEST FAIL: VELDO-0152 intake/ticket-key",
+    "SELFTEST FAIL: VELDO-0152 intake/name-is-a-hint",
+    "SELFTEST FAIL: VELDO-0152 intake/request-field"
+   ],
+   "summary": "(PARTIAL, 1 of 279 suites): 28 passed, 23 failed in 5.81s",
+   "verdict": "FAIL"
+  }
+ },
+ "protected_paths_vs_origin_main": [
+  "engine/scripts/check_gate_mutations.py",
+  "scripts/check_gate_mutations.py",
+  "scripts/gate_unconfined.json"
+ ],
+ "runs": [
+  "rr20261126064406-542c (head a74df63b7)",
+  "rr20261126072922-f66e (head 847546b15)",
+  "rr20261126103333-53ba (head f95f6bcc5)"
+ ],
+ "schema": "speed-round3/v1",
+ "stages": {
+  "docs": {
+   "red": [],
+   "summary": "",
+   "verdict": "pass"
+  },
+  "extra": {
+   "red": [],
+   "summary": "",
+   "verdict": "pass"
+  },
+  "generated": {
+   "red": [],
+   "summary": "",
+   "verdict": "pass"
+  },
+  "lint": {
+   "red": [],
+   "summary": "",
+   "verdict": "pass"
+  },
+  "packaging": {
+   "red": [],
+   "summary": "",
+   "verdict": "pass"
+  },
+  "personal_setup": {
+   "red": [],
+   "summary": "",
+   "verdict": "pass"
+  },
+  "security": {
+   "red": [],
+   "summary": "",
+   "verdict": "pass"
+  },
+  "wallclock": {
+   "red": [],
+   "summary": "",
+   "verdict": "pass"
+  }
+ },
+ "stale_scan": {
+  "stale": 0,
+  "total": 4092
+ },
+ "suites_latest_per_name": {
+  "100_veldo_0207_case_reuse": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0207 case/sandbox-caught-undeclared-child",
+    "SELFTEST FAIL: VELDO-0207 case/forced-caught-undeclared-child",
+    "SELFTEST FAIL: VELDO-0207 case/sandbox-caught-undeclared-child-stat",
+    "SELFTEST FAIL: VELDO-0207 case/forced-caught-undeclared-child-stat"
+   ],
+   "summary": "(PARTIAL, 1 of 287 suites): 119 passed, 4 failed in 19.91s",
+   "verdict": "FAIL"
+  },
+  "101_veldo_0208_landing_reuse": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0208 git/integrate-rehashes-remapped-object",
+    "SELFTEST FAIL: VELDO-0208 install/planted-remap-not-installed",
+    "SELFTEST FAIL: VELDO-0208 confined-stage/worker-serves-socket-and-terminal: ({'baseline': None, 'mutant': None}, {'baseline': 'le \"~/remote-run/runs/",
+    "SELFTEST FAIL: VELDO-0208 profiles/worker-network-rule-is-gate-rule: ({'inherited-socket': 'EBADF', 'tcp-loopback-bind-and-connect': 'allowed', 'tcp-loopback-ou"
+   ],
+   "summary": "(PARTIAL, 1 of 287 suites): 215 passed, 4 failed in 662.22s",
+   "verdict": "FAIL"
+  },
+  "104_veldo_0210_mutation_workers": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 35 passed, 0 failed in 372.78s",
+   "verdict": "pass"
+  },
+  "107_veldo_0153_identity_push": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 147 passed, 0 failed in 8.81s",
+   "verdict": "pass"
+  },
+  "110_veldo_0143_corrections": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 47 passed, 0 failed in 9.36s",
+   "verdict": "pass"
+  },
+  "110_veldo_0143_new_project": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0143 pm/new-project-run",
+    "SELFTEST FAIL: VELDO-0143 pm/graph-stage-own",
+    "SELFTEST FAIL: VELDO-0143 format/fake-lines"
+   ],
+   "summary": "(PARTIAL, 1 of 287 suites): 127 passed, 3 failed in 56.60s",
+   "verdict": "FAIL"
+  },
+  "112_veldo_0215_case_deadlines": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 50 passed, 0 failed in 0.40s",
+   "verdict": "pass"
+  },
+  "114_veldo_0216_concurrent_stages": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 58 passed, 0 failed in 46.29s",
+   "verdict": "pass"
+  },
+  "115_veldo_0219_measured_admission": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 72 passed, 0 failed in 26.41s",
+   "verdict": "pass"
+  },
+  "121_veldo_0131_factory_census": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 28 passed, 0 failed in 0.15s",
+   "verdict": "pass"
+  },
+  "121_veldo_0131_factory_progress": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 28 passed, 0 failed in 10.27s",
+   "verdict": "pass"
+  },
+  "121_veldo_0131_factory_screens_narrow": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 30 passed, 0 failed in 76.76s",
+   "verdict": "pass"
+  },
+  "123_veldo_0174_conversations": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 65 passed, 0 failed in 21.75s",
+   "verdict": "pass"
+  },
+  "124_veldo_0131_factory_commands": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 32 passed, 0 failed in 52.93s",
+   "verdict": "pass"
+  },
+  "124_veldo_0131_factory_reads_commands": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 34 passed, 0 failed in 42.82s",
+   "verdict": "pass"
+  },
+  "125_veldo_0230_engine_census": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 35 passed, 0 failed in 21.50s",
+   "verdict": "pass"
+  },
+  "127_veldo_0259_installation": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0259 writers/home-as-tilde: .veldo/fix_validation.py writes the home directory as ~ [None {\"cwd\": \"~/work\", \"log\": \"File \\\"~/x.py\\\"\", \"othe"
+   ],
+   "summary": "(PARTIAL, 1 of 287 suites): 46 passed, 1 failed in 45.17s",
+   "verdict": "FAIL"
+  },
+  "144_veldo_0306_space_docker": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 56 passed, 0 failed in 6.11s",
+   "verdict": "pass"
+  },
+  "157_veldo_0217_declarations": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 47 passed, 0 failed in 2.50s",
+   "verdict": "pass"
+  },
+  "157_veldo_0221_suite_shards": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 76 passed, 0 failed in 11.84s",
+   "verdict": "pass"
+  },
+  "158_veldo_0224_stale_declarations": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 37 passed, 0 failed in 6.46s",
+   "verdict": "pass"
+  },
+  "158_veldo_0358_census": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 32 passed, 0 failed in 17.93s",
+   "verdict": "pass"
+  },
+  "159_veldo_0218_reuse_audit": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 39 passed, 0 failed in 21.85s",
+   "verdict": "pass"
+  },
+  "53_veldo_0123_mutations": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0123 gate/input-closure-refuses-incomplete-listings: a directory Git cannot list (ls-files warns and lists less) and a directory whose file"
+   ],
+   "summary": "(PARTIAL, 1 of 287 suites): 41 passed, 1 failed in 54.97s",
+   "verdict": "FAIL"
+  },
+  "71_veldo_0130_api": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 64 passed, 0 failed in 20.31s",
+   "verdict": "pass"
+  },
+  "71_veldo_0130_api_service": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 35 passed, 0 failed in 23.98s",
+   "verdict": "pass"
+  },
+  "78_veldo_0160_account_assets": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 28 passed, 0 failed in 0.05s",
+   "verdict": "pass"
+  },
+  "78_veldo_0160_account_pool": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 60 passed, 0 failed in 46.37s",
+   "verdict": "pass"
+  },
+  "86_veldo_0127_agent_configuration": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 54 passed, 0 failed in 50.91s",
+   "verdict": "pass"
+  },
+  "86_veldo_0127_init_bound": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 29 passed, 0 failed in 6.63s",
+   "verdict": "pass"
+  },
+  "86_veldo_0189_engine_records": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 36 passed, 0 failed in 16.97s",
+   "verdict": "pass"
+  },
+  "86_veldo_0189_engine_upgrade": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 54 passed, 0 failed in 147.35s",
+   "verdict": "pass"
+  },
+  "93_veldo_0152_intake_routes": {
+   "red": [
+    "SELFTEST FAIL: VELDO-0152 route/codex-result",
+    "SELFTEST FAIL: VELDO-0152 intake/scoped-context",
+    "SELFTEST FAIL: VELDO-0152 proof/intake-companions",
+    "SELFTEST FAIL: VELDO-0152 intake/ticket-key",
+    "SELFTEST FAIL: VELDO-0152 intake/name-is-a-hint",
+    "SELFTEST FAIL: VELDO-0152 intake/request-field"
+   ],
+   "summary": "(PARTIAL, 1 of 287 suites): 28 passed, 23 failed in 5.58s",
+   "verdict": "FAIL"
+  },
+  "97_veldo_0204_gate_resources": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 36 passed, 0 failed in 0.30s",
+   "verdict": "pass"
+  },
+  "98_veldo_0204_mutation_receipts": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 104 passed, 0 failed in 3.70s",
+   "verdict": "pass"
+  },
+  "99_veldo_0205_reuse": {
+   "red": [],
+   "summary": "(PARTIAL, 1 of 287 suites): 56 passed, 0 failed in 3.70s",
+   "verdict": "pass"
+  }
+ }
+}
