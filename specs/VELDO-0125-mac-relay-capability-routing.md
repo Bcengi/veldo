@@ -195,6 +195,10 @@ for a packet that names a principal, so a read-only inspect reads none. The Mac 
 clone of its installed source is registered in control_plane_calls.json (VELDO-0258),
 which joins the footprint. The VELDO-0127 live captures bind control_launch.py by digest
 and are stale on this branch; retaking them needs real Claude and Codex runs.
+The wall-clock census (VELDO-0358) reads the files this branch adds or changes: the numeric
+timeouts in suites 103 and 106 and in the live fixtures are now the wait hang bound. The
+clock reads that feed the real authority service, and the recorded proof drivers, are
+unconverted sites that need entries in the protected baseline, which only the owner adds.
 
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this

@@ -495,7 +495,7 @@ def _v124_suite():
             def poll(self):
                 return self.returncode
             def wait(self):
-                gone.wait(30)
+                gone.wait(WAITS.WAIT_HANG_SECONDS)
                 self.returncode = -9
                 return self.returncode
             def terminate(self):

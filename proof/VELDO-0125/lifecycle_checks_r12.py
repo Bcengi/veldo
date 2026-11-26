@@ -8,6 +8,9 @@ import time
 import types
 from unittest.mock import patch
 
+# The wait hang bound (VELDO-0358): the one duration a check may give a blocking call.
+WAIT_HANG_SECONDS = 600
+
 
 def cases(T, helper):
     @contextlib.contextmanager
@@ -110,7 +113,7 @@ def cases(T, helper):
                 assert time.sleep is stdlib_sleep, 'worker clock patch leaked into subprocess waits'
                 # A child timeout wait must retain the real stdlib sleep.
                 import subprocess, sys
-                subprocess.run([sys.executable, '-c', 'pass'], timeout=120, check=True)
+                subprocess.run([sys.executable, '-c', 'pass'], timeout=WAIT_HANG_SECONDS, check=True)
                 for _ in range(15):
                     c.worker.resume_pending(c.config, drain=True)
             assert len(statuses) == 1, 'worker_status repeated while waiting for operator'

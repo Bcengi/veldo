@@ -13,6 +13,8 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
+# The wait hang bound (VELDO-0358): the one duration a fixture may give a blocking call.
+WAIT_HANG_SECONDS = 600
 MODULES = Path(os.environ.get('VELDO_0125_MODULES', ROOT / '.veldo'))
 
 
@@ -29,7 +31,7 @@ S, D, R, RES = W.SV.S, W.D, W.R, W.RES
 
 
 def command(argv, **kwargs):
-    return subprocess.run(argv, capture_output=True, check=True, timeout=120, **kwargs)
+    return subprocess.run(argv, capture_output=True, check=True, timeout=WAIT_HANG_SECONDS, **kwargs)
 
 
 def git(path, *args):
@@ -176,7 +178,7 @@ class Fixture:
     def close(self):
         if self.child:
             self.child.terminate()
-            self.child.wait(timeout=120)
+            self.child.wait(timeout=WAIT_HANG_SECONDS)
             self.log.close()
         self.conn.close()
 

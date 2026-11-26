@@ -123,7 +123,7 @@ def _v125_routing_suite():
                             temporary.replace(response)
                     if any(thread.is_alive() for thread in threads):
                         events.wait([reader])
-            notifier.join(timeout=120)
+            notifier.join(timeout=WAITS.WAIT_HANG_SECONDS)
             assert not notifier.is_alive(), 'release completion hang detector'
         finally:
             os.close(reader)
@@ -335,7 +335,7 @@ def _v125_routing_suite():
                 assert not local, 'Mac dispatch reached Linux receiver'
                 assert launch.contract['input']['context']['host_route']['host'] == 'mac'
                 assert launch.owned and launch.result == 'pending' and launch.fileno() is not None
-                assert runner.wait(launch, timeout=120)['state'] == 'refused'
+                assert runner.wait(launch, timeout=WAITS.WAIT_HANG_SECONDS)['state'] == 'refused'
             f.profiles[1]['available'] = False
             T.refused(lambda: runner.prepare('unit', 'review', holder='authority', source=str(f.repo),
                 revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
@@ -367,7 +367,7 @@ def _v125_routing_suite():
             assert launch.contract['input']['context']['host_route']['host'] == 'mac'
             assert launch.contract['reservation']['account'] == 'account'
             assert launch.contract['input']['decision']['inputs'] == {'source': 'accepted'}
-            assert runner.wait(launch, timeout=120)['state'] == 'refused'
+            assert runner.wait(launch, timeout=WAITS.WAIT_HANG_SECONDS)['state'] == 'refused'
         finally:
             f.close()
 
@@ -486,7 +486,7 @@ def _v125_routing_suite():
                                      contract, f.ds)
             runner = L.Runner(None, f.res, f.ds, None, account='account', local_host='linux')
             runner.launches[launch.dispatch_id] = launch
-            assert runner.wait(launch, timeout=120)['state'] == 'exited'
+            assert runner.wait(launch, timeout=WAITS.WAIT_HANG_SECONDS)['state'] == 'exited'
             assert not f.res.worker(launch.dispatch_id)['retired']
             # The old local observer mistakes the foreign boot/PID for a dead worker,
             # and cannot see the Mac clone. Settle accounting to expose that release.
@@ -869,7 +869,7 @@ def _v125_routing_suite():
         def delivery(argv, **kwargs):
             calls.append(kwargs['input'])
             entered.set()
-            assert unblock.wait(120)
+            assert unblock.wait(WAITS.WAIT_HANG_SECONDS)
             return types.SimpleNamespace(returncode=0)
         T.W.subprocess = types.SimpleNamespace(run=delivery, TimeoutExpired=original.TimeoutExpired,
                                                DEVNULL=original.DEVNULL)
@@ -879,11 +879,11 @@ def _v125_routing_suite():
                         for i in range(20)]
             for binding in bindings:
                 f.service.notify_release('repo', binding)
-            assert entered.wait(120)
+            assert entered.wait(WAITS.WAIT_HANG_SECONDS)
             assert len(calls) == 1 and len(f.service.release_deliveries) == 1, 'release connection storm'
             sender = next(iter(f.service.release_deliveries.values()))
             unblock.set()
-            sender.join(120)
+            sender.join(WAITS.WAIT_HANG_SECONDS)
             assert not sender.is_alive() and len(calls) == 20
             for binding in bindings:
                 f.service.notify_release('repo', binding)
@@ -891,7 +891,7 @@ def _v125_routing_suite():
             entered.clear()
             unblock.clear()
             f.service.notify_release('repo', dict(bindings[0], dispatch_id='dispatch/block-sender'))
-            assert entered.wait(120)
+            assert entered.wait(WAITS.WAIT_HANG_SECONDS)
             sender = next(iter(f.service.release_deliveries.values()))
             f.prepare(required=['macos'])
             f.start()
@@ -900,7 +900,7 @@ def _v125_routing_suite():
             client.result(binding, cleanup_observation(), usage={'tokens': 3})
             client.retired(binding)
             unblock.set()
-            sender.join(120)
+            sender.join(WAITS.WAIT_HANG_SECONDS)
             assert not sender.is_alive() and len(calls) == 21, 'queued wake sent after confirmation'
 
         finally:
@@ -1166,7 +1166,7 @@ def _v125_routing_suite():
                     'import sys,json; sys.stdin.readline(); print(json.dumps(dict(event="exited",returncode=0)))']},
                     contract, f.ds)
                 assert launch.owned and launch.result == 'pending'
-                record = launch.wait(timeout=120)
+                record = launch.wait(timeout=WAITS.WAIT_HANG_SECONDS)
                 assert record['state'] == ('refused' if state == 'prepared' else 'unknown'), record['state']
                 assert not T.D.completed(record), 'transport stdout or exit invented completion'
             finally:
