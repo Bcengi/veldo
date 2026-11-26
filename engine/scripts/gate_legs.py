@@ -845,6 +845,11 @@ class TakeOpened:
     def run(self, runner, root, command, env, keep=None):
         # Worker-tree confinement forbids ptrace. Do not weaken that boundary.
         # A missing trace for any leg keeps the combined stage unknown.
+        if self.observer is None:
+            # An installation without mutation_observer.py takes the opened-files record only: its
+            # legs start exactly as they did before the observer existed.
+            self.native_runs.append(None)
+            return runner(root, command, env, *(() if keep is None else (keep,)))
         tracer = self.observer.dependency_module('case_trace')
         suites = [name for name in env.get('VELDO_GATE_UNCONFINED', '').split(',') if name]
         # The ledger only when one is taken or the runner is the authority's own: a stand-in runner

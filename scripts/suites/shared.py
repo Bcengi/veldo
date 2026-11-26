@@ -108,7 +108,13 @@ def fixture_legacy_gate(root):
         raise ValueError('legacy fixture switch cannot change production authority')
     path = root / 'scripts/gate_changes.py'
     if path.is_file():
-        path.write_text(path.read_text().replace('SELECTION_ENABLED = True', 'SELECTION_ENABLED = False'))
+        text = path.read_text()
+        if 'SELECTION_ENABLED' not in text:
+            # A fixture that fills its authority files with placeholders: verify.sh asks this file for the
+            # switch and refuses any answer but on or off, so the placeholder answers off as production does.
+            text += ("import sys\nSELECTION_ENABLED = False\nif __name__ == '__main__' and sys.argv[1:] == "
+                     "['--enabled']:\n    print('off')\n")
+        path.write_text(text.replace('SELECTION_ENABLED = True', 'SELECTION_ENABLED = False'))
 
 
 def git_fixture_dependency(path):

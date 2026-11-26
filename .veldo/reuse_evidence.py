@@ -13,6 +13,10 @@ from pathlib import Path
 import stat
 import subprocess
 
+# VELDO-0367: change landing loads two gate modules from scripts/, outside this directory by design.
+# The control service derives its fixed executable from what the .veldo modules load (control_service._Loads);
+# a helper named here loads no member of it, so installation does not look for these files in .veldo.
+EXTERNAL_LOADERS = ('_script',)
 PROVENANCE = 'authority-reuse-stage/v2'
 SCHEMA = 'veldo.reuse/v3'
 
@@ -211,10 +215,7 @@ def landing_problem(document, *, root=None):
         if 'change_evidence' in document or document.get('validation_mode') == 'change-scoped':
             if root is None:
                 raise ValueError('change landing requires candidate history')
-            from importlib.util import module_from_spec, spec_from_file_location
-            spec = spec_from_file_location('landing_store', Path(__file__).resolve().parents[1] / 'scripts/gate_reuse.py')
-            reuse = module_from_spec(spec)
-            spec.loader.exec_module(reuse)
+            reuse = _script('landing_store', 'gate_reuse')
             _, config = configuration()
             store = reuse.Store(config['store'], root)
             gate = change_landing(document, root, store)
@@ -292,12 +293,18 @@ def change_record(value, key):
             key == digest(dict(schema='veldo.change-index/v1', repository=value['repository'], commit=value['commit'])))
 
 
+def _script(alias, name):
+    """A gate module of this installation's scripts/, loaded by its own path."""
+    from importlib.util import module_from_spec, spec_from_file_location
+    spec = spec_from_file_location(alias, Path(__file__).resolve().parents[1] / 'scripts' / (name + '.py'))
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def change_landing(document, root, store):
     """Landing reopens every reference; the signed count is never sufficient."""
-    from importlib.util import module_from_spec, spec_from_file_location
-    spec = spec_from_file_location('landing_changes', Path(__file__).resolve().parents[1] / 'scripts/gate_changes.py')
-    changes = module_from_spec(spec)
-    spec.loader.exec_module(changes)
+    changes = _script('landing_changes', 'gate_changes')
     payload = authenticated(document['change_evidence'], store.secret)
     if (set(payload) != {'schema', 'commit', 'repository', 'gate_digest', 'counts'} or
             payload['schema'] != 'veldo.change-landing/v1' or payload['commit'] != document['commit']):

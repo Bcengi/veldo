@@ -256,7 +256,9 @@ elif SUITE_VALUES:
 
 # Only an authority invoking this module with runpy can supply this dormant context.
 CHANGE = globals().get('CHANGE_SELECTION')
-if globals().get('CHANGE_CONTEXT') is not None:
+# Bound here, so the read below is of a name this file defines (the WARP-0716 survey refuses an unbound one).
+CHANGE_CONTEXT = globals().get('CHANGE_CONTEXT')
+if CHANGE_CONTEXT is not None:
     CHANGE = RS.change_selection(HERE.parent, CHANGE_CONTEXT, manifest=MANIFEST)
 if CHANGE is not None:
     if SELECTOR is not None:

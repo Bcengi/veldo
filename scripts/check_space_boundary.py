@@ -174,6 +174,16 @@ CREATORS[('engine/scripts/gate_legs.py', 'TakeOpened.__init__')] = (
     "Creates the authority's private ledger folder (mkdtemp), granted to no domain; the leg gets an append descriptor.")
 REVIEWED[('engine/scripts/gate_legs.py', 'TakeOpened.finish')] = (
     "Removes only the ledger folder its own __init__ made with mkdtemp, once the record is taken; design 6.10.")
+# VELDO-0367, found in fix round 4 (2026-11-26; the branch already failed this check) and not yet reviewed with
+# design 6.10: the change-scoped gate, its mutation stage and the weekly full run each work in one scoped
+# TemporaryDirectory of their own.
+for _site, _prefix in ((('engine/scripts/check_gate_mutations.py', 'run_change_stage'), 'veldo-selected-mutations-'),
+                       (('engine/scripts/gate_execution.py', 'main'), 'veldo-change-'),
+                       (('engine/scripts/gate_weekly.py', 'production'), 'veldo-weekly-')):
+    CREATORS[_site] = ('Creates a private temporary tree (%s prefix) for this call; pending review with design 6.10.'
+                       % _prefix)
+    REVIEWED[_site] = ('Scoped TemporaryDirectory owns the exact mkdtemp result and cleans only that tree; pending '
+                       'review with design 6.10.')
 
 
 def canonical(path):

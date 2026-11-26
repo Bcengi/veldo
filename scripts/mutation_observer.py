@@ -19,6 +19,10 @@ from pathlib import Path
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
+# Resolved once, at import. A worker loads this module before it confines itself and then points ROOT
+# at its own tree; resolving this file's path again inside the worker would put the authority's
+# directories into the trace of a declared case, whose legacy check refuses reads it did not declare.
+AUTHORITY = ROOT
 # Loaded before the worker enters confinement; authority paths are then unreadable.
 FIXTURES = runpy.run_path(str(Path(__file__).with_name('gate_fixtures.py')))
 
@@ -487,7 +491,7 @@ class DependencyReads:
         self.private_scratch = tuple(Path(path).resolve() for path in private_scratch)
         # A materialized no-op or mutant copy stands for its repository source.
         self.translate = translate
-        self.authority = Path(__file__).resolve().parents[1]
+        self.authority = AUTHORITY
         self.git_directories = {self.root / '.git'}
         try:
             marker = self.root / '.git'

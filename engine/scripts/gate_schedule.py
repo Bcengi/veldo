@@ -707,7 +707,9 @@ def run(catalog, root, directory, record, receipt, *, graph_path=GRAPH, declarat
                     node_root = inputs.root if inputs else root
                     meter = meter_factory(name) if meter_factory else Meter(scope, name)
                     argv = command_for(node_root, stage, leg, catalog[stage], record, receipt, declaration, prior_times,
-                                       directory / 'load.record', load_opened, directory, change_run=change_run)
+                                       directory / 'load.record', load_opened, directory,
+                                       # Off (VELDO-0367): the call is the one made before the switch existed.
+                                       **({} if change_run is None else {'change_run': change_run}))
                     env = {k: v for k, v in os.environ.items() if k not in
                            (legs.LEG, legs.ENTRIES, legs.DIGEST, legs.UNIT_SECONDS, CHANNEL)}
                     if inputs:

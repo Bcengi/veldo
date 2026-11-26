@@ -46,8 +46,8 @@ the one obstructing region a PRIVATE validator instance, which removed the obstr
 had named, and the published verdict stayed NOT_FEASIBLE while the file measured
 FEASIBLE_WITH_PREPARATION. Nothing went red, because a prose warning is not a check.
 
-Measured from: `scripts/selftest.py`, 722 lines
-Content digest: sha256 c6396912f82555b084bd2f4f6d26d7f12be26d4061faa2a8755d9f2e935d3694
+Measured from: `scripts/selftest.py`, 756 lines
+Content digest: sha256 97f3add38fbc734cfcfba99c4f90277a538a41e9f11572f137ffd0eb520ace67
 
 WHY A DIGEST AND NOT A COMMIT. The line above names the exact bytes these figures were read off. A
 commit id cannot do that job in a GENERATED file: it would go stale the moment anything else in
@@ -60,7 +60,7 @@ Reproduce: `python3 scripts/suite_survey.py --target scripts/selftest.py`
 Machine-readable: the same command with `--json`. Finest partition: `--partition statement`.
 Regenerate: `python3 scripts/suite_survey.py --emit-report`, which is what the gate runs.
 
-Target: 722 lines, 96 top-level statements, 1 `# --- ` marker regions, 0 `expect(` sites.
+Target: 756 lines, 101 top-level statements, 1 `# --- ` marker regions, 0 `expect(` sites.
 
 ## Verdict
 
@@ -121,11 +121,11 @@ Every row here is emitted from the measurement. None of them is typed.
 
 | measure | value |
 |---|---|
-| Target lines | 722 |
+| Target lines | 756 |
 | Crossing names | 0 |
 | Crossing read sites | 0 |
 | Regions (marker partition) | 1 |
-| Top-level statements (finest partition) | 96 |
+| Top-level statements (finest partition) | 101 |
 | Assertion sites | 0 |
 | Raw components (all crossing edges) | 1 |
 | Residual components (SHARED_FIXTURE edges removed) | 1 |
@@ -180,8 +180,8 @@ These cross to EVERY later region regardless of any name.
 
 | carrier | line | what | later regions affected |
 |---|---|---|---|
-| C5 | 542 | os.environ.pop() | 0 |
-| C4 | 580 | sys.addaudithook() | 0 |
+| C5 | 570 | os.environ.pop() | 0 |
+| C4 | 608 | sys.addaudithook() | 0 |
 
 ### The filesystem index (carrier C6), a PARTIAL view by construction
 

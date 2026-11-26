@@ -356,10 +356,12 @@ def _run_suite(tree, label, *, change_context=None):
     names = [ln.split(FAIL_MARK, 1)[1].strip() for ln in out.splitlines() if FAIL_MARK in ln]
     prefix = 'selftest (PARTIAL,' if selection is not None else SUMMARY_PREFIX
     summary = [ln for ln in out.splitlines() if ln.startswith(prefix) and "passed," in ln]
-    expected_exit = (1 if names else 2) if selection is not None else (1 if names else 0)
-    if proc.returncode != expected_exit:
-        raise CannotAnswer('the %s run exited %d, expected %d' % (label, proc.returncode, expected_exit))
     if selection is not None:
+        # Only a selected run answers by its exit code; without a selection the run is judged by its
+        # rows and summary line alone, as it was before the switch existed.
+        expected_exit = 1 if names else 2
+        if proc.returncode != expected_exit:
+            raise CannotAnswer('the %s run exited %d, expected %d' % (label, proc.returncode, expected_exit))
         carries = [json.loads(ln.split(': ', 1)[1]) for ln in out.splitlines()
                    if ln.startswith('selftest change carry: ')]
         expected = [dict(suite=name, **evidence) for name, evidence in selection['carried'].items()]

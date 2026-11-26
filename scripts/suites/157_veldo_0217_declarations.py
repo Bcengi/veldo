@@ -625,7 +625,7 @@ def _v217_declarations():
 
         # Review F5: the gate observation a proposal records is the last fresh one of the state it
         # traced: the proposer takes it only from a passed receipt over exactly its own inputs, and
-        # Historical proposal metadata is no longer eligibility; authenticated item receipts replace it.
+        # case_reuse refuses a declaration whose receipt is of another state, failed, or missing.
         if leg_runs():
             receipts = top / 'receipts'; receipts.mkdir()
             fresh = {'source': 'fresh', 'case': {'identity': 'd:case'}, 'baseline': {'count': 1}}
