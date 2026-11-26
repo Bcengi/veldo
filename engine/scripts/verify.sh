@@ -154,6 +154,12 @@ fi
 
 # VELDO-0309: these steps belong to every gate, including one with no host file.
 mkdir -p "$VELDO_OUT" || { echo 'GATE: NOT STARTED (space output unavailable)'; exit 75; }
+# The previous gate's opening ledger must not narrow this gate's wallclock census.
+# Clear both locations: candidate mode publishes beside the stamp in a separate sink.
+veldo_clear_opened() {
+  rm -f -- .veldo/opened_files.json "$VELDO_OUT/opened_files.json"
+}
+veldo_clear_opened || { echo 'GATE: NOT STARTED (stale opened-files record could not be removed)'; exit 75; }
 VELDO_SPACE_ROOT=$(pwd -P)
 VELDO_SPACE_OUT=$(cd "$VELDO_OUT" && pwd -P)
 VELDO_SPACE_ID=$(python3 -I -S -c 'import uuid; print(uuid.uuid4().hex, uuid.uuid4().hex)') \

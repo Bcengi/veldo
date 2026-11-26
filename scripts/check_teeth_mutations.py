@@ -12064,6 +12064,22 @@ def cases():
         ['concurrent-stages/critical-path-fixture'])
     result[-1]['dir'] = 'scripts'
 
+    add(216, 'concurrent216-opened-record-is-input', suite216, 'check_gate_mutations.py',
+        "           '.veldo/opened_files.json'}\n",
+        "           '.veldo/not-the-opened-record.json'}\n",
+        ['concurrent-stages/opened-record-output'])
+    result[-1]['dir'] = 'scripts'
+    add(216, 'concurrent216-input-change-silent', suite216, 'gate_schedule.py',
+        "            print('GATE: RED (candidate inputs changed): ' + json.dumps(changed), flush=True)\n",
+        "            pass  # defect: the final input refusal names no path\n",
+        ['concurrent-stages/real-input-named'])
+    result[-1]['dir'] = 'scripts'
+    add(216, 'concurrent216-stale-opened-record', suite216, 'verify.sh',
+        'rm -f -- .veldo/opened_files.json "$VELDO_OUT/opened_files.json"',
+        'true',
+        ['concurrent-stages/no-stale-opened-record-local', 'concurrent-stages/no-stale-opened-record-sink'])
+    result[-1]['dir'] = 'scripts'
+
     # VELDO-0220: the host lock and the gate's own scope, and NOT STARTED never charged as a red.
     suite220 = '113_veldo_0220_gate_host.py'
     scope220 = '114_veldo_0220_gate_scope.py'

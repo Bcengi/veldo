@@ -569,3 +569,119 @@ raise SystemExit(m.main())
 
 
 _v216_checks()
+
+
+def _v216_gate_outputs():
+    """The load publication is an output; actual candidate writes still refuse the graph."""
+    import contextlib
+    import importlib.util
+    import io
+    import json
+    import os
+    from pathlib import Path
+    import subprocess
+    import sys
+    import tempfile
+    from unittest.mock import patch
+
+    def load(path):
+        spec = importlib.util.spec_from_file_location('gate_outputs_' + path.stem, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    scheduler = load(ROOT / "scripts" / "gate_schedule.py")
+    mutation = load(ROOT / "scripts" / "check_gate_mutations.py")
+    mutation.ROOT = ROOT
+    verify = (ROOT / "scripts" / "verify.sh").read_text()
+    scheduler.HERE = ROOT / 'scripts'
+    wallclock = load(ROOT / 'scripts/check_wallclock.py')
+    load_module = scheduler.load_module
+
+    class Meter:
+        def __init__(self, name):
+            pass
+        def command(self, argv):
+            return argv
+        def sample(self):
+            return dict(cpu_seconds=0, peak_anon_bytes=1024, metrics_source='fixture')
+        def finish(self):
+            return dict(self.sample(), live_descendants=False)
+
+    def modules(name):
+        return mutation if name == 'check_gate_mutations' else load_module(name)
+
+    with tempfile.TemporaryDirectory(prefix='v216-outputs-') as tmp:
+        top = Path(tmp)
+        root = top / 'candidate'
+        root.mkdir()
+        (root / '.veldo').mkdir()
+        (root / 'scripts/suites').mkdir(parents=True)
+        (root / 'scripts/suites/unlisted.py').write_text('value = 1\n')
+        subprocess.run(['git', 'init', '-q', str(root)], check=True)
+        subprocess.run(['git', '-C', str(root), 'add', 'scripts/suites/unlisted.py'], check=True)
+        subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture',
+                        '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'fixture'], check=True)
+        record = root / '.veldo/opened_files.json'
+        # No ignore rule in this fixture: OUTPUTS must exclude even a Git-listed record.
+        graph = top / 'graph.json'
+        graph.write_text(json.dumps(dict(schema='veldo.gate-graph/v1',
+            nodes={name: dict(depends_on=['unit'] if name == 'load' else [],
+                              writes_candidate=False, manager='none', ports=[])
+                   for name in ('unit', 'load')},
+            reserve=dict(cpu=0, memory=0), mutation_floor=dict(cpu=0, memory=0))))
+        original_command = scheduler.command_for
+        for stray in (False, True):
+            record.unlink(missing_ok=True)
+            out = top / ('stray' if stray else 'clean')
+            out.mkdir()
+            opened = {'fixture': ['scripts/suites/unlisted.py']}
+            (out / 'opened.whole.json').write_text(json.dumps(opened))
+
+            def command(*args):
+                # Exercise the real command builder and its actual authority publication.
+                original_command(*args)
+                code = ('from pathlib import Path; Path("untracked-candidate.txt").write_text("changed")'
+                        if stray and args[1] == 'load' else 'pass')
+                return [sys.executable, '-c', code]
+
+            log = io.StringIO()
+            with patch.dict(os.environ, VELDO_EXPECTED_GIT_COMMON=str(root / '.git')), \
+                    patch.object(scheduler, 'load_module', modules), \
+                    patch.object(scheduler, 'command_for', command), contextlib.redirect_stdout(log):
+                result = scheduler.run({'unit': 'fixture unit', 'load': 'fixture load'}, root,
+                    out, out / 'legs', out / 'mutation', graph_path=graph,
+                    declaration_path=top / 'no-declaration', capacity=dict(cpu=2, memory=2**30, manager=1),
+                    measurement_store=top / 'measurements', meter_factory=Meter,
+                    guard_factory=scheduler.input_guard, load_opened=record)
+            expect('VELDO-0216 concurrent-stages/' + ('real-input-named' if stray else 'opened-record-output'),
+                   set(result['stages'].values()) == {'pass'}
+                   and result['inputs_unchanged'] is (not stray)
+                   and result['original_inputs_unchanged'] is (not stray)
+                   and json.loads(record.read_text()) == opened
+                   and all(n['inputs_unchanged'] for n in result['nodes'].values())
+                   and (not stray or (result['error'] == 'candidate_tree_changed_outside_node_inputs'
+                                      and 'untracked-candidate.txt' in log.getvalue()
+                                      and 'GATE: RED (candidate inputs changed)' in log.getvalue())))
+
+        # Exercise gate startup in both layouts without running a gate or any catalog stage.
+        startup = verify.split('# VELDO-0309: these steps belong to every gate, including one with no host file.\n', 1)[1]
+        startup = startup.split('VELDO_SPACE_ROOT=$(pwd -P)', 1)[0]
+        for separate in (False, True):
+            sink = top / 'sink' if separate else root / '.veldo'
+            sink.mkdir(exist_ok=True)
+            record.write_text('{}')
+            (sink / 'opened_files.json').write_text('{}')
+            before, _ = wallclock.scope(root, root, wallclock.read_record(record))
+            started = subprocess.run(['bash', '-c', startup], cwd=root,
+                                     env=dict(os.environ, VELDO_OUT=str(sink)), capture_output=True)
+            after, how = wallclock.scope(root, root, wallclock.read_record(record))
+            expect('VELDO-0216 concurrent-stages/no-stale-opened-record-' + ('sink' if separate else 'local'),
+                   started.returncode == 0 and not record.exists() and not (sink / 'opened_files.json').exists()
+                   and 'scripts/suites/unlisted.py' not in before and 'scripts/suites/unlisted.py' in after
+                   and how.startswith('no opened-files record:'))
+        expect('VELDO-0216 concurrent-stages/opened-record-ignored',
+               '.veldo/opened_files.json' in (ROOT / '.gitignore').read_text().splitlines())
+
+
+_v216_gate_outputs()

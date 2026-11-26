@@ -439,7 +439,16 @@ def input_guard(root):
         raise Refused('candidate Git boundary needs VELDO_EXPECTED_GIT_COMMON')
     files = mutation.read_inputs(root, common)
     head = mutation.git(root, common, 'rev-parse', 'HEAD')
-    return lambda: mutation.inputs_unchanged(root, common, files, head)
+    def unchanged():
+        current = mutation.read_inputs(root, common)
+        changed = sorted(name for name in files.keys() | current.keys()
+                         if files.get(name) != current.get(name))
+        if mutation.git(root, common, 'rev-parse', 'HEAD') != head:
+            changed.append('.git/HEAD')
+        if changed:
+            print('GATE: RED (candidate inputs changed): ' + json.dumps(changed), flush=True)
+        return not changed
+    return unchanged
 
 
 class NodeInputs:

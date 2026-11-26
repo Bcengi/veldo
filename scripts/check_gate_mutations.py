@@ -87,7 +87,8 @@ def worker_count(cpus=None, cgroup_root='/sys/fs/cgroup', membership='/proc/self
 
 
 PARALLEL = 1 if '--worker' in sys.argv else min(16, worker_count())
-OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl', '.veldo/gate-schedule.json'}
+OUTPUTS = {'.veldo/last_verify', '.veldo/events.jsonl', '.veldo/gate-schedule.json',
+           '.veldo/opened_files.json'}
 
 
 def budget_for(count, workers=REFERENCE_WORKERS, phases=(), resources=None, floor=None):
