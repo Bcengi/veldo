@@ -15,6 +15,8 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
+# A hang bound, not a latency limit (VELDO-0358): far above any measured wait, so load cannot fail a row.
+WAIT_HANG_SECONDS = 600
 sys.path.insert(0, str(ROOT / 'proof/VELDO-0124'))
 spec = importlib.util.spec_from_file_location('native124', ROOT / 'proof/VELDO-0124/native_checks.py')
 N = importlib.util.module_from_spec(spec)
@@ -65,7 +67,7 @@ def run(engine, client_path):
     host = Candidate(local['profile'], None)
     def sign(data, namespace='veldo-command'):
         return subprocess.run(['ssh-keygen', '-Y', 'sign', '-n', namespace, '-f', local['key']],
-                              input=data, check=True, capture_output=True, timeout=10).stdout.decode()
+                              input=data, check=True, capture_output=True, timeout=WAIT_HANG_SECONDS).stdout.decode()
     client = CL.Client(config['workspace'], config['binding'], 'mac', sign, config['ssh_argv'], signing_key=local['key'])
     account = dict(id='account', provider=engine, status='active', profiles={host.os.facts()['host']:
                    local['request']['login_profile']})
@@ -113,7 +115,7 @@ def unavailable(engine, client_path):
     config = json.loads(Path(client_path).read_text())
     def sign(data, namespace='veldo-command'):
         return subprocess.run(['ssh-keygen', '-Y', 'sign', '-n', namespace, '-f', local['key']],
-            input=data, check=True, capture_output=True, timeout=10).stdout.decode()
+            input=data, check=True, capture_output=True, timeout=WAIT_HANG_SECONDS).stdout.decode()
     client = CL.Client(config['workspace'], config['binding'], 'mac', sign, config['ssh_argv'], signing_key=local['key'])
     for operation in CL.OPERATIONS:
         try:

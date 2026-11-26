@@ -7,6 +7,9 @@ import subprocess
 import sys
 from unittest.mock import patch
 
+# A hang bound, not a latency limit (VELDO-0358): far above any measured wait, so load cannot fail a row.
+WAIT_HANG_SECONDS = 600
+
 
 def receiver(modules, config_path, fault):
     spec = importlib.util.spec_from_file_location('r21_worker', Path(modules) / 'control_worker.py')
@@ -50,7 +53,7 @@ def cases(T, helper):
         argv = [sys.executable, str(Path(__file__).resolve()), str(T.MODULES), str(config_path)]
         def invoke(fault):
             return subprocess.run(argv + [fault], input=json.dumps(request) + '\n',
-                                  text=True, capture_output=True, timeout=20)
+                                  text=True, capture_output=True, timeout=WAIT_HANG_SECONDS)
         result = invoke(fault)
         assert 'worker_delivery_invalid_entry' in result.stderr, result.stderr
         assert (root / '.parked' / path.name).read_bytes() == content

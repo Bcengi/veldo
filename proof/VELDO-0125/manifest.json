@@ -629,7 +629,7 @@
       },
       "scripts/suites/106_veldo_0125_routing.py": {
         "port": "sha256:08c915b5ae5f0015e06f469b3dd8de0c1357a7eec2970edbf4074f52cea28536",
-        "land": "sha256:e1a5bf243ac439863c964e345a8aabf2ebb6126818c9a0032aa3b5631363a7d6"
+        "land": "sha256:e5587458414ae19bc82a0410127092e6981c0aaa002e94cf461503c72f9c1af6"
       },
       "scripts/suites/36_veldo_0023_journal.py": {
         "port": "sha256:6c75dd2e0a91ab0980d18ad73fb3f199118ae675e104f1a06ac8b8e73e6705e4",
@@ -653,7 +653,7 @@
       },
       "proof/VELDO-0125/checks.py": {
         "port": "sha256:007f057a8a6edadb91eb20734ebd10c6f29f6029760670ad463c92fda24cf24a",
-        "land": "sha256:96e56db62a2e6e837da0be9afbe0abea607228212c867f2ad021a5ef45c4e1ba"
+        "land": "sha256:1147bd484aa9cffc69af926b4ec59d46a9b5d0285e3ad6ee0fb02015ec8a23fb"
       },
       "proof/VELDO-0125/port-falsifiers.json": {
         "port": "sha256:5151640b06c0cb76719dc74d80311a739a6e5ca1a10da80b19fd7520c9b22ca8",
@@ -673,7 +673,7 @@
       },
       "scripts/suites/105_veldo_0125_relay.py": {
         "port": "sha256:4d074d7fc10f2acb3ffab5eb548e1528b3eb14a80a0a4517d146b3e1ecda10b5",
-        "land": "sha256:01b9f50d9c781770b9c4e9554d4787374efa20995af10e09a027f3ec9d65e7bf"
+        "land": "sha256:17b98be0a562c36315204ad863ae5a9068a9da0cb3862f8c7c95c36903648334"
       },
       "engine/.veldo/control_plane_calls.json": {
         "port": null,
@@ -681,7 +681,47 @@
       },
       "proof/VELDO-0125/lifecycle_checks_r12.py": {
         "port": "sha256:15ae12332db943ddabae197ac10c3c1ff0195494a152a7f439e5311fd079f657",
-        "land": "sha256:ab42aab113ce45c70f2ec045b8e180459286425be4460404d37ec37c98191987"
+        "land": "sha256:9b46a929feacb1a7cd325d7bd1d06a572162e3cfe3efa18cacc2c6baab961ce8"
+      },
+      "proof/VELDO-0125/b2-round20/receiver_checks.py": {
+        "port": "sha256:dd1efcf0187a6b0357bde6910ce2f16767a7dc80fe4673d28b0a7796cc078144",
+        "land": "sha256:875ce2ab3e1e7bce17e73ecca2beb0d3d715e6ce05f468fc682e22ed3464014c"
+      },
+      "proof/VELDO-0125/b2-round21/receiver_checks.py": {
+        "port": "sha256:fd811aa0845a2240dc07f7e7a287fe28af841cd0c980755274c8dde06c3e3ae0",
+        "land": "sha256:e7210f7104e201f47c948953ef4270754eb6cffdee8a014ebb1c5244065ab3a6"
+      },
+      "proof/VELDO-0125/crash_event_checks_r12.py": {
+        "port": "sha256:28741519d2fde76076c6ee87cf530ee57d8c16fb0a484a1d4fa0aab17963c52c",
+        "land": "sha256:5e63707dafb829628737ef72fd8907ed9ca679e5827cba009bc7a78426d057d6"
+      },
+      "proof/VELDO-0125/event_checks_r12.py": {
+        "port": "sha256:d89aeb511ff13ba6e195d311038ebc2cb1d96609432eec6db32b2ca68407cd6f",
+        "land": "sha256:bf4d3513e30f9c9367b51fbc31df9b25029710be988e2729ef605063c1d9cf6c"
+      },
+      "proof/VELDO-0125/file_events.py": {
+        "port": "sha256:84233e61c3343fa0983e77e9046f61d037191220b4b763b91353481d380a784f",
+        "land": "sha256:229b47272adf7c52ad1ccba86f66aad8679710336f64abc90f872c5e2061daf1"
+      },
+      "proof/VELDO-0125/native_checks.py": {
+        "port": "sha256:a0808010d72d81c1e167bb64b37f22640a85d2f7fa5b87d05a929b65a106979d",
+        "land": "sha256:b27047aa526999716184d21bd9e141f8b9e147e7a28a8748d16555390f73287e"
+      },
+      "proof/VELDO-0125/round12_checks.py": {
+        "port": "sha256:740eb505ffca813236f4661adc1ec70296c62c1a542b024286b1cd37eda50bf7",
+        "land": "sha256:b1e09d3528dfb02952e8e9a87acf87123509b75676efb6f0969cb589d8d561cb"
+      },
+      "proof/VELDO-0125/round17_checks.py": {
+        "port": "sha256:81a3bab1746d3896f865b8175eea72f7ea93e51ef71723e7ad22127e799d84f9",
+        "land": "sha256:cadba7f24d77fbf859d66421f5e11e3d81af44595e25ba1a323ed57064f035a3"
+      },
+      "scripts/suites/wallclock_baseline.json": {
+        "port": "sha256:6f88697a41a6f746c34a89852d5f964d669c2abf61e21b61c4670978233e6795",
+        "land": "sha256:f6547a3bb4a610732aef645427bc9680fa9970b5abffdcabd37b47600c028743"
+      },
+      "proof/VELDO-0127/claude-live.json": {
+        "port": "sha256:4d8b2b7a838d4530ce5939a1c9786b75780e5ee351354102b47cae6218fdcb33",
+        "land": "sha256:39b822c79756029eaba1e2487a74ac51c5805f31f2bcb497c7829fff52c9e799"
       }
     },
     "record": "research land report land-veldo-0125.md (owner workspace)"

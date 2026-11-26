@@ -32,7 +32,7 @@ def _v125_routing_suite():
                 assert result['state'] == 'prepared' and result['host'] == host
                 contract = result['contract']
                 assert contract['input']['context']['host_route']['required'] == sorted(required)
-                f.ds.refuse(contract['dispatch_id'], T.D.digest(contract), 'fixture_end', now=__import__('time').time())
+                f.ds.refuse(contract['dispatch_id'], T.D.digest(contract), 'fixture_end', now=f.clock())
         finally:
             f.close()
 
@@ -331,7 +331,7 @@ def _v125_routing_suite():
                 requirements[:] = required
                 launch = runner.submit('unit', 'review', holder='authority', source=str(f.repo),
                     revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
-                    configuration=f.configuration, deadline=__import__('time').time() + 1800)
+                    configuration=f.configuration, deadline=f.clock() + 1800)
                 assert not local, 'Mac dispatch reached Linux receiver'
                 assert launch.contract['input']['context']['host_route']['host'] == 'mac'
                 assert launch.owned and launch.result == 'pending' and launch.fileno() is not None
@@ -339,7 +339,7 @@ def _v125_routing_suite():
             f.profiles[1]['available'] = False
             T.refused(lambda: runner.prepare('unit', 'review', holder='authority', source=str(f.repo),
                 revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
-                configuration=f.configuration, deadline=__import__('time').time() + 1800), 'blocked:')
+                configuration=f.configuration, deadline=f.clock() + 1800), 'blocked:')
             decisions = [__import__('json').loads(row[0]) for row in f.conn.execute(
                 "SELECT data FROM entities WHERE kind='host_routing'")]
             assert any(row['state'] == 'blocked' and row['required'] == ['ios-build'] for row in decisions)
@@ -363,7 +363,7 @@ def _v125_routing_suite():
         try:
             launch = runner.submit('unit', 'review', holder='authority', source=str(f.repo),
                 revision=T.git(f.repo, 'rev-parse', 'HEAD'), payload={}, adapter='codex',
-                configuration=f.configuration, deadline=__import__('time').time() + 1800)
+                configuration=f.configuration, deadline=f.clock() + 1800)
             assert launch.contract['input']['context']['host_route']['host'] == 'mac'
             assert launch.contract['reservation']['account'] == 'account'
             assert launch.contract['input']['decision']['inputs'] == {'source': 'accepted'}
@@ -391,7 +391,7 @@ def _v125_routing_suite():
             f.profiles[1]['runtime_profile'] = P.P.digest(host.profile)
             f.profiles[1]['qualification']['profile_digest'] = T.D.digest(T.R.definition(f.profiles[1]))
             seeded = f.prepare(required=['ios-build'])['contract']
-            f.ds.refuse(seeded['dispatch_id'], T.D.digest(seeded), 'fixture_setup', now=time.time())
+            f.ds.refuse(seeded['dispatch_id'], T.D.digest(seeded), 'fixture_setup', now=f.clock())
             L.Runner(None, f.res, f.ds, None, account='account')._retire(
                 seeded['dispatch_id'], 'cancelled', 'never_spawned')
             account = dict(id='account', provider='codex', status='active',
@@ -491,10 +491,10 @@ def _v125_routing_suite():
             # The old local observer mistakes the foreign boot/PID for a dead worker,
             # and cannot see the Mac clone. Settle accounting to expose that release.
             f.res.report('late-usage', 'remote/' + launch.dispatch_id, 1, {'tokens': 0}, final=True,
-                         outcome='completed', receipts=[], now=__import__('time').time())
+                         outcome='completed', receipts=[], now=f.clock())
             T.refused(lambda: f.res.retire('unsafe-local-retire', launch.dispatch_id,
                 lambda dispatch: dict(terminated=True, cleaned=True, outcome='completed'),
-                now=__import__('time').time()), 'missing_evidence:remote_cleanup')
+                now=f.clock()), 'missing_evidence:remote_cleanup')
             runner.sweep()
             runner._retire(launch.dispatch_id, 'failed', 'retry')
             slot = f.res.worker(launch.dispatch_id)
@@ -557,9 +557,9 @@ def _v125_routing_suite():
                 launch, runner, _, _ = stalled_remote(f, state)
                 if state == 'prepared':
                     f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=20000),
-                                    now=time.time())
+                                    now=f.clock())
                     T.refused(lambda: f.res.reserve_worker('waiting-slot', 'dispatch/waiting', 'account', 'project',
-                              'unit', now=time.time()), 'usage_cap:account:capacity')
+                              'unit', now=f.clock()), 'usage_cap:account:capacity')
                 loop = remote_loop(f, runner)
                 loop.wake('fixture')
                 report = loop.run()
@@ -597,7 +597,7 @@ def _v125_routing_suite():
                     loop.provision = lambda *args: None
                     def offer_waiting(report, ended):
                         f.res.reserve_worker('waiting-slot', 'dispatch/waiting', 'account', 'project',
-                                             'unit', now=time.time())
+                                             'unit', now=f.clock())
                         offered.append('waiting work')
                     loop.lines['repo'].run = offer_waiting
                     loop.lines['unrelated'].run = lambda report, ended: None
@@ -1020,7 +1020,7 @@ def _v125_routing_suite():
             f = T.Fixture(base / initial)
             try:
                 f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=20000),
-                                now=__import__('time').time())
+                                now=f.clock())
                 f.prepare(required=['macos'])
                 f.start()
                 client = f.client()
@@ -1049,7 +1049,7 @@ def _v125_routing_suite():
                 assert f.res.worker('dispatch/test')['remote_hold']['open'] == []
                 assert f.service.get('dispatch/test')['observation'] == observation
                 f.res.reserve_worker('next-slot', 'dispatch/next', 'account', 'project', 'unit',
-                                     now=__import__('time').time())
+                                     now=f.clock())
             finally:
                 f.close()
 
@@ -1100,7 +1100,7 @@ def _v125_routing_suite():
         f = T.Fixture(base)
         try:
             f.res.configure('one-slot', 'account', 'account', dict(capacity=1, invocations=20, wall_seconds=20000),
-                            now=__import__('time').time())
+                            now=f.clock())
             f.start()
             client = f.client()
             for index in range(3):

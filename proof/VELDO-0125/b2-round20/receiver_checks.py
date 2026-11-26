@@ -7,6 +7,9 @@ import subprocess
 import sys
 from unittest.mock import patch
 
+# A hang bound, not a latency limit (VELDO-0358): far above any measured wait, so load cannot fail a row.
+WAIT_HANG_SECONDS = 600
+
 
 def receiver(modules, config_path, fault, read_number):
     spec = importlib.util.spec_from_file_location('r20_worker', Path(modules) / 'control_worker.py')
@@ -48,7 +51,7 @@ def cases(T, helper):
         original = path.read_bytes()
         argv = [sys.executable, str(Path(__file__).resolve()), str(T.MODULES), str(config_path)]
         result = subprocess.run(argv + [fault, str(read_number)], input=json.dumps(request) + '\n',
-                                text=True, capture_output=True, timeout=20)
+                                text=True, capture_output=True, timeout=WAIT_HANG_SECONDS)
         assert result.returncode != 0, 'receiver acknowledged an unread event: ' + result.stdout
         assert 'worker_delivery_read_failed' in result.stderr and 'OSError' in result.stderr
         assert not result.stdout.strip(), 'failed handoff printed a successful delivery state'
@@ -62,7 +65,7 @@ def cases(T, helper):
         assert not list((root / '.active').glob('*.json')), 'failed handoff acquired execution'
         # A fresh receiver process models Linux resending after its nonzero SSH exit.
         resent = subprocess.run(argv + ['none', '1'], input=json.dumps(request) + '\n',
-                                text=True, capture_output=True, timeout=20)
+                                text=True, capture_output=True, timeout=WAIT_HANG_SECONDS)
         assert resent.returncode == 0, resent.stderr
         assert json.loads(resent.stdout) == dict(state='retired')
         assert json.loads((root / 'delivered.json').read_text()) == request

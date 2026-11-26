@@ -9,6 +9,9 @@ import threading
 import types
 from unittest.mock import patch
 
+# A hang bound, not a latency limit (VELDO-0358): far above any measured wait, so load cannot fail a row.
+WAIT_HANG_SECONDS = 600
+
 
 def cases(T, helper):
     def fixture(base, mode='natural'):
@@ -239,7 +242,7 @@ def cases(T, helper):
         errors = []
         def held(fd, value):
             entered.set()
-            assert release.wait(120)
+            assert release.wait(WAIT_HANG_SECONDS)
             return write(fd, value)
         def wake():
             try:
@@ -252,16 +255,16 @@ def cases(T, helper):
         with patch.object(module.os, 'write', held):
             writer = threading.Thread(target=wake)
             writer.start()
-            assert entered.wait(120)
+            assert entered.wait(WAIT_HANG_SECONDS)
             closer = threading.Thread(target=close, name='close-watch')
             closer.start()
             try:
-                assert attempted.wait(120), 'close never attempted the lifetime lock'
+                assert attempted.wait(WAIT_HANG_SECONDS), 'close never attempted the lifetime lock'
                 assert acquired == [False] and not closed.is_set(), 'close recycled descriptor during wake'
             finally:
                 release.set()
-                writer.join(120)
-                closer.join(120)
+                writer.join(WAIT_HANG_SECONDS)
+                closer.join(WAIT_HANG_SECONDS)
         assert closed.is_set() and not errors
         # A late stop must not write even if another resource has reused the fd.
         writes = []

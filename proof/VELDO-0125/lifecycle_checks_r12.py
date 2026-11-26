@@ -206,14 +206,17 @@ def cases(T, helper):
                 raise PermissionError('lock_open_denied')
             return original(path, *args, **kwargs)
         errors = io.StringIO()
-        with patch.object(Path, 'open', denied), contextlib.redirect_stderr(errors):
+        # A supplied clock, fixed at one instant: the retry time is set and read against it, never against real time.
+        fixed = types.SimpleNamespace(time=lambda: 1000.0)
+        with patch.object(Path, 'open', denied), contextlib.redirect_stderr(errors), \
+                patch.object(worker, 'time', fixed), patch.object(worker.OUT, 'time', fixed):
             worker.resume_pending(config)
             worker.resume_pending(config)
         entry = worker.OUT.entries(config)[0]
-        assert len(count) == 1 and entry['attempts'] == 1 and entry['due'] > time.time()
+        assert len(count) == 1 and entry['attempts'] == 1 and entry['due'] > fixed.time()
         assert 'lock_open_denied' in errors.getvalue() and 'retry_pending' in errors.getvalue()
         worker.receive_locked = lambda *args: {'host_released': True}
-        with patch.object(worker, 'time', types.SimpleNamespace(time=lambda: time.time() + 301)):
+        with patch.object(worker, 'time', types.SimpleNamespace(time=lambda: entry['due'] + 1)):
             worker.resume_pending(config)
         assert not worker.OUT.entries(config)
 

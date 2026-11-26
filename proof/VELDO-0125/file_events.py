@@ -3,6 +3,9 @@ import ctypes
 import os
 import select
 
+# A hang bound, not a latency limit (VELDO-0358): far above any measured wait, so load cannot fail a row.
+WAIT_HANG_SECONDS = 600
+
 
 class FileEvents:
     def __init__(self, directory):
@@ -16,7 +19,7 @@ class FileEvents:
             raise OSError(ctypes.get_errno(), 'inotify_add_watch')
 
     def wait(self, extra=()):
-        ready = select.select([self.fd, *extra], [], [], 120)[0]
+        ready = select.select([self.fd, *extra], [], [], WAIT_HANG_SECONDS)[0]
         if not ready:
             raise TimeoutError('fixture publication hang detector')
         if self.fd in ready:

@@ -89,7 +89,8 @@ def cases(T, helper):
             calls, sleeps = [], []
             w.receive_locked = lambda config, request: calls.append((request['dispatch_id'], now[0])) or dict(host_released=True)
             def sleep(seconds):
-                assert math.isfinite(seconds) and 1 <= seconds <= 300, 'unbounded drain sleep'
+                # The delay is counted on the fake clock above, never on real time: the bound is the product's own.
+                assert math.isfinite(seconds) and seconds >= 1 and not seconds > w.OUT.MAX_BACKOFF, 'unbounded drain sleep'
                 sleeps.append(seconds)
                 assert len(sleeps) <= 3, 'retry never drained'
                 # Huge timestamps cannot be advanced by 300 in float precision;

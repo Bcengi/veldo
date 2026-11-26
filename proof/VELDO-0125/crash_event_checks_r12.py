@@ -239,7 +239,9 @@ def cases(T, helper):
                 if changes:
                     self.reader = changes[1].ident
                     return []
-                ready, _, _ = select.select([self.reader], [], [], seconds)
+                # This row only polls: the fake queue never blocks, so no timeout is given to select.
+                assert seconds == 0, 'the fixture queue only polls'
+                ready, _, _ = select.select([self.reader], [], [], 0)
                 self.read_events += len(ready)
                 return [types.SimpleNamespace(filter=-1, flags=0, fflags=0)] if ready else []
             def close(self):

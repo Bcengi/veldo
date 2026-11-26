@@ -4,18 +4,33 @@ Host profiles and process observations are explicit fixture data. These tests
 cannot qualify macOS, an engine or an actual SSH connection.
 """
 import copy
+import datetime
 import importlib.util
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
-import time
 
 ROOT = Path(__file__).resolve().parents[2]
 # The wait hang bound (VELDO-0358): the one duration a fixture may give a blocking call.
 WAIT_HANG_SECONDS = 600
 MODULES = Path(os.environ.get('VELDO_0125_MODULES', ROOT / '.veldo'))
+_SUPPORT = []
+
+
+def wall():
+    """The wall time a fixture hands the authority as data: the suite support module's stamp (VELDO-0358).
+
+    The service under test reads the real clock when it judges a contract's deadline, so a fixed instant
+    would be refused as expired or as over the wall-seconds cap. No row bounds a duration with this value.
+    """
+    if not _SUPPORT:
+        spec = importlib.util.spec_from_file_location('v125_waits', ROOT / 'scripts/suites/support/waits.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _SUPPORT.append(module)
+    return datetime.datetime.fromisoformat(_SUPPORT[0].stamp().iso().replace('Z', '+00:00')).timestamp()
 
 
 def load(name):
@@ -47,8 +62,10 @@ def profile(host, platform, capabilities, configuration, principal=None):
 
 
 class Fixture:
-    def __init__(self, base, *, remote=None):
+    def __init__(self, base, *, remote=None, clock=None):
         self.base = Path(base)
+        # Every "now" and every deadline this fixture gives the authority comes from this one injected clock.
+        self.clock = clock or wall
         self.base.mkdir(parents=True, exist_ok=True)
         self.keys = self.base / 'keys'
         self.keys.mkdir()
@@ -102,7 +119,7 @@ class Fixture:
         # runs at prepare's default deadline (1800 s), as it held two at the 90 s deadline it replaced.
         for scope, subject in (('account', 'account'), ('project', 'project'), ('unit', 'unit')):
             self.res.configure('policy/' + scope, scope, subject,
-                                dict(capacity=20, invocations=20, wall_seconds=1800 if remote else 4000), now=time.time())
+                                dict(capacity=20, invocations=20, wall_seconds=1800 if remote else 4000), now=self.clock())
         self.child = None
 
     def sign(self, name, data, namespace='veldo-command'):
@@ -117,7 +134,7 @@ class Fixture:
             'authority', lambda b: self.sign('authority', b, 'veldo-journal'), 1)
 
     def prepare(self, dispatch='dispatch/test', required=None, source=None, engine='codex', deadline_seconds=1800, unit='unit'):
-        self.res.reserve_worker('slot/' + dispatch, dispatch, 'account', 'project', unit, now=time.time())
+        self.res.reserve_worker('slot/' + dispatch, dispatch, 'account', 'project', unit, now=self.clock())
         entity = RES.entity('worker', ['domain', dispatch])
         version, digest = self.conn.execute('SELECT version, digest FROM entities WHERE id=?', (entity,)).fetchone()
         source = source or {k: git(self.repo, 'rev-parse', 'HEAD^{%s}' % k) for k in ('commit', 'tree')}
@@ -136,8 +153,8 @@ class Fixture:
                        payload={}, payload_digest=D.digest({})),
             capability=dict(adapter=engine, configuration=self.configuration, configuration_digest=D.digest(self.configuration)),
             reservation=dict(entity=entity, version=version, digest=digest, account='account', project='project'),
-            claim=None, deadline=time.time() + deadline_seconds, authority_generation=1)
-        return R.prepare(self.ds, contract, self.profiles, now=time.time())
+            claim=None, deadline=self.clock() + deadline_seconds, authority_generation=1)
+        return R.prepare(self.ds, contract, self.profiles, now=self.clock())
 
     def start(self, ipc=False):
         self.ipc = ipc

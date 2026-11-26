@@ -226,7 +226,9 @@ def cases(T, helper, release_endpoint, finish_release):
                 assert worker.receive(config, request) is None
             assert worker.OUT.entries(config)[0]['request'] == request
         worker.receive_locked = lambda *args: {'host_released': True}
-        with patch.object(worker, 'time', types.SimpleNamespace(time=lambda: time.time() + 301)):
+        # The drain runs on a supplied clock one second past the entry's own retry time; no real clock is read.
+        due = worker.OUT.entries(config)[0]['due']
+        with patch.object(worker, 'time', types.SimpleNamespace(time=lambda: due + 1)):
             worker.resume_pending(config)
         assert not worker.OUT.entries(config), 'busy release was never drained'
 

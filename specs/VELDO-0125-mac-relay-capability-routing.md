@@ -67,6 +67,9 @@ footprint:
   - "specs/VELDO-0125-mac-relay-capability-routing.md"
   - "specs/index.md"
   - "proof/VELDO-0125/*"
+  - "proof/VELDO-0127/claude-live.json"
+  - "proof/VELDO-0127/codex-live.json"
+  - "scripts/suites/wallclock_baseline.json"
 behavior_bearing: true
 observability:
   logs: >
@@ -199,6 +202,21 @@ The wall-clock census (VELDO-0358) reads the files this branch adds or changes: 
 timeouts in suites 103 and 106 and in the live fixtures are now the wait hang bound. The
 clock reads that feed the real authority service, and the recorded proof drivers, are
 unconverted sites that need entries in the protected baseline, which only the owner adds.
+
+2026-11-26, land preparation, fix round 2: the wall-clock census is settled site by site.
+A file that suite 105 or 106 runs no longer reads the clock or names a number of seconds.
+Its timeouts are the wait hang bound, which is a hang detector and not a latency limit. The
+fixture takes one injected clock, and every "now" and deadline it gives the authority comes
+from it. The default is the suite support module's stamp, because the service under test
+judges a contract's deadline against the real clock and would refuse a fixed instant. The
+retry rows that patched the worker's clock now run on a supplied clock built from the
+entry's own retry time. The recorded proof drivers that no suite or gate runs keep their
+bytes, which the manifest binds by digest, and are entered in the protected
+scripts/suites/wallclock_baseline.json (33 entries, 36 sites), as VELDO-0124's drivers
+are; the baseline and the two VELDO-0127 capture files join the footprint. The stage
+stays red against a line whose own baseline lacks these entries, and passes against one
+that carries them. The VELDO-0127 Claude capture was retaken with proof/VELDO-0127/live.py
+on Claude Code 2.1.317 (five subscription runs); the Codex capture is still the stale one.
 
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
