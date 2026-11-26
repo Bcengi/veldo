@@ -2,8 +2,8 @@
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0147",
   "commit": "5623ba86fb370f13aa2345dee7ee707934576233",
-  "producer": "Codex implementation agent",
-  "produced_at": "2026-11-22",
+  "producer": "Claude implementation agent (round 2, Mac legs)",
+  "produced_at": "2026-11-26",
   "status": "remaining",
   "criteria": [
     {
@@ -12,9 +12,12 @@
       "evidence": [
         {
           "ref": "proof/VELDO-0147/READINESS.txt"
+        },
+        {
+          "ref": "proof/VELDO-0147/mac-claude-leg.json"
         }
       ],
-      "detail": "Not implemented or qualified. Prerequisite inspection only; no acceptance evidence or registered falsifier."
+      "detail": "Partial. One real Claude Code 2.1.317 run on the Mac with the dispatch account delivered from the main node on a RAM disk for the run only: subscription login confirmed by the initialize answer before the prompt (Guard), pinned digest bound, Keychain-denying Seatbelt, environment read-back with no paid-API variable. Not yet through the signed relay; capability comparison against an accepted revision and the falsifier are not registered."
     },
     {
       "id": "AC2",
@@ -22,9 +25,12 @@
       "evidence": [
         {
           "ref": "proof/VELDO-0147/READINESS.txt"
+        },
+        {
+          "ref": "proof/VELDO-0147/mac-claude-leg.json"
         }
       ],
-      "detail": "Not implemented or qualified. Prerequisite inspection only; no acceptance evidence or registered falsifier."
+      "detail": "Waiting. The only free-at-launch-allowed Codex login (codex2) was leased by another run; codex1 is at its weekly limit. The Codex frame (auth.json without the refresh credential) is unit-tested only; Codex 0.166.0 is not installed on the Mac."
     },
     {
       "id": "AC3",
@@ -32,9 +38,12 @@
       "evidence": [
         {
           "ref": "proof/VELDO-0147/READINESS.txt"
+        },
+        {
+          "ref": "proof/VELDO-0147/mac-claude-leg.json"
         }
       ],
-      "detail": "Not implemented or qualified. Prerequisite inspection only; no acceptance evidence or registered falsifier."
+      "detail": "Partial. The Mac engine stdout (63 lines) and stderr relayed over SSH matched the Mac copy line by line after exact redaction; the unit called Bash (error output seen), Read and Edit. The engine stderr was empty on the passing run, so the error-stream leg is not yet exercised; not through the production receiver; falsifier not registered."
     },
     {
       "id": "AC4",
@@ -42,21 +51,24 @@
       "evidence": [
         {
           "ref": "proof/VELDO-0147/READINESS.txt"
+        },
+        {
+          "ref": "proof/VELDO-0147/mac-claude-leg.json"
         }
       ],
-      "detail": "Not implemented or qualified. Prerequisite inspection only; no acceptance evidence or registered falsifier."
+      "detail": "Partial (login only). The account login travels in one frame on SSH stdin, lands mode 0600 on a RAM disk in a 0700 directory and is detached after the run; no value in the kept record, the Mac process command lines or environments; keychain Claude items unchanged. MCP server secrets frame and its falsifier not implemented."
     }
   ],
   "checks": [
     {
       "name": "unit",
       "status": "pending",
-      "detail": "No VELDO-0147 acceptance suite or mutation inventory implemented."
+      "detail": "scripts/suites/157_veldo_0147_login.py: 4 rows on the login frame (selftest --suite, partial run only). No acceptance falsifier registered."
     },
     {
       "name": "integration",
       "status": "pending",
-      "detail": "Native diagnostic reports no subscription login for the retained Claude account; no real model turn or qualification performed."
+      "detail": "One real Mac Claude run (proof/VELDO-0147/mac-claude-leg.json); Codex leg waiting for a free login."
     },
     {
       "name": "canonical_gate",

@@ -1,0 +1,125 @@
+{
+ "account": "acct7",
+ "cleaned": {
+  "cleaned": true
+ },
+ "close": {
+  "base_absent": true,
+  "detached": true,
+  "device": "/dev/disk<n>",
+  "keychain_claude_items": 2,
+  "keychain_unchanged": true,
+  "removed": true,
+  "status": "closed"
+ },
+ "code_digests": {
+  "mac_leg_remote.py": "sha256:655166ff8c7d1b6a6d53bc8977503b90cf844c44c4582411d4cd47d9cc6dc717",
+  "project_runner_macos_login.py": "sha256:1d546ebdf6dcd387a0303a8547a2771d6d3c791690121fa1438897ab9110b626",
+  "project_runner_macos_profile.py": "sha256:77f5b7f40009920b68658bfd3447c670fb26e643d3bc459ef944fe37effe5a31"
+ },
+ "engine": "claude_code",
+ "execution_record": {
+  "bash_error_output_seen": true,
+  "init_api_key_source": "none",
+  "init_mcp_servers": [],
+  "init_model": "claude-opus-5-5",
+  "init_tools": [
+   "Bash",
+   "Edit",
+   "Read"
+  ],
+  "result_is_error": false,
+  "result_subtype": "success",
+  "stderr_digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_identical_in_order": true,
+  "stderr_lines": 0,
+  "stdout_digest": "sha256:c5521b85b1d1c7e235808690e19a9f52d16055503ba7fcbf42d6257aa7f0bdc4",
+  "stdout_identical_in_order": true,
+  "stdout_lines": 63,
+  "tool_uses": [
+   "Bash",
+   "Read",
+   "Edit"
+  ]
+ },
+ "frame": {
+  "bytes": 555,
+  "files": [
+   ".credentials.json"
+  ],
+  "redaction_values": 1,
+  "refresh_credential_sent": false
+ },
+ "guard": {
+  "confirmed": true,
+  "released": true,
+  "source": "none",
+  "stop": null
+ },
+ "lease": {
+  "flock_held": true,
+  "named_by_ancestor": true
+ },
+ "leg": "AC1+AC3+AC4-login",
+ "leg_checks_passed": true,
+ "mac": {
+  "binary_bound": true,
+  "binary_digest": "sha256:09f153b46b5df9e8b3454716d682a91901de020cbca630f61dec1a015b32b5e9",
+  "edit_diff": "diff --git a/notes.txt b/notes.txt\nindex 197b842..434a9b1 100644\n--- a/notes.txt\n+++ b/notes.txt\n@@ -1,2 +1,2 @@\n title: mac leg unit\n-status: draft\n+status: edited\n",
+  "engine_exit": 0,
+  "login_status": {
+   "exit": 0,
+   "logged_in": true,
+   "method": "claude.ai"
+  },
+  "policy_denies_keychain": true,
+  "policy_digest": "sha256:f768c9c6e65d6be060e9a2a56e5e3a5bf02568f11502a0028197cbb509e61a0a",
+  "readback": {
+   "config_dir_is_delivered_profile": true,
+   "names": [
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY",
+    "CLAUDE_CODE_DISABLE_CLAUDE_MDS",
+    "CLAUDE_CODE_TMPDIR",
+    "CLAUDE_CONFIG_DIR",
+    "DISABLE_AUTOUPDATER",
+    "HOME",
+    "LANG",
+    "PATH",
+    "TEMP",
+    "TERM",
+    "TMP",
+    "TMPDIR",
+    "VELDO_DISPATCH_ID"
+   ],
+   "paid_present": [],
+   "profile_on_ram_disk": true
+  },
+  "refusal": null
+ },
+ "note": "One real Claude Code run on the Mac with the dispatch account delivered from the main node for the run only. leg_checks_passed covers this run's own checks; it is not the spec's qualification: the falsifiers, the Codex leg, the secrets frame for MCP servers and the production relay wiring remain open (READINESS.txt).",
+ "open": {
+  "account": "acct7",
+  "base_mode": "0o700",
+  "device": "/dev/disk<n>",
+  "dispatch": "r2-20261126005909",
+  "engine": "claude_code",
+  "files": {
+   ".credentials.json": 370
+  },
+  "profile_mode": "0o700",
+  "ram_disk": true,
+  "status": "open"
+ },
+ "qualification": false,
+ "run": "r2-20261126005909",
+ "scan": {
+  "ps_lines_scanned": 16,
+  "redaction_marker_count": 0,
+  "value_in_mac_process_commands_or_environment": false,
+  "value_in_mac_summary": false,
+  "value_in_raw_stream_before_redaction": false,
+  "value_in_redacted_record": false
+ },
+ "schema": "veldo.macos_qualification_run/v1",
+ "spec": "VELDO-0147"
+}

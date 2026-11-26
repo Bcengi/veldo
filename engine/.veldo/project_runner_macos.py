@@ -73,7 +73,8 @@ class Supervisor:
 
     def run_environment(self, dispatch, scratch):
         paths = self.run_paths(dispatch, scratch)
-        return dict(HOME=paths['home'], TMPDIR=paths['temp'], TMP=paths['temp'], TEMP=paths['temp'])
+        return dict(HOME=paths['home'], TMPDIR=paths['temp'], TMP=paths['temp'], TEMP=paths['temp'],
+                    CLAUDE_CODE_TMPDIR=paths['temp'])
 
     def preflight(self, request):
         contract = request['contract']

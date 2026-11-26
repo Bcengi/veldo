@@ -136,7 +136,10 @@ def claude_settings(argv, clone, environment, login_profile, *, create=False):
     config = environment.get('CLAUDE_CONFIG_DIR')
     if not config or canonical(config) != canonical(login_profile):
         raise Refused('binding_mismatch:claude_config_dir')
-    safe = {'CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_DISABLE_CLAUDE_MDS', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY'}
+    # CLAUDE_CODE_TMPDIR is the run's own temp (project_runner_macos run_environment, checked equal at
+    # admission): without it the binary makes its own folder in the shared system temp, outside every grant (VELDO-0147).
+    safe = {'CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_DISABLE_CLAUDE_MDS', 'CLAUDE_CODE_DISABLE_AUTO_MEMORY',
+            'CLAUDE_CODE_TMPDIR'}
     if any(name.startswith('CLAUDE') and name not in safe for name in environment):
         raise Refused('unsupported_configuration:claude_settings_source')
     sources = claude_flags(argv, clone)

@@ -2581,6 +2581,15 @@
     "161_veldo_0360_failfast"
    ],
    "requires_note": "Only ROOT and expect; scratch scheduler CLI with real tiny processes and simulated cgroups. No host lock, manager, load or live services."
+  },
+  {
+   "name": "157_veldo_0147_login",
+   "file": "157_veldo_0147_login.py",
+   "requires": [
+    "157_veldo_0147_login"
+   ],
+   "regions": "Mac login frame: access credential only, refusals before a RAM disk is made.",
+   "requires_note": "Only ROOT and expect."
   }
  ],
  "resource_capacities": {
