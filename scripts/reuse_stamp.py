@@ -123,6 +123,7 @@ def change_fields(root, store, gate, repository):
     C = load('gate_changes')
     C.green_record(root, store, gate, repository)
     C.require(store.get(gate['record_digest']) == gate, 'unpublished gate')
+    E.change_chain(C, root, store, gate, repository)
     counts = {status: sum(i['status'] == status for i in gate['receipt']['items'])
               for status in ('executed', 'carried', 'removed', 'not-applicable', 'waived')}
     payload = dict(schema='veldo.change-landing/v1', commit=gate['receipt']['candidate_commit'],

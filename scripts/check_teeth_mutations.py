@@ -20096,6 +20096,26 @@ def cases():
         "gate = changes.publish_gate(root, self.store, self.repository, inventory, receipt)",
         "gate = changes.sealed(changes.GATE, repository=self.repository, inventory=inventory, receipt=receipt, status='green', complete=True)",
         ['green-refresh'])
+    # VELDO-0367 increment 5: landing reopens the complete carried baseline chain.
+    def enable367(name, module, old, new, rows, directory='scripts'):
+        add(367, 'enable367-' + name, '166_veldo_0367_enable.py', module, old, new,
+            ['enable/' + row for row in rows])
+        result[-1].update(dir=directory, confined_only=True, siblings=True)
+
+    enable367('landing-chain', 'reuse_evidence.py',
+        "    change_chain(changes, root, store, gate, payload['repository'])",
+        '    pass', ['chain-missing-item'], '.veldo')
+    enable367('stamp-chain', 'reuse_stamp.py',
+        '    E.change_chain(C, root, store, gate, repository)',
+        '    pass', ['reducer-chain'])
+    enable367('consumer-chain', 'reuse_evidence.py',
+        "        if 'change_evidence' in document or document.get('validation_mode') == 'change-scoped':",
+        '        if False:', ['landing-consumer'], '.veldo')
+    enable367('consumer-counts', 'reuse_evidence.py',
+        "document.get('reused') != counts", 'False', ['landing-counts'], '.veldo')
+    enable367('judge-evidence', 'control_verification.py',
+        '    if stamp.get("change_evidence") != event.get("change_evidence"):',
+        '    if False:', ['judge-same-evidence'], '.veldo')
     return result
 
 

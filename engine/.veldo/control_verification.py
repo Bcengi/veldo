@@ -446,9 +446,11 @@ def judge(observation):
         problems.append("missing_evidence:gate/event")
     reuse = _sibling("veldo_reuse_evidence", "reuse_evidence.py")
     for document in (stamp, event):
-        problem = reuse.landing_problem(document)
+        problem = reuse.landing_problem(document, root=candidate.get("root"))
         if problem:
             problems.append(problem)
+    if stamp.get("change_evidence") != event.get("change_evidence"):
+        problems.append("binding_mismatch:gate/change_evidence")
     return problems
 
 

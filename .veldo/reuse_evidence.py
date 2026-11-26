@@ -199,7 +199,7 @@ def authenticate_audit(audit, reused, force, directory, secret):
     return members, chosen
 
 
-def landing_problem(document):
+def landing_problem(document, *, root=None):
     """Every stamp declares freshness; positive reuse requires signed case references.
 
     Keys are declared-input digests in VELDO-0207. The trusted stage checks the
@@ -207,6 +207,29 @@ def landing_problem(document):
     Rechecking here never trusts a boolean asserting that authentication passed.
     """
     try:
+        if 'change_evidence' in document or document.get('validation_mode') == 'change-scoped':
+            if root is None:
+                raise ValueError('change landing requires candidate history')
+            from importlib.util import module_from_spec, spec_from_file_location
+            spec = spec_from_file_location('landing_store', Path(__file__).resolve().parents[1] / 'scripts/gate_reuse.py')
+            reuse = module_from_spec(spec)
+            spec.loader.exec_module(reuse)
+            _, config = configuration()
+            store = reuse.Store(config['store'], root)
+            gate = change_landing(document, root, store)
+            counts = {'unit': 0, 'mutation': 0}
+            for item in gate['receipt']['items']:
+                if item['status'] == 'carried':
+                    coordinates = json.loads(item['item_id'])
+                    if coordinates[0:2] == ['suite', 'unit']:
+                        counts['unit'] += 1
+                    elif coordinates[0:2] == ['case', 'mutation']:
+                        counts['mutation'] += 1
+            if (document.get('reused') != counts or type(document.get('force_fresh')) is not bool
+                    or document['force_fresh'] and any(i['status'] == 'carried' for i in gate['receipt']['items'])
+                    or 'reuse_evidence' in document):
+                raise ValueError('change landing execution counts')
+            return None
         counts, force = document['reused'], document['force_fresh']
         if (type(force) is not bool or not isinstance(counts, dict) or not counts
                 or any(type(n) is not int or n < 0 for n in counts.values())):
@@ -281,4 +304,40 @@ def change_landing(document, root, store):
               for status in ('executed', 'carried', 'removed', 'not-applicable', 'waived')}
     if counts != payload['counts']:
         raise ValueError('landing change counts')
+    change_chain(changes, root, store, gate, payload['repository'])
     return gate
+
+
+def change_chain(changes, root, store, gate, repository):
+    """Follow each carried item through its green first-parent baselines to execution.
+
+    Unrelated historical references can be missing or revoked. Only the chain
+    actually used by a current carry is reopened; a historical green flag alone
+    cannot certify an intermediate carry whose baseline never contained it.
+    """
+    for item in gate['receipt']['items']:
+        current, source, seen = gate, item, set()
+        while source['status'] == 'carried':
+            changes.require(current['record_digest'] not in seen, 'cyclic carried chain')
+            seen.add(current['record_digest'])
+            receipt = current['receipt']
+            previous = changes.historical_gate(store, receipt['baseline_record_digest'], repository)
+            changes.require(previous['receipt']['candidate_commit'] == receipt['baseline_commit'] and
+                            receipt['baseline_commit'] in changes.first_parents(root, receipt['candidate_commit']),
+                            'carried chain baseline ancestry')
+            key = source['item_id']
+            old = {i['item_id']: i for i in previous['receipt']['items']}.get(key)
+            changes.require(old is not None and old['status'] in ('executed', 'carried'),
+                            'carried chain missing baseline item')
+            expected = dict(old, status='carried', source_gate_digest=(previous['record_digest']
+                            if old['status'] == 'executed' else old['source_gate_digest']))
+            changes.require(source == expected, 'carried chain source')
+            definitions = {i['item_id']: i for i in previous['inventory']['items']}
+            definition = next(i for i in current['inventory']['items'] if i['item_id'] == key)
+            changes.require(definitions.get(key) == definition, 'carried chain definition')
+            dependency = changes.item_evidence(store, source)
+            changed = changes.changed_paths(root, receipt['baseline_commit'], receipt['candidate_commit'])
+            changes.require(changes.digest(changed) == receipt['changed_paths_digest'] and
+                            dependency['complete'] and not changes.intersects(dependency, changed),
+                            'carried chain dependencies')
+            current, source = previous, old
