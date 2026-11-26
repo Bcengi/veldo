@@ -12,7 +12,7 @@
   "before": "    def release(self):\n        if self.state == 'retired':\n            raise P.Refused('stale_version:already_retired')\n        observation = self.retirement()\n        # Every caller, the signed remote cleanup path included, needs a known outcome to release.\n        if not all(observation[key] for key in ('terminated', 'cleaned', 'outcome_known')):\n",
   "after": "    def release(self, *, allow_unknown=False):\n        if self.state == 'retired':\n            raise P.Refused('stale_version:already_retired')\n        observation = self.retirement()\n        # The signed remote cleanup path may release without recovering an exit record.\n        # Other callers keep the default requirement for a known outcome.\n        if (not all(observation[key] for key in ('terminated', 'cleaned'))\n                or (not observation['outcome_known'] and not allow_unknown)):\n",
   "suite": "103_veldo_0124_macos",
-  "row": "AC2/capacity",
+  "row": "AC3/unknown",
   "ticket": "VELDO-0124"
  }
 }
