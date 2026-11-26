@@ -1,0 +1,17 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-LANDING-SPACE-V1",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0347",
+    "commit": "c6afdf4eeb939e824b341719908e1ea6c16f5fa9",
+    "paths": [
+      "scripts/suites/wallclock_baseline.json"
+    ]
+  },
+  "basis": "Landed under Dmitry's standing landing approval, Telegram 43770 (2026-11-26): \"I don't want to keep rubberstamping it, just aprove it all\" - land Veldo and core protected-path changes when the review is PASS and the what-changed tests are green, record the approval, and tell him after. Space V1 (VELDO-0347 space work and its remover, 0310/0312/0302/0324 wall-clock conversions): fix-check PASS before the restack; restacked onto main 68b1c4520 with the branch diff line-for-line unchanged (v1-assembly.md). What changed, run on pc2/pc1: all eight quick stages exit 0 (rr20261126071652-46f5), suites 155/0304, 153/0309, 161/0347, 162/0367, 147/0310, 149/0312, 153/0302, 154/0324 zero failures (rr20261126072849-023f), and all seven mutation cases kill their mutants at c6afdf4ee (four in rr20261126180451-9b01 on pc2, three in rr20261126203247-1906 on pc1). The one protected path is scripts/suites/wallclock_baseline.json, five deletions only (sites the branch converted no longer exist); nothing added or raised. No full gate, by owner order 43733.",
+  "recorded_at": "2026-11-26T23:09:57Z",
+  "recorded_by": "Ava (recording under Dmitry's standing approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-26T23:09:57Z"
+}
