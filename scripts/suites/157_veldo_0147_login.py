@@ -69,8 +69,71 @@ def _v147_login():
         Path(base, 'exists').mkdir()
         refused(lambda: L.open_profile(Path(base, 'exists'), Stream(good.encode())), 'stale_version:profile_base_exists')
 
+    # The registered falsifiers (scripts/check_teeth_mutations.py, finding 147) replace these two production
+    # paths with a defective copy inside a complete module tree; every row below loads its modules from there.
+    profile_module = ROOT / ".veldo" / "project_runner_macos_profile.py"
+    control_module = ROOT / ".veldo" / "project_runner_macos_control.py"
+
+    def mac_checks(directory):
+        import os
+        os.environ['VELDO_0124_MODULES'] = str(Path(directory))
+        try:
+            loaded = importlib.util.spec_from_file_location('v147_checks', ROOT / 'proof/VELDO-0124/checks.py')
+            checks = importlib.util.module_from_spec(loaded)
+            loaded.loader.exec_module(checks)
+            return checks
+        finally:
+            os.environ.pop('VELDO_0124_MODULES', None)
+
+    def unexpected_launch(base):
+        # AC1 falsifier: the Mac's pinned executable changes after it was bound; the Mac host must refuse
+        # before anything is launched, so no engine the qualification did not bind ever runs.
+        T = mac_checks(profile_module.parent)
+        host, osx, request, paths = T.start(base)
+        engine = request['engine']
+        pinned = base / 'pinned-engine'
+        pinned.write_bytes(b'#!/bin/sh\nexit 0\n')
+        host.profile['engines'][engine]['argv'][0] = str(pinned)
+        host.profile['engines'][engine]['binary_digest'] = T.P.file_digest(str(pinned))
+        T.evidence_fixture(host.profile, host.qualification)
+        T.P.qualify(host.profile, host.qualification, host.os.facts(), engine,
+                    request['contract']['capability']['configuration_digest'])  # bound: admitted
+        with open(pinned, 'ab') as stream:
+            stream.write(b'# changed after binding\n')
+        T.refused(lambda: host.start(request), 'stale_version:engine_binary')
+        assert osx.bootstraps == 0
+
+    def paid_api_stop(base):
+        # AC2 falsifier: OPENAI_API_KEY must never reach the Mac engine environment: an adapter that
+        # configures it is refused by name, and the inherited set never carries it.
+        loaded = importlib.util.spec_from_file_location('v147_control', control_module)
+        C = importlib.util.module_from_spec(loaded)
+        loaded.loader.exec_module(C)
+
+        class Host:
+            class os:
+                @staticmethod
+                def facts():
+                    return {'host': 'mac-147'}
+
+            @staticmethod
+            def run_environment(dispatch, scratch):
+                return {'HOME': scratch + '/home'}
+        account = dict(id='codex-147', status='active', provider='codex', profiles={'mac-147': str(base / 'login')})
+        login, environment = C.engine_environment(Host, account, 'd-147', str(base), {})
+        assert login == str(base / 'login') and environment['CODEX_HOME'] == login
+        assert 'OPENAI_API_KEY' not in environment and 'CODEX_API_KEY' not in environment
+        for key in ('OPENAI_API_KEY', 'CODEX_API_KEY'):
+            try:
+                C.engine_environment(Host, account, 'd-147', str(base), {key: 'sk-planted-147'})
+            except Exception as error:
+                assert getattr(error, 'code', '') == 'invalid_input:adapter_environment:' + key, error
+            else:
+                raise AssertionError('paid-API key reached the Mac engine environment: ' + key)
+
     for name, test in {'AC4/claude-frame-access-only': claude_frame, 'AC1/claude-frame-refusals': claude_refusals,
-                       'AC2/codex-frame-access-only': codex_frame, 'AC4/mac-frame-refusals': mac_side_refusals}.items():
+                       'AC2/codex-frame-access-only': codex_frame, 'AC4/mac-frame-refusals': mac_side_refusals,
+                       'AC1/mac-unexpected-launch': unexpected_launch, 'AC2/mac-paid-api-stop': paid_api_stop}.items():
         with tempfile.TemporaryDirectory(prefix='v147-login-') as directory:
             try:
                 test(Path(directory))
