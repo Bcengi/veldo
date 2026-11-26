@@ -1295,6 +1295,7 @@ def _v208_unconfined_leg():
     import os
     from pathlib import Path
     import re
+    import shlex
     import shutil
     import subprocess
     import sys
@@ -1503,6 +1504,82 @@ def _v208_unconfined_leg():
                and {'01_listed.unconfined', '03_rows.strace.unconfined', '02_asks.confined',
                     '03_rows.confined'} <= set(seen)
                and set(seen.values()) == {'absent'})
+
+        # ---- VELDO-0367 off: a unit stage that takes the opened-files record runs as before 0367 ----
+        # The fixture's shared.py carries the real _dependency_capture and counts the audit hooks it
+        # installs. Each suite prints its tracer, that count and the observed commit it was handed. A
+        # `git` first on PATH logs every query the stage makes by name. The caller's environment holds a
+        # stray observed commit, which must reach neither leg.
+        capture_source = next(ast.get_source_segment(shared_source, node) for node in ast.parse(shared_source).body
+                              if isinstance(node, ast.FunctionDef) and node.name == '_dependency_capture')
+        off, shim, queries = top / 'off', top / 'shim', top / 'git-queries'
+        (off / 'scripts/suites').mkdir(parents=True); shim.mkdir()
+        for name in ('selftest.py', 'run_scope.py', 'gate_fixtures.py', 'mutation_observer.py'):
+            shutil.copyfile(ROOT / 'scripts' / name, off / 'scripts' / name)
+        (off / 'scripts/suites/shared.py').write_text(
+            fixture_shared + 'import importlib.util\nimport json\n\n' + capture_source + '\n\n'
+            '_hooks = []\n_add = sys.addaudithook\n'
+            'sys.addaudithook = lambda hook: (_hooks.append(hook), _add(hook))[1]\n'
+            '_DEPENDENCY_CAPTURE = _dependency_capture()\nsys.addaudithook = _add\n'
+            'def observed(label):\n    leg = os.environ.get("VELDO_GATE_LEG", "none")\n'
+            '    tracer = next(l for l in open("/proc/self/status") if l.startswith("TracerPid:")).split()[1]\n'
+            '    print("V367-OFF %s tracer=%s hooks=%d capture=%s commit=%s" % (leg, tracer, len(_hooks),\n'
+            '          _DEPENDENCY_CAPTURE is not None, os.environ.get("VELDO_DEPENDENCY_COMMIT", "absent")), flush=True)\n'
+            '    if os.environ.get("V367_FORGE") == leg:\n'
+            '        for fd in os.listdir("/proc/self/fd"):\n'
+            '            try:\n'
+            '                if os.path.basename(os.readlink("/proc/self/fd/" + fd)) == "ledger":\n'
+            '                    os.write(int(fd), b\'{"dependency_claim": {}, "result": {}}\\n\')\n'
+            '                    print("V367-OFF forged", flush=True)\n'
+            '            except OSError:\n                pass\n'
+            '    expect(label, True)\n')
+        for name in ('01_listed', '02_confined'):
+            (off / 'scripts/suites' / (name + '.py')).write_text('observed(%r)\n' % name)
+        (off / 'scripts/suites/manifest.json').write_text(json.dumps({
+            'schema': 'veldo.suites/v1', 'entry': 'selftest.py', 'shared': 'shared.py',
+            'suites': [{'name': n, 'file': n + '.py'} for n in ('01_listed', '02_confined')]}))
+        off_list = top / 'off-unconfined.json'
+        off_list.write_text(json.dumps(dict(document, stages={'unit': 'python3 scripts/selftest.py'},
+            suites=[{'suite': '01_listed', 'reason': 'fixture: needs what the domain refuses'}])))
+        (shim / 'git').write_text('#!/bin/sh\necho "$@" >> %s\nexec /usr/bin/git "$@"\n' % shlex.quote(str(queries)))
+        (shim / 'git').chmod(0o755)
+        off_driver = driver.replace('path=sys.argv[6]', 'path=sys.argv[6], take_opened=sys.argv[7]')
+
+        def off_stage(forge=None):
+            taken, legs_record = top / 'off-opened.json', top / 'off-record'
+            for path in (taken, legs_record, queries):
+                path.unlink(missing_ok=True)
+            ran = subprocess.run([sys.executable, '-I', '-S', '-c', off_driver, str(ROOT / 'scripts/gate_legs.py'),
+                                  str(off), 'unit', 'python3 scripts/selftest.py', str(legs_record), str(off_list),
+                                  str(taken)], capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
+                                 env=dict(os.environ, PATH=str(shim) + os.pathsep + os.environ.get('PATH', ''),
+                                          VELDO_DEPENDENCY_COMMIT='1' * 40, **({'V367_FORGE': forge} if forge else {})),
+                                 pass_fds=launcher_fds())
+            seen = sorted(line for line in ran.stdout.splitlines() if line.startswith('V367-OFF '))
+            return ran, seen, json.loads(taken.read_text()) if taken.is_file() else None, \
+                queries.read_text() if queries.is_file() else ''
+
+        selection_off = L.dependency_observer() is None
+        ran, seen, taken, asked_git = off_stage()
+        expect('VELDO-0367 off/unit-stage-taking-the-record-starts-unobserved: '
+               + repr((selection_off, ran.returncode, seen, asked_git, (ran.stdout + ran.stderr)[-400:])),
+               selection_off and ran.returncode == 0 and asked_git == ''
+               and seen == ['V367-OFF %s tracer=0 hooks=0 capture=False commit=absent' % leg
+                            for leg in ('confined', 'unconfined')])
+        # The record is the one this stage wrote before VELDO-0367: no observer file is in it.
+        expect('VELDO-0367 off/opened-record-is-the-pre-0367-record: ' + repr(taken),
+               selection_off and taken == dict(
+                   {name: ['scripts/suites/%s.py' % name] for name in ('01_listed', '02_confined', 'shared')}))
+        forged, forged_seen, forged_taken, _ = off_stage(forge='unconfined')
+        forged_output = forged.stdout + forged.stderr
+        expect('VELDO-0367 off/dependency-claim-in-the-ledger-is-refused: '
+               + repr((forged.returncode, forged_seen, forged_taken, forged_output[-400:])),
+               selection_off and 'V367-OFF forged' in forged_seen and forged.returncode == 1
+               and forged_taken is None
+               and 'unit: the opened-files record was not taken: ' in forged_output
+               and re.search(r'opened-files claim \d+ is not \{"suite": name, "paths": \[path, \.\.\.\]\}', forged_output)
+               and 'the stage is RED' in forged_output)
+
         stamped = L.stamp(record)
         # verify.sh's own stamp and event lines, executed over this record, an empty one and a
         # corrupt one: the leg is in both records when it was expected and ran, absent when none was

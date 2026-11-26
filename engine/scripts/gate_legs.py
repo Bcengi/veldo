@@ -208,6 +208,8 @@ def entries(document):
 def _env(leg=None, listed=(), digest=None, measured=None, claims=None):
     env = {k: v for k, v in os.environ.items() if k not in (LEG, ENTRIES, DIGEST, UNIT_SECONDS)}
     env.pop(OPENED_FD, None)  # a caller's ledger descriptor too: only TakeOpened hands one in (VELDO-0358)
+    for observed in ('VELDO_DEPENDENCY_COMMIT', 'VELDO_DEPENDENCY_STAGE'):
+        env.pop(observed, None)  # a caller's observed commit too: only TakeOpened names one (VELDO-0367)
     for authority_variable in ('VELDO_GATE_LEDGER_FD', 'VELDO_GATE_GRAPH_DIGEST', SHARD_CLAIMS, *SHARD_CHANNELS):
         env.pop(authority_variable, None)
     if leg:
@@ -814,20 +816,27 @@ class TakeOpened:
         os.close(self.fd)
         try:
             claims = self.ledger.read_text()
-            legacy, dependencies = [], []
-            for line in claims.splitlines():
-                entry = json.loads(line)
-                if isinstance(entry, dict) and set(entry) == {'dependency_claim', 'result'}:
-                    dependencies.append(entry)
-                else:
-                    legacy.append(line)
-            record, dropped = opened_record(self.root, '\n'.join(legacy), opened, late, overflowed)
+            dependencies = []
+            if self.observer is not None:
+                legacy = []
+                for line in claims.splitlines():
+                    entry = json.loads(line)
+                    if isinstance(entry, dict) and set(entry) == {'dependency_claim', 'result'}:
+                        dependencies.append(entry)
+                    else:
+                        legacy.append(line)
+                claims = '\n'.join(legacy)
+            # With change selection off every ledger line goes to opened_record, which refuses a
+            # dependency claim as it refuses any line no dispatcher writes.
+            record, dropped = opened_record(self.root, claims, opened, late, overflowed)
             try:
                 self.publish(stage, code, dependencies, opened, late, overflowed)
             except (OSError, ValueError, KeyError, TypeError) as error:
                 self.observation_error = str(error)
                 print('dependency observation not stored: %s' % error, flush=True)
         except (Invalid, OSError, ValueError, KeyError, TypeError) as error:
+            if self.observer is None and not isinstance(error, (Invalid, OSError)):
+                raise  # off: only what the stage refused before VELDO-0367 is a refusal here
             self.observation_error = str(error)
             print('   %s: the opened-files record was not taken: %s; the stage is RED' % (stage, error), flush=True)
             return 1
@@ -990,7 +999,8 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
             code = run_stage(root, stage, command, record, path, times, leg, prior, taking=taking,
                              change_selection=change_selection)
         except BaseException:
-            taking.finish(stage, 1)
+            if taking.observer is not None:  # off: a raising stage leaves no record, as before VELDO-0367
+                taking.finish(stage, 1)
             raise
         return taking.finish(stage, code)
     keep = taking.fd if taking else None

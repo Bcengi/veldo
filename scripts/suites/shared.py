@@ -37,6 +37,10 @@ def _dependency_capture():
     The existing authority ledger crosses shard boundaries. Native children and
     unobservable metadata remain unknown; a claim never asserts trace completeness.
     """
+    if 'VELDO_DEPENDENCY_COMMIT' not in os.environ:
+        # The stage names an observed commit only while change selection is on (gate_legs.TakeOpened).
+        # Checked before anything is loaded: off, a suite opens the files it opened before VELDO-0367.
+        return None
     main = sys.modules.get('__main__')
     ledger = getattr(main, '_LEDGER', None)
     source = ROOT / 'scripts/mutation_observer.py'
@@ -45,9 +49,6 @@ def _dependency_capture():
     spec = importlib.util.spec_from_file_location('suite_dependency_observer', source)
     observer = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(observer)
-    if 'VELDO_DEPENDENCY_COMMIT' not in os.environ:
-        # The stage names an observed commit only while change selection is on (gate_legs.TakeOpened).
-        return None
     captures, results = {}, {}
     enabled = [True]
 
