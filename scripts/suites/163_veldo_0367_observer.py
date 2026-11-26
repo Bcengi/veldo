@@ -15,6 +15,8 @@ def _v367_observer():
                'gate_legs.py': ROOT / "scripts" / "gate_legs.py",
                'reuse_worker.py': ROOT / "scripts" / "reuse_worker.py"}
 
+    shared_source = ROOT / "scripts/suites" / "shared.py"
+
     def load(path):
         spec = importlib.util.spec_from_file_location('observer367_' + path.stem, path)
         module = importlib.util.module_from_spec(spec)
@@ -155,6 +157,40 @@ def _v367_observer():
                 value.get('dependency', {}).get('item_id') == C['identity']('stage', 'fixture-' + leg))
             row('native-' + leg, {'module367.py', 'data/child'} <= set(stage['dependency']['paths']) and
                 not stage['dependency']['complete'] and bool(stage['dependency']['unknown_reason']))
+
+        # The real shared collector attributes fragments and names their common
+        # setup group. Only its installation seam is isolated from preamble rows.
+        import ast
+        (repo / 'scripts').mkdir()
+        for name in ('mutation_observer.py', 'gate_fixtures.py', 'gate_changes.py', 'case_trace.py'):
+            shutil.copyfile(authority / 'scripts' / name, repo / 'scripts' / name)
+        tree = ast.parse(shared_source.read_text())
+        function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == '_dependency_capture')
+        namespace = dict(ROOT=repo, Path=Path, sys=sys, os=os, json=json,
+                         importlib=__import__('importlib'), __file__=str(repo / 'scripts/suites/shared.py'))
+        exec(compile(ast.Module(body=[function], type_ignores=[]), str(shared_source), 'exec'), namespace)
+        main = sys.modules['__main__']
+        old_ledger = getattr(main, '_LEDGER', None)
+        fd = os.open(top / 'suite-ledger', os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
+        try:
+            main._LEDGER = fd
+            capture = namespace['_dependency_capture']()
+            namespace['__suite_file__'] = 'first.py'
+            (repo / 'data/input').read_text()
+            capture[0](True)
+            namespace['__suite_file__'] = 'second.py'
+            (repo / 'data/child').read_text()
+            capture[0](False)
+            capture[1]()
+        finally:
+            main._LEDGER = old_ledger
+            os.close(fd)
+        claims = [json.loads(line) for line in (top / 'suite-ledger').read_text().splitlines()]
+        row('suite-attribution', len(claims) == 2 and
+            {tuple(c['result']['rows']) for c in claims} == {(1, 0), (0, 1)} and
+            all(c['result']['group'] == ['first', 'second'] and
+                {'data/input', 'data/child'} <= set(c['dependency_claim']['paths']) and
+                not c['dependency_claim']['complete'] for c in claims))
 
         # Exercise the worker publication boundary with a real child protocol and
         # an isolated Store. The candidate never receives a Store object/key.

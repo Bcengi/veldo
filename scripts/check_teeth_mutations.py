@@ -18986,7 +18986,7 @@ def cases():
     observer367('lost-events', 'mutation_observer.py',
         'if dropped or not seen or seen != ended:', 'if not seen or seen != ended:', ['lost-events'])
     observer367('incomplete-empty', 'mutation_observer.py',
-        "self.unknown('incomplete trace: ' + str(error))", 'pass  # defect: incomplete becomes empty',
+        "self.unknown('incomplete trace: ' + str(error))", 'self.reasons.clear()  # defect: incomplete becomes empty',
         ['incomplete-not-empty', 'empty-trace', 'unfinished'])
     observer367('native-path', 'mutation_observer.py',
         'self.read(path, kind, success)', 'pass  # defect: native reads lost', ['trace-confined', 'trace-unconfined'])
@@ -18998,6 +18998,11 @@ def cases():
         'own.read(self.root / path)', 'pass  # defect: stage child reads omitted', ['native-confined', 'native-unconfined'])
     observer367('worker-publication', 'reuse_worker.py',
         '    owner.publish_dependencies(store, dependency,', '    (lambda *args: None)(store, dependency,', ['worker-published'])
+
+    add(367, 'observer367-suite-attribution', '163_veldo_0367_observer.py', 'shared.py',
+        "        counts[0 if condition else 1] += 1", "        counts[0] += 1", ['observer/suite-attribution'])
+    result[-1]['dir'] = 'scripts/suites'
+    result[-1]['confined_only'] = True
 
     # Suite 48's registered falsifiers target its ordinary confined rows, not the
     # ptrace census composite. Explicitly retain the worker boundary for the whole
