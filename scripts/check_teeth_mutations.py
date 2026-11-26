@@ -3039,12 +3039,13 @@ def cases():
     # AC1, declared: the worker is spawned before the contract is recorded. The fixed code guards it
     # twice (the runner commits before invoking; the receiver spawns only after an acceptance that
     # needs the prepared record), so the defect is both edits.
+    # Re-anchored (VELDO-0125 land): the contract commits through routing or prepare after the contract's last line.
     dispatch('dispatch-spawn-before-contract', 'control_launch.py',
              "            }\n"
-             "            self.dispatches.prepare(contract, now=now)\n",
+             "            if self.worker_profiles is not None or routing.requirements(contract):\n",
              "            }\n"
              "            self.early = self.receiver(contract)  # defect: invoked before the contract commits\n"
-             "            self.dispatches.prepare(contract, now=now)\n",
+             "            if self.worker_profiles is not None or routing.requirements(contract):\n",
              'contract-before-launch',
              also=[("        dispatch_id = contract['dispatch_id']\n        record = self.dispatches.record(dispatch_id)\n",
                     "        dispatch_id = contract['dispatch_id']\n"
@@ -10933,27 +10934,28 @@ def cases():
         ['AC1/restart-open'], ())
     add(174, 'v174-offer-every-waiting-turn', S174, 'control_service.py',
         "            offered.add(turn['conversation'])\n", '', ['AC2/one-offer-per-pass'], ())
+    # Re-anchored (VELDO-0125 land): the conversation offer sits inside the pass's not-deadline-only branch.
     add(174, 'v174-project-lines-first', S174, 'control_service.py',
-        "        # The owner's waiting conversation turns are always offered before project stations.\n"
-        "        if self.conversation is not None:\n"
-        "            try:\n"
-        "                self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])\n"
-        "            except Exception as error:  # noqa: BLE001\n"
-        "                report['faults'].append({'conversation': True,\n"
-        "                                         'reason': 'unknown_outcome:' + type(error).__name__})\n"
+        "            # The owner's waiting conversation turns are always offered before project stations.\n"
+        "            if self.conversation is not None:\n"
+        "                try:\n"
+        "                    self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])\n"
+        "                except Exception as error:  # noqa: BLE001\n"
+        "                    report['faults'].append({'conversation': True,\n"
+        "                                             'reason': 'unknown_outcome:' + type(error).__name__})\n"
         "        for repository, line in sorted(self.lines.items()):\n",
-        "        # Defect: project stations consume the shared pool before conversation turns.\n"
-        "        for repository, line in sorted(self.lines.items()):\n"
-        "            try:\n"
-        "                line.run(report, [launch for owner, launch in ended if owner is line])\n"
-        "            except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end\n"
-        "                report['faults'].append({'repository': repository, 'reason': 'unknown_outcome:' + type(error).__name__})\n"
-        "        if self.conversation is not None:\n"
-        "            try:\n"
-        "                self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])\n"
-        "            except Exception as error:  # noqa: BLE001\n"
-        "                report['faults'].append({'conversation': True,\n"
-        "                                         'reason': 'unknown_outcome:' + type(error).__name__})\n"
+        "            # Defect: project stations consume the shared pool before conversation turns.\n"
+        "            for repository, line in sorted(self.lines.items()):\n"
+        "                try:\n"
+        "                    line.run(report, [launch for owner, launch in ended if owner is line])\n"
+        "                except Exception as error:  # noqa: BLE001 - an unexpected fault is an unknown outcome, never the end\n"
+        "                    report['faults'].append({'repository': repository, 'reason': 'unknown_outcome:' + type(error).__name__})\n"
+        "            if self.conversation is not None:\n"
+        "                try:\n"
+        "                    self.conversation.run(report, [launch for owner, launch in ended if owner is self.conversation])\n"
+        "                except Exception as error:  # noqa: BLE001\n"
+        "                    report['faults'].append({'conversation': True,\n"
+        "                                             'reason': 'unknown_outcome:' + type(error).__name__})\n"
         "        for repository, line in ():\n",
         ['AC3/turn-before-project'], ())
     add(174, 'v174-no-work-conversation-line-dropped', S174, 'control_service.py',
@@ -12123,8 +12125,9 @@ def cases():
                   "        self.started_lines = self.follow_store(0)\n",
                   "        self.started_lines = {}  # defect: the store's projects give the loop no line\n",
                   ['lines/new-project'],
-                  also=[("        if 'journal' in report['sources']:\n            try:\n                report['lines'] = ",
-                         "        if False:  # defect: no pass follows the store\n            try:\n                report['lines'] = ")])
+                  # Re-anchored (VELDO-0125 land): the journal follow sits in the pass's not-deadline-only branch.
+                  also=[("            if 'journal' in report['sources']:\n                try:\n                    report['lines'] = ",
+                         "            if False:  # defect: no pass follows the store\n                try:\n                    report['lines'] = ")])
     # AC2 (declared): every line staffed from the default team.
     project_lines('staff188-default-team-only', 'control_service.py',
                   "    if isinstance(data, dict) and data.get('revision') and isinstance(data.get('team'), dict):\n",
@@ -17381,8 +17384,13 @@ def cases():
         'control_launch.py',
         '            space = prepare_space(self.space, self.dispatches, unit, station, project, source)\n',
         '            space = None  # defect: admission postponed past reservation\n',
-        ['space316/ac2/pre-reservation'],
-        also=[['        contract = self.prepare(unit, station, **kwargs)\n        launch = self.receiver(contract)\n', "        contract = self.prepare(unit, station, **kwargs)\n        _organ('control_space_admission').prepare(self.space, self.dispatches, unit, station,\n            contract['reservation']['project'], kwargs['source'])\n        launch = self.receiver(contract)\n"]])
+        ['space316/ac2/pre-reservation'], also=[(
+            # Re-anchored (VELDO-0125 land): submit routes the prepared contract before invoking a receiver.
+            "        contract = self.prepare(unit, station, **kwargs)\n        route = contract['input']['context'].get('host_route')\n",
+            "        contract = self.prepare(unit, station, **kwargs)\n"
+            "        _organ('control_space_admission').prepare(self.space, self.dispatches, unit, station,\n"
+            "            contract['reservation']['project'], kwargs['source'])\n"
+            "        route = contract['input']['context'].get('host_route')\n")])
     add(316, 'space316-block-report', space316, 'control_space_admission.py',
         "    answer = 'admitted' if reason is None else 'waiting' if ledger.acts(scope) else 'advised'\n",
         "    answer = 'admitted' if reason is None else 'waiting'\n", ['space316/ac3/started-advised'])
