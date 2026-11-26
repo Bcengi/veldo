@@ -404,7 +404,9 @@ def worker(case, mutant=None, *, isolate_runtime=True):
     dependency.stop()
     dependency.read(ROOT / case.get('dir', '.veldo') / case['module'])
     for definition in ('mutation_observer.py', 'reuse_worker.py', 'gate_changes.py', 'gate_fixtures.py'):
-        dependency.read(ROOT / 'scripts' / definition)
+        # These authority modules were loaded before confinement. Recording their
+        # names must not probe absent counterparts in a declared input snapshot.
+        dependency.paths.add('scripts/' + definition)
     commit = os.environ.get('VELDO_DEPENDENCY_COMMIT', '0' * 40)
     if commit == '0' * 40:
         dependency.unknown('observed commit unavailable')

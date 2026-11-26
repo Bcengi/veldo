@@ -193,7 +193,8 @@ def _v367_observer():
         # because inotify cannot attribute metadata probes or certify descendants.
         for leg in ('confined', 'unconfined'):
             taking = G.TakeOpened(repo, None, 'fixture-' + leg, store=store)
-            env = taking.env(dict(os.environ, VELDO_GATE_LEG=leg))
+            env = taking.env(dict(os.environ, VELDO_GATE_LEG=leg,
+                                  VELDO_EXPECTED_GIT_COMMON=str(repo / '.git')))
             import shlex
             command = shlex.join([sys.executable, '-c',
                 'import pathlib, subprocess; pathlib.Path("module367.py").read_text(); '
