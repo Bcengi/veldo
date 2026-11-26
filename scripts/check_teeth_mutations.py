@@ -19000,6 +19000,18 @@ def cases():
         'if overflowed or late:', 'if False:', ['overflow-unknown'])
     observer367('worker-attribution', 'reuse_worker.py',
         "'unconfined' if mode == 'unconfined' else 'confined'", "'confined'", ['worker-unconfined'])
+    observer367('coordinator-cleanup', 'check_gate_mutations.py',
+        'if workers.active or workers.meters or workers.owned_snapshots:', 'if False:',
+        ['coordinator-cleanup-active', 'coordinator-cleanup-meters', 'coordinator-cleanup-owned_snapshots'])
+    observer367('coordinator-cleanup-failed', 'check_gate_mutations.py',
+        "if any(outcome.get('error') == 'worker_cleanup_error' for outcome in workers.outcomes):", 'if False:',
+        ['coordinator-cleanup-outcomes'])
+    observer367('coordinator-union', 'check_gate_mutations.py',
+        'owner.combine_dependencies(dependencies, item, head)',
+        'owner.combine_dependencies(dependencies[1:], item, head)', ['coordinator-union-confined', 'coordinator-union-unconfined'])
+    observer367('coordinator-hook', 'check_gate_mutations.py',
+        'publish_case_dependencies(root, head, fresh, results, workers)', 'pass  # defect: observation never published',
+        ['coordinator-wired'])
 
     add(367, 'observer367-suite-attribution', '163_veldo_0367_observer.py', 'shared.py',
         "        counts[0 if condition else 1] += 1", "        counts[0] += 1", ['observer/suite-attribution'])

@@ -1309,6 +1309,33 @@ def snapshot(root, expected_common, destination, files, head):
 
 
 
+def publish_case_dependencies(root, head, cases, results, workers, *, store=None):
+    """Publish observations only after the authority has reaped worker allocations."""
+    if workers.active or workers.meters or workers.owned_snapshots:
+        raise Refused('worker_cleanup_error', 'dependency publication before cleanup')
+    if any(outcome.get('error') == 'worker_cleanup_error' for outcome in workers.outcomes):
+        raise Refused('worker_cleanup_error', 'dependency publication after failed cleanup')
+    owner = load(ROOT / 'scripts/mutation_observer.py')
+    changes = owner.dependency_module('gate_changes')
+    store = store or load(ROOT / 'scripts/gate_reuse.py')._suite_store(root, os.environ)
+    if store is None:
+        raise OSError('dependency Store unavailable')
+    for case in cases:
+        record = results[case['identity']]
+        leg = 'unconfined' if in_leg(workers.leg, case) else 'confined'
+        item = changes['identity']('case', 'mutation', leg, case['suite'], case['driver'], case['name'])
+        dependencies = []
+        for mode in ('baseline', 'noop', 'mutant'):
+            dependency = record[mode].get('dependency')
+            if dependency is None:
+                missing = owner.DependencyReads(root)
+                missing.unknown('missing ' + mode + ' observation')
+                dependency = missing.record(item, head)
+            dependencies.append(dependency)
+        dependency = owner.combine_dependencies(dependencies, item, head)
+        owner.publish_dependencies(store, dependency, record)
+
+
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
               drivers=None, parallel=None, diff_dir=None, force_fresh=False, leg=None, measure=False,
               admission=None, admit=False):
@@ -1599,6 +1626,8 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             for case in cases:
                 validate_result(results[case['identity']], case)
         workers.check()
+        if fresh:
+            publish_case_dependencies(root, head, fresh, results, workers)
         for case in fresh:
             reuse.publish(case, results[case['identity']], validate_result)
         if reuse.store and reuse.store.integrity_errors:

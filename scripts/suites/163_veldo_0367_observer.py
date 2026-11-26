@@ -13,7 +13,8 @@ def _v367_observer():
 
     sources = {'mutation_observer.py': ROOT / "scripts" / "mutation_observer.py",
                'gate_legs.py': ROOT / "scripts" / "gate_legs.py",
-               'reuse_worker.py': ROOT / "scripts" / "reuse_worker.py"}
+               'reuse_worker.py': ROOT / "scripts" / "reuse_worker.py",
+               'check_gate_mutations.py': ROOT / "scripts" / "check_gate_mutations.py"}
 
     shared_source = ROOT / "scripts/suites" / "shared.py"
 
@@ -139,6 +140,53 @@ def _v367_observer():
         pending = C['sealed']('veldo.change-observation/v1', dependency=refreshed, result=outcome)
         row('atomic-interrupted', failed and store.get(pending['record_digest']) is None and
             store.get(envelope['record_digest']) == envelope)
+
+        # Execute the coordinator's publication seam with real Store writes. Its
+        # caller runs after Workers.finish has reaped descendants and allocations.
+        import ast
+        from types import SimpleNamespace
+        coordinator = sources['check_gate_mutations.py']
+        tree = ast.parse(coordinator.read_text())
+        function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and
+                        node.name == 'publish_case_dependencies')
+        namespace = dict(ROOT=authority, load=load, os=os, Refused=RuntimeError,
+                         in_leg=lambda leg, case: leg == 'unconfined')
+        exec(compile(ast.Module(body=[function], type_ignores=[]), str(coordinator), 'exec'), namespace)
+        publish = namespace['publish_case_dependencies']
+        case = dict(identity='fixture', suite='fixture.py', driver='check_teeth_mutations.py', name='fixture')
+        workers = SimpleNamespace(active={}, meters={}, owned_snapshots={}, outcomes=[], leg=None)
+        result = dict(baseline={'dependency': complete}, noop={'dependency': refreshed},
+                      mutant={'dependency': dep})
+        for field, pending_value in (('active', {'worker': True}), ('meters', {'worker': True}),
+                                     ('owned_snapshots', {'worker': True}),
+                                     ('outcomes', [{'error': 'worker_cleanup_error'}])):
+            original = getattr(workers, field)
+            setattr(workers, field, pending_value)
+            refused = False
+            try:
+                publish(repo, commit, [case], {'fixture': result}, workers, store=store)
+            except RuntimeError:
+                refused = True
+            setattr(workers, field, original)
+            row('coordinator-cleanup-' + field, refused)
+        for leg in ('confined', 'unconfined'):
+            workers.leg = leg
+            publish(repo, commit, [case], {'fixture': result}, workers, store=store)
+            identity = C['identity']('case', 'mutation', leg, case['suite'], case['driver'], case['name'])
+            expected = O.combine_dependencies([complete, refreshed, dep], identity, commit)
+            entry = C['sealed']('veldo.change-observation/v1', dependency=expected, result=result)
+            row('coordinator-union-' + leg, store.get(entry['record_digest']) == entry)
+        result['noop'] = {}
+        publish(repo, commit, [case], {'fixture': result}, workers, store=store)
+        entries = [store.get(path.stem) for path in store.directory.glob('*.json')]
+        row('coordinator-missing', any(entry and entry.get('result') == result and
+            not entry['dependency']['complete'] and 'missing noop observation' in
+            entry['dependency']['unknown_reason'] for entry in entries))
+
+        tree = ast.parse(coordinator.read_text())
+        stage = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'run_stage')
+        row('coordinator-wired', any(isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and
+            node.func.id == 'publish_case_dependencies' for node in ast.walk(stage)))
 
         # Real children in either leg's environment are observed by the outside
         # kernel watch, beyond scripts/ and proof/. The dependency remains unknown
