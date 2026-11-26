@@ -18879,11 +18879,12 @@ def cases():
         "memory=max(max(r['peak_anon_bytes'], r.get('peak_memory_bytes', 0)) for r in runs))",
         ['admission/learning/memory-margin'])
     result[-1]['dir'] = 'scripts'
-    for name, indent, row in [('control', 28, 'baseline'), ('mutant', 16, 'mutant')]:
+    for name, indent, row in [('control', '                            ', 'baseline'),
+                              ('mutant', '                ', 'mutant')]:
         add(362, 'learning362-' + name + '-outcome-name', '115_veldo_0219_measured_admission.py',
             'check_gate_mutations.py',
-            '\n' + ' ' * indent + "assert workers.outcomes[-1]['name'] == name\n",
-            '\n' + ' ' * indent + 'pass\n', ['admission/learning/' + row + '-outcome-name'])
+            '\n' + indent + "assert workers.outcomes[-1]['name'] == name\n",
+            '\n' + indent + 'pass\n', ['admission/learning/' + row + '-outcome-name'])
         result[-1]['dir'] = 'scripts'
     add(362, 'learning362-red-dropped', '115_veldo_0219_measured_admission.py', 'check_gate_mutations.py',
         'if (admission and group_for is not None and reuse is not None',
@@ -19060,14 +19061,17 @@ def cases():
                                                                          'proposal/correction-told']},
      '86_veldo_0127_agent_configuration.py': {'86_veldo_0127_init_bound.py': ['review/init-bound']},
      '78_veldo_0160_account_pool.py': {'78_veldo_0160_account_assets.py': ['install/assets']}}
-    # Only the builtins VELDO-0153's registry audit grants this factory (dict, list, repr, set, sorted, tuple).
+    # Written in the subset VELDO-0153's registry audit evaluates statically and runs with only dict, list,
+    # repr, set, sorted and tuple: one generator per comprehension, no break, and a prefix test by
+    # str.replace on a NUL-anchored copy (NUL never occurs in a row name, so it matches only at the start).
+    # The closures of one parent own disjoint rows, so at most one closure takes a case.
+    def owned(row, prefix):
+        return row == prefix or (prefix[-1:] == '/' and ('\0' + row).replace('\0' + prefix, '', 1) != '\0' + row)
     for case in result:
         for suite, prefixes in closures.get(case['suite'], {}).items():
-            covered = [row for row in case['rows'] for prefix in prefixes
-                       if row == prefix or (prefix.endswith('/') and row.startswith(prefix))]
-            if case['rows'] and set(covered) == set(case['rows']):
+            covered = [row for row in case['rows'] if [prefix for prefix in prefixes if owned(row, prefix)]]
+            if case['rows'] and covered == case['rows']:
                 case['suite'] = suite
-                break
     return result
 
 

@@ -1327,10 +1327,13 @@ def _v208_unconfined_leg():
     whole = sorted(n for n, rows in listed.items() if rows is None)
     # Landing draft: cgroup runtime, traced clients/census, and the B2 receiver boundary.
     proposed = ['157_0358', '114_0113', '158_0359', '113_0114', '113_0111']
+    # Speed round two split six closures out of listed suites; each inherits its parent's entry. The census
+    # closure of 121_0131 opens no browser (a static read of the screens), so it stays confined.
+    confined_splits = ['121_veldo_0131_factory_census']
     expected_whole = sorted([n for n in manifest for short in control_plane + browser + ['65_0067'] + proposed
-                             if n.startswith(short.replace('_', '_veldo_', 1) + '_')])
+                             if n.startswith(short.replace('_', '_veldo_', 1) + '_') and n not in confined_splits])
     expect('VELDO-0208 unconfined-leg/declared-list: ' + repr(sorted(set(whole) ^ set(expected_whole))),
-           document['stages'] == declared_commands and len(expected_whole) == 59 and whole == expected_whole
+           document['stages'] == declared_commands and len(expected_whole) == 65 and whole == expected_whole
            and {n: r for n, r in listed.items() if r} == {'100_veldo_0207_case_reuse': 'strace',
                                                          '101_veldo_0208_landing_reuse': 'strace',
                                                          '48_veldo_0108_relay': 'census'}
