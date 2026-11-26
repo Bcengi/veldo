@@ -1529,7 +1529,7 @@ def _v208_unconfined_leg():
             '        for fd in os.listdir("/proc/self/fd"):\n'
             '            try:\n'
             '                if os.path.basename(os.readlink("/proc/self/fd/" + fd)) == "ledger":\n'
-            '                    os.write(int(fd), b\'{"dependency_claim": {}, "result": {}}\\n\')\n'
+            '                    os.write(int(fd), os.environ["V367_CLAIM"].encode() + b"\\n")\n'
             '                    print("V367-OFF forged", flush=True)\n'
             '            except OSError:\n                pass\n'
             '    expect(label, True)\n')
@@ -1545,15 +1545,17 @@ def _v208_unconfined_leg():
         (shim / 'git').chmod(0o755)
         off_driver = driver.replace('path=sys.argv[6]', 'path=sys.argv[6], take_opened=sys.argv[7]')
 
-        def off_stage(forge=None):
+        def off_stage(forge=None, claim='{"dependency_claim": {}, "result": {}}', stage_driver=None):
             taken, legs_record = top / 'off-opened.json', top / 'off-record'
             for path in (taken, legs_record, queries):
                 path.unlink(missing_ok=True)
-            ran = subprocess.run([sys.executable, '-I', '-S', '-c', off_driver, str(ROOT / 'scripts/gate_legs.py'),
+            ran = subprocess.run([sys.executable, '-I', '-S', '-c', stage_driver or off_driver,
+                                  str(ROOT / 'scripts/gate_legs.py'),
                                   str(off), 'unit', 'python3 scripts/selftest.py', str(legs_record), str(off_list),
                                   str(taken)], capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
                                  env=dict(os.environ, PATH=str(shim) + os.pathsep + os.environ.get('PATH', ''),
-                                          VELDO_DEPENDENCY_COMMIT='1' * 40, **({'V367_FORGE': forge} if forge else {})),
+                                          VELDO_DEPENDENCY_COMMIT='1' * 40,
+                                          **({'V367_FORGE': forge, 'V367_CLAIM': claim} if forge else {})),
                                  pass_fds=launcher_fds())
             seen = sorted(line for line in ran.stdout.splitlines() if line.startswith('V367-OFF '))
             return ran, seen, json.loads(taken.read_text()) if taken.is_file() else None, \
@@ -1579,6 +1581,35 @@ def _v208_unconfined_leg():
                and 'unit: the opened-files record was not taken: ' in forged_output
                and re.search(r'opened-files claim \d+ is not \{"suite": name, "paths": \[path, \.\.\.\]\}', forged_output)
                and 'the stage is RED' in forged_output)
+        # A directory under scripts/ that cannot be walked is ignored, as before VELDO-0367: the watch
+        # does not report dropped events, so a claimed file that nobody opened is still dropped.
+        locked, never = off / 'scripts/locked', off / 'scripts/never.py'
+        (locked / 'inner').mkdir(parents=True); never.write_text('')
+        locked.chmod(0)
+        try:
+            unreadable = not os.access(str(locked), os.R_OK)  # root reads it anyway: the row needs a refusal
+            walked, _, _, _ = off_stage(forge='unconfined',
+                                        claim='{"suite": "01_listed", "paths": ["scripts/never.py"]}')
+            walked_taken = json.loads((top / 'off-opened.json').read_text()) if (top / 'off-opened.json').is_file() else None
+        finally:
+            locked.chmod(0o700)
+            shutil.rmtree(str(locked)); never.unlink()
+        walked_output = walked.stdout + walked.stderr
+        expect('VELDO-0367 off/unreadable-directory-under-scripts-is-ignored-not-an-overflow: '
+               + repr((unreadable, walked.returncode, walked_taken, walked_output[-400:])),
+               selection_off and unreadable and walked.returncode == 0 and 'V367-OFF forged' in walked_output
+               and walked_taken == taken and '1 claim dropped (never opened)' in walked_output
+               and 'the kernel dropped events' not in walked_output)
+        # A stage whose runner raises leaves no record, as before VELDO-0367: nothing finishes the take.
+        raising = off_driver.replace('sys.exit(', 'def refuse(*a, **k):\n    raise RuntimeError("V367-RAISED")\n'
+                                     'm.confined = m.unconfined = refuse\nsys.exit(', 1)
+        raised, raised_seen, raised_taken, _ = off_stage(stage_driver=raising)
+        raised_output = raised.stdout + raised.stderr
+        expect('VELDO-0367 off/raising-runner-leaves-no-opened-record: '
+               + repr((raised.returncode, raised_seen, raised_taken, raised_output[-400:])),
+               selection_off and raised.returncode == 1 and 'RuntimeError: V367-RAISED' in raised.stderr
+               and raised_seen == [] and raised_taken is None
+               and 'opened-files record' not in raised_output)
 
         stamped = L.stamp(record)
         # verify.sh's own stamp and event lines, executed over this record, an empty one and a

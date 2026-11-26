@@ -491,7 +491,7 @@ def _v367_observer():
         import ctypes
         import errno
         fake = G.OpenWatch.__new__(G.OpenWatch)
-        fake.root, fake.fd, fake.overflowed = repo, -1, False
+        fake.root, fake.fd, fake.overflowed, fake.strict = repo, -1, False, True  # as the observing take builds it
         fake.libc = SimpleNamespace(inotify_add_watch=lambda *args: -1)
         ctypes.set_errno(errno.ENOSPC)
         fake._watch(repo, False)

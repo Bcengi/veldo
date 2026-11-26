@@ -641,9 +641,12 @@ class OpenWatch:
     """The files under the candidate's scripts/ and proof/ opened while this watch is held, as the kernel
     reports them to this process. Event driven: the reader thread wakes on an event or on stop()."""
 
-    def __init__(self, root, areas=OPENED_AREAS):
+    def __init__(self, root, areas=OPENED_AREAS, strict=False):
         import ctypes
         self.root = Path(root).resolve()
+        # strict: a directory that could not be walked or watched makes the coverage incomplete. Only the
+        # dependency observation asks for it; the opened-files record ignores both, as it always did.
+        self.strict = strict
         self.libc = ctypes.CDLL(None, use_errno=True)
         self.fd = self.libc.inotify_init1(os.O_CLOEXEC | os.O_NONBLOCK)
         if self.fd < 0:
@@ -661,7 +664,8 @@ class OpenWatch:
             self._watch(Path(directory), late)
 
     def _walk_error(self, error):
-        self.overflowed = True
+        if self.strict:
+            self.overflowed = True
 
     def _watch(self, directory, late):
         wd = self.libc.inotify_add_watch(self.fd, os.fsencode(str(directory)),
@@ -675,7 +679,7 @@ class OpenWatch:
         else:
             import ctypes
             import errno
-            if ctypes.get_errno() != errno.ENOENT:
+            if self.strict and ctypes.get_errno() != errno.ENOENT:
                 self.overflowed = True
 
     def _read(self):
@@ -802,7 +806,7 @@ class TakeOpened:
         self.directory = Path(tempfile.mkdtemp(prefix='veldo-opened-'))
         self.ledger = self.directory / 'ledger'
         self.fd = os.open(str(self.ledger), os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_APPEND | os.O_CLOEXEC, 0o600)
-        self.watch = OpenWatch(root, areas=('.',)) if self.observer else OpenWatch(root)
+        self.watch = OpenWatch(root, areas=('.',), strict=True) if self.observer else OpenWatch(root)
 
     def env(self, env):
         if not self.observer:
