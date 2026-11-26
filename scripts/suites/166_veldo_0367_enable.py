@@ -106,7 +106,9 @@ def _v367_enable():
             row('landing-consumer', E.landing_problem(document, root=repo) is None)
             row('landing-needs-history', E.landing_problem(document) is not None)
             row('landing-counts', E.landing_problem(dict(document, reused={'unit': 0, 'mutation': 0}), root=repo) is not None)
+            row('landing-count-types', E.landing_problem(dict(document, reused={'unit': True, 'mutation': 0}), root=repo) is not None)
             row('landing-force', E.landing_problem(dict(document, force_fresh=True), root=repo) is not None)
+            row('landing-absent-history', E.landing_problem(document, root=top / 'absent') is not None)
             row('landing-missing-evidence', E.landing_problem(dict(commit=third,
                 validation_mode='change-scoped', force_fresh=False, reused={'unit': 0, 'mutation': 0}),
                 root=repo) is not None)

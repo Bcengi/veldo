@@ -11,6 +11,7 @@ import os
 import pwd
 from pathlib import Path
 import stat
+import subprocess
 
 PROVENANCE = 'authority-reuse-stage/v2'
 SCHEMA = 'veldo.reuse/v3'
@@ -225,7 +226,9 @@ def landing_problem(document, *, root=None):
                         counts['unit'] += 1
                     elif coordinates[0:2] == ['case', 'mutation']:
                         counts['mutation'] += 1
-            if (document.get('reused') != counts or type(document.get('force_fresh')) is not bool
+            if (document.get('reused') != counts or
+                    any(type(value) is not int for value in document['reused'].values()) or
+                    type(document.get('force_fresh')) is not bool
                     or document['force_fresh'] and any(i['status'] == 'carried' for i in gate['receipt']['items'])
                     or 'reuse_evidence' in document):
                 raise ValueError('change landing execution counts')
@@ -262,7 +265,7 @@ def landing_problem(document, *, root=None):
                 raise ValueError('declared case key or result differs')
             seen.update((key, identity))
         return None
-    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+    except (OSError, ValueError, TypeError, KeyError, AttributeError, IndexError, subprocess.SubprocessError):
         return 'missing_evidence:gate/authenticated_reuse_required'
 
 
