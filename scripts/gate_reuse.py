@@ -1,5 +1,7 @@
 """Content identities and a private, authenticated, append-only result store."""
 import hashlib
+import contextlib
+import fcntl
 import importlib.util
 import hmac
 import json
@@ -125,9 +127,63 @@ class Store:
         if self.secret is None:
             return None
         try:
+            ledger = self.weekly_read()
+            if key in ledger['revoked']:
+                return None
             return E.record(self.directory, key, self.secret)
         except (OSError, ValueError, TypeError, KeyError):
             return None
+
+    def weekly_read(self):
+        """Mutable authority ledger, separately authenticated; corruption never resets a week.
+
+        One Store directory is the authority endpoint for every host and worktree.
+        A missing/unreachable configured authority is not replaced with a local store.
+        """
+        if self.secret is None or E.probe(self.directory) != self.secret:
+            raise ValueError('weekly authority unavailable')
+        path = self.directory / 'weekly.json'
+        try:
+            document = json.loads(path.read_text())
+        except FileNotFoundError:
+            return dict(schema='veldo.weekly-ledger/v1', repositories={}, revoked=[])
+        payload = document['payload']
+        expected = hmac.new(self.secret, canonical(payload), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(document['mac'], expected):
+            raise ValueError('weekly ledger authentication')
+        if (payload.get('schema') != 'veldo.weekly-ledger/v1'
+                or not isinstance(payload.get('repositories'), dict)
+                or not isinstance(payload.get('revoked'), list)):
+            raise ValueError('weekly ledger schema')
+        return payload
+
+    @contextlib.contextmanager
+    def weekly_transaction(self):
+        """Serialize admission, revocations and ticket outbox; fsync before releasing custody."""
+        if self.secret is None:
+            raise ValueError('weekly authority unavailable')
+        with (self.directory / 'weekly.lock').open('a+b') as lock:
+            os.chmod(lock.name, 0o600)
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            ledger = self.weekly_read()
+            yield ledger
+            payload = canonical(dict(payload=ledger, mac=hmac.new(
+                self.secret, canonical(ledger), hashlib.sha256).hexdigest()))
+            fd, name = tempfile.mkstemp(prefix='.weekly-', dir=self.directory)
+            try:
+                with os.fdopen(fd, 'wb') as stream:
+                    stream.write(payload)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.replace(name, self.directory / 'weekly.json')
+                directory = os.open(self.directory, os.O_RDONLY | os.O_DIRECTORY)
+                try:
+                    os.fsync(directory)
+                finally:
+                    os.close(directory)
+            finally:
+                if os.path.exists(name):
+                    os.unlink(name)
 
     # VELDO-0367 uses a separate namespace; legacy whole-tree records are historical.
     def change_put(self, value):

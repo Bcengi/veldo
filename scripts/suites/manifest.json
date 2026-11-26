@@ -2687,6 +2687,15 @@
     "165_veldo_0367_selection_repairs"
    ],
    "requires_note": "ROOT and expect; private authenticated stores, scratch Git history, controlled workers and tiny nested dispatchers. No live services or clock sites."
+  },
+  {
+   "name": "167_veldo_0367_weekly",
+   "file": "167_veldo_0367_weekly.py",
+   "regions": "VELDO-0367 AC5: weekly admission, process custody, refresh, revocation and durable ticket outbox.",
+   "requires": [
+    "167_veldo_0367_weekly"
+   ],
+   "requires_note": "ROOT and expect only; private authenticated stores, scratch locks and controlled competing Linux processes. No live captures, clocks or services."
   }
  ],
  "resource_capacities": {

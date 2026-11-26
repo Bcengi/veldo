@@ -524,6 +524,190 @@ def enter(argv, root):
             os.close(fd)
 
 
+# Weekly admission is separate from the legacy entry: no existing launcher changes
+# behavior until its host is explicitly enrolled and the common gate switch enables it.
+def weekly_occupancy(config, own_pids=(), proc_root=Path('/proc')):
+    """All-user process census. Unknown visibility is occupied, regardless of CPU use.
+
+    Allowed services are exact executable/cgroup pairs, not process-name patterns.
+    Containers, remote-run slots and agents have processes outside those pairs.
+    Enrollment also requires every launcher to participate in the reservation protocol.
+    """
+    if config.get('enrolled') is not True:
+        return 'host is not enrolled'
+    if config.get('launchers_enrolled') is not True:
+        return 'launchers are not enrolled'
+    allowed = config.get('allowed_system_services', [])
+    try:
+        processes = list(Path(proc_root).iterdir())
+        for process in processes:
+            if not process.name.isdigit() or int(process.name) in own_pids:
+                continue
+            try:
+                stat = (process / 'stat').read_text().rsplit(')', 1)[1].split()
+                if stat[0] == 'Z':
+                    continue
+                # PF_KTHREAD, set by the kernel, cannot be supplied by a user task.
+                if int(stat[6]) & 0x00200000:
+                    continue
+                executable = os.readlink(process / 'exe')
+                group = (process / 'cgroup').read_text().split('::', 1)[1].strip()
+            except FileNotFoundError:
+                if not process.exists():
+                    continue
+                return 'unobservable process ' + process.name
+            if dict(executable=executable, cgroup=group) not in allowed:
+                return 'busy process ' + process.name
+    except (OSError, ValueError, IndexError):
+        return 'unobservable all-user occupancy'
+    return None
+
+
+class WeeklyCustody:
+    """Reserve -> drain -> exclusive lock -> recheck, keeping both locks until cleanup.
+
+    The caller retries acquire on occupancy/lock events, or cancels with close().
+    Enrolled launchers use weekly_workload; they never start beside this reservation.
+    The keeper owns the locks through crash cleanup and durable red settlement.
+    """
+    def __init__(self, lock, host, observe):
+        self.lock, self.host, self.observe = str(lock), host, observe
+        self.reservation = self.fd = self.channel = self.keeper = None
+        self.reason = 'exclusive idle-host admission'
+
+    @staticmethod
+    def _take(path, mode):
+        fd = os.open(path, os.O_RDWR | os.O_CREAT | os.O_CLOEXEC, 0o600)
+        try:
+            fcntl.flock(fd, mode | fcntl.LOCK_NB)
+        except BlockingIOError:
+            os.close(fd)
+            return None
+        return fd
+
+    def acquire(self):
+        if self.reservation is None:
+            self.reservation = self._take(self.lock + '.weekly', fcntl.LOCK_EX)
+        if self.reservation is None:
+            self.reason = 'another weekly caller holds the reservation'
+            return False
+        self.reason = self.observe()
+        if self.reason:
+            return False
+        if self.fd is None:
+            self.fd = self._take(self.lock, fcntl.LOCK_EX)
+        if self.fd is None:
+            self.reason = 'existing work is draining'
+            return False
+        # Work may have appeared between the census and the exclusive lock.
+        return self.admitted(self.host)
+
+    def admitted(self, host):
+        if self.reservation is None or self.fd is None or host != self.host:
+            self.reason = 'exclusive custody missing or wrong host'
+            return False
+        self.reason = self.observe()
+        return self.reason is None
+
+    def guard(self, cleanup, recover):
+        """Fork before starting work. Cleanup names only this run's scope/descendants.
+
+        recover durably settles an interrupted running record, including its outbox.
+        A cleanup/persistence failure retains custody for operator repair.
+        """
+        if not self.admitted(self.host) or self.keeper is not None:
+            raise Refused('weekly guard requires exclusive idle custody')
+        channel, keeper_channel = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+        pid = os.fork()
+        if pid == 0:
+            os.setpgid(0, 0)
+            for number in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+                signal.signal(number, signal.SIG_IGN)
+            channel.close()
+            groups = []
+            try:
+                while True:
+                    message = keeper_channel.recv(4096)
+                    if not message:
+                        break
+                    groups.append(json.loads(message)['pgid'])
+                cleanup(groups)
+                recover()
+            except BaseException as error:
+                print('weekly: custody retained (cleanup/receipt failure: %s)' % error,
+                      file=sys.stderr, flush=True)
+                while True:
+                    signal.pause()
+            finally:
+                keeper_channel.close()
+            os._exit(0)
+        keeper_channel.close()
+        self.channel, self.keeper = channel, pid
+
+    def launch(self, argv, **kwargs):
+        if self.channel is None:
+            raise Refused('weekly keeper required before descendants')
+        parent = os.getpid()
+        return subprocess.Popen(argv, close_fds=True,
+                                preexec_fn=lambda: prepare_child(self.channel, parent), **kwargs)
+
+    def close(self):
+        if self.channel is not None:
+            self.channel.close()
+            self.channel = None
+        if self.keeper is not None:
+            os.waitpid(self.keeper, 0)
+            self.keeper = None
+        for name in ('fd', 'reservation'):
+            fd = getattr(self, name)
+            if fd is not None:
+                os.close(fd)
+                setattr(self, name, None)
+
+
+def weekly_stop_groups(groups):
+    """Fixture/lock-only descendant cleanup. Enrolled production uses stop_scope.
+
+    Wait on kernel process exits, never on a timing guess; only this run's private
+    process groups are signaled. A cgroup is required for workloads that can setsid.
+    """
+    for group in groups:
+        while group_live(group):
+            descriptors = []
+            try:
+                for path in Path('/proc').glob('[0-9]*/stat'):
+                    try:
+                        fields = path.read_text().rsplit(')', 1)[1].split()
+                        if int(fields[2]) == group and fields[0] != 'Z':
+                            descriptors.append(os.pidfd_open(int(path.parent.name)))
+                    except (FileNotFoundError, ProcessLookupError):
+                        continue
+                try:
+                    os.killpg(group, signal.SIGKILL)
+                except ProcessLookupError:
+                    break
+                if descriptors:
+                    select.select(descriptors, [], [])
+            finally:
+                for descriptor in descriptors:
+                    os.close(descriptor)
+
+
+def weekly_workload(lock):
+    """Launcher admission: a shared workload lock or None (wait/go elsewhere).
+
+    Reservation and workload acquisition overlap, closing the admission race.
+    Keep the returned descriptor until the workload's descendants have stopped.
+    """
+    reservation = WeeklyCustody._take(str(lock) + '.weekly', fcntl.LOCK_SH)
+    if reservation is None:
+        return None
+    try:
+        return WeeklyCustody._take(str(lock), fcntl.LOCK_SH)
+    finally:
+        os.close(reservation)
+
+
 def main(argv):
     if argv[:1] == ['--inside']:
         try:

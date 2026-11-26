@@ -15,6 +15,11 @@ VELDO_AUTHORITY=$(cd "$(dirname "$0")/.." && pwd -P)
 # How this gate was started, kept for the host holder (VELDO-0220), which runs it again inside
 # its lock and scope from where it was started.
 VELDO_SELF="$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")"; VELDO_START=$(pwd -P); VELDO_ARGV=("$@")
+# Dormant weekly entry: increment 5 supplies the enabled common gate adapter.
+if [ "${1:-}" = weekly ]; then
+  shift
+  exec python3 -I -S "$VELDO_AUTHORITY/scripts/gate_weekly.py" "$@"
+fi
 git() {
   python3 -I -S "$VELDO_AUTHORITY/.veldo/candidate_git.py" --root "$(pwd -P)" -- "$@"
 }

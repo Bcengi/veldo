@@ -20068,6 +20068,29 @@ def cases():
         "            and False and record['kind'] == 'agent_repository' and record.get('form') in REQUEST_FORMS\n",
         ['ac3/unique-work-request'])
 
+    # VELDO-0367 increment 4: weekly falsifiers run through the single-case coordinator.
+    def weekly367(name, module, old, new, rows):
+        add(367, 'weekly367-' + name, '167_veldo_0367_weekly.py', module, old, new,
+            ['weekly/' + row for row in rows])
+        result[-1]['dir'] = 'scripts'
+        result[-1]['confined_only'] = True
+        result[-1]['siblings'] = True
+
+    weekly367('two-callers', 'gate_weekly.py', "if state['reservation'] is not None:", 'if False:', ['two-callers'])
+    weekly367('weekly-limit', 'gate_weekly.py', "if previous is not None and now - previous < WEEK_SECONDS:\n                return dict(status='waiting', reason='seven-day limit', eligible_at=previous + WEEK_SECONDS)", "if previous is not None and now - previous < 1:\n                return dict(status='waiting', reason='seven-day limit', eligible_at=previous + WEEK_SECONDS)", ['rolling-week'])
+    weekly367('stale-ticket', 'gate_weekly.py', "if state['reservation'] != reservation:", 'if False:', ['stale-ticket'])
+    weekly367('revocation', 'gate_weekly.py', "ledger['revoked'] = sorted(set(ledger['revoked']) | revoked)", "ledger['revoked'] = sorted(set(ledger['revoked']))", ['revocation'])
+    weekly367('dependents', 'gate_weekly.py', "if set(value.get('depends_on', ())) & affected}", 'if False}', ['revocation'])
+    weekly367('ticket-pending', 'gate_weekly.py', "fresh_observations=copy.deepcopy(observations), status='pending')", "fresh_observations=copy.deepcopy(observations), status='delivered')", ['ticket-retry'])
+    weekly367('interruption', 'gate_weekly.py', "return self.red(run_id, [], {'interrupted': True}, uncertain=True)", 'return None', ['crash-revokes'])
+    weekly367('store-revoked', 'gate_reuse.py', "if key in ledger['revoked']:", 'if False:', ['revocation'])
+    weekly367('store-authentication', 'gate_reuse.py', "if not hmac.compare_digest(document['mac'], expected):", 'if False:', ['corrupt-authority'])
+    weekly367('busy-census', 'gate_host.py', 'if dict(executable=executable, cgroup=group) not in allowed:', 'if False:', ['busy-census'])
+    weekly367('enrollment', 'gate_host.py', "if config.get('enrolled') is not True:", 'if False:', ['unenrolled'])
+    weekly367('early-release', 'gate_host.py', '                cleanup(groups)\n                recover()', '                os.close(self.fd)\n                os.close(self.reservation)\n                cleanup(groups)\n                recover()', ['lock-custody', 'receipt-custody'])
+    weekly367('reservation', 'gate_host.py', "reservation = WeeklyCustody._take(str(lock) + '.weekly', fcntl.LOCK_SH)", "reservation = os.open(str(lock) + '.weekly', os.O_RDWR)", ['reservation-blocks-arrivals'])
+    weekly367('shared-run', 'gate_host.py', 'self.fd = self._take(self.lock, fcntl.LOCK_EX)', 'self.fd = self._take(self.lock, fcntl.LOCK_SH)', ['busy-waits'])
+
     return result
 
 
