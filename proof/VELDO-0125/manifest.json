@@ -719,6 +719,10 @@
         "port": "sha256:6f88697a41a6f746c34a89852d5f964d669c2abf61e21b61c4670978233e6795",
         "land": "sha256:f6547a3bb4a610732aef645427bc9680fa9970b5abffdcabd37b47600c028743"
       },
+      "proof/VELDO-0127/codex-live.json": {
+        "port": "sha256:153c09fb51b4fe9187d12e99c13cec7c4a4d60a1e97371d636917ba997e82f27",
+        "land": "sha256:5f992cd0c88d463f7c739f60034f216ee1d43431e255e07fcc41a414a68a02b7"
+      },
       "proof/VELDO-0127/claude-live.json": {
         "port": "sha256:4d8b2b7a838d4530ce5939a1c9786b75780e5ee351354102b47cae6218fdcb33",
         "land": "sha256:39b822c79756029eaba1e2487a74ac51c5805f31f2bcb497c7829fff52c9e799"
