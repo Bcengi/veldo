@@ -14,9 +14,10 @@ THE LEVEL (the design's section 10.1).
           the scheduler's fair share between tasks of one cgroup, which is why the spinners run in
           the SAME cgroup as the suites: between two cgroups the kernel shares a CPU by group, and a
           lone suite process beside a group of spinners would get far more than a quarter.
-  Memory  The leg's cgroup gets the memory.high it is handed: 60 percent of the peak the previous
-          leg recorded for the same set at the same concurrency, or none on the first leg and where
-          the gate has no delegated scope. memory.max is never lowered, so nothing is killed.
+  Memory  The leg's cgroup gets the memory.high it is handed: 60 percent of an explicitly uncapped
+          passing peak for the same set at the same concurrency. A missing or legacy baseline, or
+          a changed set, gets one uncapped bootstrap leg; no delegated scope also means no cap.
+          Capped peaks never replace that baseline. memory.max is never lowered, so nothing is killed.
   Disk    One writer per four CPUs of the set writes, flushes and removes a 256 MiB file, turn by
           turn on each directory it is given (the file systems of the scratch root and of the
           checkout). The file has no name from the moment it exists, so it is gone on every path,
@@ -281,11 +282,11 @@ class Generator:
             self.writers_cgroup = self.scope / ('load-%d-writers' % os.getpid())
             self.cgroup.mkdir()
             self.writers_cgroup.mkdir()
-            memory['applied'] = 'none: no earlier leg recorded a peak for this set'
+            memory['applied'] = 'none: no uncapped baseline for this set'
             if self.memory_high:
                 (self.cgroup / 'memory.high').write_text(str(int(self.memory_high)))
                 memory = {'high': int(self.memory_high),
-                          'applied': '%d percent of the previous peak' % MEMORY_HIGH_PERCENT}
+                          'applied': '%d percent of the uncapped baseline' % MEMORY_HIGH_PERCENT}
         self.memory = memory
         self.counters = mmap.mmap(-1, max(1, self.writers_wanted) * _COUNTER.size)
         for cpu in self.cpus:

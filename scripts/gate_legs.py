@@ -1090,7 +1090,7 @@ def _load_file(times, slots):
 
 
 def read_load(times, slots):
-    """The previous leg's record for this authority and these slots: {set, peak, suites} or {}."""
+    """The previous leg's timings and explicitly uncapped memory baseline, or {}."""
     try:
         item = json.loads(_load_file(times, slots).read_text())
         if item.get('authority') != str(HERE.parent) or not isinstance(item.get('suites'), dict):
@@ -1100,15 +1100,38 @@ def read_load(times, slots):
         return {}
 
 
-def record_load(times, slots, digest, peak, seconds):
-    """Keep what the next leg needs: this set's memory peak and each suite's loaded time."""
+def load_memory_baseline(previous, digest):
+    """Only a peak explicitly measured without this leg's memory.high can set pressure.
+
+    Missing/legacy provenance bootstraps exactly like a new set: one uncapped leg, still
+    under CPU and disk load. Its passing peak establishes the baseline for subsequent
+    legs at MEMORY_HIGH_PERCENT. Capped peaks are observations, never new baselines.
+    The set includes suite/confinement pairs; authority and concurrency key the file.
+    A changed set bootstraps again. Failed runs and runs without a measured peak cannot
+    establish a baseline. No age-based refresh: an unchanged set keeps its baseline.
+    """
+    baseline = previous.get('memory_baseline') or {}
+    if (isinstance(baseline, dict) and baseline.get('set') == digest
+            and 'memory_high' in baseline and baseline['memory_high'] is None
+            and type(baseline.get('peak')) is int and baseline['peak'] > 0):
+        return baseline
+    return None
+
+
+def record_load(times, slots, digest, peak, seconds, memory=None):
+    """Keep timings and observations; only an explicitly uncapped passing peak refreshes pressure."""
     try:
         Path(times).mkdir(mode=0o700, parents=True, exist_ok=True)
         previous = read_load(times, slots)
         suites = dict(previous.get('suites') or {})
         suites.update(seconds)
+        baseline = load_memory_baseline(previous, digest)
+        if (type(peak) is int and peak > 0 and isinstance(memory, dict)
+                and 'high' in memory and memory['high'] is None):
+            baseline = dict(set=digest, peak=peak, memory_high=None)
         item = dict(authority=str(HERE.parent), kind='load-proof', slots=slots, suites=suites,
-                    set=digest if peak else previous.get('set'), peak=peak or previous.get('peak'))
+                    set=digest if peak else previous.get('set'), peak=peak or previous.get('peak'),
+                    memory_baseline=baseline)
         target = _load_file(times, slots)
         fd, pending = tempfile.mkstemp(prefix='.pending-', dir=str(target.parent))
         with os.fdopen(fd, 'w') as handle:
@@ -1227,9 +1250,10 @@ def run_load_proof(root, record, opened=None, baseline=None, path=DECLARATION, t
         legs = [None] if not declaration else ['unconfined'] if name in listed and listed[name] is None \
             else ['confined', 'unconfined'] if name in listed else ['confined']
         tasks += [(name, leg) for leg in legs for _ in range(count if name in changed else 1)]
-    digest = hashlib.sha256('\n'.join(runs_in).encode()).hexdigest()
-    high = int(previous['peak'] * load.MEMORY_HIGH_PERCENT / 100) \
-        if previous.get('set') == digest and isinstance(previous.get('peak'), int) else None
+    digest = hashlib.sha256(json.dumps(sorted(set(tasks))).encode()).hexdigest()
+    memory_baseline = load_memory_baseline(previous, digest)
+    high = memory_baseline['peak'] * load.MEMORY_HIGH_PERCENT // 100 if memory_baseline else None
+    out['memory_baseline'] = memory_baseline
     write_dirs, beside = [tempfile.gettempdir()], None
     try:
         # A directory on the checkout's file system and outside the checkout: nothing a writer does
@@ -1318,7 +1342,7 @@ def run_load_proof(root, record, opened=None, baseline=None, path=DECLARATION, t
         out.update(verdict='FAIL', error=load.NOT_APPLIED)
     if Path(times) != LEG_TIMES or baseline == authority / LOAD_BASELINE:
         peak = out['load']['memory'].get('peak') if out['verdict'] == 'pass' else None
-        record_load(times, slots, digest, peak, seconds)
+        record_load(times, slots, digest, peak, seconds, memory=out['load']['memory'])
     print('   load-proof: %s' % ('pass' if out['verdict'] == 'pass' else 'RED (%s)' % out['error']), flush=True)
     return finish(0 if out['verdict'] == 'pass' else 1)
 

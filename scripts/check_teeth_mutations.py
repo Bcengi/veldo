@@ -18044,6 +18044,7 @@ def cases():
         suite = {
             'load/level-by-construction': leg358,
             'leg/proves-and-blocks': '160_veldo_0358_load_proof.py',
+            'leg/memory-baseline': '160_veldo_0358_load_proof.py',
             'leg/graph-blocks': '160_veldo_0358_load_graph.py',
             'leg/record-taken-by-the-authority': '160_veldo_0358_opened_ledger.py',
         }[rows[0]]
@@ -18068,6 +18069,15 @@ def cases():
         "        pass  # defect: read before the child's completion event\n",
         ['load/level-by-construction'])
     result[-1]['dir'] = 'scripts/suites'
+    load358('load358-capped-peak-ratchet', 'gate_legs.py',
+            "    memory_baseline = load_memory_baseline(previous, digest)\n",
+            "    memory_baseline = (dict(peak=previous['peak']) if previous.get('set') == digest\n"
+            "                       and isinstance(previous.get('peak'), int) else None)\n",
+            ['leg/memory-baseline'])
+    load358('load358-capped-baseline-persisted', 'gate_legs.py',
+            "                and 'high' in memory and memory['high'] is None):\n",
+            "                and 'high' in memory):  # defect: capped measurements refresh pressure\n",
+            ['leg/memory-baseline'])
     load358('load358-red-is-rerun', 'gate_legs.py',
             "                        outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)  # one run is the verdict\n",
             "                        outcome = suite_run(generator, load.HANG, root, name, leg, env, fds)\n"

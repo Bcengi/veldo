@@ -4,6 +4,113 @@ Each closure runs independently; mutation targets retain their original row labe
 """
 
 
+def _v358d_memory_baseline(legs_source):
+    """Exercise successive real leg decisions with deterministic generator measurements."""
+    import importlib.util
+    import json
+    from pathlib import Path
+    import tempfile
+    import types
+
+    spec = importlib.util.spec_from_file_location('v358d_memory_legs', str(legs_source))
+    legs = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(legs)
+    problems = []
+    with tempfile.TemporaryDirectory(prefix='v358-memory-') as directory:
+        top = Path(directory)
+        legs.HERE = top / 'scripts'
+        legs.HERE.mkdir()
+        baseline = top / 'wallclock.json'
+        opened = top / 'opened.json'
+        baseline.write_text('{}')
+        opened.write_text('{}')
+        names, highs, outcomes = ['fx_one'], [], []
+        measurement = dict(peak=1000, readable=True, passing=True, applied=True)
+
+        class Generator:
+            def __init__(self, slots, write_dirs, scope=None, memory_high=None):
+                self.high = memory_high
+                highs.append(memory_high)
+
+            def __enter__(self):
+                return self
+
+            def wrap(self, argv):
+                return ['/bin/true']
+
+            def __exit__(self, *exc):
+                memory = dict(high=self.high)
+                if measurement['readable']:
+                    memory['peak'] = self.high + 16 if self.high else measurement['peak']
+                self.record = dict(memory=memory, applied=measurement['applied'])
+
+        generator = types.SimpleNamespace(Generator=Generator, MEMORY_HIGH_PERCENT=60,
+                                          HANG=None, NOT_APPLIED='load_not_applied', summary=lambda r: [])
+        legs.load_generator = lambda: generator
+        legs.load_inputs = lambda *a: (set(), {n: [] for n in names},
+                                      [(n, 'scripts/suites/' + n + '.py') for n in names], {})
+        legs.suite_run = lambda g, h, r, n, l, e, f: dict(
+            suite=n, leg=l, verdict='pass' if measurement['passing'] else 'FAIL',
+            seconds=1.0, red=[], tail=[])
+
+        def run(store='times', slots=2):
+            code = legs.run_load_proof(top, top / 'record.json', opened=opened, baseline=baseline,
+                                       path=top / 'absent.json', times=top / store, slots=slots)
+            outcomes.append(code)
+            return legs.read_load(top / store, slots)
+
+        # First establish an uncapped baseline; two passing pressured legs must both use 600.
+        run()
+        first = run()
+        second = run()
+        if highs != [None, 600, 600] or outcomes != [0, 0, 0]:
+            problems.append('consecutive legs ratchet: highs=%s exits=%s' % (highs, outcomes))
+        expected = dict(set=second['set'], peak=1000, memory_high=None)
+        if first.get('memory_baseline') != expected or second.get('memory_baseline') != expected:
+            problems.append('capped peak replaced or lost the uncapped baseline')
+
+        # A legacy peak matching THIS set is precisely the host's migration case.
+        legacy = dict(second)
+        legacy.pop('memory_baseline', None)
+        legacy['peak'] = 616
+        target = legs._load_file(top / 'legacy', 2)
+        target.parent.mkdir()
+        target.write_text(json.dumps(legacy))
+        run('legacy')
+        run('legacy')
+        if highs[-2:] != [None, 600]:
+            problems.append('legacy peak became a pressure baseline: %s' % highs[-2:])
+
+        # Explicitly capped provenance is no better than legacy provenance.
+        capped = dict(legacy, memory_baseline=dict(set=legacy['set'], peak=616, memory_high=600))
+        target.write_text(json.dumps(capped))
+        run('legacy')
+        if highs[-1] is not None:
+            problems.append('a baseline measured under a cap was trusted')
+
+        # A changed set and a different concurrency each require a fresh uncapped measurement.
+        names.append('fx_two')
+        measurement['peak'] = 2000
+        run()
+        run()
+        run(slots=3)
+        if highs[-3:] != [None, 1200, None]:
+            problems.append('changed set/concurrency did not refresh: %s' % highs[-3:])
+
+        # Neither a failed bootstrap, absent peak nor failed generator can establish pressure.
+        for field in ('passing', 'readable', 'applied'):
+            measurement[field] = False
+            run(field)
+            measurement[field] = True
+            run(field)
+            run(field)
+            if highs[-3:] != [None, None, 1200]:
+                problems.append('%s bootstrap established a baseline: %s' % (field, highs[-3:]))
+
+    expect('VELDO-0358 leg/memory-baseline' + (': ' + '; '.join(problems) if problems else ''),
+           not problems)
+
+
 def _v358d_load_proof():
     import importlib.util
     import json
@@ -210,6 +317,8 @@ def _v358d_load_proof():
         legs.judge(['selftest (PARTIAL, 1 of 5 suites): 0 passed, 0 failed in 0.10s'], 2, False)[0] != 'FAIL'
         and 'a suite process that asserted nothing is not red',
         legs.judge([], None, True)[0] != 'hung' and 'a silent suite process is not hung'])
+
+    _v358d_memory_baseline(legs_source)
 
     shutil.rmtree(str(top), ignore_errors=True)
 
