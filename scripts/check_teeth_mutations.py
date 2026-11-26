@@ -20096,6 +20096,13 @@ def cases():
         "gate = changes.publish_gate(root, self.store, self.repository, inventory, receipt)",
         "gate = changes.sealed(changes.GATE, repository=self.repository, inventory=inventory, receipt=receipt, status='green', complete=True)",
         ['green-refresh'])
+    weekly367('unknown-carry', 'gate_changes.py',
+        "require(dependency['complete'], 'unknown dependency')",
+        "require(True, 'unknown dependency')", ['unknown-always-runs'])
+    weekly367('unknown-seed', 'gate_weekly.py',
+        '            changes.item_evidence(self.store, item)',
+        "            changes.require(changes.item_evidence(self.store, item)['complete'], 'unknown seed')",
+        ['unknown-seed-green'])
     # VELDO-0367 increment 5: landing reopens the complete carried baseline chain.
     def enable367(name, module, old, new, rows, directory='scripts'):
         add(367, 'enable367-' + name, '166_veldo_0367_enable.py', module, old, new,

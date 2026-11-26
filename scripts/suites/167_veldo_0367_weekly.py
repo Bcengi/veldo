@@ -16,7 +16,8 @@ def _v367_weekly():
 
     sources = {'gate_weekly.py': ROOT / "scripts" / "gate_weekly.py",
                'gate_host.py': ROOT / "scripts" / "gate_host.py",
-               'gate_reuse.py': ROOT / "scripts" / "gate_reuse.py"}
+               'gate_reuse.py': ROOT / "scripts" / "gate_reuse.py",
+               'gate_changes.py': ROOT / "scripts" / "gate_changes.py"}
 
     def load(path):
         spec = importlib.util.spec_from_file_location('weekly367_' + path.stem, path)
@@ -42,7 +43,6 @@ def _v367_weekly():
         repo.mkdir()
         for name, source in sources.items():
             shutil.copyfile(source, authority / 'scripts' / name)
-        shutil.copyfile(ROOT / 'scripts/gate_changes.py', authority / 'scripts/gate_changes.py')
         shutil.copyfile(ROOT / '.veldo/reuse_evidence.py', authority / '.veldo/reuse_evidence.py')
         W, H, R, C = (load(authority / 'scripts' / name) for name in
                        ('gate_weekly.py', 'gate_host.py', 'gate_reuse.py', 'gate_changes.py'))
@@ -271,6 +271,79 @@ signal.pause()
             gate['receipt']['items'][0]['source_commit'] == head and
             store.weekly_read()['repositories']['refresh']['runs'][fresh['run_id']]['status'] == 'green')
         holder.close()
+        # A passing confined item remains unknown; its complete sibling can carry.
+        unknown_id = C.identity('suite', 'unit', 'confined', 'unknown')
+        mixed_inventory = C.inventory([*inventory['items'], dict(item_id=unknown_id,
+            state='required', definition_digest=C.digest('confined'), reason=None)])
+        unknown = C.sealed(C.DEPENDENCY, item_id=unknown_id, observed_commit=head,
+            paths=['input'], directories=[], absent_paths=[], runtime_digest=C.digest('runtime'),
+            complete=False, unknown_reason='confined runner: native observation unavailable')
+        unknown_result = C.sealed(C.RESULT, item_id=unknown_id, source_commit=head,
+            status='passed', complete=True, dependency_record_digest=unknown['record_digest'])
+        assert store.change_put(unknown) and store.change_put(unknown_result)
+        unknown_entry = dict(item_id=unknown_id, status='executed',
+            dependency_record_digest=unknown['record_digest'], result_digest=unknown_result['record_digest'],
+            source_commit=head, source_gate_digest=None)
+        mixed_receipt = C.sealed(C.RECEIPT, candidate_commit=head, baseline_commit=None,
+            baseline_record_digest=None, changed_paths_digest=C.digest(None),
+            inventory_digest=mixed_inventory['record_digest'], items=[entry, unknown_entry])
+        mixed = W.Weekly(store, 'mixed')
+        holder = H.WeeklyCustody(top / 'mixed.lock', 'pc2', lambda: None)
+        assert holder.acquire()
+        pending = mixed.request(head, 'pc2', 0)
+        started = mixed.start(pending, 0, holder, {})
+        mixed_gate = None
+        try:
+            mixed_gate = mixed.green(started['run_id'], repo, mixed_inventory, mixed_receipt)
+        except ValueError:
+            pass
+        row('unknown-seed-green', mixed_gate is not None and mixed_gate['status'] == 'green' and
+            store.get(unknown['record_digest']) == unknown)
+        if mixed_gate is None:
+            # Keep the independent selector rows observable after a settlement defect.
+            # The unknown-seed-green row above remains red.
+            mixed_gate = C.publish_gate(repo, store, 'mixed', mixed_inventory, mixed_receipt)
+        holder.close()
+        (repo / 'unrelated').write_text('edit')
+        git('add', '.')
+        git('-c', 'user.name=Dmitry Grinberg', '-c', 'user.email=dmitry@bcengi.com',
+            'commit', '-qm', 'unrelated')
+        next_head = git('rev-parse', 'HEAD')
+        selected = C.select(repo, store, 'mixed', next_head, mixed_inventory,
+            {item: dep['runtime_digest'], unknown_id: unknown['runtime_digest']})
+        choices = {i['item_id']: i for i in selected['items']}
+        row('unknown-always-runs', choices[unknown_id]['status'] == 'run' and
+            choices[unknown_id]['reason'] == 'unknown dependency')
+        row('complete-sibling-carries', choices[item]['status'] == 'carried' and
+            choices[item]['evidence']['source_gate_digest'] == mixed_gate['record_digest'])
+        forged = dict(selected, items=[dict(i, status='carried', evidence=dict(unknown_entry,
+            status='carried', source_gate_digest=mixed_gate['record_digest']))
+            if i['item_id'] == unknown_id else i for i in selected['items']])
+        row('unknown-carry-rejected', refused(lambda: C.publish_gate(repo, store, 'mixed',
+            mixed_inventory, C.assemble(forged, {}))))
+        refreshed_unknown = C.sealed(C.DEPENDENCY, **dict(
+            {k: v for k, v in unknown.items() if k not in ('schema', 'record_digest')},
+            observed_commit=next_head))
+        refreshed_result = C.sealed(C.RESULT, item_id=unknown_id, source_commit=next_head,
+            status='passed', complete=True, dependency_record_digest=refreshed_unknown['record_digest'])
+        assert store.change_put(refreshed_unknown) and store.change_put(refreshed_result)
+        refreshed_entry = dict(unknown_entry, source_commit=next_head,
+            dependency_record_digest=refreshed_unknown['record_digest'], result_digest=refreshed_result['record_digest'])
+        refreshed_plan = dict(selected, items=[dict(i, status='run', evidence=None)
+            if i['item_id'] == unknown_id else i for i in selected['items']])
+        later_gate = C.publish_gate(repo, store, 'mixed', mixed_inventory,
+            C.assemble(refreshed_plan, {unknown_id: refreshed_entry}))
+        (repo / 'unrelated').write_text('another edit')
+        git('add', '.')
+        git('-c', 'user.name=Dmitry Grinberg', '-c', 'user.email=dmitry@bcengi.com',
+            'commit', '-qm', 'another unrelated edit')
+        later = C.select(repo, store, 'mixed', git('rev-parse', 'HEAD'), mixed_inventory,
+            {item: dep['runtime_digest'], unknown_id: unknown['runtime_digest']})
+        row('unknown-runs-after-refresh', later_gate['status'] == 'green' and
+            {i['item_id']: i['status'] for i in later['items']} ==
+            {item: 'carried', unknown_id: 'run'} and
+            store.get(refreshed_unknown['record_digest'])['unknown_reason'] == unknown['unknown_reason'])
+        git('checkout', '-q', '--detach', head)
         # The dormant adapter stops only its own work and persists red on intrusion.
         intrusion = W.Weekly(store, 'intrusion')
         pending = intrusion.request(head, 'pc2', 0)

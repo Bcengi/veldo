@@ -198,9 +198,9 @@ class Weekly:
                 continue
             if item['status'] != 'executed' or item['source_commit'] != run['commit']:
                 raise ValueError('weekly fresh execution required')
-            dep = changes.item_evidence(self.store, item)
-            if not dep['complete']:
-                raise ValueError('weekly complete observations required')
+            # Completeness controls later carry eligibility, never this verdict.
+            # Preserve unknown observations and their reasons exactly as recorded.
+            changes.item_evidence(self.store, item)
             result = self.store.get(item['result_digest'])
             if result.get('execution_record_digest'):
                 execution = self.store.get(result['execution_record_digest'])
