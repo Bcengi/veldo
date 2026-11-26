@@ -1,0 +1,91 @@
+{
+  "run": "rr20261126121122-8529",
+  "runs": [
+    {
+      "mode": "off",
+      "suite": "watchdog_probe",
+      "wall": 0.0191477807238698,
+      "supervisor_cpu": 0.0035914810000000005,
+      "worker_cpu": 0.015022,
+      "peak_worker_rss_kib": 22240,
+      "exit": 0,
+      "notifications": {},
+      "errors": {},
+      "clone_flags": {},
+      "tids": 0,
+      "distinct_observations": 0,
+      "journal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service_cpu": 0.0,
+      "coverage": "unknown",
+      "cpu": 0.018613481,
+      "journal_bytes": 0,
+      "supervisor_rss_kib": 28332,
+      "kernel": "7.0.0-38-generic",
+      "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+      "host": "dmitry-pc",
+      "load": [
+        2.67529296875,
+        5.58740234375,
+        4.46435546875
+      ],
+      "prototype_sha256": "a55b1efb66702079aab328a08137118d14c4746ccc005d0046486106628cd18b",
+      "rep": 0,
+      "output": "PROTOTYPE confinement-denial passed\nPROTOTYPE TracerPid:\t0\n{\"before\": 1, \"after\": 2}\n"
+    },
+    {
+      "mode": "on",
+      "suite": "watchdog_probe",
+      "wall": 0.030155581887811422,
+      "supervisor_cpu": 0.014272616999999998,
+      "worker_cpu": 0.015126,
+      "peak_worker_rss_kib": 13820,
+      "exit": 0,
+      "notifications": {
+        "read": 56,
+        "close": 66,
+        "landlock_create_ruleset": 1,
+        "newfstatat": 152,
+        "openat": 69,
+        "landlock_add_rule": 16,
+        "landlock_restrict_self": 1,
+        "write": 3,
+        "fstat": 74,
+        "ioctl": 29,
+        "execve": 1,
+        "mmap": 34,
+        "access": 1,
+        "pread64": 2,
+        "mprotect": 9,
+        "munmap": 4,
+        "readlink": 2,
+        "getdents64": 24,
+        "fcntl": 4,
+        "getcwd": 12,
+        "clone3": 1
+      },
+      "errors": {},
+      "clone_flags": {
+        "4001536": 1
+      },
+      "tids": 2,
+      "distinct_observations": 177,
+      "journal_sha256": "7dd789c57fc58d14a74609213743ce489626dac0482e904c67ea227edb31f52a",
+      "service_cpu": 0.008805294999999989,
+      "coverage": "unknown",
+      "cpu": 0.029398617,
+      "journal_bytes": 115784,
+      "supervisor_rss_kib": 19932,
+      "kernel": "7.0.0-38-generic",
+      "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+      "host": "dmitry-pc",
+      "load": [
+        2.67529296875,
+        5.58740234375,
+        4.46435546875
+      ],
+      "prototype_sha256": "a55b1efb66702079aab328a08137118d14c4746ccc005d0046486106628cd18b",
+      "rep": 0,
+      "output": "PROTOTYPE confinement-denial passed\nPROTOTYPE TracerPid:\t0\n{\"before\": 1, \"after\": 2}\n"
+    }
+  ]
+}

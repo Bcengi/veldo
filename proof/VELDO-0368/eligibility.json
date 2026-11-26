@@ -1,0 +1,812 @@
+{
+  "confined_suites": 148,
+  "groups": {
+    "confined_shared_runner_threads": {
+      "cases": 2874,
+      "control_seconds": 21543.911139043048,
+      "controls": 1000,
+      "mutant_seconds": 57707.38213550206,
+      "share_all_worker_percent": 47.89254524760376,
+      "share_target_worker_percent": 87.05648668141724,
+      "total_seconds": 79251.29327454511
+    },
+    "unconfined_tracing_exclusions": {
+      "cases": 51,
+      "control_seconds": 6937.382123888005,
+      "controls": 32,
+      "mutant_seconds": 4845.65908437781,
+      "share_all_worker_percent": 7.120638804799231,
+      "share_percent": 7.120638804799231,
+      "share_target_worker_percent": 12.943513318582765,
+      "total_seconds": 11783.041208265815
+    }
+  },
+  "historical_dispatcher_sha256": "c6396912f82555b084bd2f4f6d26d7f12be26d4061faa2a8755d9f2e935d3694",
+  "historical_observer_sha256": "e3982e6d0ba5ce976b50190e845ee6fcb39c4998b36e5c90f4d236e3247daccf",
+  "historical_waits_sha256": "e78317accd5ff88da08d9a2f5b682341e5495be72fefc7c8c3b2b8ef55f95e9a",
+  "historical_worker_sha256": "8701dbf945dcaa00e25347c2e9a7edf07d0a2e7b76e144f82f22050293785f8a",
+  "method": "Static mandatory mutation_observer faulthandler watchdog path joined to actual historical worker legs; controls counted once by their own suite and leg. No extrapolation from sampled suites; no historical syscall traces.",
+  "newly_eligible_cases": 0,
+  "newly_eligible_worker_seconds": 0.0,
+  "original_measurement": {
+    "groups": {
+      "confined": {
+        "cases": 2874,
+        "control_seconds": 21543.911139043048,
+        "controls": 1000,
+        "mutant_seconds": 57707.38213550206,
+        "share_percent": 47.89254524760376,
+        "total_seconds": 79251.29327454511
+      },
+      "nested_or_excluded": {
+        "cases": 51,
+        "control_seconds": 6937.382123888005,
+        "controls": 32,
+        "mutant_seconds": 4845.65908437781,
+        "share_percent": 7.120638804799231,
+        "total_seconds": 11783.041208265815
+      },
+      "unconfined_compatible": {
+        "cases": 1098,
+        "control_seconds": 19588.26861938648,
+        "controls": 440,
+        "mutant_seconds": 54854.70211266866,
+        "share_percent": 44.98681594759701,
+        "total_seconds": 74442.97073205514
+      }
+    },
+    "registered": 4023,
+    "source_line": 44525,
+    "stage_elapsed": 13717.929848212283,
+    "total_worker_seconds": 165477.30521486606
+  },
+  "receipt_commit": "55b511908",
+  "receipt_sha256": "cfd3f062551d2e9286da626c0edd71f26cb3677749bfc8509f1cc26a94306904",
+  "source": "/home/dmitry/projects/myday/research/gate-stamps/cand-1122-55b511908-verify.log",
+  "source_line": 44525,
+  "still_unknown_cases": 2925,
+  "still_unknown_seconds": 91034.33448281093,
+  "still_unknown_target_percent": 100.0,
+  "suites": {
+    "102_veldo_0210_agent_profile_runtime.py": {
+      "cases": 2,
+      "controls": 2,
+      "worker_seconds": 71.62806372903287
+    },
+    "103_veldo_0142_git_identities.py": {
+      "cases": 15,
+      "controls": 14,
+      "worker_seconds": 1143.8991236933507
+    },
+    "104_veldo_0164_scoped_reads.py": {
+      "cases": 13,
+      "controls": 8,
+      "worker_seconds": 84.99445166764781
+    },
+    "107_veldo_0153_identity_push.py": {
+      "cases": 19,
+      "controls": 10,
+      "worker_seconds": 217.9635449005291
+    },
+    "108_veldo_0153_executor_profile.py": {
+      "cases": 3,
+      "controls": 6,
+      "worker_seconds": 7.957101248670369
+    },
+    "109_veldo_0161_adoption.py": {
+      "cases": 53,
+      "controls": 10,
+      "worker_seconds": 3297.6645697788335
+    },
+    "111_veldo_0214_first_use_budget.py": {
+      "cases": 7,
+      "controls": 4,
+      "worker_seconds": 15.298927830997854
+    },
+    "112_veldo_0215_case_deadlines.py": {
+      "cases": 27,
+      "controls": 8,
+      "worker_seconds": 56.09328918159008
+    },
+    "113_veldo_0117_domain_store.py": {
+      "cases": 10,
+      "controls": 8,
+      "worker_seconds": 483.04357548151165
+    },
+    "113_veldo_0145_ui.py": {
+      "cases": 7,
+      "controls": 8,
+      "worker_seconds": 127.36825878359377
+    },
+    "113_veldo_0220_gate_host.py": {
+      "cases": 4,
+      "controls": 4,
+      "worker_seconds": 50.5998517642729
+    },
+    "114_veldo_0216_concurrent_stages.py": {
+      "cases": 4,
+      "controls": 4,
+      "worker_seconds": 271.571469923947
+    },
+    "115_veldo_0219_measured_admission.py": {
+      "cases": 11,
+      "controls": 8,
+      "worker_seconds": 288.6549268863164
+    },
+    "123_veldo_0174_conversations.py": {
+      "cases": 7,
+      "controls": 6,
+      "worker_seconds": 460.64964720094576
+    },
+    "125_veldo_0230_engine_census.py": {
+      "cases": 7,
+      "controls": 6,
+      "worker_seconds": 179.02000283496454
+    },
+    "127_veldo_0231_run_flags.py": {
+      "cases": 4,
+      "controls": 8,
+      "worker_seconds": 373.98735613329336
+    },
+    "127_veldo_0241_unit_workflows.py": {
+      "cases": 3,
+      "controls": 6,
+      "worker_seconds": 50.42285065446049
+    },
+    "127_veldo_0254_secret_scan.py": {
+      "cases": 3,
+      "controls": 4,
+      "worker_seconds": 67.80340893799439
+    },
+    "127_veldo_0259_installation.py": {
+      "cases": 11,
+      "controls": 8,
+      "worker_seconds": 671.3042270508595
+    },
+    "128_veldo_0235_land_locally.py": {
+      "cases": 4,
+      "controls": 4,
+      "worker_seconds": 150.71911597810686
+    },
+    "128_veldo_0247_check_join.py": {
+      "cases": 4,
+      "controls": 6,
+      "worker_seconds": 164.96954816952348
+    },
+    "129_veldo_0239_batch_landing.py": {
+      "cases": 7,
+      "controls": 4,
+      "worker_seconds": 375.7731330888346
+    },
+    "129_veldo_0247_line.py": {
+      "cases": 2,
+      "controls": 2,
+      "worker_seconds": 9.048572433181107
+    },
+    "129_veldo_0260_checkout_in_step.py": {
+      "cases": 7,
+      "controls": 6,
+      "worker_seconds": 516.8522388525307
+    },
+    "130_veldo_0176_conversation_history.py": {
+      "cases": 5,
+      "controls": 4,
+      "worker_seconds": 382.8976535126567
+    },
+    "130_veldo_0296_space_section.py": {
+      "cases": 5,
+      "controls": 2,
+      "worker_seconds": 5.222071990836412
+    },
+    "131_veldo_0175_conversation_replies.py": {
+      "cases": 5,
+      "controls": 8,
+      "worker_seconds": 177.74845182383433
+    },
+    "131_veldo_0184_file_memory.py": {
+      "cases": 7,
+      "controls": 8,
+      "worker_seconds": 2235.735082111787
+    },
+    "131_veldo_0338_project_space_file.py": {
+      "cases": 4,
+      "controls": 2,
+      "worker_seconds": 3.987190659623593
+    },
+    "132_veldo_0175_conversation_routes.py": {
+      "cases": 4,
+      "controls": 6,
+      "worker_seconds": 567.3968491819687
+    },
+    "132_veldo_0297_space_ledger.py": {
+      "cases": 11,
+      "controls": 2,
+      "worker_seconds": 43.7631338336505
+    },
+    "133_veldo_0178_conversation_api.py": {
+      "cases": 5,
+      "controls": 4,
+      "worker_seconds": 64.41535226628184
+    },
+    "134_veldo_0331_space_mode.py": {
+      "cases": 11,
+      "controls": 8,
+      "worker_seconds": 49.61650460399687
+    },
+    "135_veldo_0298_space_kinds.py": {
+      "cases": 7,
+      "controls": 2,
+      "worker_seconds": 5.898429155815393
+    },
+    "136_veldo_0180_conversation_projects.py": {
+      "cases": 6,
+      "controls": 6,
+      "worker_seconds": 238.65818003891036
+    },
+    "136_veldo_0299_space_probe.py": {
+      "cases": 18,
+      "controls": 2,
+      "worker_seconds": 47.81316451495513
+    },
+    "137_veldo_0181_conversation_decisions.py": {
+      "cases": 6,
+      "controls": 6,
+      "worker_seconds": 228.14197450922802
+    },
+    "137_veldo_0330_space_rules.py": {
+      "cases": 6,
+      "controls": 2,
+      "worker_seconds": 25.18897091690451
+    },
+    "138_veldo_0300_space_remove.py": {
+      "cases": 27,
+      "controls": 4,
+      "worker_seconds": 104.15577572537586
+    },
+    "139_veldo_0301_space_signal.py": {
+      "cases": 14,
+      "controls": 6,
+      "worker_seconds": 62.03849445376545
+    },
+    "140_veldo_0345_space_keep.py": {
+      "cases": 22,
+      "controls": 8,
+      "worker_seconds": 291.20295459823683
+    },
+    "141_veldo_0344_process_reader.py": {
+      "cases": 41,
+      "controls": 6,
+      "worker_seconds": 376.66943983966485
+    },
+    "142_veldo_0303_space_paths.py": {
+      "cases": 43,
+      "controls": 12,
+      "worker_seconds": 928.4549329509027
+    },
+    "143_veldo_0305_space_census.py": {
+      "cases": 20,
+      "controls": 2,
+      "worker_seconds": 157.1062919567339
+    },
+    "144_veldo_0306_space_docker.py": {
+      "cases": 29,
+      "controls": 12,
+      "worker_seconds": 272.5430873828009
+    },
+    "145_veldo_0307_space_docker_ownership.py": {
+      "cases": 37,
+      "controls": 10,
+      "worker_seconds": 134.45203711884096
+    },
+    "146_veldo_0308_run_finished.py": {
+      "cases": 39,
+      "controls": 8,
+      "worker_seconds": 848.7365035968833
+    },
+    "147_veldo_0310_landed_contained.py": {
+      "cases": 22,
+      "controls": 4,
+      "worker_seconds": 1069.428476379253
+    },
+    "148_veldo_0311_git_hooks.py": {
+      "cases": 25,
+      "controls": 6,
+      "worker_seconds": 452.30566891282797
+    },
+    "149_veldo_0312_ticket_ended.py": {
+      "cases": 32,
+      "controls": 8,
+      "worker_seconds": 563.2288491385989
+    },
+    "150_veldo_0329_hook_install.py": {
+      "cases": 18,
+      "controls": 2,
+      "worker_seconds": 421.8373617576435
+    },
+    "150_veldo_0350_end_write.py": {
+      "cases": 13,
+      "controls": 4,
+      "worker_seconds": 117.90031985705718
+    },
+    "151_veldo_0313_space_run.py": {
+      "cases": 45,
+      "controls": 4,
+      "worker_seconds": 384.17786288959906
+    },
+    "153_veldo_0302_space_creators.py": {
+      "cases": 12,
+      "controls": 10,
+      "worker_seconds": 106.48527567274868
+    },
+    "153_veldo_0309_gate_space.py": {
+      "cases": 20,
+      "controls": 4,
+      "worker_seconds": 1512.7074772925116
+    },
+    "153_veldo_0314_session_hooks.py": {
+      "cases": 20,
+      "controls": 6,
+      "worker_seconds": 144.92859776876867
+    },
+    "153_veldo_0323_hook_events.py": {
+      "cases": 16,
+      "controls": 10,
+      "worker_seconds": 521.9934985502623
+    },
+    "153_veldo_0328_images.py": {
+      "cases": 14,
+      "controls": 4,
+      "worker_seconds": 49.89850628981367
+    },
+    "153_veldo_0333_leg_time_store.py": {
+      "cases": 6,
+      "controls": 2,
+      "worker_seconds": 5.788308245129883
+    },
+    "153_veldo_0336_run_worktree.py": {
+      "cases": 11,
+      "controls": 10,
+      "worker_seconds": 234.6185918818228
+    },
+    "153_veldo_0337_verdict_recorded.py": {
+      "cases": 22,
+      "controls": 18,
+      "worker_seconds": 586.3438482321799
+    },
+    "153_veldo_0341_docker_protection.py": {
+      "cases": 15,
+      "controls": 4,
+      "worker_seconds": 40.5099880984053
+    },
+    "154_veldo_0324_batch_sandbox.py": {
+      "cases": 19,
+      "controls": 10,
+      "worker_seconds": 156.53397515323013
+    },
+    "154_veldo_0335_released.py": {
+      "cases": 14,
+      "controls": 8,
+      "worker_seconds": 109.09942707652226
+    },
+    "155_veldo_0304_space_boundary.py": {
+      "cases": 43,
+      "controls": 50,
+      "worker_seconds": 995.4319530138746
+    },
+    "156_veldo_0315_reconcile.py": {
+      "cases": 26,
+      "controls": 10,
+      "worker_seconds": 2856.953237515874
+    },
+    "157_veldo_0206_suite_reuse.py": {
+      "cases": 37,
+      "controls": 8,
+      "worker_seconds": 1209.8135390286334
+    },
+    "157_veldo_0217_declarations.py": {
+      "cases": 14,
+      "controls": 10,
+      "worker_seconds": 60.90387647273019
+    },
+    "157_veldo_0221_suite_shards.py": {
+      "cases": 18,
+      "controls": 6,
+      "worker_seconds": 368.7511706314981
+    },
+    "157_veldo_0253_configuration.py": {
+      "cases": 19,
+      "controls": 12,
+      "worker_seconds": 566.4114001677372
+    },
+    "157_veldo_0316_space_admission.py": {
+      "cases": 16,
+      "controls": 8,
+      "worker_seconds": 180.05388300167397
+    },
+    "157_veldo_0359_run_query.py": {
+      "cases": 16,
+      "controls": 8,
+      "worker_seconds": 341.2923824475147
+    },
+    "158_veldo_0224_stale_declarations.py": {
+      "cases": 6,
+      "controls": 6,
+      "worker_seconds": 104.29083991516382
+    },
+    "158_veldo_0258_outside_calls.py": {
+      "cases": 14,
+      "controls": 14,
+      "worker_seconds": 854.4875388201326
+    },
+    "158_veldo_0334_space_freed.py": {
+      "cases": 15,
+      "controls": 8,
+      "worker_seconds": 265.90557519486174
+    },
+    "158_veldo_0358_census.py": {
+      "cases": 13,
+      "controls": 6,
+      "worker_seconds": 232.68073300318792
+    },
+    "159_veldo_0218_reuse_audit.py": {
+      "cases": 3,
+      "controls": 4,
+      "worker_seconds": 379.26965082110837
+    },
+    "159_veldo_0317_no_space.py": {
+      "cases": 15,
+      "controls": 8,
+      "worker_seconds": 301.9987141392194
+    },
+    "160_veldo_0358_load_graph.py": {
+      "cases": 1,
+      "controls": 2,
+      "worker_seconds": 5.8579958896152675
+    },
+    "160_veldo_0358_load_leg.py": {
+      "cases": 4,
+      "controls": 4,
+      "worker_seconds": 3085.923518671654
+    },
+    "160_veldo_0358_load_proof.py": {
+      "cases": 2,
+      "controls": 4,
+      "worker_seconds": 68.40429237345234
+    },
+    "160_veldo_0358_opened_ledger.py": {
+      "cases": 5,
+      "controls": 8,
+      "worker_seconds": 127.76994092436507
+    },
+    "161_veldo_0347_space_work.py": {
+      "cases": 18,
+      "controls": 10,
+      "worker_seconds": 134.73814939474687
+    },
+    "161_veldo_0360_failfast.py": {
+      "cases": 43,
+      "controls": 2,
+      "worker_seconds": 137.01403847010806
+    },
+    "38_veldo_0025_membership.py": {
+      "cases": 6,
+      "controls": 6,
+      "worker_seconds": 63.50239165360108
+    },
+    "44_veldo_0105_startline.py": {
+      "cases": 4,
+      "controls": 2,
+      "worker_seconds": 16.505382630974054
+    },
+    "46_veldo_0029_enrollment.py": {
+      "cases": 1,
+      "controls": 2,
+      "worker_seconds": 2.643885262776166
+    },
+    "47_veldo_0107_ipc.py": {
+      "cases": 14,
+      "controls": 2,
+      "worker_seconds": 24.85896936431527
+    },
+    "48_veldo_0108_relay.py": {
+      "cases": 18,
+      "controls": 4,
+      "worker_seconds": 367.2527060220018
+    },
+    "49_veldo_0109_unavailable.py": {
+      "cases": 2,
+      "controls": 2,
+      "worker_seconds": 4.340960276313126
+    },
+    "54_veldo_0118_grammar.py": {
+      "cases": 10,
+      "controls": 4,
+      "worker_seconds": 65.1837201109156
+    },
+    "55_veldo_0119_agreement.py": {
+      "cases": 6,
+      "controls": 4,
+      "worker_seconds": 49.272693370468915
+    },
+    "56_veldo_0027_signing.py": {
+      "cases": 24,
+      "controls": 4,
+      "worker_seconds": 226.03682152973488
+    },
+    "57_veldo_0120_policygrammar.py": {
+      "cases": 6,
+      "controls": 6,
+      "worker_seconds": 168.98390370141715
+    },
+    "58_veldo_0028_effects.py": {
+      "cases": 72,
+      "controls": 8,
+      "worker_seconds": 4495.309349004179
+    },
+    "58_veldo_0031_claims.py": {
+      "cases": 6,
+      "controls": 4,
+      "worker_seconds": 48.955532499123365
+    },
+    "58_veldo_0035_snapshots.py": {
+      "cases": 12,
+      "controls": 6,
+      "worker_seconds": 346.13033931702375
+    },
+    "58_veldo_0036_reservations.py": {
+      "cases": 20,
+      "controls": 4,
+      "worker_seconds": 635.201486281585
+    },
+    "58_veldo_0046_notifications.py": {
+      "cases": 18,
+      "controls": 2,
+      "worker_seconds": 48.06896228995174
+    },
+    "59_veldo_0031_review.py": {
+      "cases": 13,
+      "controls": 8,
+      "worker_seconds": 158.68145797168836
+    },
+    "59_veldo_0037_aliases.py": {
+      "cases": 66,
+      "controls": 8,
+      "worker_seconds": 3944.0303767626174
+    },
+    "59_veldo_0043_graph.py": {
+      "cases": 61,
+      "controls": 8,
+      "worker_seconds": 860.8111571935005
+    },
+    "60_veldo_0052_eligibility.py": {
+      "cases": 49,
+      "controls": 18,
+      "worker_seconds": 605.1674474566244
+    },
+    "60_veldo_0053_architecture.py": {
+      "cases": 53,
+      "controls": 8,
+      "worker_seconds": 526.7725205649622
+    },
+    "60_veldo_0064_inbox.py": {
+      "cases": 36,
+      "controls": 6,
+      "worker_seconds": 253.42261512763798
+    },
+    "61_scope_covers.py": {
+      "cases": 3,
+      "controls": 2,
+      "worker_seconds": 2.9290586980059743
+    },
+    "62_veldo_0045_runtime.py": {
+      "cases": 23,
+      "controls": 6,
+      "worker_seconds": 493.49905917514116
+    },
+    "62_veldo_0054_decisions.py": {
+      "cases": 59,
+      "controls": 10,
+      "worker_seconds": 1349.4296680428088
+    },
+    "62_veldo_0065_presentations.py": {
+      "cases": 89,
+      "controls": 4,
+      "worker_seconds": 1878.0239022495225
+    },
+    "63_veldo_0066_attribution.py": {
+      "cases": 14,
+      "controls": 2,
+      "worker_seconds": 102.96397419506684
+    },
+    "65_veldo_0132_workflow.py": {
+      "cases": 28,
+      "controls": 4,
+      "worker_seconds": 732.6315655522048
+    },
+    "66_veldo_0051_events.py": {
+      "cases": 22,
+      "controls": 14,
+      "worker_seconds": 379.18688957579434
+    },
+    "67_veldo_0056_candidates.py": {
+      "cases": 25,
+      "controls": 2,
+      "worker_seconds": 2049.238173481077
+    },
+    "68_veldo_0126_intake.py": {
+      "cases": 18,
+      "controls": 4,
+      "worker_seconds": 104.1529750507325
+    },
+    "68_veldo_0134_acceptance.py": {
+      "cases": 36,
+      "controls": 6,
+      "worker_seconds": 588.3431391511112
+    },
+    "68_veldo_0136_hints.py": {
+      "cases": 10,
+      "controls": 6,
+      "worker_seconds": 163.76138114044443
+    },
+    "68_veldo_0137_policy_revision.py": {
+      "cases": 5,
+      "controls": 2,
+      "worker_seconds": 6.400783300865442
+    },
+    "69_veldo_0058_gate_output.py": {
+      "cases": 19,
+      "controls": 10,
+      "worker_seconds": 1313.0008351197466
+    },
+    "69_veldo_0068_settlement.py": {
+      "cases": 19,
+      "controls": 6,
+      "worker_seconds": 305.0243375832215
+    },
+    "69_veldo_0133_dispositions.py": {
+      "cases": 21,
+      "controls": 6,
+      "worker_seconds": 283.93364622211084
+    },
+    "70_veldo_0057_landing.py": {
+      "cases": 35,
+      "controls": 4,
+      "worker_seconds": 847.2667929138988
+    },
+    "70_veldo_0069_bindings.py": {
+      "cases": 16,
+      "controls": 10,
+      "worker_seconds": 362.642198137939
+    },
+    "70_veldo_0073_activation.py": {
+      "cases": 24,
+      "controls": 14,
+      "worker_seconds": 280.17322224285454
+    },
+    "72_veldo_0075_andon.py": {
+      "cases": 30,
+      "controls": 4,
+      "worker_seconds": 269.8691631159745
+    },
+    "72_veldo_0077_objectives.py": {
+      "cases": 24,
+      "controls": 4,
+      "worker_seconds": 169.17232981603593
+    },
+    "72_veldo_0128_reports.py": {
+      "cases": 23,
+      "controls": 6,
+      "worker_seconds": 258.42647280171514
+    },
+    "73_veldo_0078_backlog.py": {
+      "cases": 31,
+      "controls": 10,
+      "worker_seconds": 556.1358256028034
+    },
+    "73_veldo_0089_team.py": {
+      "cases": 32,
+      "controls": 4,
+      "worker_seconds": 214.58912291750312
+    },
+    "74_veldo_0140_standing_delegation.py": {
+      "cases": 12,
+      "controls": 12,
+      "worker_seconds": 500.15433723153546
+    },
+    "75_veldo_0062_accounts.py": {
+      "cases": 52,
+      "controls": 14,
+      "worker_seconds": 3529.1221376229078
+    },
+    "75_veldo_0150_own_message_acceptance.py": {
+      "cases": 15,
+      "controls": 2,
+      "worker_seconds": 81.18760514678434
+    },
+    "76_veldo_0079_grooming.py": {
+      "cases": 37,
+      "controls": 8,
+      "worker_seconds": 1262.2469896418042
+    },
+    "77_veldo_0149_adopted_activation.py": {
+      "cases": 13,
+      "controls": 2,
+      "worker_seconds": 94.14799049170688
+    },
+    "78_veldo_0160_account_pool.py": {
+      "cases": 134,
+      "controls": 16,
+      "worker_seconds": 5626.044889097568
+    },
+    "82_veldo_0085_decomposition.py": {
+      "cases": 19,
+      "controls": 12,
+      "worker_seconds": 219.47218967415392
+    },
+    "82_veldo_0144_mcp_catalog.py": {
+      "cases": 40,
+      "controls": 12,
+      "worker_seconds": 1943.0870536891744
+    },
+    "82_veldo_0165_launch_hygiene.py": {
+      "cases": 24,
+      "controls": 10,
+      "worker_seconds": 819.5255925673991
+    },
+    "82_veldo_0172_live_formats.py": {
+      "cases": 6,
+      "controls": 6,
+      "worker_seconds": 38.8830851027742
+    },
+    "82_veldo_0173_tool_registry.py": {
+      "cases": 9,
+      "controls": 6,
+      "worker_seconds": 109.35725529724732
+    },
+    "83_veldo_0166_usage_windows.py": {
+      "cases": 31,
+      "controls": 8,
+      "worker_seconds": 122.99358936678618
+    },
+    "84_veldo_0169_project_handouts.py": {
+      "cases": 22,
+      "controls": 8,
+      "worker_seconds": 697.3499028105289
+    },
+    "86_veldo_0168_text.py": {
+      "cases": 45,
+      "controls": 16,
+      "worker_seconds": 494.5670754527673
+    },
+    "86_veldo_0186_setup_assets.py": {
+      "cases": 13,
+      "controls": 8,
+      "worker_seconds": 688.005620257929
+    },
+    "87_veldo_0127_codex_delivery.py": {
+      "cases": 10,
+      "controls": 8,
+      "worker_seconds": 1874.925797120668
+    },
+    "88_veldo_0127_feature_defaults.py": {
+      "cases": 9,
+      "controls": 2,
+      "worker_seconds": 156.48624204006046
+    },
+    "89_veldo_0127_feature_listing.py": {
+      "cases": 3,
+      "controls": 2,
+      "worker_seconds": 42.44681580550969
+    },
+    "90_veldo_0127_feature_profile.py": {
+      "cases": 2,
+      "controls": 4,
+      "worker_seconds": 94.41738003119826
+    },
+    "91_veldo_0151_specialists.py": {
+      "cases": 17,
+      "controls": 2,
+      "worker_seconds": 90.07628557644784
+    }
+  }
+}

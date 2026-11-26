@@ -2,7 +2,7 @@
 schema: veldo.spec/v1
 id: VELDO-0368
 title: Record file reads inside the sandbox without a tracer
-status: ready
+status: draft
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
@@ -114,15 +114,23 @@ acceptance_criteria:
     falsified_by: Accept the worker complete flag without a certificate; the forged-complete fixture must fail.
   - id: AC8
     text: >
-      Paired pc2 measurements report the cost and coverage of this observer on small native
-      workloads and selected confined fixtures. Output and confinement results match with
-      observation off and on. Every build increment uses focused fixtures only.
+      Paired Linux measurements report wall and CPU cost for three confined suites of
+      different shapes, with three repetitions per mode and one generator at a time.
+      A historical worker inventory reports the cases and worker seconds still unknown.
+      Certification requires a separate demonstration that the threading races are closed.
     falsified_by: Drop notifications after a service-time budget; the budget-exhaustion fixture must fail.
 required_evidence: [unit, integration]
 rollback: Disable confined certification and retain unknown dependency records. Keep confinement and existing unconfined observation active. Repair with focused fixtures only.
 ---
 
 ## Intent
+
+The measured design provides no new carry eligibility for the historical mutation
+inventory. All 2,925 confined or tracing-excluded cases remain unknown, accounting
+for 91,034.33 worker-seconds, or 55.01% of all worker time. Keep this spec in draft.
+The listener can record calls, but the current certification rules exclude the
+mandatory watchdog thread in every confined mutation worker. Product implementation
+as a savings feature needs a different way to establish complete observations.
 
 Let the sandbox supervisor supply VELDO-0367 with file dependencies from confined
 workers. Use seccomp user notification, which stops a syscall until the supervisor
@@ -138,13 +146,13 @@ The historical mutation measurement contains 2,925 always-run cases out of 4,023
 accounting for 55.01% of mutant-plus-control worker seconds. Of those, 2,874 cases
 and 47.89% of worker seconds are confined. The remaining 51 cases and 7.12% are
 unconfined tracing exclusions. Those exclusions remain unknown under this spec.
-These numbers describe elapsed worker time, including waits. They do not predict
-the fraction this observer can certify or its speedup. Source: the measurement
-table in `myday/research/claude-runs/veldo-0367-i45.md`.
+These numbers describe elapsed worker time, including waits. The eligibility
+measurement below applies this design's rules to those same workers. Source: the
+measurement table in `myday/research/claude-runs/veldo-0367-i45.md`.
 
 ## Decision and evidence
 
-Choose one seccomp listener with separate IPC and file-observation handlers.
+The prototype uses one seccomp listener with separate IPC and file-observation handlers.
 File observation records attempted dependencies before answering `CONTINUE`.
 This keeps the kernel's original permission checks and syscall behavior. It also
 requires conservative certification rules: a pathname copied before continuation
@@ -153,12 +161,11 @@ not close that race. The [notification API](https://man7.org/linux/man-pages/man
 documents this limitation. A general multithreaded read logger based on copying
 arguments and continuing calls cannot certify complete observations.
 
-The initial implementation certifies only runs whose argument memory, path
-resolution and descriptor identities meet the stability rules below. It observes
-other runs but leaves them unknown. Supporting arbitrary threads is an open
-extension requiring stronger evidence about the objects the kernel used. Do not
-weaken these rules to meet a reuse target or replace missing observations with a
-dependency on the entire checkout.
+Certification requires stable argument memory, path resolution and descriptor
+identities. The measurements show that these restrictions exclude the target
+workload. Supporting threads is a prerequisite for useful mutation savings.
+Do not weaken these rules to meet a reuse target or replace missing observations
+with a dependency on the entire checkout.
 
 The code inspection used main `68b1c45206b7b2efd1a887820834fb99e4f725f6` and
 the VELDO-0367 context at `63039fb88` in `change-scoped-i45`. In
@@ -183,11 +190,11 @@ response and syscall-data sizes of 80, 24 and 64 bytes. The Landlock ABI query
 returned 8. These establish available interfaces on this host. They do not prove
 notification delivery, memory access across the worker profile or pc2 behavior.
 
-A small probe was queued through `myday/scripts/remote_run.sh pc2` against the
-unchanged main commit. pc2 had an existing exclusive reservation. The request
-was canceled after 61 seconds before the probe ran. No overhead was measured,
-and no live sandbox observation is claimed by this spec. The first increment
-must establish these facts on pc2 before any certification code is enabled.
+The round 2 experiment ran on pc1 through `myday/scripts/remote_run.sh` with
+Linux-only node selection. Its paired suite measurements and native watchdog
+probe are below. They establish notification delivery and argument inspection
+across the worker Landlock layer. They do not establish complete dependencies
+or inspection through the full worker-tree namespace and AppArmor path.
 
 Other mechanisms do not supply the required observations:
 
@@ -375,6 +382,100 @@ Adding that support requires a separate design and race fixtures. Freezing a
 tree while copying arguments and then unfreezing it before `CONTINUE` leaves
 the same gap. A general syscall emulator would be a separate confinement project.
 
+## Measured eligibility and the threading limit
+
+The current design leaves 100% of the target cases and worker time unknown.
+The table uses the same receipt as VELDO-0367: admissions JSON at line 44525 of
+`myday/research/gate-stamps/cand-1122-55b511908-verify.log`. The source method is
+`proof/VELDO-0367/measure-confinement.py` on branch `veldo-0367-i45`, read from
+`/home/dmitry/projects/veldo-worktrees/change-scoped-i45`. The extension in
+`proof/VELDO-0368/measure-eligibility.py` reconciles all 4,023 case registrations
+and 5,495 worker outcomes. It uses each worker's actual leg and the unchanged
+tracing exclusions. It counts each control by its own suite and leg once.
+
+| Reason still unknown | Cases | Controls | Mutant seconds | Control seconds | Share of target worker time | Share of all worker time |
+| :- | :-: | :-: | :-: | :-: | :-: | :-: |
+| Mandatory confined-worker watchdog thread | 2,874 | 1,000 | 57,707.38 | 21,543.91 | 87.06% | 47.89% |
+| Unconfined tracing exclusions | 51 | 32 | 4,845.66 | 6,937.38 | 12.94% | 7.12% |
+| Total still unknown | 2,925 | 1,032 | 62,553.04 | 28,481.29 | 100.00% | 55.01% |
+| Newly carry-eligible under this design | 0 | 0 | 0.00 | 0.00 | 0.00% | 0.00% |
+
+This is a classification of measured worker time using an unconditional code
+path, not a replay of historical syscall traces. At receipt commit `55b511908`,
+the coordinator launches `reuse_worker.py`, which calls
+`mutation_observer.worker`. Before the shared preamble or suite fragment runs,
+that function calls `faulthandler.dump_traceback_later`. Python implements this
+timer with a native watchdog thread, as its
+[documentation](https://docs.python.org/3.12/library/faulthandler.html#dumping-the-tracebacks-after-a-timeout)
+states. The call also remains in the i45 observer. The separate selftest path
+starts this native timer and a Python progress-watchdog thread.
+
+All 148 confined suites therefore encounter a sharing attempt before their
+ordinary rows. Every confined case maps to both confined controls in the receipt.
+Even a mutant that removes a timer cannot remove the thread from its required
+baseline and no-op observations. The spec unions those observations, so the
+combined item stays unknown. This conclusion does not depend on whether an
+individual suite starts more threads or whether a sharing attempt succeeds.
+
+A confined pc1 probe confirms the native behavior: one call to
+`dump_traceback_later` changed the task count from one to two in both modes.
+The listener recorded `clone3` flags `0x3d0f00`, including `CLONE_VM`,
+`CLONE_FS`, `CLONE_FILES` and `CLONE_THREAD`. TracerPid stayed zero and the
+write-denial probe passed. `proof/VELDO-0368/watchdog-probe.json` contains the
+results. The eligibility JSON records the receipt and source hashes and all
+148 suite totals. Reproduce the classification with
+`python3 -B proof/VELDO-0368/measure-eligibility.py`; it launches no workers.
+
+Shared filesystem mutations, unresolved paths, external inputs and nested
+sandboxes can add reasons to these already unknown cases. They add zero cases
+to the union because the thread rule has excluded every confined case first.
+The receipt contains no syscall histories from which to count those overlapping
+reasons separately. Removing the watchdog exclusion alone would not establish
+that the remaining 87.06% of target worker time could be certified.
+
+A notification identifies the requesting tid, but that identity does not freeze
+the task's shared state. Suppose thread A calls `openat` with a pointer to `a`.
+The supervisor copies `a`. Thread B then overwrites the buffer with `b` using
+ordinary memory stores. The kernel can open `b` after `CONTINUE` without any
+notification for the buffer change. A second sample can miss a change back to
+`a`. Immutable input files do not prevent choosing a different immutable file.
+The [kernel API warning](https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/seccomp.h)
+describes this argument race.
+
+Shared cwd and fd tables have another problem. Reading `/proc/<tid>/cwd` or
+`/proc/<tid>/fd` gives the supervisor a view at inspection time. A sibling can
+finish `chdir`, replace an fd with `dup2`, close and reuse an fd, or rename a
+directory before the continued syscall resolves its path. Pinning the observed
+object protects that observer handle; it does not make the kernel use that
+handle for the worker's numeric fd. A correct design must keep the relevant
+state stable until the kernel has consumed it.
+
+Serializing notifications cannot provide that interval: `CONTINUE` has no
+syscall-exit acknowledgment. Allowing the next queued state change immediately
+can race with the continued lookup. Holding siblings until completion requires
+a reliable completion event and must handle calls that wait for those siblings.
+Freezing and then releasing the whole tree leaves the same gap. A Python lock
+does not constrain native code, direct syscalls or candidate memory writes.
+Labeling a thread as the trusted watchdog also cannot protect its shared
+address space from candidate code running in the same process.
+
+This spec therefore does not certify multithreaded processes. Doing so with
+unchanged worker semantics needs observation of the objects consumed in the
+kernel, or confinement-preserving syscall execution from stable arguments with
+reliable completion. The former is unavailable through this unprivileged
+notification API. The latter requires substantially more than continuing the
+original call. Opening files outside the worker and injecting descriptors would
+also require reproducing its Landlock, AppArmor, credentials and filesystem
+view, which the existing constraints prohibit. These are limits of this
+mechanism and scope, not evidence that all possible observers must fail.
+
+The expected newly eligible share is zero. The target of making most of the
+55.01% eligible is unmet. A replacement must demonstrate complete observation
+with threads, shared cwd and fd tables, and concurrent generated-file activity
+before claiming savings. It must then classify the same inventory and show
+more than 45,517.17 of its 91,034.33 target worker-seconds eligible. The existing
+44.99% tracing-compatible share retains its own completeness requirements.
+
 ## Children, failures and the certificate
 
 Filters follow descendants across fork and exec. Keep observation active until
@@ -442,24 +543,119 @@ sets unknown. Do not relabel an excluded unconfined case as confined to make it
 eligible. `complete: true` requires both the certificate and all existing
 VELDO-0367 conditions; a green execution may still have unknown dependencies.
 
-## Cost and build order
+## Measured recording cost
 
-The main cost is a supervisor round trip per observed syscall, plus argument and
-path inspection. Metadata-heavy Python startup may dominate notification volume.
-Cache decoded immutable inputs and deduplicate dependency storage, but observe
-every operation needed for coverage. Measure memory and service contention as
-well as elapsed time. A notification budget must never silently truncate coverage.
+The prototype added 51.8% to 165.4% to median wall time on three confined suites.
+These are recording costs, not measurements of a complete certifying observer.
+The experiment ran on November 26, 2026, on pc1, Linux `7.0.0-38-generic`,
+x86_64, with system Python 3.12.3. The remote wrapper selected pc1 in exclusive
+mode; Linux-only selection excluded the Mac. The one-minute host load ranged
+from 1.37 to 1.75. Scheduling used the wrapper's nice 19 and idle IO priority.
 
-On pc2, compare observation off and on for 2,000 repeated open/read/close
-operations, stat and absent-path loops, directory enumeration, file mappings and
-small fork trees. Use at least five alternating pairs after warmup. Report raw
-counts, medians, ranges, added microseconds per notification, supervisor CPU,
-peak memory, worker elapsed time and completion state. Then use selected confined
-fixtures through the actual worker and gate entries, with matching exit status,
-output and confinement denials. Keep prototype files in temporary directories
-and the checked-out repository read-only. No full mutation stage is a benchmark.
+The disposable prototype is `.local/0368/prototype.py`. It imports the existing
+`agent_sandbox` and extends its IPC filter in memory with file and state-change
+notifications. It uses one serial file handler instead of creating a thread
+for each file request. Each event records the notification ID, tid, syscall
+number and arguments. Path calls also copy pathname bytes and record the
+requesting task's root and relative-path base. Descriptor operations record
+the target in that task's fd table. The handler reads `open_how` and `clone3`
+flags, checks IDs and responses, writes a buffered JSON journal, and answers
+`CONTINUE`. Existing IPC handling and fixed denials remain in place.
 
-Each increment lands independently. A script pair below means both `scripts/`
+Both modes run the unmodified suite through `fork_gate_domain`,
+`mutation_sandbox.worker_grants` and `landlock` with the worker profile. The
+checkout and runtime are readable; only the private scratch is writable.
+Observation off retains the existing IPC listener. Observation on adds the file
+notifications to that same listener. This exercises the production confinement
+functions but does not run the outer worker-tree namespace launcher. The
+prototype is uncommitted experiment code and cannot issue certificates.
+
+The suites have different measured shapes:
+
+* IO: `108_veldo_0153_executor_profile` copies the installation's Python files
+  into fixtures. Each observed run made 1,200 `sendfile` attempts and nine
+  `vfork` attempts. It passed 33 assertions including the shared preamble.
+* Process: `15_warp_1405_reconciliation` runs the metrics report over the
+  repository corpus. Each observed run made 578 `vfork` attempts. It passed
+  87 assertions including the shared preamble.
+* Typical small Python suite: `61_scope_covers` loads membership code and checks
+  scope matching. Each observed run made two `vfork` attempts and passed 29
+  assertions including the shared preamble. It represents this common suite
+  structure; it is not a statistical estimate of the average mutation worker.
+
+Each suite ran three times per mode, in paired order off/on, on/off, off/on.
+Only one suite ran at a time. Earlier smoke pairs warmed the suites; these are
+warm-cache results. Each repetition used new scratch directories. Wall time
+starts before the confined fork and ends after the worker and broker cleanup.
+CPU seconds sum the supervisor's process CPU and the change in
+`RUSAGE_CHILDREN` after cleanup. That includes user and system CPU for the
+worker, its waited descendants and the existing bind helper. Repository clone,
+environment setup and result serialization are outside the interval.
+
+| Suite and repetition | Wall off, s | Wall on, s | CPU off, s | CPU on, s | File and state notifications |
+| :- | :-: | :-: | :-: | :-: | :-: |
+| IO 1 | 0.251456 | 0.595364 | 0.252383 | 0.544153 | 16,101 |
+| IO 2 | 0.251740 | 0.606951 | 0.251879 | 0.604021 | 16,115 |
+| IO 3 | 0.241142 | 0.637188 | 0.241612 | 0.630063 | 16,103 |
+| Process 1 | 2.498400 | 6.694840 | 2.519951 | 6.642408 | 197,717 |
+| Process 2 | 2.435083 | 6.509016 | 2.453311 | 6.488484 | 197,727 |
+| Process 3 | 2.452422 | 6.287301 | 2.462181 | 6.180808 | 197,732 |
+| Typical 1 | 0.160200 | 0.235418 | 0.160808 | 0.230246 | 3,312 |
+| Typical 2 | 0.155556 | 0.243135 | 0.156019 | 0.243905 | 3,312 |
+| Typical 3 | 0.162774 | 0.252504 | 0.162679 | 0.252535 | 3,314 |
+
+| Suite | Median wall off/on, s | Added wall | Median CPU off/on, s | Added CPU | Median supervisor CPU on, s |
+| :- | :-: | :-: | :-: | :-: | :-: |
+| IO | 0.251456 / 0.606951 | 141.4% | 0.251879 / 0.604021 | 139.8% | 0.297824 |
+| Process | 2.452422 / 6.509016 | 165.4% | 2.462181 / 6.488484 | 163.5% | 3.274232 |
+| Typical | 0.160200 / 0.243135 | 51.8% | 0.160808 / 0.243905 | 51.7% | 0.073085 |
+
+Percentages compare the mode medians. Added wall time divided by the median
+notification count is 22.08, 20.52 and 25.04 microseconds per notification for
+IO, process and typical respectively. This includes scheduling and worker
+effects; it is not pure handler latency. Maximum observed worker RSS was
+34,588, 32,448 and 25,104 KiB respectively. Supervisor maxima were 21,620,
+21,400 and 20,836 KiB. These are per-process maxima, not simultaneous tree
+memory. The raw repetitions provide the ranges; the JSON also stores them.
+
+All 18 runs returned the expected partial-suite status 2, with zero failed
+assertions and matching assertion totals between modes. TracerPid was zero.
+An attempted write outside scratch was denied in every run. All observed runs
+had zero argument-read or response errors. Output comparison used assertion
+totals, failures and status; temporary paths and printed elapsed times differ.
+Every run remained unknown. Passing these suites establishes neither complete
+dependencies nor the namespace entry's AC7 refusal fixture.
+
+The prototype records every requested syscall family on the reviewed x86_64
+list, subject to existing denials. A bootstrap write to its dedicated handoff
+fd, allocated at 10,000 or above, is exempt so the listener can be transferred.
+An arbitrary later reuse of that fd number is a known coverage hole. Unknown
+syscall numbers are not given the spec's future default notification treatment.
+The prototype does not walk every symlink component, inventory implicit ELF
+or shebang inputs, freeze inputs, close sharing races, or seal certificates.
+It therefore measures a subset of the work required by the design. These
+numbers cannot serve as an upper bound on the completed observer's cost.
+
+The measured commit is `bcee6b606327ff61028da27e8805f1de4f951c40` and the final
+remote run is `rr20261126121302-294a`. Data, syscall counts, source digest,
+output digests, CPU components and journal sizes are in
+`proof/VELDO-0368/paired-measurements.json`. The local raw outputs are in
+`.local/0368/results-3-108_veldo_0153_executor_profile/.local/0368/results.json`.
+The prototype and launcher remain under `.local/0368/`; their files were sent
+as command data to the clean remote clone. Reproduce the paired run with
+`python3 .local/0368/launch.py 3 108_veldo_0153_executor_profile 15_warp_1405_reconciliation 61_scope_covers`.
+
+## Conditions for further implementation
+
+The measurements do not justify enabling this design for mutation savings.
+Resolve multithreaded certification and remeasure eligible worker time before
+starting the product increments below. Keep the existing certificate and
+failure rules as requirements for any replacement. A notification budget must
+never silently truncate coverage. Use selected native race fixtures and the
+actual worker and gate entries to test the replacement; no full mutation stage
+is needed for this decision.
+
+Each increment below is conditional on that revision. A script pair means both `scripts/`
 and `engine/scripts/`. Fixtures and registered falsifiers accompany the increment
 that changes the behavior. Do not enable certification until increments 1 through
 5 have their focused evidence. No increment requests a seed or weekly full run.
@@ -468,7 +664,7 @@ that changes the behavior. Do not enable certification until increments 1 throug
    a new `confined_reads.py` pair, disabled by default. Protect the pair through
    the policy pair and add installation entries. Prove unprivileged listener
    handoff, zero TracerPid, original Landlock denial and the shared-buffer race
-   on pc2. Test unsupported features and malformed certificates. No carry changes.
+   on a Linux compute node. Test unsupported features and malformed certificates. No carry changes.
 2. Extend the `agent_sandbox.py` pair with the combined listener, bounded service,
    checked responses and lifecycle journal. Keep certification off. Exercise
    startup failure, listener loss, canceled calls, descendant exit and IPC policy
@@ -482,15 +678,13 @@ that changes the behavior. Do not enable certification until increments 1 throug
    Extend the `gate_changes.py` and `gate_execution.py` pairs for certificate
    validation and settlement. Test setup handoff, forged claims, shared controls,
    row unions, mismatched identities and missing cleanup. Selection remains unchanged.
-5. Run the paired pc2 measurements and selected worker/gate fixtures. Enable
+5. Repeat the paired Linux measurements and selected worker/gate fixtures. Enable
    certification in a separate small change only for launches satisfying every
    stability rule. Demonstrate dependency-edit execution and unrelated carry on
    a tiny authenticated inventory. Report the newly complete fraction and the
    remaining unknown reasons before claiming savings. If custody or races cannot
    be resolved, retain observation-only mode and narrow the implementation claim.
 
-Open risks are the fraction of existing fixtures that meet the stability rules,
-the enforcement of immutable runtime inputs, task inspection across AppArmor and
-PID namespaces, implicit executable inputs, and notification service cost. The
-kernel queries and code inspection do not resolve those risks. Each has a focused
-fixture or measurement above; none can be waived by a clean full gate.
+Immutable runtime custody, inspection across AppArmor and PID namespaces,
+implicit executable inputs and complete multithreaded observation remain
+unresolved. The focused measurements do not resolve those requirements.
