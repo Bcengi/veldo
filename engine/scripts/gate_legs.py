@@ -600,6 +600,9 @@ def unconfined(root, command, env, keep=None):
                           pass_fds=(*_channels(env).values(), *(() if keep is None else (keep,)))).returncode
 
 
+_UNCONFINED_RUNNER = unconfined
+
+
 # ---- THE OPENED-FILES RECORD IS THE AUTHORITY'S (VELDO-0358 C18; the lead's decision on integration
 # finding 2) ------------------------------------------------------------------------------------------
 #
@@ -651,8 +654,11 @@ class OpenWatch:
         self.thread.start()
 
     def _tree(self, top, late):
-        for directory, names, _ in os.walk(str(top)):  # never follows a link out of the candidate
+        for directory, names, _ in os.walk(str(top), onerror=self._walk_error):  # never follows a link out of the candidate
             self._watch(Path(directory), late)
+
+    def _walk_error(self, error):
+        self.overflowed = True
 
     def _watch(self, directory, late):
         wd = self.libc.inotify_add_watch(self.fd, os.fsencode(str(directory)),
@@ -663,6 +669,11 @@ class OpenWatch:
             if late:
                 # Made while the watch runs: a file in it may have been opened before its watch existed.
                 self.late.add(relative)
+        else:
+            import ctypes
+            import errno
+            if ctypes.get_errno() != errno.ENOENT:
+                self.overflowed = True
 
     def _read(self):
         poller = select.poll()
@@ -781,8 +792,8 @@ class TakeOpened:
         self.root, self.target = Path(root), Path(target) if target else None
         self.stage, self.store = stage, store
         self.observer = dependency_observer()
-        pin = subprocess.run(['git', '-C', str(root), 'rev-parse', 'HEAD'], capture_output=True, text=True)
-        self.commit = pin.stdout.strip() if pin.returncode == 0 else '0' * 40
+        self.commit = self.observer.clean_commit(root) if self.observer else '0' * 40
+        self.native_runs = []
         self.directory = Path(tempfile.mkdtemp(prefix='veldo-opened-'))
         self.ledger = self.directory / 'ledger'
         self.fd = os.open(str(self.ledger), os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_APPEND | os.O_CLOEXEC, 0o600)
@@ -806,7 +817,10 @@ class TakeOpened:
                 else:
                     legacy.append(line)
             record, dropped = opened_record(self.root, '\n'.join(legacy), opened, late, overflowed)
-            self.publish(stage, code, dependencies, opened, late, overflowed)
+            try:
+                self.publish(stage, code, dependencies, opened, late, overflowed)
+            except (OSError, ValueError, KeyError, TypeError) as error:
+                print('dependency observation not stored: %s' % error, flush=True)
         except (Invalid, OSError, ValueError, KeyError, TypeError) as error:
             print('   %s: the opened-files record was not taken: %s; the stage is RED' % (stage, error), flush=True)
             return 1
@@ -823,8 +837,26 @@ class TakeOpened:
         return code
 
 
+    def run(self, runner, root, command, env, keep=None):
+        # Worker-tree confinement forbids ptrace. Do not weaken that boundary.
+        # A missing trace for any leg keeps the combined stage unknown.
+        tracer = self.observer.dependency_module('case_trace')
+        suites = [name for name in env.get('VELDO_GATE_UNCONFINED', '').split(',') if name]
+        if (runner is not _UNCONFINED_RUNNER or not Path('/usr/bin/strace').is_file()
+                or not tracer['compatible'](HERE.parent, suites)):
+            self.native_runs.append(None)
+            return runner(root, command, env, *(() if keep is None else (keep,)))
+        trace = self.directory / ('trace-' + str(len(self.native_runs)))
+        environment = {k: v for k, v in env.items() if k not in AUTHORITY_ONLY}
+        argv = tracer['command'](trace, ['bash', '-c', command])
+        process = subprocess.run(argv, cwd=str(root), env=environment, stdin=subprocess.DEVNULL,
+            pass_fds=(*_channels(environment).values(), *(() if keep is None else (keep,))))
+        reads = self.observer.DependencyReads(root, environment).trace(trace, launched_argv=process.args)
+        self.native_runs.append((env.get('VELDO_GATE_LEG', 'unconfined'), reads))
+        return process.returncode
+
     def publish(self, stage, code, claims, opened, late, overflowed):
-        if self.observer is None:
+        if self.observer is None or code != 0:
             return  # old fixture installations have no dependency schema
         observer = self.observer
         changes = observer.dependency_module('gate_changes')
@@ -833,7 +865,10 @@ class TakeOpened:
         if store is None:
             raise OSError('dependency Store unavailable')
         own = observer.DependencyReads(self.root)
-        own.unknown('native attribution and failed lookup coverage unavailable')
+        # These are the authority's explicit setup inputs, not candidate coverage.
+        own.reasons.clear()
+        if observer.clean_commit(self.root) != self.commit:
+            own.unknown('checkout changed during execution')
         if self.commit == '0' * 40:
             own.unknown('observed commit unavailable')
         if overflowed or late:
@@ -850,12 +885,24 @@ class TakeOpened:
             # Python claims cannot certify children or missing kernel events.
             if dependency['complete']:
                 raise Invalid('Python dependency claim asserts complete native coverage')
+            # The complete leg trace also covers shared setup and prerequisites.
+            leg = json.loads(dependency['item_id'])[2]
+            native = [reads.record(dependency['item_id'], self.commit) for run in self.native_runs
+                      if run is not None for name, reads in [run] if name == leg]
+            if native:
+                authority = observer.combine_dependencies(
+                    [own.record(dependency['item_id'], self.commit), *native], dependency['item_id'], self.commit)
+                dependency = observer.native_dependency(authority, dependency)
             records.append(dependency)
-            observer.publish_dependencies(store, dependency, dict(claim['result'], stage_returncode=code))
+            observer.publish_dependencies(store, dependency, dict(claim['result'], status='passed', stage_returncode=code))
         item_id = changes['identity']('stage', stage)
+        if not self.native_runs or any(run is None for run in self.native_runs):
+            own.unknown('native attribution and failed lookup coverage unavailable')
+        records.extend(reads.record(item_id, self.commit) for run in self.native_runs if run is not None
+                       for name, reads in [run])
         records.append(own.record(item_id, self.commit))
         combined = observer.combine_dependencies(records, item_id, self.commit)
-        observer.publish_dependencies(store, combined, dict(returncode=code, children=[r['item_id'] for r in records[:-1]]))
+        observer.publish_dependencies(store, combined, dict(status='passed', returncode=code, children=[r['item_id'] for r in records[:-1]]))
 
 
 def dependency_observer():
@@ -894,7 +941,8 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
     declared = document['stages'].get(stage)
     if declared is None or declared != command:
         # Not a declared leg: the whole stage is confined, and no caller variable reaches it.
-        return confined(root, command, handed_env(_env()), *(() if keep is None else (keep,)))
+        return (taking.run(confined, root, command, handed_env(_env()), keep) if taking else
+                confined(root, command, handed_env(_env()), *(() if keep is None else (keep,))))
     listed = entries(document)
     whole = [e for e in document['suites'] if 'rows' not in e]
     if leg != 'unconfined':
@@ -926,7 +974,8 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
         started = time.monotonic()
         try:
             # The ledger only when one is taken: a stand-in runner a suite installs takes the first three.
-            code = runner(root, command, handed_env(environment), *(() if keep is None else (keep,)))
+            code = (taking.run(runner, root, command, handed_env(environment), keep) if taking else
+                    runner(root, command, handed_env(environment), *(() if keep is None else (keep,))))
         finally:
             if write is not None:
                 os.close(write)

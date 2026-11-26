@@ -315,7 +315,7 @@ def private_runtime():
 def worker(case, mutant=None, *, isolate_runtime=True):
     """Capture every assertion, including the shared preamble, with exact row identities."""
     shared = ROOT / 'scripts/suites/shared.py'
-    dependency = DependencyReads(ROOT).start()
+    dependency = DependencyReads(ROOT, discover_git=False).start()
     rows = []
     opened = set()
     auditing = [True]
@@ -437,13 +437,32 @@ def dependency_module(name):
 
 class DependencyReads:
     """One executing item's reads, including failed probes and discovery inputs."""
-    def __init__(self, root, environment=None):
+    def __init__(self, root, environment=None, *, discover_git=True, private_scratch=()):
         self.root = Path(root).resolve()
         self.paths, self.directories, self.absent_paths = set(), set(), set()
         self.reasons = {'observation coverage unavailable'}
         values = os.environ if environment is None else environment
-        self.runtime = {'environment': {k: v for k, v in values.items()
-                                        if not k.startswith('VELDO_DEPENDENCY_')}}
+        # Execution paths and descriptors are per-run allocations, not runtime identity.
+        self.runtime = {'environment': {k: values[k] for k in
+            ('LANG', 'LC_ALL', 'LC_CTYPE', 'TZ', 'PYTHONHASHSEED', 'PYTHONUTF8') if k in values}}
+        self.scratch = tuple(Path(values[k]).resolve() for k in
+                             ('TMPDIR', 'TEMP', 'TMP', 'VELDO_FIXTURE_PARENT', 'XDG_RUNTIME_DIR')
+                             if values.get(k))
+        self.private_scratch = tuple(Path(path).resolve() for path in private_scratch)
+        self.authority = Path(__file__).resolve().parents[1]
+        self.git_directories = {self.root / '.git'}
+        try:
+            marker = self.root / '.git'
+            if discover_git and marker.is_file():
+                text = marker.read_text().strip()
+                if text.startswith('gitdir: '):
+                    gitdir = (self.root / text[8:]).resolve()
+                    self.git_directories.add(gitdir)
+                    common = gitdir / 'commondir'
+                    if common.is_file():
+                        self.git_directories.add((gitdir / common.read_text().strip()).resolve())
+        except OSError:
+            self.unknown('git directory unavailable')
         self.active, self.busy = False, False
 
     def unknown(self, reason):
@@ -462,9 +481,21 @@ class DependencyReads:
             self.unknown('unresolved symlink')
             return
         for candidate in {path, resolved}:
+            if any(candidate == directory or directory in candidate.parents for directory in self.git_directories):
+                self.unknown('git metadata read')
+                continue
             try:
                 relative = candidate.relative_to(self.root).as_posix()
             except ValueError:
+                # Only the authority may designate its newly allocated private worker home.
+                # Its job and materialized outputs derive from the recorded case definition/reads.
+                if any(candidate == directory or directory in candidate.parents for directory in self.private_scratch):
+                    continue
+                if any(candidate == directory or directory in candidate.parents for directory in self.scratch):
+                    self.unknown('unrecordable external scratch input')
+                    continue
+                if candidate == Path('/dev/null'):
+                    continue
                 # External inputs are represented by their bytes or directory
                 # entries, not merely by the interpreter's version string.
                 try:
@@ -479,10 +510,15 @@ class DependencyReads:
                         value = ['directory', sorted(os.listdir(candidate))]
                     else:
                         raise ValueError('external input')
-                    self.runtime[str(candidate)] = value
+                    key = ('authority:' + candidate.relative_to(self.authority).as_posix()
+                           if self.authority in candidate.parents else str(candidate))
+                    self.runtime[key] = value
                 except (OSError, ValueError):
                     self.unknown('unrecordable external input: ' + str(candidate))
                 continue
+            if candidate.parent.name == '__pycache__' and '.cpython-' in candidate.name and candidate.suffix == '.pyc':
+                source = candidate.parent.parent / (candidate.name.split('.cpython-', 1)[0] + '.py')
+                self.paths.add(source.relative_to(self.root).as_posix())
             if kind == 'listing':
                 self.directories.add(relative)
             elif relative != '.':
@@ -526,12 +562,12 @@ class DependencyReads:
         self.active = False
         return self
 
-    def trace(self, trace, *, dropped=False, all_syscalls=False):
+    def trace(self, trace, *, dropped=False, launched_argv=()):
         """Read an authority-owned -f trace after all traced processes ended.
 
         A truncated, detached, malformed or namespace-changing trace stays unknown.
-        all_syscalls is authority provenance: the launcher used -f and trace=all.
-        A legacy filtered trace cannot establish completeness. This does not start
+        launched_argv is taken from the authority's completed process.args, never
+        from a worker claim. A legacy filtered trace cannot establish completeness. This does not start
         ptrace in worker trees: their existing prohibition stands.
         """
         tracer = dependency_module('case_trace')
@@ -545,11 +581,6 @@ class DependencyReads:
                 if not pid.isdigit():
                     raise ValueError('lost events or tracer diagnostic')
                 seen.add(pid)
-                call = tracer['CALL'].search(line)
-                if call and call[1] in ('clone', 'clone3', 'fork', 'vfork'):
-                    child = call[3].split()[0]
-                    if child.isdigit() and child != '0':
-                        seen.add(child)
                 if tracer['ENDED'].match(line):
                     ended.add(pid)
                 elif not (tracer['CALL'].search(line) or '<unfinished ...>' in line
@@ -560,6 +591,13 @@ class DependencyReads:
                     raise ValueError('ambiguous process filesystem')
                 if '...' in line and '<unfinished ...>' not in line and '<... ' not in line:
                     raise ValueError('truncated trace event')
+            # syscall_lines joins unfinished/resumed clone calls before finding children.
+            for line in tracer['syscall_lines'](trace):
+                call = tracer['CALL'].search(line)
+                if call and call[1] in ('clone', 'clone3', 'fork', 'vfork'):
+                    child = call[3].split()[0]
+                    if child.isdigit() and child != '0':
+                        seen.add(child)
             if dropped or not seen or seen != ended:
                 raise ValueError('lost events or incomplete child coverage')
             for path, kind, success in tracer['accesses'](trace, cwd=self.root):
@@ -575,7 +613,7 @@ class DependencyReads:
                         self.read(name)
                     if not re.search(r'<[^<>]+>', call[2]) and 'MAP_ANONYMOUS' not in call[2]:
                         self.unknown('unresolved inherited descriptor')
-            if all_syscalls:
+            if tracer['full_command'](launched_argv, trace):
                 self.reasons.discard('observation coverage unavailable')
             if tracer['non_file_inputs'](trace):
                 self.unknown('unrecordable external inputs in trace')
@@ -623,3 +661,33 @@ def publish_dependencies(store, dependency, result):
     if not store.change_put(envelope):
         raise OSError('dependency/result publication failed')
     return envelope
+
+
+def clean_commit(root):
+    """Only an immutable clean checkout can name its HEAD as observation source."""
+    def git(*args):
+        return subprocess.run(['git', '-C', str(root), *args], capture_output=True, text=True)
+    before = git('rev-parse', 'HEAD')
+    status = git('status', '--porcelain', '--untracked-files=all')
+    after = git('rev-parse', 'HEAD')
+    if (before.returncode or status.returncode or status.stdout or after.returncode
+            or before.stdout != after.stdout or len(after.stdout.strip()) not in (40, 64)):
+        return '0' * 40
+    return after.stdout.strip()
+
+
+def native_dependency(native, claim):
+    """Python adds attribution, but only the authority trace certifies coverage."""
+    changes = dependency_module('gate_changes')
+    changes['validate_dependency'](claim)
+    if native is None:
+        return claim
+    changes['validate_dependency'](native)
+    if native['observed_commit'] != claim['observed_commit']:
+        raise ValueError('native dependency commit differs from worker claim')
+    return changes['sealed'](changes['DEPENDENCY'], item_id=claim['item_id'],
+        observed_commit=claim['observed_commit'],
+        **{field: sorted(set(native[field]) | set(claim[field]))
+           for field in ('paths', 'directories', 'absent_paths')},
+        runtime_digest=native['runtime_digest'], complete=native['complete'],
+        unknown_reason=native['unknown_reason'])

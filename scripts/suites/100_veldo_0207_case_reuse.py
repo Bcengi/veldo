@@ -189,7 +189,6 @@ expect('fixture target', namespace['value'] == 1)
                         print('case worker error:', str(error)[-800:])
                         return False
                 if expected_failure:
-                    print('case rejected observation:', suffix, result['one'])
                     return ('undeclared input read' in result['one'].get('declaration_stale', '')
                             and not workers.owned_snapshots
                             and not (parent / 'cases' / '0').exists())

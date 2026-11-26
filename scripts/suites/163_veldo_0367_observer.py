@@ -13,6 +13,7 @@ def _v367_observer():
 
     sources = {'mutation_observer.py': ROOT / "scripts" / "mutation_observer.py",
                'gate_legs.py': ROOT / "scripts" / "gate_legs.py",
+               'case_trace.py': ROOT / "scripts" / "case_trace.py",
                'reuse_worker.py': ROOT / "scripts" / "reuse_worker.py",
                'check_gate_mutations.py': ROOT / "scripts" / "check_gate_mutations.py"}
 
@@ -35,7 +36,7 @@ def _v367_observer():
         repo.mkdir()
         for name, source in sources.items():
             shutil.copyfile(source, authority / 'scripts' / name)
-        for name in ('gate_fixtures.py', 'gate_changes.py', 'gate_reuse.py', 'case_trace.py'):
+        for name in ('gate_fixtures.py', 'gate_changes.py', 'gate_reuse.py'):
             shutil.copyfile(ROOT / 'scripts' / name, authority / 'scripts' / name)
         shutil.copyfile(ROOT / '.veldo/reuse_evidence.py', authority / '.veldo/reuse_evidence.py')
         O = load(authority / 'scripts/mutation_observer.py')
@@ -48,6 +49,7 @@ def _v367_observer():
             if not path.exists():
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text('# fixture authority input\n')
+        (repo / '.gitignore').write_text('__pycache__/\n')
         (repo / 'data').mkdir()
         (repo / 'data/input').write_text('input')
         (repo / 'data/child').write_text('child')
@@ -57,6 +59,15 @@ def _v367_observer():
                      '-c', 'user.email=dmitry@bcengi.com', 'commit', '-qm', 'observer fixture']):
             subprocess.run(['git', '-C', str(repo), *args], check=True, stdout=subprocess.PIPE)
         commit = subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], text=True).strip()
+        declaration = authority / 'scripts/gate_unconfined.json'
+        declaration.write_text(json.dumps({'suites': [
+            {'suite': 'plain', 'reason': 'native command'},
+            {'suite': 'traced', 'reason': 'nested strace'},
+            {'suite': 'tree', 'reason': 'nested namespace confinement'}]}))
+        tracer = O.dependency_module('case_trace')
+        row('trace-compatible', tracer['compatible'](authority, ['plain']) and
+            not tracer['compatible'](authority, ['traced', 'plain']) and
+            not tracer['compatible'](authority, ['tree']) and not tracer['compatible'](authority, ['missing']))
         item = C['identity']('suite', 'unit', 'confined', 'fixture')
         reads = O.DependencyReads(repo, {}).start()
         (repo / 'data/input').read_text()
@@ -76,7 +87,40 @@ def _v367_observer():
         row('symlink', {'alias', 'data/input'} <= set(dep['paths']))
         row('python-unknown', not dep['complete'] and 'syscall' in dep['unknown_reason'])
         row('child-unknown', not dep['complete'] and 'native child' in dep['unknown_reason'])
-        row('runtime', dep['runtime_digest'] != O.DependencyReads(repo, {'NEW': 'value'}).record(item, commit)['runtime_digest'])
+        row('runtime', dep['runtime_digest'] != O.DependencyReads(repo, {'LANG': 'different'}).record(item, commit)['runtime_digest'])
+
+        import py_compile
+        prefix = sys.pycache_prefix
+        sys.pycache_prefix = None
+        try:
+            py_compile.compile(str(repo / 'module367.py'), doraise=True)
+            warm = O.DependencyReads(repo, {}).start()
+            load(repo / 'module367.py')
+            warm.stop()
+        finally:
+            sys.pycache_prefix = prefix
+        row('warm-bytecode', 'module367.py' in warm.paths and
+            any('__pycache__' in path for path in warm.paths))
+        cold_runtime = O.DependencyReads(repo, {'LANG': 'C', 'TMPDIR': str(top / 'scratch-a'),
+                                               'VELDO_OPENED_LEDGER_FD': '7'})
+        warm_runtime = O.DependencyReads(repo, {'LANG': 'C', 'TMPDIR': str(top / 'scratch-b'),
+                                               'VELDO_OPENED_LEDGER_FD': '19'})
+        for capture, scratch in ((cold_runtime, top / 'scratch-a'), (warm_runtime, top / 'scratch-b')):
+            scratch.mkdir()
+            (scratch / 'input').write_text(str(scratch))
+            capture.read(scratch / 'input')
+        row('runtime-stable', cold_runtime.record(item, commit)['runtime_digest'] ==
+            warm_runtime.record(item, commit)['runtime_digest'])
+        private_runtime = O.DependencyReads(repo, {'LANG': 'C', 'TMPDIR': str(top / 'scratch-a')},
+                                             private_scratch=(top / 'scratch-a',))
+        private_runtime.read(top / 'scratch-a/input')
+        row('private-scratch', private_runtime.runtime == O.DependencyReads(repo, {'LANG': 'C'}).runtime and
+            private_runtime.reasons == {'observation coverage unavailable'})
+        authority_runtime = O.DependencyReads(repo, {})
+        authority_runtime.read(authority / 'scripts/mutation_observer.py')
+        row('authority-runtime', 'authority:scripts/mutation_observer.py' in authority_runtime.runtime and
+            not any(str(top) in key for key in authority_runtime.runtime))
+        row('scratch-unknown', 'scratch' in cold_runtime.record(item, commit)['unknown_reason'])
 
         # Both legs have identical completeness rules. Closed trace fixtures include
         # forked native children, an imported module, a directory and a failed lookup.
@@ -93,25 +137,49 @@ def _v367_observer():
         trace.write_text('\n'.join(lines) + '\n')
         for leg in ('confined', 'unconfined'):
             identity = C['identity']('suite', 'unit', leg, 'fixture')
-            complete = O.DependencyReads(repo, {}).trace(trace, all_syscalls=True).record(identity, commit)
+            complete = O.DependencyReads(repo, {}).trace(trace, launched_argv=O.dependency_module('case_trace')['command'](trace, ['/bin/true'])).record(identity, commit)
             row('trace-' + leg, complete['complete'] and complete['unknown_reason'] is None and
                 {'data/input', 'module367.py', 'data/child', 'alias'} <= set(complete['paths']) and
                 complete['directories'] == ['data'] and complete['absent_paths'] == ['missing'] and
                 complete['item_id'] == identity)
         row('filtered-unknown', not O.DependencyReads(repo, {}).trace(trace).record(item, commit)['complete'])
-        row('lost-events', not O.DependencyReads(repo, {}).trace(trace, dropped=True, all_syscalls=True).record(item, commit)['complete'])
+        row('lost-events', not O.DependencyReads(repo, {}).trace(trace, dropped=True, launched_argv=O.dependency_module('case_trace')['command'](trace, ['/bin/true'])).record(item, commit)['complete'])
         trace.write_text('\n'.join(lines[:-2]) + '\n')
-        broken = O.DependencyReads(repo, {}).trace(trace, all_syscalls=True).record(item, commit)
+        broken = O.DependencyReads(repo, {}).trace(trace, launched_argv=O.dependency_module('case_trace')['command'](trace, ['/bin/true'])).record(item, commit)
         row('incomplete-not-empty', not broken['complete'] and bool(broken['unknown_reason']))
         trace.write_text('11 openat(AT_FDCWD, "data/input", O_RDONLY <unfinished ...>\n11 +++ exited with 0 +++\n')
-        row('unfinished', not O.DependencyReads(repo, {}).trace(trace, all_syscalls=True).record(item, commit)['complete'])
+        row('unfinished', not O.DependencyReads(repo, {}).trace(trace, launched_argv=O.dependency_module('case_trace')['command'](trace, ['/bin/true'])).record(item, commit)['complete'])
         trace.write_text('')
-        row('empty-trace', not O.DependencyReads(repo, {}).trace(trace, all_syscalls=True).record(item, commit)['complete'])
+        row('empty-trace', not O.DependencyReads(repo, {}).trace(trace, launched_argv=O.dependency_module('case_trace')['command'](trace, ['/bin/true'])).record(item, commit)['complete'])
         trace.write_text('11 openat(AT_FDCWD, "module367.py", O_RDONLY) = 3\n11 +++ exited with 0 +++\n')
-        fresh = O.DependencyReads(repo, {}).trace(trace, all_syscalls=True)
+        fresh = O.DependencyReads(repo, {}).trace(trace, launched_argv=O.dependency_module('case_trace')['command'](trace, ['/bin/true']))
         refreshed = fresh.record(item, commit)
         row('refresh', refreshed['complete'] and refreshed['paths'] == ['module367.py'] and
             refreshed['record_digest'] != complete['record_digest'])
+        trace.write_text('11 clone(child_stack=NULL, flags=SIGCHLD <unfinished ...>\n'
+                         '11 <... clone resumed>) = 12\n11 +++ exited with 0 +++\n')
+        row('unfinished-clone', not O.DependencyReads(repo, {}).trace(trace,
+            launched_argv=O.dependency_module('case_trace')['command'](trace, ['/bin/true'])).record(item, commit)['complete'])
+        for name, path in (('git-directory', repo / '.git/index'),):
+            metadata = O.DependencyReads(repo, {})
+            metadata.read(path)
+            row(name, 'git metadata read' in metadata.record(item, commit)['unknown_reason'])
+        linked = top / 'linked'
+        linked.mkdir()
+        (linked / '.git').write_text('gitdir: ' + str(repo / '.git/worktrees/linked'))
+        (repo / '.git/worktrees/linked').mkdir(parents=True)
+        (repo / '.git/worktrees/linked/commondir').write_text('../..')
+        metadata = O.DependencyReads(linked, {})
+        metadata.read(repo / '.git/index')
+        row('git-common-directory', 'git metadata read' in metadata.record(item, commit)['unknown_reason'])
+        filtered = O.dependency_module('case_trace')['command'](trace, ['/bin/true'])
+        row('tracer-command', '-f' in filtered and '-yy' in filtered and 'trace=all' in filtered)
+        trace.write_text('11 openat(AT_FDCWD, "module367.py", O_RDONLY) = 3\n11 +++ exited with 0 +++\n')
+        for option in ('-yy', 'trace=all'):
+            altered = [word for word in filtered if word != option]
+            row('trace-provenance-' + option, not O.DependencyReads(repo, {}).trace(trace,
+                launched_argv=altered).record(item, commit)['complete'])
+
         external = O.DependencyReads(repo, {})
         external.read('/proc/self/status')
         row('external-unknown', 'unrecordable external input' in external.record(item, commit)['unknown_reason'])
@@ -149,13 +217,19 @@ def _v367_observer():
         tree = ast.parse(coordinator.read_text())
         function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and
                         node.name == 'publish_case_dependencies')
-        namespace = dict(ROOT=authority, load=load, os=os, Refused=RuntimeError,
+        namespace = dict(ROOT=authority, load=load, os=os, sys=sys, Refused=RuntimeError,
                          in_leg=lambda leg, case: leg == 'unconfined')
         exec(compile(ast.Module(body=[function], type_ignores=[]), str(coordinator), 'exec'), namespace)
         publish = namespace['publish_case_dependencies']
         case = dict(identity='fixture', suite='fixture.py', driver='check_teeth_mutations.py', name='fixture')
         workers = SimpleNamespace(active={}, meters={}, owned_snapshots={}, outcomes=[], leg=None)
-        result = dict(baseline={'dependency': complete}, noop={'dependency': refreshed},
+        def python_claim(record):
+            return C['sealed'](C['DEPENDENCY'], **{k: v for k, v in record.items()
+                if k not in ('schema', 'record_digest', 'complete', 'unknown_reason')},
+                complete=False, unknown_reason='Python audit lacks complete syscall coverage')
+        first, second = python_claim(complete), python_claim(refreshed)
+        workers.authority_dependencies = {first['record_digest']: complete, second['record_digest']: refreshed}
+        result = dict(baseline={'dependency': first}, noop={'dependency': second},
                       mutant={'dependency': dep})
         for field, pending_value in (('active', {'worker': True}), ('meters', {'worker': True}),
                                      ('owned_snapshots', {'worker': True}),
@@ -176,6 +250,23 @@ def _v367_observer():
             expected = O.combine_dependencies([complete, refreshed, dep], identity, commit)
             entry = C['sealed']('veldo.change-observation/v1', dependency=expected, result=result)
             row('coordinator-union-' + leg, store.get(entry['record_digest']) == entry)
+        forged = dict(result, baseline={'dependency': complete})
+        refused = False
+        try:
+            publish(repo, commit, [case], {'fixture': forged}, workers, store=store)
+        except ValueError:
+            refused = True
+        row('coordinator-python-complete', refused)
+        class BrokenStore:
+            def change_put(self, envelope):
+                raise OSError('fixture Store unavailable')
+        stored = True
+        try:
+            publish(repo, commit, [case], {'fixture': result}, workers, store=BrokenStore())
+        except OSError:
+            stored = False
+        row('coordinator-store-failure', stored)
+
         result['noop'] = {}
         publish(repo, commit, [case], {'fixture': result}, workers, store=store)
         entries = [store.get(path.stem) for path in store.directory.glob('*.json')]
@@ -211,6 +302,72 @@ def _v367_observer():
                 value.get('dependency', {}).get('item_id') == C['identity']('stage', 'fixture-' + leg))
             row('native-' + leg, {'module367.py', 'data/child'} <= set(stage['dependency']['paths']) and
                 not stage['dependency']['complete'] and bool(stage['dependency']['unknown_reason']))
+
+        # Exercise the actual authority launch/publication seam with a deterministic
+        # kernel transcript. The process.args value is the argv received by run().
+        from unittest.mock import patch
+        taking = G.TakeOpened(repo, None, 'native-fixture', store=store)
+        trace_body = ('11 openat(AT_FDCWD, "data/child", O_RDONLY) = 3\n'
+                      '11 +++ exited with 0 +++\n')
+        def traced_process(argv, **kwargs):
+            Path(argv[argv.index('-o') + 1]).write_text(trace_body)
+            return subprocess.CompletedProcess(argv, 0)
+        with patch.object(G.subprocess, 'run', traced_process):
+            code = taking.run(G.unconfined, repo, 'cat data/child', taking.env(dict(os.environ,
+                              VELDO_GATE_LEG='unconfined', VELDO_GATE_UNCONFINED='')), taking.fd)
+        suite_identity = C['identity']('suite', 'native-fixture', 'unconfined', 'fixture')
+        claim = python_claim(C['sealed'](C['DEPENDENCY'], **{k: v for k, v in complete.items()
+            if k not in ('schema', 'record_digest', 'item_id')}, item_id=suite_identity))
+        os.write(taking.fd, (json.dumps(dict(dependency_claim=claim, result={'rows': [1, 0]})) + '\n').encode())
+        row('native-stage-finish', taking.finish('native-fixture', code) == 0)
+        native_entries = [store.get(path.stem) for path in store.directory.glob('*.json')]
+        row('native-stage-complete', any(entry and entry.get('dependency', {}).get('item_id') ==
+            C['identity']('stage', 'native-fixture') and entry['dependency']['complete'] and
+            'data/child' in entry['dependency']['paths'] for entry in native_entries))
+        row('native-suite-complete', any(entry and entry.get('dependency', {}).get('item_id') ==
+            suite_identity and entry['dependency']['complete'] and 'data/child' in entry['dependency']['paths']
+            for entry in native_entries))
+        native_result = dict(baseline={'dependency': first}, noop={'dependency': second}, mutant={'dependency': first})
+        publish(repo, commit, [case], {'fixture': native_result}, workers, store=store)
+        native_entries = [store.get(path.stem) for path in store.directory.glob('*.json')]
+        row('native-worker-complete', any(entry and entry.get('result') == native_result and
+            entry['dependency']['complete'] for entry in native_entries))
+
+        taking = G.TakeOpened(repo, None, 'forged-fixture', store=store)
+        refused = False
+        try:
+            taking.publish('forged-fixture', 0, [dict(dependency_claim=complete, result=outcome)], [], [], False)
+        except G.Invalid:
+            refused = True
+        taking.finish('forged-fixture', 1)
+        row('stage-python-complete', refused)
+        taking = G.TakeOpened(repo, None, 'store-failure-fixture', store=BrokenStore())
+        row('stage-store-failure', taking.finish('store-failure-fixture', 0) == 0)
+        taking = G.TakeOpened(repo, None, 'failed-fixture', store=store)
+        row('failed-stage-status', taking.finish('failed-fixture', 7) == 7 and not any(
+            (store.get(path.stem) or {}).get('dependency', {}).get('item_id') == C['identity']('stage', 'failed-fixture')
+            for path in store.directory.glob('*.json')))
+        from unittest.mock import patch
+        import ctypes
+        import errno
+        fake = G.OpenWatch.__new__(G.OpenWatch)
+        fake.root, fake.fd, fake.overflowed = repo, -1, False
+        fake.libc = SimpleNamespace(inotify_add_watch=lambda *args: -1)
+        ctypes.set_errno(errno.ENOSPC)
+        fake._watch(repo, False)
+        row('watch-failure', fake.overflowed)
+        fake.overflowed = False
+        def failed_walk(*args, **kwargs):
+            kwargs['onerror'](PermissionError('fixture unreadable directory'))
+            return []
+        with patch.object(G.os, 'walk', failed_walk):
+            fake._tree(repo, False)
+        row('walk-failure', fake.overflowed)
+        (repo / 'dirty').write_text('uncommitted')
+        taking = G.TakeOpened(repo, None, 'dirty-fixture', store=store)
+        row('dirty-stage', taking.commit == '0' * 40)
+        taking.finish('dirty-fixture', 0)
+        (repo / 'dirty').unlink()
 
         taking = G.TakeOpened(repo, None, 'overflow-fixture', store=store)
         real_stop = taking.watch.stop
@@ -261,6 +418,10 @@ def _v367_observer():
 
         # The worker binds coordinates before entering confinement. Store writes
         # stay with the authority after cleanup, never in this bootstrap seam.
+        subprocess.run(['git', '-C', str(repo), 'add', '.'], check=True)
+        subprocess.run(['git', '-C', str(repo), '-c', 'user.name=Dmitry Grinberg',
+                        '-c', 'user.email=dmitry@bcengi.com', 'commit', '-qm', 'worker fixture'], check=True)
+        commit = subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], text=True).strip()
         variables = ('VELDO_DEPENDENCY_COMMIT', 'VELDO_DEPENDENCY_LEG')
         saved = {name: os.environ.get(name) for name in variables}
         try:
@@ -268,6 +429,10 @@ def _v367_observer():
                 W.dependency_context(repo, 'worker' if leg == 'confined' else leg)
                 row('worker-' + leg, os.environ['VELDO_DEPENDENCY_COMMIT'] == commit and
                     os.environ['VELDO_DEPENDENCY_LEG'] == leg)
+            (repo / 'dirty-worker').write_text('uncommitted')
+            W.dependency_context(repo, 'worker')
+            row('dirty-worker', os.environ['VELDO_DEPENDENCY_COMMIT'] == '0' * 40)
+            (repo / 'dirty-worker').unlink()
         finally:
             for name, value in saved.items():
                 if value is None:

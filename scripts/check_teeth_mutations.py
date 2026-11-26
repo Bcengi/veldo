@@ -19013,6 +19013,58 @@ def cases():
         'publish_case_dependencies(root, head, fresh, results, workers)', 'pass  # defect: observation never published',
         ['coordinator-wired'])
 
+    observer367('private-scratch', 'mutation_observer.py',
+        'if any(candidate == directory or directory in candidate.parents for directory in self.private_scratch):',
+        'if False:', ['private-scratch'])
+    observer367('authority-runtime', 'mutation_observer.py',
+        "'authority:' + candidate.relative_to(self.authority).as_posix()", 'str(candidate)', ['authority-runtime'])
+    observer367('trace-compatible', 'case_trace.py',
+        "('ptrace', 'strace', 'namespace', 'confinement')", "()", ['trace-compatible'])
+    observer367('tracer-command', 'case_trace.py',
+        "'trace=all'", "'trace=%file'", ['tracer-command'])
+    observer367('warm-bytecode', 'mutation_observer.py',
+        'self.paths.add(source.relative_to(self.root).as_posix())', 'pass  # defect: warm source lost', ['warm-bytecode'])
+    observer367('unfinished-clone', 'mutation_observer.py',
+        "for line in tracer['syscall_lines'](trace):\n                call = tracer['CALL'].search(line)\n                if call and call[1] in ('clone', 'clone3', 'fork', 'vfork'):",
+        "for line in lines:\n                call = tracer['CALL'].search(line)\n                if call and call[1] in ('clone', 'clone3', 'fork', 'vfork'):", ['unfinished-clone'])
+    observer367('git-metadata', 'mutation_observer.py',
+        "self.unknown('git metadata read')", 'pass  # defect: metadata hidden', ['git-directory', 'git-common-directory'])
+    observer367('dirty-checkout', 'mutation_observer.py',
+        'before.returncode or status.returncode or status.stdout or after.returncode',
+        'before.returncode or status.returncode or after.returncode', ['dirty-stage', 'dirty-worker'])
+    observer367('trace-provenance', 'mutation_observer.py',
+        "if tracer['full_command'](launched_argv, trace):", 'if True:',
+        ['trace-provenance--yy', 'trace-provenance-trace=all'])
+    observer367('stage-trace', 'gate_legs.py',
+        'launched_argv=process.args', 'launched_argv=()', ['native-stage-complete', 'native-suite-complete'])
+    observer367('worker-trace', 'mutation_observer.py',
+        'if native is None:', 'if True:', ['native-worker-complete'])
+    observer367('stage-store-failure', 'gate_legs.py',
+        "print('dependency observation not stored: %s' % error, flush=True)",
+        "raise error", ['stage-store-failure'])
+    observer367('coordinator-store-failure', 'check_gate_mutations.py',
+        "        except OSError as observation_error:\n            print('dependency observation not stored: %s' % observation_error, file=sys.stderr)",
+        "        except OSError as observation_error:\n            raise observation_error", ['coordinator-store-failure'])
+    observer367('stage-python-complete', 'gate_legs.py',
+        "            if dependency['complete']:\n                raise Invalid('Python dependency claim asserts complete native coverage')",
+        "            if False:\n                raise Invalid('Python dependency claim asserts complete native coverage')", ['stage-python-complete'])
+    observer367('worker-python-complete', 'check_gate_mutations.py',
+        "            if dependency['complete']:\n                raise ValueError('Python dependency claim asserts complete native coverage')",
+        "            if False:\n                raise ValueError('Python dependency claim asserts complete native coverage')", ['coordinator-python-complete'])
+    observer367('watch-failure', 'gate_legs.py',
+        'if ctypes.get_errno() != errno.ENOENT:', 'if False:', ['watch-failure'])
+    observer367('walk-failure', 'gate_legs.py',
+        'def _walk_error(self, error):\n        self.overflowed = True',
+        'def _walk_error(self, error):\n        pass', ['walk-failure'])
+    observer367('failed-status', 'gate_legs.py',
+        'if self.observer is None or code != 0:', 'if self.observer is None:', ['failed-stage-status'])
+    observer367('runtime-environment', 'mutation_observer.py',
+        "('LANG', 'LC_ALL', 'LC_CTYPE', 'TZ', 'PYTHONHASHSEED', 'PYTHONUTF8') if k in values",
+        "('LANG', 'LC_ALL', 'LC_CTYPE', 'TZ', 'PYTHONHASHSEED', 'PYTHONUTF8', 'TMPDIR') if k in values", ['runtime-stable'])
+    observer367('runtime-scratch', 'mutation_observer.py',
+        'if any(candidate == directory or directory in candidate.parents for directory in self.scratch):',
+        'if False:', ['runtime-stable', 'scratch-unknown'])
+
     add(367, 'observer367-suite-attribution', '163_veldo_0367_observer.py', 'shared.py',
         "        counts[0 if condition else 1] += 1", "        counts[0] += 1", ['observer/suite-attribution'])
     result[-1]['dir'] = 'scripts/suites'

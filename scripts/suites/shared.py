@@ -51,7 +51,7 @@ def _dependency_capture():
     def current():
         name = Path(globals().get('__suite_file__', str(Path(__file__)))).stem
         if name not in captures:
-            read = observer.DependencyReads(ROOT)
+            read = observer.DependencyReads(ROOT, discover_git=False)
             read.unknown('Python audit lacks complete syscall coverage')
             read.active = True
             captures[name] = read
@@ -86,7 +86,7 @@ def _dependency_capture():
             record = observer.combine_dependencies(records, identity, commit)
             # The dispatcher may share state with prerequisites. Without a closed
             # group observation this remains unknown even if its own reads are known.
-            claim = dict(dependency_claim=record, result=dict(rows=results.get(name, [0, 0]), group=sorted(captures)))
+            claim = dict(dependency_claim=record, result=dict(status='observed', rows=results.get(name, [0, 0]), group=sorted(captures)))
             body = (json.dumps(claim, sort_keys=True) + '\n').encode()
             if os.write(ledger, body) != len(body):
                 raise OSError('lost dependency ledger events')

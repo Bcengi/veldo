@@ -37,9 +37,37 @@ class IncompleteTrace(ValueError):
 def command(trace, argv):
     # file includes metadata probes, even failed ones. getdents is not in file. network carries
     # every bind, connect and send, the evidence of a non-file input (VELDO-0217 AC4).
-    return ['/usr/bin/strace', '-f', '-q', '-yy', '-s', '65535',
-            '-e', 'trace=%file,%process,%network,fstat,fstatfs,getdents,getdents64,fchdir,landlock_restrict_self',
+    return ['/usr/bin/strace', '-f', '-q', '-yy', '-v', '-s', '65535',
+            '-e', 'trace=all',
             '-o', str(trace), *argv]
+
+
+def full_command(argv, trace):
+    """Check the tracer prefix actually launched by the authority, before its command."""
+    if not isinstance(argv, (list, tuple)):
+        return False
+    prefix = command(trace, [])
+    return list(argv[:len(prefix)]) == prefix and len(argv) > len(prefix)
+
+
+def compatible(authority, suites):
+    """A second tracer or a worker-tree launch must retain its existing boundary.
+
+    Use the authority's unchanged leg declarations; unknown requirements do not
+    license an observer that can change the workload's behavior.
+    """
+    if not suites:
+        return True
+    import json
+    try:
+        entries = json.loads((Path(authority) / 'scripts/gate_unconfined.json').read_text())['suites']
+        names = {name.split(':', 1)[0].removesuffix('.py') for name in suites}
+        relevant = [entry for entry in entries if entry['suite'] in names]
+        return len(relevant) == len(names) and not any(
+            word in entry['reason'].lower() for entry in relevant
+            for word in ('ptrace', 'strace', 'namespace', 'confinement'))
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
 
 
 def syscall_lines(trace):

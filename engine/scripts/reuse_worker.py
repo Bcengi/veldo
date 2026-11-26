@@ -75,7 +75,7 @@ def main():
     owner = load(authority / 'scripts/mutation_observer.py')
     owner.dependency_module('gate_changes')  # authority schema before its path becomes unreadable
     owner.ROOT = root
-    dependency_context(root, mode)
+    dependency_context(root, mode, commit=job.get('observed_commit'))
     ownership = load(authority / 'scripts/mutation_ownership.py')
     # Ownership is persisted from the authority copy before any candidate code runs, so the
     # coordinator can reap this worker's allocations even after SIGKILL. Candidate code can
@@ -102,14 +102,14 @@ def main():
     observe(gate, owner, job, root)
 
 
-def dependency_context(root, mode):
+def dependency_context(root, mode, *, commit=None):
     """Pin worker observation coordinates before confinement hides Git metadata.
 
     Publication belongs to the coordinator after descendant and allocation cleanup;
     the worker only returns observation data on its existing result channel.
     """
-    commit = subprocess.run(['git', '-C', str(root), 'rev-parse', 'HEAD'],
-                            capture_output=True, text=True).stdout.strip()
+    if commit is None:
+        commit = load(Path(__file__).with_name('mutation_observer.py')).clean_commit(root)
     os.environ['VELDO_DEPENDENCY_COMMIT'] = commit if len(commit) in (40, 64) else '0' * 40
     os.environ['VELDO_DEPENDENCY_LEG'] = 'unconfined' if mode == 'unconfined' else 'confined'
 

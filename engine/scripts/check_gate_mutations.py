@@ -842,6 +842,8 @@ class Workers:
         # The authority's unconfined leg (gate_legs.mutation_leg) or None: every worker confined.
         self.leg = None
         self.legs = {}
+        self.authority_dependencies = {}
+        self.observation_context = {}
         self.budgets = {}
 
     boundary = None
@@ -996,6 +998,23 @@ class Workers:
                         raise ValueError('worker result must be an object')
                 except ValueError:
                     error = Refused('driver_error', name + ': invalid or empty worker JSON')
+        if error is None and result is not None:
+            owner = load(ROOT / 'scripts/mutation_observer.py')
+            claim = result.get('observation', {}).get('dependency')
+            if claim is not None:
+                try:
+                    if claim['complete']:
+                        raise ValueError('Python dependency claim asserts complete native coverage')
+                    trace = home.parent / ('trace-' + home.name)
+                    if trace.is_file():
+                        reads = owner.DependencyReads(*self.observation_context[name], private_scratch=(home,))
+                        reads.trace(trace, launched_argv=proc.args)
+                        if claim['observed_commit'] == '0' * 40:
+                            reads.unknown('observed commit unavailable')
+                        native = reads.record(claim['item_id'], claim['observed_commit'])
+                        self.authority_dependencies[claim['record_digest']] = native
+                except (OSError, ValueError, KeyError, TypeError) as observation_error:
+                    print('dependency observation not stored: %s' % observation_error, file=sys.stderr)
         if error is not None:
             record.update(error=getattr(error, 'code', 'driver_error'), detail=getattr(error, 'detail', str(error)),
                           stdout_tail=stdout.decode(errors='replace')[-2000:],
@@ -1110,6 +1129,7 @@ class Workers:
                     if job.get('declared_case'):
                         self.owned_snapshots[name] = directory / 'cases' / str(self.invocations)
                         job.update(self.case_reuse.prepare(job['case'], self.owned_snapshots[name]))
+                    job['observed_commit'] = getattr(self, 'observed_commit', None)
                     jobpath = home / 'job.json'
                     jobpath.write_bytes(canonical(job))
                     out, err = (open(directory / (str(self.invocations) + '-' + f), 'w+b')
@@ -1147,8 +1167,9 @@ class Workers:
                                 str(ROOT / 'scripts/reuse_worker.py'),
                                 'worker' if leg == 'confined' else 'unconfined',
                                 str(worker_root), str(ledger), str(jobpath)]
-                        if 'snapshot_root' in job:
-                            tracer = load(ROOT / 'scripts/case_trace.py')
+                        tracer = load(ROOT / 'scripts/case_trace.py')
+                        if 'snapshot_root' in job or (leg == 'unconfined' and Path('/usr/bin/strace').is_file()
+                                and tracer.compatible(ROOT, [job['case']['suite']])):
                             argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
                         # A worker reads its job from its file, never from the coordinator's
                         # stdin, which may be a socket the worker's boundary would refuse.
@@ -1166,6 +1187,7 @@ class Workers:
                             environment['VELDO_MUTATION_CGROUP_FD'] = str(meter_fd)
                         if lifecycle_fd is not None:
                             environment['VELDO_MUTATION_LIFECYCLE_FD'] = str(lifecycle_fd)
+                        self.observation_context[name] = (worker_root, environment)
                         proc = subprocess.Popen(argv, cwd=worker_root,
                                                 env=environment,
                                                 stdin=subprocess.DEVNULL, stdout=out, stderr=err,
@@ -1319,7 +1341,8 @@ def publish_case_dependencies(root, head, cases, results, workers, *, store=None
     changes = owner.dependency_module('gate_changes')
     store = store or load(ROOT / 'scripts/gate_reuse.py')._suite_store(root, os.environ)
     if store is None:
-        raise OSError('dependency Store unavailable')
+        print('dependency observation not stored: dependency Store unavailable', file=sys.stderr)
+        return
     for case in cases:
         record = results[case['identity']]
         leg = 'unconfined' if in_leg(workers.leg, case) else 'confined'
@@ -1331,9 +1354,16 @@ def publish_case_dependencies(root, head, cases, results, workers, *, store=None
                 missing = owner.DependencyReads(root)
                 missing.unknown('missing ' + mode + ' observation')
                 dependency = missing.record(item, head)
+            if dependency['complete']:
+                raise ValueError('Python dependency claim asserts complete native coverage')
+            native = getattr(workers, 'authority_dependencies', {}).get(dependency['record_digest'])
+            dependency = owner.native_dependency(native, dependency)
             dependencies.append(dependency)
         dependency = owner.combine_dependencies(dependencies, item, head)
-        owner.publish_dependencies(store, dependency, record)
+        try:
+            owner.publish_dependencies(store, dependency, record)
+        except OSError as observation_error:
+            print('dependency observation not stored: %s' % observation_error, file=sys.stderr)
 
 
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
@@ -1391,6 +1421,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             receipt['case_claims'] = claims
             receipt['mutation_floor'] = admission.floor
         head = git(root, expected_common, 'rev-parse', 'HEAD')
+        workers.observed_commit = load(ROOT / 'scripts/mutation_observer.py').clean_commit(root)
         receipt['input_digest'] = digest({'files': file_identity(files), 'head': head})
         receipt['implementation_digest'] = hashlib.sha256(
             files['scripts/check_gate_mutations.py'][1]).hexdigest()
@@ -1627,7 +1658,10 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
                 validate_result(results[case['identity']], case)
         workers.check()
         if fresh:
-            publish_case_dependencies(root, head, fresh, results, workers)
+            try:
+                publish_case_dependencies(root, head, fresh, results, workers)
+            except (OSError, ValueError, KeyError, TypeError) as observation_error:
+                print('dependency observation not stored: %s' % observation_error, file=sys.stderr)
         for case in fresh:
             reuse.publish(case, results[case['identity']], validate_result)
         if reuse.store and reuse.store.integrity_errors:
