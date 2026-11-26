@@ -328,7 +328,7 @@ print(json.dumps(results))
             startup_input = top / 'startup-config'; startup_input.write_text('unkeyed input')
             scratch = top / 'startup-home'; scratch.mkdir()
             trace = top / 'startup.trace'
-            result = subprocess.run(T.command(trace, [sys.executable, '-B', '-S', '-c',
+            result = subprocess.run(T.legacy_command(trace, [sys.executable, '-B', '-S', '-c',
                                     'open(' + repr(str(startup_input)) + ').read()']),
                                     cwd=root, env=gate.fixed_env(scratch), capture_output=True, timeout=15)
             try:

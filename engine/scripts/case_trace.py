@@ -48,6 +48,20 @@ def command(trace, argv):
             '-o', str(trace), *argv]
 
 
+def legacy_command(trace, argv):
+    """The tracer as it ran before VELDO-0367: only the calls a declared case's check reads.
+
+    Every call traced (command, above) costs a traced run more than twice its time, so it is used
+    only to observe dependencies, never while change selection is off."""
+    return ['/usr/bin/strace', '-f', '-q', '-yy', '-s', '65535',
+            '-e', 'trace=%file,%process,%network,fstat,fstatfs,getdents,getdents64,fchdir,landlock_restrict_self',
+            '-o', str(trace), *argv]
+
+
+def stage_command(trace, argv, observing):
+    return command(trace, argv) if observing else legacy_command(trace, argv)
+
+
 def full_command(argv, trace):
     """Check the tracer prefix actually launched by the authority, before its command."""
     if not isinstance(argv, (list, tuple)):

@@ -1242,7 +1242,7 @@ class Workers:
                         if 'snapshot_root' in job or (leg == 'unconfined' and observing()
                                 and Path('/usr/bin/strace').is_file()
                                 and tracer.compatible(ROOT, [job['case']['suite']])):
-                            argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
+                            argv = tracer.stage_command(directory / ('trace-' + str(self.invocations)), argv, observing())
                         # A worker reads its job from its file, never from the coordinator's
                         # stdin, which may be a socket the worker's boundary would refuse.
                         # Inside a tree the agent launcher made, a worker is handed its marker, so a

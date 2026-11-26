@@ -929,7 +929,7 @@ def _v208_traced_workers():
             trace = top / (mode + '.trace')
             argv, channel = worker_argv(job)
             try:
-                process = subprocess.run(tracer.command(trace, argv), cwd=worker_root, pass_fds=(channel,),
+                process = subprocess.run(tracer.legacy_command(trace, argv), cwd=worker_root, pass_fds=(channel,),
                     env=gate.fixed_env(scratch), capture_output=True, text=True, timeout=20,
                     stdin=subprocess.DEVNULL)
             finally:

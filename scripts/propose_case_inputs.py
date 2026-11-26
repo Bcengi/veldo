@@ -157,13 +157,13 @@ def observation_digest(observation):
     return digest({k: v for k, v in observation.items() if k != 'failed_details'})
 
 
-def run_traced(argv, env, cwd, directory, ceiling):
+def run_traced(argv, env, cwd, directory, ceiling, observing=False):
     """Run argv under strace in its own process group; (exit, seconds, stdout, stderr, trace)."""
     ceiling = max(120, ceiling)
     trace = Path(directory) / 'trace'
     start = time.monotonic()
     with open(Path(directory) / 'stdout', 'w+b') as stdout, open(Path(directory) / 'stderr', 'w+b') as stderr:
-        proc = subprocess.Popen(T.command(trace, argv), env=env, cwd=cwd, stdin=subprocess.DEVNULL,
+        proc = subprocess.Popen(T.stage_command(trace, argv, observing), env=env, cwd=cwd, stdin=subprocess.DEVNULL,
                                 stdout=stdout, stderr=stderr, start_new_session=True)
         try:
             reason = 'exited 124'
@@ -225,7 +225,8 @@ def trace_case(gate, case, mode=None, keep=None):
         argv = [sys.executable, '-B', '-X', 'pycache_prefix=' + str(directory / 'bytecode'),
                 str(Path(__file__).resolve()), '--probe', str(job), str(audit)]
         code, seconds, out, err, trace = run_traced(argv, gate.fixed_env(directory), ROOT, directory,
-                                                    gate.WORKER_CEILING)
+                                                    gate.WORKER_CEILING,
+                                                    observing=getattr(gate, 'observing', lambda: False)())
         row = {'mode': mode, 'exit': code, 'seconds': seconds,
                'trace': hashlib.sha256(trace.read_bytes()).hexdigest()}
         output = None
