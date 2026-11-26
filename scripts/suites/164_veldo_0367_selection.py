@@ -231,16 +231,24 @@ def _v367_selection():
         controls.get(suite, [case, other], execute_controls)
         row('controls-once', len(calls) == 1)
         control_commit[0] = b
-        carried_pair = M.SuiteControls(store, ['unrelated'], b).get(suite, [case, other], execute_controls,
-                                                                pair['record_digest'])
+        carried_pair = M.SuiteControls(store, ['unrelated'], b, changed_since=lambda source: ['unrelated']).get(
+            suite, [case, other], execute_controls, pair['record_digest'])
         row('controls-carry', len(calls) == 1 and carried_pair == pair)
         control_commit[0] = a
-        M.SuiteControls(store, ['input'], a).get(suite, [case, other], execute_controls, pair['record_digest'])
+        M.SuiteControls(store, ['input'], a, changed_since=lambda source: []).get(
+            suite, [case, other], execute_controls, pair['record_digest'])
         row('controls-dependency', len(calls) == 2)
+        # VELDO-0367 F7: a carried control is judged over its own source range, not only the baseline's.
+        control_commit[0] = b
+        M.SuiteControls(store, ['unrelated'], b, changed_since=lambda source: ['input'] if source == a else []).get(
+            suite, [case, other], execute_controls, pair['record_digest'])
+        row('controls-source-range', len(calls) == 3)
+        control_commit[0] = a
         forged_control = reseal(pair, source_commit=b)
         store.change_put(forged_control)
-        M.SuiteControls(store, [], a).get(suite, [case, other], execute_controls, forged_control['record_digest'])
-        row('control-forgery', len(calls) == 3)
+        M.SuiteControls(store, [], a, changed_since=lambda source: []).get(
+            suite, [case, other], execute_controls, forged_control['record_digest'])
+        row('control-forgery', len(calls) == 4)
         invalid_pair = dict(pair, baseline=observation([['fixture target', False], ['fixture second', True]]))
         ran = []
         row('failed-control', refused(lambda: M.selected_mutation(case, invalid_pair, lambda _: ran.append(1) or dict(mutant=honest),

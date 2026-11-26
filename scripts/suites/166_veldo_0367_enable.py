@@ -116,6 +116,39 @@ def _v367_enable():
                 validation_mode='change-scoped', force_fresh=False, reused={'unit': 0, 'mutation': 0}),
                 root=repo) is not None)
 
+        # VELDO-0367 F1: every intermediate baseline of a carry is reopened, not one hop plus the origin.
+        (repo / 'unrelated').write_text('three')
+        fourth = commit('fourth')
+        git('reset', '-q', '--hard', third)
+        before_loss = C.select(repo, store, 'fixture', fourth, inventory, {item_id: runtime})
+        middle = store._path(carried['record_digest'])
+        aside = middle.with_name('aside-' + middle.name)
+        middle.rename(aside)
+        try:
+            lost = C.select(repo, store, 'fixture', fourth, inventory, {item_id: runtime})
+            row('chain-intermediate-select', [i['status'] for i in before_loss['items']] == ['carried'] and
+                lost['baseline_record_digest'] == final['record_digest'] and
+                [i['status'] for i in lost['items']] == ['run'])
+            row('chain-intermediate-publish', refused(lambda: C.publish_gate(repo, store, 'fixture', inventory,
+                C.assemble(before_loss, {}))))
+        finally:
+            aside.rename(middle)
+
+        # VELDO-0367 F2: content-keyed runtime records stay readable after an authority edit;
+        # any other record still needs the current authority.
+        observed_runtime = {'environment': {'LANG': 'C.UTF-8'}, '/etc/fixture': ['file', 'a' * 64, 33188]}
+        runtime_key = C.digest(['observed-runtime', C.publish_runtime(store, observed_runtime)])
+        foreign_key = C.digest(['observed-runtime', C.digest('another record')])
+        store.put(foreign_key, ['not', 'its', 'digest'])
+        edited = authority / 'scripts/gate_weekly.py'
+        saved_weekly = edited.read_text()
+        edited.write_text(saved_weekly + '# authority edit\n')
+        try:
+            row('runtime-after-authority', store.get(runtime_key) == observed_runtime)
+            row('foreign-after-authority', store.get(foreign_key) is None)
+        finally:
+            edited.write_text(saved_weekly)
+
         # Production catalog and graph adapters, exercised with a tiny authority.
         X = load(authority / 'scripts/gate_execution.py')
         L = X.module('gate_legs')

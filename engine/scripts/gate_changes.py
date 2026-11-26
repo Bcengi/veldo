@@ -312,6 +312,9 @@ def execution_evidence(store, result, dependency, coordinates):
     controls = store.get(mutation['control_receipt_digest'])
     require(controls['suite']['leg'] == coordinates[2] and all(k['kill_by'] in ('assertion', 'terminal', 'unproven')
             for k in mutation['kills']), 'execution leg and rejection')
+    # Controls carried from another commit must themselves be complete (VELDO-0367 F7).
+    require(controls['source_commit'] == result['source_commit'] or controls['dependency']['complete'],
+            'carried controls complete')
     retained = [controls['dependency']]
     if mutation['execution_scope'] == 'rows':
         retained.append(store.get(mutation['prior_kill_receipt_digest'])['dependency'])
@@ -336,6 +339,53 @@ def historical_gate(store, key, repository):
     return gate
 
 
+def carried_chain(root, store, gate, item, repository, cache=None):
+    """Walk one carried item through every green first-parent baseline to its execution.
+
+    Each hop reopens its baseline record, ancestry, definition, changed paths and
+    dependency evidence; one checked hop plus the origin cannot vouch for the hops
+    between them (VELDO-0367 F1). Commits are immutable, so diffs are cached per run.
+    """
+    cache = {} if cache is None else cache
+
+    def diff(baseline_commit, candidate_commit):
+        key = ('diff', baseline_commit, candidate_commit)
+        if key not in cache:
+            cache[key] = changed_paths(root, baseline_commit, candidate_commit)
+        return cache[key]
+
+    def parents(commit):
+        key = ('parents', commit)
+        if key not in cache:
+            cache[key] = set(first_parents(root, commit))
+        return cache[key]
+
+    current, source, seen = gate, item, set()
+    while source['status'] == 'carried':
+        require(current['record_digest'] not in seen, 'cyclic carried chain')
+        seen.add(current['record_digest'])
+        receipt = current['receipt']
+        previous = historical_gate(store, receipt['baseline_record_digest'], repository)
+        require(previous['record_digest'] == receipt['baseline_record_digest'] and
+                previous['receipt']['candidate_commit'] == receipt['baseline_commit'] and
+                receipt['baseline_commit'] in parents(receipt['candidate_commit']), 'carried chain baseline ancestry')
+        key = source['item_id']
+        old = {i['item_id']: i for i in previous['receipt']['items']}.get(key)
+        require(old is not None and old['status'] in ('executed', 'carried'), 'carried chain missing baseline item')
+        expected = dict(old, status='carried', source_gate_digest=(previous['record_digest']
+                        if old['status'] == 'executed' else old['source_gate_digest']))
+        require(source == expected, 'carried chain source')
+        definitions = {i['item_id']: i for i in previous['inventory']['items']}
+        definition = next((i for i in current['inventory']['items'] if i['item_id'] == key), None)
+        require(definition is not None and definitions.get(key) == definition, 'carried chain definition')
+        dependency = item_evidence(store, source)
+        changed = diff(receipt['baseline_commit'], receipt['candidate_commit'])
+        require(digest(changed) == receipt['changed_paths_digest'] and dependency['complete'] and
+                not intersects(dependency, changed), 'carried chain dependencies')
+        current, source = previous, old
+    return source
+
+
 def green_record(root, store, gate, repository, seen=()):
     """Validate the entire authenticated chain, including original execution provenance."""
     check_seal(gate, GATE, ('repository', 'inventory', 'receipt', 'status', 'complete'))
@@ -356,6 +406,7 @@ def green_record(root, store, gate, repository, seen=()):
     old = {i['item_id']: i for i in prior['receipt']['items']} if prior else {}
     definitions = {i['item_id']: i for i in prior['inventory']['items']} if prior else {}
     current = {i['item_id']: i for i in gate['inventory']['items']}
+    cache = {}
     for item in receipt['items']:
         require(item['status'] != 'failed', 'failed item')
         if item['status'] == 'removed':
@@ -380,6 +431,7 @@ def green_record(root, store, gate, repository, seen=()):
                     origin['receipt']['candidate_commit'] == item['source_commit'] and
                     dict(item, status='executed', source_gate_digest=None) in origin['receipt']['items'],
                     'original execution')
+            carried_chain(root, store, gate, item, repository, cache)
     return gate
 
 
@@ -426,6 +478,7 @@ def select(root, store, repository, candidate, current, runtimes):
     prior = eligible_baseline(root, store, repository, candidate)
     changed = changed_paths(root, prior['receipt']['candidate_commit'], candidate) if prior else None
     old = {i['item_id']: i for i in prior['receipt']['items']} if prior else {}
+    cache = {}
     rows = []
     for item in reconcile(current, prior['inventory'] if prior else None):
         key = item['item_id']
@@ -441,6 +494,7 @@ def select(root, store, repository, candidate, current, runtimes):
                         require(origin['record_digest'] == source['source_gate_digest'] and
                                 dict(source, status='executed', source_gate_digest=None) in origin['receipt']['items'],
                                 'original source binding')
+                        carried_chain(root, store, prior, source, repository, cache)
                     require(source['status'] in ('executed', 'carried'), 'missing green result')
                     dependency = item_evidence(store, source)
                     require(dependency['complete'], 'unknown dependency')

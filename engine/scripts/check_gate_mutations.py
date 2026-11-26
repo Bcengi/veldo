@@ -894,6 +894,7 @@ class Workers:
         self.authority_dependencies = {}
         self.authority_runtimes = {}
         self.observation_context = {}
+        self.private_files = {}
         self.budgets = {}
 
     boundary = None
@@ -954,6 +955,16 @@ class Workers:
         path = self.owned_snapshots.pop(name, None)
         if path is not None and path.exists():
             shutil.rmtree(path)
+
+    def attribution_reads(self, owner, name, home):
+        """The authority's reader for one worker's trace. Per-run coordinator files and the worker's
+        own fixture allocation are private allocations, never runtime identity; a materialized copy
+        stands for its repository source (VELDO-0367 N2, N4, F5)."""
+        worker_root, environment, case, mode = self.observation_context[name]
+        copy = owner.materialized_copy(case, home) if mode != 'baseline' else None
+        return owner.DependencyReads(worker_root, environment, private_scratch=(
+            home, *self.private_files.get(name, ())), translate=(
+            (lambda path: owner.materialized_origin(case, copy, path, worker_root)) if copy else None))
 
     def finish(self, name, error=None):
         proc, out, err, started = self.active[name]
@@ -1049,7 +1060,7 @@ class Workers:
                 except ValueError:
                     error = Refused('driver_error', name + ': invalid or empty worker JSON')
         if error is None and result is not None:
-            owner = load(ROOT / 'scripts/mutation_observer.py')
+            owner = _load_audit(ROOT / 'scripts/mutation_observer.py')
             claim = result.get('observation', {}).get('dependency')
             if claim is not None:
                 try:
@@ -1057,7 +1068,7 @@ class Workers:
                         raise ValueError('Python dependency claim asserts complete native coverage')
                     trace = home.parent / ('trace-' + home.name)
                     if trace.is_file():
-                        reads = owner.DependencyReads(*self.observation_context[name], private_scratch=(home,))
+                        reads = self.attribution_reads(owner, name, home)
                         reads.trace(trace, launched_argv=proc.args)
                         if claim['observed_commit'] == '0' * 40:
                             reads.unknown('observed commit unavailable')
@@ -1086,6 +1097,9 @@ class Workers:
             # another worker; retaining every copy until stage end fills the disk.
             # stdout, stderr, traces and the ledger live beside home and survive.
             ownership.remove_tree(home)
+            for allocation in self.private_files.pop(name, ())[3:]:
+                if allocation.exists():
+                    _load_audit(ROOT / 'scripts/gate_fixtures.py').remove_tree(allocation)
             # Keep the ownership receipt unchanged; scratch is coordinator-owned.
             record['scratch_removed'] = True
         except Exception as cleanup_error:
@@ -1239,7 +1253,16 @@ class Workers:
                             environment['VELDO_MUTATION_CGROUP_FD'] = str(meter_fd)
                         if lifecycle_fd is not None:
                             environment['VELDO_MUTATION_LIFECYCLE_FD'] = str(lifecycle_fd)
-                        self.observation_context[name] = (worker_root, environment)
+                        self.private_files[name] = (directory / (str(self.invocations) + '-stdout'),
+                                                    directory / (str(self.invocations) + '-stderr'),
+                                                    self.ledgers[name])
+                        if argv[0] == '/usr/bin/strace' and 'snapshot_root' not in job:
+                            # A traced fresh worker's private_runtime allocates beneath its own root.
+                            fixtures = _load_audit(ROOT / 'scripts/gate_fixtures.py')
+                            allocation = fixtures.allocate(fixtures.parent_for(environment), 'g')
+                            environment['VELDO_FIXTURE_ROOT'] = str(allocation)
+                            self.private_files[name] += (allocation,)
+                        self.observation_context[name] = (worker_root, environment, job['case'], job['mode'])
                         proc = subprocess.Popen(argv, cwd=worker_root,
                                                 env=environment,
                                                 stdin=subprocess.DEVNULL, stdout=out, stderr=err,
@@ -1399,11 +1422,17 @@ def snapshot(root, expected_common, destination, files, head):
 
 def publish_case_dependencies(root, head, cases, results, workers, *, store=None):
     """Publish observations only after the authority has reaped worker allocations."""
-    if workers.active or workers.meters or workers.owned_snapshots:
+    # Fixture doubles of Workers or load stand for a coordinator without observation (VELDO-0367 N2).
+    if (getattr(workers, 'active', None) or getattr(workers, 'meters', None)
+            or getattr(workers, 'owned_snapshots', None)):
         raise Refused('worker_cleanup_error', 'dependency publication before cleanup')
-    if any(outcome.get('error') == 'worker_cleanup_error' for outcome in workers.outcomes):
+    if any(outcome.get('error') == 'worker_cleanup_error' for outcome in getattr(workers, 'outcomes', ())):
         raise Refused('worker_cleanup_error', 'dependency publication after failed cleanup')
-    owner = load(ROOT / 'scripts/mutation_observer.py')
+    owner = _load_audit(ROOT / 'scripts/mutation_observer.py')
+    # Only the clean checkout the workers observed, rechecked now, may stamp the envelope (N4).
+    observed = getattr(workers, 'observed_commit', None) or '0' * 40
+    if owner.clean_commit(root) != observed:
+        observed = '0' * 40
     changes = owner.dependency_module('gate_changes')
     store = store or load(ROOT / 'scripts/gate_reuse.py')._suite_store(root, os.environ)
     if store is None:
@@ -1419,13 +1448,13 @@ def publish_case_dependencies(root, head, cases, results, workers, *, store=None
             if dependency is None:
                 missing = owner.DependencyReads(root)
                 missing.unknown('missing ' + mode + ' observation')
-                dependency = missing.record(item, head)
+                dependency = missing.record(item, observed)
             if dependency['complete']:
                 raise ValueError('Python dependency claim asserts complete native coverage')
             native = getattr(workers, 'authority_dependencies', {}).get(dependency['record_digest'])
             dependency = owner.native_dependency(native, dependency)
             dependencies.append(dependency)
-        dependency = owner.combine_dependencies(dependencies, item, head)
+        dependency = owner.combine_dependencies(dependencies, item, observed)
         try:
             owner.publish_dependencies(store, dependency, record)
         except OSError as observation_error:
@@ -1492,7 +1521,11 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             receipt['case_claims'] = claims
             receipt['mutation_floor'] = admission.floor
         head = git(root, expected_common, 'rev-parse', 'HEAD')
-        workers.observed_commit = load(ROOT / 'scripts/mutation_observer.py').clean_commit(root)
+        try:
+            workers.observed_commit = _load_audit(ROOT / 'scripts/mutation_observer.py').clean_commit(root)
+        except (OSError, AttributeError) as observation_error:
+            print('dependency observation not stored: %s' % observation_error, file=sys.stderr)
+            workers.observed_commit = '0' * 40
         receipt['input_digest'] = digest({'files': file_identity(files), 'head': head})
         receipt['implementation_digest'] = hashlib.sha256(
             files['scripts/check_gate_mutations.py'][1]).hexdigest()
@@ -1731,7 +1764,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
         if fresh:
             try:
                 publish_case_dependencies(root, head, fresh, results, workers)
-            except (OSError, ValueError, KeyError, TypeError) as observation_error:
+            except (OSError, ValueError, KeyError, TypeError, AttributeError) as observation_error:
                 print('dependency observation not stored: %s' % observation_error, file=sys.stderr)
         for case in fresh:
             reuse.publish(case, results[case['identity']], validate_result)
@@ -1902,7 +1935,8 @@ def main():
 
 
 def run_selected_cases(workers, cases, directory, frozen, *, store, commit, changed,
-                       configurations, registered_cases, prior_kills=None, prior_controls=None, claims=None, verify_runtime=False):
+                       configurations, registered_cases, prior_kills=None, prior_controls=None, claims=None, verify_runtime=False,
+                       changed_since=None):
     """Increment 3 coordinator seam. Increment 5 supplies the authenticated selection.
 
     Uses the existing confined workers, reservations and cleanup, with controls
@@ -1920,7 +1954,8 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
         suite = M.suite_identity(case, configurations[case['identity']])
         groups.setdefault(C.digest(suite), (suite, []))[1].append(case)
     controls = M.SuiteControls(store, changed, commit, runtime_validator=(
-        lambda key: C.runtime_current(store, key, fixed_env('/nonexistent'), ROOT)) if verify_runtime else None)
+        lambda key: C.runtime_current(store, key, fixed_env('/nonexistent'), ROOT)) if verify_runtime else None,
+        changed_since=changed_since)
     results = {}
     for group, (suite, members) in groups.items():
         if not any(c['identity'] in requested for c in members):
@@ -1999,7 +2034,9 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
             envelope = C.sealed(M.KILL_RECORD, source_commit=commit, dependency=dependency, result=result)
             for runtime in getattr(workers, 'authority_runtimes', {}).values():
                 C.publish_runtime(store, runtime)
-            runtime_keys = sorted({d['runtime_digest'] for d in dependencies})
+            # A row-scoped union also retains the prior's runtime: publish the same set (VELDO-0367 F6).
+            runtime_keys = sorted({d['runtime_digest'] for d in [*dependencies, *(
+                [previous['dependency']] if previous and result['execution_scope'] == 'rows' else [])]})
             if len(runtime_keys) > 1:
                 C.publish_runtime(store, runtime_keys)
             C.require(store.change_put(dependency) and store.change_put(envelope), 'kill publication')
@@ -2046,7 +2083,7 @@ def run_change_stage(root, expected_common, context, *, capacities=None, paralle
                 workers.parallel = worker_count()
         claims = ({c['identity']: CaseClaims().claim(c, C.digest([c, configurations[c['identity']]]))
                    for c in cases} if workers.admission else None)
-        prior_kills, prior_controls = {}, {}
+        prior_kills, prior_controls, executed_controls = {}, {}, set()
         if not context.get('full') and plan['baseline_record_digest'] is not None:
             baseline = C.historical_gate(store, plan['baseline_record_digest'], context['repository'])
             old = {i['item_id']: i for i in baseline['receipt']['items']}
@@ -2057,7 +2094,12 @@ def run_change_stage(root, expected_common, context, *, capacities=None, paralle
                     C.require(kill['result']['case'] == case, 'prior case definition')
                     prior_kills[case['identity']] = previous['execution_record_digest']
                     group = C.digest(reuse.M.suite_identity(case, configurations[case['identity']]))
-                    prior_controls[group] = kill['result']['control_receipt_digest']
+                    # Controls run at the baseline win over older carried ones (VELDO-0367 F7).
+                    if old[identities[case['identity']]]['status'] == 'executed':
+                        executed_controls.add(group)
+                        prior_controls[group] = kill['result']['control_receipt_digest']
+                    elif group not in executed_controls:
+                        prior_controls.setdefault(group, kill['result']['control_receipt_digest'])
                 except (KeyError, TypeError, ValueError):
                     continue  # an unusable prior means a full case and fresh controls
         executed = {}
@@ -2071,7 +2113,8 @@ def run_change_stage(root, expected_common, context, *, capacities=None, paralle
                 executed = run_selected_cases(workers, fresh, directory, frozen, store=store, commit=head,
                     changed=plan['changed_paths'], configurations=configurations, registered_cases=cases,
                     prior_kills=prior_kills, prior_controls=prior_controls, claims=claims,
-                    verify_runtime=context.get('verify_runtime', False))
+                    verify_runtime=context.get('verify_runtime', False),
+                    changed_since=lambda source: C.changed_paths(root, source, head))
         C.require(inputs_unchanged(root, expected_common, files, head), 'inputs changed during stage')
         items = [*carried, *executed.values()]
         for item in items:

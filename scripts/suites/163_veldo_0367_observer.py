@@ -160,6 +160,38 @@ def _v367_observer():
                          '11 <... clone resumed>) = 12\n11 +++ exited with 0 +++\n')
         row('unfinished-clone', not O.DependencyReads(repo, {}).trace(trace,
             launched_argv=O.dependency_module('case_trace')['command'](trace, ['/bin/true'])).record(item, commit)['complete'])
+        # VELDO-0367 N1: real buffers carry markers, forbidden words and truncation; only the
+        # anchored call and its non-data text are judged. A Python watchdog thread shares fs.
+        module_file = str(repo / 'module367.py')
+        payload = ('x <unfinished ...> y\\n11 <... read resumed> mount( ptrace( CLONE_FS CLONE_NEWNS '
+                   'def is_mount(... \\"...')
+        trace.write_text(
+            '11 clone3({flags=CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM, '
+            'exit_signal=0, stack=0x7f, stack_size=0x1000}, 88) = 12\n'
+            '11 openat(AT_FDCWD, "module367.py", O_RDONLY|O_CLOEXEC) = 3<' + module_file + '>\n'
+            '11 read(3<' + module_file + '>, "' + payload + '"..., 65535) = 65535\n'
+            '12 read(3<' + module_file + '>,  <unfinished ...>\n'
+            '11 write(1</dev/null>, "<... x resumed> <unfinished ...>", 32) = 32\n'
+            '12 <... read resumed>"' + payload + '", 4096) = 4096\n'
+            '12 +++ exited with 0 +++\n11 +++ exited with 0 +++\n')
+        tracer = O.dependency_module('case_trace')
+        try:
+            joined = len(list(tracer['syscall_lines'](trace))) == 5
+        except ValueError:
+            joined = False
+        row('payload-lines', joined)
+        payloaded = O.DependencyReads(repo, {}).trace(trace, launched_argv=tracer['command'](trace, ['/bin/true'])).record(item, commit)
+        row('payload-complete', payloaded['complete'] and 'module367.py' in payloaded['paths'])
+        for name, body in (
+                ('process-shared-fs', '11 clone(child_stack=NULL, flags=CLONE_FS|SIGCHLD) = 12\n'
+                                      '12 +++ exited with 0 +++\n11 +++ exited with 0 +++\n'),
+                ('thread-chdir', '11 clone3({flags=CLONE_VM|CLONE_FS|CLONE_THREAD}, 88) = 12\n'
+                                 '12 chdir("data") = 0\n12 +++ exited with 0 +++\n11 +++ exited with 0 +++\n'),
+                ('truncated-name', '11 openat(AT_FDCWD, "data/inp"..., O_RDONLY) = 3\n11 +++ exited with 0 +++\n'),
+                ('namespace-call', '11 unshare(CLONE_NEWNS) = 0\n11 +++ exited with 0 +++\n')):
+            trace.write_text(body)
+            row(name, not O.DependencyReads(repo, {}).trace(trace,
+                launched_argv=tracer['command'](trace, ['/bin/true'])).record(item, commit)['complete'])
         for name, path in (('git-directory', repo / '.git/index'),):
             metadata = O.DependencyReads(repo, {})
             metadata.read(path)
@@ -217,12 +249,13 @@ def _v367_observer():
         tree = ast.parse(coordinator.read_text())
         function = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and
                         node.name == 'publish_case_dependencies')
-        namespace = dict(ROOT=authority, load=load, os=os, sys=sys, Refused=RuntimeError,
+        namespace = dict(ROOT=authority, load=load, _load_audit=load, os=os, sys=sys, Refused=RuntimeError,
                          in_leg=lambda leg, case: leg == 'unconfined')
         exec(compile(ast.Module(body=[function], type_ignores=[]), str(coordinator), 'exec'), namespace)
         publish = namespace['publish_case_dependencies']
         case = dict(identity='fixture', suite='fixture.py', driver='check_teeth_mutations.py', name='fixture')
-        workers = SimpleNamespace(active={}, meters={}, owned_snapshots={}, outcomes=[], leg=None)
+        workers = SimpleNamespace(active={}, meters={}, owned_snapshots={}, outcomes=[], leg=None,
+                                  observed_commit=commit)
         def python_claim(record):
             return C['sealed'](C['DEPENDENCY'], **{k: v for k, v in record.items()
                 if k not in ('schema', 'record_digest', 'complete', 'unknown_reason')},
@@ -250,6 +283,54 @@ def _v367_observer():
             expected = O.combine_dependencies([complete, refreshed, dep], identity, commit)
             entry = C['sealed']('veldo.change-observation/v1', dependency=expected, result=result)
             row('coordinator-union-' + leg, store.get(entry['record_digest']) == entry)
+        # VELDO-0367 N2/N4/F5: the authority's worker-trace reader keeps per-run coordinator files and
+        # the worker's fixture allocation private and maps materialized copies back to their source.
+        method = next(node for klass in tree.body if isinstance(klass, ast.ClassDef) and klass.name == 'Workers'
+                      for node in klass.body if isinstance(node, ast.FunctionDef) and node.name == 'attribution_reads')
+        scope = {}
+        exec(compile(ast.Module(body=[method], type_ignores=[]), str(coordinator), 'exec'), scope)
+        run_directory = top / 'veldo-mutations-run'
+        worker_home = run_directory / 'home0'
+        allocation = top / 'fixture-allocation'
+        for directory in (worker_home / 'fixtures', allocation / 'g0001'):
+            directory.mkdir(parents=True)
+        for path in (run_directory / '0-stdout', run_directory / '0-stderr', run_directory / 'ownership-0.jsonl',
+                     allocation / 'g0001/state', worker_home / 'fixtures/fixture367.py'):
+            path.write_text('per-run ' + path.name)
+        fixture_case = dict(fixture=True, module='fixture367.py', suite='fixture.py', name='fixture367')
+        holder = SimpleNamespace(observation_context={'w': (repo, {'TMPDIR': str(worker_home)}, fixture_case, 'noop')},
+                                 private_files={'w': (run_directory / '0-stdout', run_directory / '0-stderr',
+                                                      run_directory / 'ownership-0.jsonl', allocation)})
+        attributed = scope['attribution_reads'](holder, O, 'w', worker_home)
+        for path in (*holder.private_files['w'][:3], allocation / 'g0001/state', worker_home / 'fixtures/fixture367.py'):
+            attributed.read(path)
+        attributed.reasons.discard('observation coverage unavailable')
+        private = attributed.record(item, commit)
+        row('private-run-files', private['complete'] and set(attributed.runtime) == {'environment'})
+        row('materialized-copy', 'scripts/fixtures/fixture367.py' in private['paths'])
+
+        # The ledger reaches only the authority's own runners: a stand-in takes three arguments.
+        taking = G.TakeOpened(repo, None, 'stand-in-fixture', store=store)
+        try:
+            handed = taking.run(lambda root, command, env: 0, repo, 'true', taking.env(dict(os.environ)), taking.fd)
+        except TypeError:
+            handed = None
+        taking.finish('stand-in-fixture', 1)
+        row('stand-in-runner', handed == 0)
+        # VELDO-0367 N4: a checkout dirtied before publication never stamps HEAD on the envelope.
+        workers.leg = 'unconfined'
+        (repo / 'dirty-publication').write_text('uncommitted')
+        before = {path.name for path in store.directory.glob('*.json')}
+        publish(repo, commit, [case], {'fixture': result}, workers, store=store)
+        (repo / 'dirty-publication').unlink()
+        stamped = [store.get(path.stem) for path in store.directory.glob('*.json') if path.name not in before]
+        stamped = [value['dependency'] for value in stamped if value and 'dependency' in value]
+        row('coordinator-dirty-commit', len(stamped) == 1 and stamped[0]['observed_commit'] == '0' * 40
+            and not stamped[0]['complete'])
+        mixed = O.combine_dependencies([complete, C['sealed'](C['DEPENDENCY'], **{k: v for k, v in complete.items()
+            if k not in ('schema', 'record_digest', 'observed_commit')}, observed_commit='1' * 40)],
+            complete['item_id'], commit)
+        row('combine-mixed-commit', mixed['observed_commit'] == '0' * 40 and not mixed['complete'])
         forged = dict(result, baseline={'dependency': complete})
         refused = False
         try:
@@ -259,6 +340,9 @@ def _v367_observer():
         row('coordinator-python-complete', refused)
         class BrokenStore:
             def change_put(self, envelope):
+                raise OSError('fixture Store unavailable')
+
+            def put(self, key, value):
                 raise OSError('fixture Store unavailable')
         stored = True
         try:
@@ -270,7 +354,7 @@ def _v367_observer():
         result['noop'] = {}
         publish(repo, commit, [case], {'fixture': result}, workers, store=store)
         entries = [store.get(path.stem) for path in store.directory.glob('*.json')]
-        row('coordinator-missing', any(entry and entry.get('result') == result and
+        row('coordinator-missing', any(isinstance(entry, dict) and entry.get('result') == result and
             not entry['dependency']['complete'] and 'missing noop observation' in
             entry['dependency']['unknown_reason'] for entry in entries))
 
@@ -306,31 +390,66 @@ def _v367_observer():
         # Exercise the actual authority launch/publication seam with a deterministic
         # kernel transcript. The process.args value is the argv received by run().
         from unittest.mock import patch
-        taking = G.TakeOpened(repo, None, 'native-fixture', store=store)
         trace_body = ('11 openat(AT_FDCWD, "data/child", O_RDONLY) = 3\n'
                       '11 +++ exited with 0 +++\n')
+        sessions = []
         def traced_process(argv, **kwargs):
+            sessions.append(kwargs.get('start_new_session'))
             Path(argv[argv.index('-o') + 1]).write_text(trace_body)
             return subprocess.CompletedProcess(argv, 0)
-        with patch.object(G.subprocess, 'run', traced_process):
+
+        def traced_stage(stage, listed, opened=()):
+            # The fixture's leg list stands in for the authority's compatible declaration.
+            taking = G.TakeOpened(repo, None, stage, store=store)
+            real_stop = taking.watch.stop
+            def stop():
+                found, late, overflowed = real_stop()
+                return set(found) | set(opened), late, overflowed
+            taking.watch.stop = stop
+            with patch.object(G.subprocess, 'run', traced_process), patch.dict(
+                    taking.observer.dependency_module('case_trace'), compatible=lambda authority, suites: True):
+                code = taking.run(G.unconfined, repo, 'cat data/child', taking.env(dict(os.environ,
+                                  VELDO_GATE_LEG='unconfined', VELDO_GATE_UNCONFINED=listed)), taking.fd)
+            identity = C['identity']('suite', stage, 'unconfined', 'fixture')
+            claim = python_claim(C['sealed'](C['DEPENDENCY'], **{k: v for k, v in complete.items()
+                if k not in ('schema', 'record_digest', 'item_id', 'observed_commit')}, item_id=identity,
+                observed_commit=taking.commit))
+            os.write(taking.fd, (json.dumps(dict(dependency_claim=claim, result={'rows': [1, 0]})) + '\n').encode())
+            finished = taking.finish(stage, code)
+            entries = [store.get(path.stem) for path in store.directory.glob('*.json')]
+            def stored(item):
+                return next((entry['dependency'] for entry in entries if isinstance(entry, dict) and
+                             entry.get('dependency', {}).get('item_id') == item), None)
+            return finished, stored(identity), stored(C['identity']('stage', stage))
+
+        finished, shared_suite, shared_stage = traced_stage('shared-fixture', 'fixture,other.py')
+        row('native-shared-leg', finished == 0 and shared_suite is not None and not shared_suite['complete']
+            and not shared_stage['complete'] and 'traced suite without dependency claim' in shared_stage['unknown_reason'])
+        finished, alone_suite, alone_stage = traced_stage('alone-fixture', 'fixture.py', opened={'data/stage-only'})
+        row('suite-no-stage-opens', alone_suite is not None and alone_suite['complete'] and
+            'data/stage-only' not in alone_suite['paths'] and 'data/stage-only' in alone_stage['paths'])
+        row('native-session', sessions and all(value is True for value in sessions))
+        taking = G.TakeOpened(repo, None, 'native-fixture', store=store)
+        with patch.object(G.subprocess, 'run', traced_process), patch.dict(
+                taking.observer.dependency_module('case_trace'), compatible=lambda authority, suites: True):
             code = taking.run(G.unconfined, repo, 'cat data/child', taking.env(dict(os.environ,
-                              VELDO_GATE_LEG='unconfined', VELDO_GATE_UNCONFINED='')), taking.fd)
+                              VELDO_GATE_LEG='unconfined', VELDO_GATE_UNCONFINED='fixture')), taking.fd)
         suite_identity = C['identity']('suite', 'native-fixture', 'unconfined', 'fixture')
         claim = python_claim(C['sealed'](C['DEPENDENCY'], **{k: v for k, v in complete.items()
             if k not in ('schema', 'record_digest', 'item_id')}, item_id=suite_identity))
         os.write(taking.fd, (json.dumps(dict(dependency_claim=claim, result={'rows': [1, 0]})) + '\n').encode())
         row('native-stage-finish', taking.finish('native-fixture', code) == 0)
         native_entries = [store.get(path.stem) for path in store.directory.glob('*.json')]
-        row('native-stage-complete', any(entry and entry.get('dependency', {}).get('item_id') ==
+        row('native-stage-complete', any(isinstance(entry, dict) and entry.get('dependency', {}).get('item_id') ==
             C['identity']('stage', 'native-fixture') and entry['dependency']['complete'] and
             'data/child' in entry['dependency']['paths'] for entry in native_entries))
-        row('native-suite-complete', any(entry and entry.get('dependency', {}).get('item_id') ==
+        row('native-suite-complete', any(isinstance(entry, dict) and entry.get('dependency', {}).get('item_id') ==
             suite_identity and entry['dependency']['complete'] and 'data/child' in entry['dependency']['paths']
             for entry in native_entries))
         native_result = dict(baseline={'dependency': first}, noop={'dependency': second}, mutant={'dependency': first})
         publish(repo, commit, [case], {'fixture': native_result}, workers, store=store)
         native_entries = [store.get(path.stem) for path in store.directory.glob('*.json')]
-        row('native-worker-complete', any(entry and entry.get('result') == native_result and
+        row('native-worker-complete', any(isinstance(entry, dict) and entry.get('result') == native_result and
             entry['dependency']['complete'] for entry in native_entries))
 
         taking = G.TakeOpened(repo, None, 'forged-fixture', store=store)
@@ -345,7 +464,7 @@ def _v367_observer():
         row('stage-store-failure', taking.finish('store-failure-fixture', 0) == 0)
         taking = G.TakeOpened(repo, None, 'failed-fixture', store=store)
         row('failed-stage-status', taking.finish('failed-fixture', 7) == 7 and not any(
-            (store.get(path.stem) or {}).get('dependency', {}).get('item_id') == C['identity']('stage', 'failed-fixture')
+            (lambda value: value if isinstance(value, dict) else {})(store.get(path.stem)).get('dependency', {}).get('item_id') == C['identity']('stage', 'failed-fixture')
             for path in store.directory.glob('*.json')))
         from unittest.mock import patch
         import ctypes
@@ -377,7 +496,7 @@ def _v367_observer():
         taking.watch.stop = dropped_stop
         row('overflow-finish', taking.finish('overflow-fixture', 0) == 0)
         values = [store.get(path.stem) for path in store.directory.glob('*.json')]
-        overflow = next(value for value in values if value and value.get('dependency', {}).get('item_id') ==
+        overflow = next(value for value in values if isinstance(value, dict) and value.get('dependency', {}).get('item_id') ==
                         C['identity']('stage', 'overflow-fixture'))
         row('overflow-unknown', not overflow['dependency']['complete'] and
             'lost events' in overflow['dependency']['unknown_reason'])

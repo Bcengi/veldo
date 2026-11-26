@@ -783,13 +783,17 @@ class ProcessEvents:
                     raise Refused('unobservable short process event')
                 what = self.struct.unpack_from('=I', body, 36)[0]
                 if what:
+                    # cn_proc: a thread id then its process (thread group) id; a fork names the
+                    # parent pair at 52/56 and the child pair at 60/64 (VELDO-0367 F4).
                     field = 60 if what == 1 else 52
-                    if len(body) < field + 4:
+                    if len(body) < field + 8:
                         raise Refused('unobservable process identity')
-                    process = self.struct.unpack_from('=I', body, field)[0]
+                    process, group = self.struct.unpack_from('=II', body, field)
                     if what == 1 and adopt is not None:
-                        adopt(self.struct.unpack_from('=I', body, 52)[0], process)
-                    if not owned(process):
+                        for parent in self.struct.unpack_from('=II', body, 52):
+                            adopt(parent, process)
+                            adopt(parent, group)
+                    if not (owned(process) or owned(group)):
                         raise Refused('weekly unrelated or unobservable process event: ' + str(process))
                     if what == 0x80000000 and retire is not None:
                         retire(process)

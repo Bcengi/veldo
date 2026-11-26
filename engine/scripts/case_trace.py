@@ -16,6 +16,12 @@ FD_READS = {'fstat', 'fstatfs', 'getdents', 'getdents64', 'fchdir'}
 ENDED = re.compile(r'^\d+ \+\+\+ (?:exited with -?\d+|killed by SIG[A-Z0-9]+(?: \(core dumped\))?) \+\+\+$')
 STATUS = re.compile(r'^\d+ \+\+\+ .* \+\+\+$')
 ENDING_CALLS = {'exit', 'exit_group', '???'}
+RESUMED = re.compile(r'^\d+ <\.\.\. (?:[a-zA-Z0-9_]+|\?\?\?) resumed>')
+UNFINISHED = ' <unfinished ...>'
+# Calls whose quoted arguments are file or socket data, never names: their buffers may hold any text,
+# including strace's own markers, and -s may truncate them (VELDO-0367 N1).
+DATA_CALLS = {'read', 'pread64', 'readv', 'preadv', 'preadv2', 'write', 'pwrite64', 'writev',
+              'pwritev', 'pwritev2', 'recvfrom', 'recvmsg', 'recvmmsg', 'sendto', 'sendmsg', 'sendmmsg'}
 # A network call an ended thread was still waiting in (a server thread in accept, a reader in recv)
 # reads no file: the file-read evidence is whole. It is yielded with result '?', so the non-file
 # classifier still judges it: a pending connect or send is an attempt, a pending accept on a socket
@@ -88,19 +94,21 @@ def syscall_lines(trace):
             continue
         if STATUS.match(line):
             continue
-        if ' resumed>' in line and '<unfinished ...>' in line:
+        # Anchor both markers: a read or write buffer may hold either text (VELDO-0367 N1).
+        resumed = RESUMED.match(line)
+        if resumed and line[resumed.end():].startswith(' <unfinished ...>'):
             # strace's teardown of a pending call ("<... accept4 resumed> <unfinished ...>) = ?"):
             # the call never completed; its thread's end judges the call it started.
             if pid not in pending:
                 raise ValueError('unmatched resumed syscall')
             continue
-        if '<unfinished ...>' in line:
-            pending[pid] = line.replace('<unfinished ...>', '')
+        if not resumed and line.endswith(UNFINISHED):
+            pending[pid] = line[:-len(UNFINISHED)]
             continue
-        if ' resumed>' in line:
+        if resumed:
             if pid not in pending:
                 raise ValueError('unmatched resumed syscall')
-            line = pending.pop(pid) + line.split(' resumed>', 1)[1]
+            line = pending.pop(pid) + line[resumed.end():]
         yield line
     if pending:
         raise IncompleteTrace('incomplete file-read trace')
@@ -334,9 +342,10 @@ def _network(trace, private, after_confinement):
             descriptors[result.split()[0]] = dict(own)
         # Every endpoint the traced tree holds is one it bound (an explicit bind, a listener, or the
         # kernel's choice for its own outgoing socket).
-        for host, port in LOCAL_INET.findall(line):
+        scan = QUOTED.sub('""', line) if call in DATA_CALLS else line
+        for host, port in LOCAL_INET.findall(scan):
             bound_inet.add((host.strip('[]'), int(port)))
-        for abstract, name in LOCAL_UNIX.findall(line):
+        for abstract, name in LOCAL_UNIX.findall(scan):
             bound_unix.add(('@' if abstract else '/', ast.literal_eval(name)))
         if call == 'bind' and not result.startswith('-1 '):
             endpoint = _endpoint(arguments)

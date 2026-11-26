@@ -79,6 +79,45 @@ print(json.dumps(w.Weekly(r.Store(sys.argv[2],sys.argv[3]),'callers').request('a
         row('concurrent-callers', answers[0] == answers[1] and all(child.returncode == 0 for child in callers))
         weekly.cancel(request['run_id'])
         row('cancel-free', store.weekly_read()['repositories']['repository']['last_full_started_at'] is None)
+        # VELDO-0367 F3: joiners share the reservation but only its owner holds it; a dead
+        # owner's pending reservation and an interrupted one are released without a slot.
+        import os
+        live = W.process_identity(os.getpid())
+        owned_request = weekly.request(commit, 'pc2', 101, owner='first', process=live)
+        joined = weekly.request(commit, 'pc2', 101, owner='second', process=live)
+        row('joiner-not-owner', joined == owned_request and joined.get('owner') == 'first')
+        weekly.cancel(owned_request['run_id'])
+        dead = weekly.request(commit, 'pc2', 101, owner='dead', process=[4194303, '1'])
+        replaced = weekly.request(commit, 'pc2', 101, owner='live', process=live)
+        row('dead-owner-released', replaced.get('owner') == 'live' and replaced['run_id'] != dead['run_id'])
+        weekly.recover(replaced['run_id'])
+        row('recover-clears-reservation', store.weekly_read()['repositories']['repository']['reservation'] is None
+            and store.weekly_read()['repositories']['repository']['last_full_started_at'] is None)
+
+        # VELDO-0367 F4: kernel events name a thread and its process; either may be the owned one.
+        import struct
+        def event(what, *ids):
+            payload = struct.pack('=IIQ', what, 0, 0) + struct.pack('=' + 'I' * len(ids), *ids)
+            return struct.pack('=IHHII', 36 + len(payload), 3, 0, 0, 0) + bytes(20) + payload
+        def drained(data, members):
+            reader = H.ProcessEvents.__new__(H.ProcessEvents)
+            reader.struct = struct
+            pending = [data]
+            def receive(size):
+                if not pending:
+                    raise BlockingIOError()
+                return pending.pop()
+            reader.socket = SimpleNamespace(recv=receive)
+            try:
+                reader.drain(lambda pid: pid in members, lambda parent, child: parent in members and members.add(child),
+                             members.discard)
+            except H.Refused:
+                return False
+            return True
+        members = {100}
+        row('thread-events', drained(event(1, 100, 100, 101, 100) + event(0x80000000, 102, 100, 0, 0, 0, 0), members)
+            and 101 in members)
+        row('foreign-events', not drained(event(0x80000000, 200, 200, 0, 0, 0, 0), {100}))
         request = weekly.request(commit, 'pc2', 102)
         custody = H.WeeklyCustody(top / 'lock', 'pc2', lambda: None)
         row('no-custody', weekly.start(request, 102, custody, {})['status'] == 'waiting')

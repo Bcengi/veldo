@@ -36,11 +36,24 @@ def timestamp(now):
     return now
 
 
+def process_identity(pid):
+    """(pid, kernel start time) of a live local process; a reused pid has another start time."""
+    text = Path('/proc/%d/stat' % pid).read_text()
+    return [pid, text.rsplit(')', 1)[1].split()[19]]
+
+
+def process_alive(identity):
+    try:
+        return process_identity(int(identity[0])) == [int(identity[0]), identity[1]]
+    except (OSError, ValueError, IndexError, TypeError):
+        return False
+
+
 class Weekly:
     def __init__(self, store, repository):
         self.store, self.repository = store, repository
 
-    def request(self, commit, host, now):
+    def request(self, commit, host, now, owner=None, process=None):
         """Concurrent seed, weekly and recovery requests share the one reservation.
 
         A pending reservation consumes no slot. A crash after start consumes the week.
@@ -53,8 +66,13 @@ class Weekly:
             raise ValueError('weekly host identity')
         with self.store.weekly_transaction() as ledger:
             state = repository_state(ledger, self.repository)
-            if state['reservation'] is not None:
-                return copy.deepcopy(state['reservation'])
+            held = state['reservation']
+            if (held is not None and held['host'] == host and held.get('process') is not None
+                    and not process_alive(held['process'])):
+                # Its owner died before starting: a pending reservation consumes no slot (VELDO-0367 F3).
+                state['reservation'] = held = None
+            if held is not None:
+                return copy.deepcopy(held)
             previous = state['last_full_started_at']
             if previous is not None and now - previous < WEEK_SECONDS:
                 return dict(status='waiting', reason='seven-day limit', eligible_at=previous + WEEK_SECONDS)
@@ -62,6 +80,9 @@ class Weekly:
                 return dict(status='waiting', reason='prior full run retains custody')
             reservation = dict(schema=SCHEMA, run_id=secrets.token_hex(16), commit=commit,
                                host=host, status='waiting', reason='exclusive idle-host admission')
+            if owner is not None:
+                # Joiners receive the same reservation; only its owner may execute or cancel it.
+                reservation.update(owner=owner, process=list(process) if process is not None else None)
             state['reservation'] = reservation
             return copy.deepcopy(reservation)
 
@@ -128,6 +149,7 @@ class Weekly:
 
     def recover(self, run_id):
         """Keeper calls after descendant cleanup on interruption, before dropping locks."""
+        self.cancel(run_id)  # an interrupted pending reservation never blocks later requests (F3)
         state = self.store.weekly_read()['repositories'][self.repository]
         if run_id in state['runs'] and state['runs'][run_id]['status'] == 'running':
             return self.red(run_id, [], {'interrupted': True}, uncertain=True)
@@ -268,17 +290,22 @@ def production(context, store, sink, *, space=None):
     except OSError as error:
         print('weekly: waiting (all-user process notifications unavailable: %s)' % error, flush=True)
         return 75
-    reservation = weekly.request(context['candidate_commit'], host, authority_now())
-    if 'run_id' not in reservation or reservation['commit'] != context['candidate_commit'] or reservation['host'] != host:
+    token = secrets.token_hex(16)
+    reservation = weekly.request(context['candidate_commit'], host, authority_now(), owner=token,
+                                 process=process_identity(os.getpid()))
+    if ('run_id' not in reservation or reservation['commit'] != context['candidate_commit'] or
+            reservation['host'] != host or reservation.get('owner') != token):
         events.close()
         print('weekly: waiting (' + reservation.get('reason', 'another full request owns admission') + ')', flush=True)
         return 75
     scope_key = C.digest(['weekly-scope', reservation['run_id']])
     owned_pids = {os.getpid()}
     owned_scopes = set()
+    # Allowed services' own processes and threads may end or fork; they are never ours (F4).
+    allowed_pids = set()
 
     def owned(pid):
-        if pid in owned_pids:
+        if pid in owned_pids or pid in allowed_pids:
             return True
         try:
             group = H.own_cgroup(pid)
@@ -286,9 +313,16 @@ def production(context, store, sink, *, space=None):
                 owned_pids.add(pid)
                 return True
             executable = os.readlink('/proc/%s/exe' % pid)
-            return dict(executable=executable, cgroup=group) in weekly_config.get('allowed_system_services', [])
+            if dict(executable=executable, cgroup=group) in weekly_config.get('allowed_system_services', []):
+                allowed_pids.add(pid)
+                return True
+            return False
         except (OSError, ValueError, IndexError):
             return False
+
+    def retire(pid):
+        owned_pids.discard(pid)
+        allowed_pids.discard(pid)
 
     def adopt(parent, child):
         if parent in owned_pids:
@@ -301,9 +335,13 @@ def production(context, store, sink, *, space=None):
         if state and state.get('cgroup'):
             owned_scopes.add(state['cgroup'])
         for process in Path('/proc').glob('[0-9]*'):
-            owned(int(process.name))
+            pid = int(process.name)
+            if owned(pid):
+                # Threads started before observation carry their own ids in later events.
+                known = owned_pids if pid in owned_pids else allowed_pids
+                known.update(int(task.name) for task in process.glob('task/[0-9]*'))
         try:
-            events.drain(owned, adopt, owned_pids.discard)
+            events.drain(owned, adopt, retire)
         except H.Refused as error:
             return str(error)
         return H.weekly_occupancy(weekly_config, own_pids=owned_pids)
@@ -352,7 +390,6 @@ def production(context, store, sink, *, space=None):
                     while child.poll() is None:
                         select.select([descriptor, events], [], [])
                         monitor()
-                        events.drain(owned, adopt, owned_pids.discard)
                     C.require(child.wait() == 0, 'weekly common execution failed')
                 finally:
                     os.close(descriptor)

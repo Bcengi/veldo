@@ -7,6 +7,7 @@ import ctypes
 import faulthandler
 import json
 import os
+import re
 import select
 import signal
 import subprocess
@@ -279,6 +280,33 @@ def suite_imports():
         sys.path[:] = previous
 
 
+def materialized_copy(case, directory):
+    """Where materialize puts a no-op or mutant copy in directory (VELDO-0367 N2)."""
+    directory = Path(directory)
+    if case.get('fixture') is True:
+        return directory / 'fixtures'
+    if case.get('dir', '.veldo') == '.veldo' or case.get('siblings') is True:
+        return directory / 'veldo' / case['module']
+    return directory / case['module']
+
+
+def materialized_origin(case, copy, path, root):
+    """The repository source a path in a materialized copy stands for, or None."""
+    copy, path = Path(copy), Path(path)
+    fixture = case.get('fixture') is True
+    base = Path(root) / ('scripts/fixtures' if fixture else case.get('dir', '.veldo'))
+    tree = copy if fixture else None
+    if not fixture and (case.get('dir', '.veldo') == '.veldo' or case.get('siblings') is True):
+        tree = copy.parents[len(Path(case['module']).parts) - 1]
+    if tree is not None:
+        return base / path.relative_to(tree) if path == tree or tree in path.parents else None
+    if path == copy:
+        return base / case['module']
+    if path.parent == copy.parent and path.name in case.get('companions', ()):
+        return base / path.name
+    return None
+
+
 @contextlib.contextmanager
 def private_runtime():
     """A single-case worker owns its runtime, just as a dispatcher shard does.
@@ -315,7 +343,8 @@ def private_runtime():
 def worker(case, mutant=None, *, isolate_runtime=True, selected_rows=None):
     """Capture every assertion, including the shared preamble, with exact row identities."""
     shared = ROOT / 'scripts/suites/shared.py'
-    dependency = DependencyReads(ROOT, discover_git=False).start()
+    dependency = DependencyReads(ROOT, discover_git=False, translate=(
+        (lambda path: materialized_origin(case, mutant, path, ROOT)) if mutant else None)).start()
     rows = []
     opened = set()
     auditing = [True]
@@ -408,7 +437,7 @@ def worker(case, mutant=None, *, isolate_runtime=True, selected_rows=None):
     faulthandler.cancel_dump_traceback_later()
     auditing[0] = False
     dependency.stop()
-    dependency.read(ROOT / case.get('dir', '.veldo') / case['module'])
+    dependency.read(ROOT / ('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')) / case['module'])
     for definition in ('mutation_observer.py', 'reuse_worker.py', 'gate_changes.py', 'gate_fixtures.py'):
         # These authority modules were loaded before confinement. Recording their
         # names must not probe absent counterparts in a declared input snapshot.
@@ -444,7 +473,7 @@ def dependency_module(name):
 
 class DependencyReads:
     """One executing item's reads, including failed probes and discovery inputs."""
-    def __init__(self, root, environment=None, *, discover_git=True, private_scratch=()):
+    def __init__(self, root, environment=None, *, discover_git=True, private_scratch=(), translate=None):
         self.root = Path(root).resolve()
         self.paths, self.directories, self.absent_paths = set(), set(), set()
         self.reasons = {'observation coverage unavailable'}
@@ -456,6 +485,8 @@ class DependencyReads:
                              ('TMPDIR', 'TEMP', 'TMP', 'VELDO_FIXTURE_PARENT', 'XDG_RUNTIME_DIR')
                              if values.get(k))
         self.private_scratch = tuple(Path(path).resolve() for path in private_scratch)
+        # A materialized no-op or mutant copy stands for its repository source.
+        self.translate = translate
         self.authority = Path(__file__).resolve().parents[1]
         self.git_directories = {self.root / '.git'}
         try:
@@ -482,6 +513,8 @@ class DependencyReads:
         if '..' in Path(os.fsdecode(path)).parts:
             self.unknown('ambiguous parent traversal')
         path = Path(os.path.abspath(os.fsdecode(path)))
+        if self.translate is not None:
+            path = self.translate(path) or path
         try:
             resolved = path.resolve()
         except (OSError, RuntimeError):
@@ -580,7 +613,8 @@ class DependencyReads:
         tracer = dependency_module('case_trace')
         try:
             lines = Path(trace).read_text().splitlines()
-            seen, ended = set(), set()
+            seen, ended, shared_fs, chdir = set(), set(), False, False
+            forbidden = ('unshare', 'setns', 'chroot', 'pivot_root', 'mount', 'ptrace', 'bpf')
             for line in lines:
                 if not line.strip():
                     continue
@@ -590,13 +624,34 @@ class DependencyReads:
                 seen.add(pid)
                 if tracer['ENDED'].match(line):
                     ended.add(pid)
-                elif not (tracer['CALL'].search(line) or '<unfinished ...>' in line
-                          or ' resumed>' in line or '--- SIG' in line):
+                    continue
+                if re.match(r'^\d+ --- SIG', line):
+                    continue
+                # Judge the anchored call name and its non-data text only: a read or write buffer
+                # may hold any word, marker or "..." (VELDO-0367 N1).
+                resumed = tracer['RESUMED'].match(line)
+                started = tracer['PENDING_CALL'].match(line)
+                if not (resumed or started):
                     raise ValueError('unrecognized trace event')
-                if any(token in line for token in ('unshare(', 'setns(', 'chroot(', 'pivot_root(',
-                        'mount(', 'io_uring_', 'ptrace(', 'bpf(', 'CLONE_FS', 'CLONE_NEW')):
+                name = (started[1] if started else
+                        line[resumed.start():resumed.end()].split()[2])
+                text = line[resumed.end():] if resumed else line[started.end():]
+                if text.endswith(tracer['UNFINISHED']):
+                    text = text[:-len(tracer['UNFINISHED'])]
+                text = re.sub(r'<\.\.\. resuming interrupted [a-zA-Z0-9_]+ \.\.\.>', '', text)
+                if name in tracer['DATA_CALLS']:
+                    text = re.sub(r'(?:' + tracer['QUOTED'].pattern + r')(?:\.\.\.)?', '""', text)
+                if name.endswith(forbidden) or 'io_uring_' in name or 'CLONE_NEW' in text:
                     raise ValueError('ambiguous process filesystem')
-                if '...' in line and '<unfinished ...>' not in line and '<... ' not in line:
+                if 'CLONE_FS' in text:
+                    # A thread shares its group's filesystem; a separate process sharing it is ambiguous.
+                    if 'CLONE_THREAD' not in text:
+                        raise ValueError('ambiguous process filesystem')
+                    shared_fs = True
+                chdir = chdir or name in ('chdir', 'fchdir')
+                if shared_fs and chdir:
+                    raise ValueError('ambiguous process filesystem')
+                if '...' in text:
                     raise ValueError('truncated trace event')
             # syscall_lines joins unfinished/resumed clone calls before finding children.
             for line in tracer['syscall_lines'](trace):
@@ -611,14 +666,15 @@ class DependencyReads:
                 self.read(path, kind, success)
             # Descriptor inputs (including mmap and inherited descriptors) need
             # their kernel-resolved path too; path-only traces cannot see these.
-            import re
             for line in tracer['syscall_lines'](trace):
                 call = tracer['CALL'].search(line)
                 if call and call[1] in ('read', 'pread64', 'readv', 'preadv', 'preadv2',
                                        'mmap', 'mmap2', 'sendfile', 'copy_file_range'):
-                    for name in re.findall(r'<(/[^<>]*)>', call[2]):
+                    # A data buffer is not a descriptor annotation: only its descriptor argument names a file.
+                    arguments = call[2].split(',', 1)[0] if call[1] in tracer['DATA_CALLS'] else call[2]
+                    for name in re.findall(r'<(/[^<>]*)>', arguments):
                         self.read(name)
-                    if not re.search(r'<[^<>]+>', call[2]) and 'MAP_ANONYMOUS' not in call[2]:
+                    if not re.search(r'<[^<>]+>', arguments) and 'MAP_ANONYMOUS' not in call[2]:
                         self.unknown('unresolved inherited descriptor')
             if tracer['full_command'](launched_argv, trace):
                 self.reasons.discard('observation coverage unavailable')
@@ -650,6 +706,7 @@ def combine_dependencies(records, item_id, commit, *, prior=None, rows=False):
         reasons.add('missing complete suite observation')
     if any(r['observed_commit'] != commit for r in records if r is not prior):
         reasons.add('mixed observed commits')
+        commit = '0' * 40  # never stamp a commit some observation did not see (VELDO-0367 N4)
     runtimes = sorted({r['runtime_digest'] for r in records})
     return changes['sealed'](changes['DEPENDENCY'], item_id=item_id, observed_commit=commit,
         **{field: sorted({p for r in records for p in r[field]})

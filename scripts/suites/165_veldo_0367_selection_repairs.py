@@ -212,6 +212,12 @@ def _v367_repairs():
                 row('retain-' + retained + '-' + field,
                     refuses(lambda: C.item_evidence(store, mutation_entry(dep, altered))))
 
+        # VELDO-0367 F7: controls carried from another commit must be complete, even for an unknown case.
+        unknown_dep = seal(dep, complete=False, unknown_reason='lost')
+        stale_controls = seal(controls, source_commit=c, dependency=seal(unknown_dep, observed_commit=c))
+        store.change_put(stale_controls)
+        row('carried-controls-complete', refuses(lambda: C.item_evidence(store, mutation_entry(unknown_dep,
+            dict(scoped, control_receipt_digest=stale_controls['record_digest'])))))
         source = 'expect("first target", calls.append("first"))\nexpect("second target", calls.append("second"))\n'
         calls = []
         try:
@@ -236,11 +242,12 @@ def _v367_repairs():
         suite_file.write_text(suite_source)
         worker_calls = []
         active_commit = [a]
+        runtime_override = [None]
         def workers_run(jobs, directory, root):
             worker_calls.extend(job['mode'] for job in jobs.values())
             results = {}
             for name, job in jobs.items():
-                reads = seal(dep, observed_commit=active_commit[0])
+                reads = seal(dep, observed_commit=active_commit[0], runtime_digest=runtime_override[0] or runtime)
                 observed = observation([['fixture target', False]] if job['mode'] == 'mutant' and
                     'selected_rows' in job else [['fixture target', job['mode'] != 'mutant'], ['fixture second', True]], reads)
                 results[name] = dict(result=dict(observation=observed, replacement_count=1,
@@ -253,7 +260,8 @@ def _v367_repairs():
             return {'mutation_reuse.py': M, 'mutation_observer.py': O}.get(Path(path).name) or original_load(path)
         def selected(members, **kwargs):
             return G.run_selected_cases(workers, [case], top, frozen, store=store, commit=active_commit[0],
-                changed=['unrelated'], configurations=configs, registered_cases=members, **kwargs)
+                changed=['unrelated'], configurations=configs, registered_cases=members,
+                changed_since=lambda source: ['unrelated'], **kwargs)
         with patch.object(C, 'SELECTION_ENABLED', True), patch.object(M, 'change_module', return_value=C), \
                 patch.object(G, 'load', side_effect=modules):
             fresh = selected([case, other])
@@ -271,6 +279,17 @@ def _v367_repairs():
             row('carried-control-complete', worker_calls == ['mutant'] and carried_dep is not None and
                 carried_dep['complete'] and carried_dep['observed_commit'] == c and
                 carried_dep['runtime_digest'] == runtime)
+            # VELDO-0367 F6: a row kill whose runtime differs from its prior publishes the combined set.
+            runtime_override[0] = C.digest('row runtime')
+            try:
+                rows_results = selected([case, other], prior_kills={case['identity']: fresh_kill['record_digest']})
+                rows_dep = store.get(rows_results[case['identity']]['dependency_record_digest'])
+            except G.Refused:
+                rows_dep = None
+            runtime_override[0] = None
+            row('row-runtime-published', rows_dep is not None and rows_dep['runtime_digest'] not in
+                (runtime, C.digest('row runtime')) and store.get(C.digest(['observed-runtime',
+                rows_dep['runtime_digest']])) == sorted([runtime, C.digest('row runtime')]))
             active_commit[0] = a
             bad_other = dict(other, also=[['missing secondary anchor', 'replacement']])
             row('secondary-wiring', refuses(lambda: selected([case, bad_other])))

@@ -275,6 +275,9 @@ def change_record(value, key):
     Authentication and revocation remain mandatory. Only this explicit namespace
     is exempt from the historical whole-authority fingerprint.
     """
+    # Observed runtime records are content-keyed: the key is their digest (VELDO-0367 F2).
+    if isinstance(value, (dict, list)) and key == digest(['observed-runtime', digest(value)]):
+        return True
     if not isinstance(value, dict):
         return False
     schemas = {'veldo.dependency/v1', 'veldo.change-inventory/v1', 'veldo.change-receipt/v1',

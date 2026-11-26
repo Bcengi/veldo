@@ -18991,14 +18991,15 @@ def cases():
     observer367('worker-attribution', 'reuse_worker.py',
         "'unconfined' if mode == 'unconfined' else 'confined'", "'confined'", ['worker-unconfined'])
     observer367('coordinator-cleanup', 'check_gate_mutations.py',
-        'if workers.active or workers.meters or workers.owned_snapshots:', 'if False:',
+        "    if (getattr(workers, 'active', None) or getattr(workers, 'meters', None)\n            or getattr(workers, 'owned_snapshots', None)):",
+        '    if False:',
         ['coordinator-cleanup-active', 'coordinator-cleanup-meters', 'coordinator-cleanup-owned_snapshots'])
     observer367('coordinator-cleanup-failed', 'check_gate_mutations.py',
-        "if any(outcome.get('error') == 'worker_cleanup_error' for outcome in workers.outcomes):", 'if False:',
+        "if any(outcome.get('error') == 'worker_cleanup_error' for outcome in getattr(workers, 'outcomes', ())):", 'if False:',
         ['coordinator-cleanup-outcomes'])
     observer367('coordinator-union', 'check_gate_mutations.py',
-        'owner.combine_dependencies(dependencies, item, head)',
-        'owner.combine_dependencies(dependencies[1:], item, head)', ['coordinator-union-confined', 'coordinator-union-unconfined'])
+        'owner.combine_dependencies(dependencies, item, observed)',
+        'owner.combine_dependencies(dependencies[1:], item, observed)', ['coordinator-union-confined', 'coordinator-union-unconfined'])
     observer367('coordinator-hook', 'check_gate_mutations.py',
         'publish_case_dependencies(root, head, fresh, results, workers)', 'pass  # defect: observation never published',
         ['coordinator-wired'])
@@ -19055,6 +19056,40 @@ def cases():
         'if any(candidate == directory or directory in candidate.parents for directory in self.scratch):',
         'if False:', ['runtime-stable', 'scratch-unknown'])
 
+    observer367('anchored-markers', 'case_trace.py',
+        "RESUMED = re.compile(r'^\\d+ <\\.\\.\\. (?:[a-zA-Z0-9_]+|\\?\\?\\?) resumed>')",
+        "RESUMED = re.compile(r'.*<\\.\\.\\. (?:[a-zA-Z0-9_]+|\\?\\?\\?) resumed>')", ['payload-lines', 'payload-complete'])
+    observer367('data-buffers', 'mutation_observer.py',
+        "                if name in tracer['DATA_CALLS']:\n", "                if False:\n", ['payload-complete'])
+    observer367('thread-fs', 'mutation_observer.py',
+        "                    if 'CLONE_THREAD' not in text:", "                    if False:", ['process-shared-fs'])
+    observer367('private-run-files', 'check_gate_mutations.py',
+        "            home, *self.private_files.get(name, ())), translate=(",
+        "            home,), translate=(", ['private-run-files'])
+    observer367('copy-origin', 'mutation_observer.py',
+        '            path = self.translate(path) or path', '            path = path', ['materialized-copy'])
+    observer367('fixture-tree-origin', 'mutation_observer.py',
+        '    tree = copy if fixture else None', '    tree = None', ['materialized-copy'])
+    observer367('stand-in-ledger', 'gate_legs.py',
+        'if keep is not None and self.target is None and runner not in (_UNCONFINED_RUNNER, _CONFINED_RUNNER):',
+        'if False:', ['stand-in-runner'])
+    observer367('dirty-publication', 'check_gate_mutations.py',
+        "    if owner.clean_commit(root) != observed:\n        observed = '0' * 40",
+        "    observed = getattr(workers, 'observed_commit', None) or observed", ['coordinator-dirty-commit'])
+    observer367('mixed-stamp', 'mutation_observer.py',
+        "        commit = '0' * 40  # never stamp", "        commit = commit  # never stamp", ['combine-mixed-commit'])
+    observer367('suite-alone', 'gate_legs.py',
+        "if suites == (str(suite).removesuffix('.py'),)] if len(runs) == 1 else []",
+        "] if runs else []", ['native-shared-leg'])
+    observer367('suite-setup-only', 'gate_legs.py',
+        "                    [setup.record(dependency['item_id'], self.commit), *native], dependency['item_id'], self.commit)",
+        "                    [own.record(dependency['item_id'], self.commit), *native], dependency['item_id'], self.commit)",
+        ['suite-no-stage-opens'])
+    observer367('unclaimed-suite', 'gate_legs.py',
+        "            own.unknown('traced suite without dependency claim')", "            pass", ['native-shared-leg'])
+    observer367('trace-session', 'gate_legs.py',
+        "            start_new_session=True)\n        reads = self.observer", "            start_new_session=False)\n        reads = self.observer",
+        ['native-session'])
     add(367, 'observer367-suite-attribution', '163_veldo_0367_observer.py', 'shared.py',
         "        counts[0 if condition else 1] += 1", "        counts[0] += 1", ['observer/suite-attribution'])
     result[-1]['dir'] = 'scripts/suites'
@@ -19146,6 +19181,14 @@ def cases():
         result[-1]['dir'] = 'scripts'
         result[-1]['confined_only'] = True
         result[-1]['siblings'] = True
+    repair367('row-runtime', 'check_gate_mutations.py',
+        "            runtime_keys = sorted({d['runtime_digest'] for d in [*dependencies, *(\n                [previous['dependency']] if previous and result['execution_scope'] == 'rows' else [])]})",
+        "            runtime_keys = sorted({d['runtime_digest'] for d in dependencies})", ['row-runtime-published'])
+    repair367('carried-controls-complete', 'gate_changes.py',
+        "    require(controls['source_commit'] == result['source_commit'] or controls['dependency']['complete'],",
+        "    require(True or controls['dependency']['complete'],", ['carried-controls-complete'])
+    selection367('control-source-range', 'mutation_reuse.py',
+        " and not C.intersects(dependency, since)):", "):", ['controls-source-range'])
 
     repair367('prefix', 'gate_changes.py',
         "recorded == '.' or path == recorded or path.startswith(recorded + '/') or\n               recorded.startswith(path + '/')",
@@ -20075,8 +20118,18 @@ def cases():
         result[-1]['dir'] = 'scripts'
         result[-1]['confined_only'] = True
         result[-1]['siblings'] = True
+    weekly367('reservation-owner', 'gate_weekly.py',
+        "                reservation.update(owner=owner, process=list(process) if process is not None else None)",
+        "                pass", ['joiner-not-owner', 'dead-owner-released'])
+    weekly367('dead-owner', 'gate_weekly.py',
+        "                    and not process_alive(held['process'])):", "                    and False):", ['dead-owner-released'])
+    weekly367('recover-reservation', 'gate_weekly.py',
+        "        self.cancel(run_id)  # an interrupted", "        pass  # an interrupted", ['recover-clears-reservation'])
+    weekly367('thread-group', 'gate_host.py',
+        "                    if not (owned(process) or owned(group)):", "                    if not owned(process):", ['thread-events'])
 
-    weekly367('two-callers', 'gate_weekly.py', "if state['reservation'] is not None:", 'if False:', ['two-callers'])
+    weekly367('two-callers', 'gate_weekly.py', "            if held is not None:\n                return copy.deepcopy(held)",
+        "            if False:\n                return copy.deepcopy(held)", ['two-callers'])
     weekly367('weekly-limit', 'gate_weekly.py', "if previous is not None and now - previous < WEEK_SECONDS:\n                return dict(status='waiting', reason='seven-day limit', eligible_at=previous + WEEK_SECONDS)", "if previous is not None and now - previous < 1:\n                return dict(status='waiting', reason='seven-day limit', eligible_at=previous + WEEK_SECONDS)", ['rolling-week'])
     weekly367('stale-ticket', 'gate_weekly.py', "if state['reservation'] != reservation:", 'if False:', ['stale-ticket'])
     weekly367('revocation', 'gate_weekly.py', "ledger['revoked'] = sorted(set(ledger['revoked']) | revoked)", "ledger['revoked'] = sorted(set(ledger['revoked']))", ['revocation'])
@@ -20111,6 +20164,15 @@ def cases():
             ['enable/' + row for row in rows])
         result[-1].update(dir=directory, confined_only=True, siblings=True)
 
+    enable367('chain-select', 'gate_changes.py',
+        "                        carried_chain(root, store, prior, source, repository, cache)\n",
+        "                        pass\n", ['chain-intermediate-select'])
+    enable367('chain-green', 'gate_changes.py',
+        "            carried_chain(root, store, gate, item, repository, cache)\n    return gate",
+        "            pass\n    return gate", ['chain-intermediate-publish'])
+    enable367('runtime-authority', 'reuse_evidence.py',
+        "    if isinstance(value, (dict, list)) and key == digest(['observed-runtime', digest(value)]):\n        return True\n",
+        "", ['runtime-after-authority'], '.veldo')
     enable367('landing-chain', 'reuse_evidence.py',
         "    change_chain(changes, root, store, gate, payload['repository'])",
         '    pass', ['chain-missing-item'], '.veldo')

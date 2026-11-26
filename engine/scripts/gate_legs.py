@@ -601,6 +601,7 @@ def unconfined(root, command, env, keep=None):
 
 
 _UNCONFINED_RUNNER = unconfined
+_CONFINED_RUNNER = confined
 
 
 # ---- THE OPENED-FILES RECORD IS THE AUTHORITY'S (VELDO-0358 C18; the lead's decision on integration
@@ -846,6 +847,10 @@ class TakeOpened:
         # A missing trace for any leg keeps the combined stage unknown.
         tracer = self.observer.dependency_module('case_trace')
         suites = [name for name in env.get('VELDO_GATE_UNCONFINED', '').split(',') if name]
+        # The ledger only when one is taken or the runner is the authority's own: a stand-in runner
+        # a suite installs takes the first three (VELDO-0367 N2).
+        if keep is not None and self.target is None and runner not in (_UNCONFINED_RUNNER, _CONFINED_RUNNER):
+            keep = None
         if (runner is not _UNCONFINED_RUNNER or not Path('/usr/bin/strace').is_file()
                 or not tracer['compatible'](HERE.parent, suites)):
             self.native_runs.append(None)
@@ -853,10 +858,13 @@ class TakeOpened:
         trace = self.directory / ('trace-' + str(len(self.native_runs)))
         environment = {k: v for k, v in env.items() if k not in AUTHORITY_ONLY}
         argv = tracer['command'](trace, ['bash', '-c', command])
+        # A new session keeps bash from opening the controlling terminal (VELDO-0367 N3).
         process = subprocess.run(argv, cwd=str(root), env=environment, stdin=subprocess.DEVNULL,
-            pass_fds=(*_channels(environment).values(), *(() if keep is None else (keep,))))
+            pass_fds=(*_channels(environment).values(), *(() if keep is None else (keep,))),
+            start_new_session=True)
         reads = self.observer.DependencyReads(root, environment).trace(trace, launched_argv=process.args)
-        self.native_runs.append((env.get('VELDO_GATE_LEG', 'unconfined'), reads))
+        self.native_runs.append((env.get('VELDO_GATE_LEG', 'unconfined'), reads,
+                                 tuple(name.split(':', 1)[0].removesuffix('.py') for name in suites)))
         return process.returncode
 
     def publish(self, stage, code, claims, opened, late, overflowed):
@@ -869,19 +877,23 @@ class TakeOpened:
         if store is None:
             raise OSError('dependency Store unavailable')
         own = observer.DependencyReads(self.root)
+        setup = observer.DependencyReads(self.root)
         for run in self.native_runs:
             if run is not None:
                 changes['publish_runtime'](store, run[1].runtime)
         # These are the authority's explicit setup inputs, not candidate coverage.
         own.reasons.clear()
-        if observer.clean_commit(self.root) != self.commit:
-            own.unknown('checkout changed during execution')
-        if self.commit == '0' * 40:
-            own.unknown('observed commit unavailable')
+        setup.reasons.clear()
+        for reads in (own, setup):
+            if observer.clean_commit(self.root) != self.commit:
+                reads.unknown('checkout changed during execution')
+            if self.commit == '0' * 40:
+                reads.unknown('observed commit unavailable')
+            for definition in ('gate_legs.py', 'gate_unconfined.json', 'mutation_observer.py'):
+                reads.read(self.root / 'scripts' / definition)
         if overflowed or late:
             own.unknown('lost events or incomplete directory coverage')
-        for definition in ('gate_legs.py', 'gate_unconfined.json', 'mutation_observer.py'):
-            own.read(self.root / 'scripts' / definition)
+        # Stage-wide opens belong to the stage, never to one suite (VELDO-0367 N3).
         for path in opened:
             own.read(self.root / path)
         records = []
@@ -892,16 +904,18 @@ class TakeOpened:
             # Python claims cannot certify children or missing kernel events.
             if dependency['complete']:
                 raise Invalid('Python dependency claim asserts complete native coverage')
-            # The complete leg trace also covers shared setup and prerequisites.
-            leg = json.loads(dependency['item_id'])[2]
-            native = [reads.record(dependency['item_id'], self.commit) for run in self.native_runs
-                      if run is not None for name, reads in [run] if name == leg]
+            # A leg trace certifies a suite only when that traced run executed this suite alone;
+            # otherwise it holds other suites' reads and the Python claim stays unknown (N3).
+            leg, suite = json.loads(dependency['item_id'])[2:4]
+            runs = [run for run in self.native_runs if run is not None and run[0] == leg]
+            native = [reads.record(dependency['item_id'], self.commit) for name, reads, suites in runs
+                      if suites == (str(suite).removesuffix('.py'),)] if len(runs) == 1 else []
             if native:
                 authority = observer.combine_dependencies(
-                    [own.record(dependency['item_id'], self.commit), *native], dependency['item_id'], self.commit)
+                    [setup.record(dependency['item_id'], self.commit), *native], dependency['item_id'], self.commit)
                 dependency = observer.native_dependency(authority, dependency)
             if native:
-                runtime_keys = sorted({own.record(dependency['item_id'], self.commit)['runtime_digest'],
+                runtime_keys = sorted({setup.record(dependency['item_id'], self.commit)['runtime_digest'],
                                        *(r['runtime_digest'] for r in native)})
                 if len(runtime_keys) > 1:
                     changes['publish_runtime'](store, runtime_keys)
@@ -909,10 +923,13 @@ class TakeOpened:
             self.observations.append(observer.publish_dependencies(
                 store, dependency, dict(claim['result'], status='passed', stage_returncode=code)))
         item_id = changes['identity']('stage', stage)
+        # A traced suite that left no claim cannot be missing silently from a complete stage (N3).
+        claimed = {tuple(json.loads(record['item_id'])[2:4]) for record in records}
+        if any((run[0], suite) not in claimed for run in self.native_runs if run is not None for suite in run[2]):
+            own.unknown('traced suite without dependency claim')
         if not self.native_runs or any(run is None for run in self.native_runs):
             own.unknown('native attribution and failed lookup coverage unavailable')
-        records.extend(reads.record(item_id, self.commit) for run in self.native_runs if run is not None
-                       for name, reads in [run])
+        records.extend(run[1].record(item_id, self.commit) for run in self.native_runs if run is not None)
         records.append(own.record(item_id, self.commit))
         changes['publish_runtime'](store, own.runtime)
         runtime_keys = sorted({r['runtime_digest'] for r in records})

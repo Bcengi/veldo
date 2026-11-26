@@ -311,9 +311,11 @@ def authenticated_controls(store, key, suite, cases):
 
 class SuiteControls:
     """One control pair per compatible suite per gate, including dependency-based carry."""
-    def __init__(self, store, changed, source_commit, runtime_validator=None):
+    def __init__(self, store, changed, source_commit, runtime_validator=None, changed_since=None):
         self.store, self.changed, self.source_commit = store, changed, source_commit
         self.runtime_validator = runtime_validator
+        # Paths changed from a carried control's own source to this candidate (VELDO-0367 F7).
+        self.changed_since = changed_since
         self.results = {}
 
     def get(self, suite, cases, execute, prior=None):
@@ -329,8 +331,9 @@ class SuiteControls:
                 dependency = previous['dependency']
                 runtime_ok = (self.runtime_validator(dependency['runtime_digest']) if self.runtime_validator else
                               dependency['runtime_digest'] == suite['runtime'])
-                if (dependency['complete'] and runtime_ok and
-                        not C.intersects(dependency, self.changed)):
+                since = self.changed_since(previous['source_commit']) if self.changed_since else None
+                if (dependency['complete'] and runtime_ok and since is not None and
+                        not C.intersects(dependency, self.changed) and not C.intersects(dependency, since)):
                     record = previous
             except (OSError, ValueError, KeyError, TypeError):
                 pass
