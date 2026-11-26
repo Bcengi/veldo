@@ -573,5 +573,105 @@
     "proof/VELDO-0125/round16_checks.py": "sha256:25f5f1495b723f2fcd83458d30c4ed3db759c0406db9ebed63637af79ff16a98",
     "proof/VELDO-0125/round17_checks.py": "sha256:81a3bab1746d3896f865b8175eea72f7ea93e51ef71723e7ad22127e799d84f9",
     "proof/VELDO-0125/run_suite.py": "sha256:bd998a9ed5020e53b39142656253e7958cbd89bbbeec4aff66975abbc775985a"
+  },
+  "land_2026_11_26": {
+    "base": "68b1c4520 (origin/main)",
+    "restacked_from": "9bb58b9b4",
+    "note": "The port maps above bind the bytes at the port commit. This map gives, for every file the restack or the review fixes changed, the port digest and the bytes on this line.",
+    "digests": {
+      "engine/.veldo/control_assignment.py": {
+        "port": "sha256:78c3f25c8da3b918d931a3640dee5f896603325e49dc4d721912789178a06139",
+        "land": "sha256:686f0599da0a452006b6475f0177b07104e26458529a295bda76053fdb459250"
+      },
+      "engine/.veldo/control_dispatch.py": {
+        "port": "sha256:4c2731f4986d1d9282e3cda9960a840adcb3952fe7c20c690528cc93d894bc91",
+        "land": "sha256:70a76e2a5960dae57fe6432d32ce3e96156a12d3ac73bbaa620a2974d210196b"
+      },
+      "engine/.veldo/control_launch.py": {
+        "port": "sha256:8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
+        "land": "sha256:af6fc1290e1eefe14fb3f85bdf0cfe19e5370e4ca2bc7accbcb6ddfdba3643b1"
+      },
+      "engine/.veldo/control_service.py": {
+        "port": "sha256:1ab68a53c8b2f769b1dfd82a575c3a56461d343b242e94e997924c31f391d4f1",
+        "land": "sha256:4742623e7a3a8085fdea7474634ef777d2540b03aa7a12298ead173edccbfd7e"
+      },
+      "engine/.veldo/control_store.py": {
+        "port": "sha256:117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
+        "land": "sha256:57acb4ee5f38807960c6c6fb8b5ce6230b961921294d070bf99f9231a0eda270"
+      },
+      "engine/.veldo/init_scaffold.py": {
+        "port": "sha256:b10f7240135a8878e858035bf2b3fb0bc65c2e862ba0c9cf05af9bf37769d521",
+        "land": "sha256:46eeab8efcaa83d762e91e349b804122559416e6ff3cb758810dcc107f3a86ad"
+      },
+      "engine/.veldo/project_runner_macos.py": {
+        "port": "sha256:8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
+        "land": "sha256:819a322ed1e3b2fffa2a96483066c103f53d4fe87dbcaeee6de760557b7ebfb1"
+      },
+      "engine/.veldo/project_runner_macos_os.py": {
+        "port": "sha256:871a1d219401143ff088a58b332510f93ab5616512daffad2c5aa90537ee89b8",
+        "land": "sha256:c08d0778e8bc5c6c2e650756fd11d4111a10235129446844fcb6411ff18ee93c"
+      },
+      "engine/.veldo/project_runner_macos_wrapper.py": {
+        "port": "sha256:0c644b10cdd37ef3a524183ab3d0f7db2f9ac7734b28f10293118a86d0056100",
+        "land": "sha256:95f7920c1c356bcc48035a8610f9385a6267df1599de20371628aec18ac40e16"
+      },
+      "scripts/check_space_boundary.py": {
+        "port": "sha256:d723752acc08c097a86a15d8ff1bbcf510dd4982e9e0e9d82434d6510cdf6d36",
+        "land": "sha256:fcd16e6c4c1d3d5f0da154e20f269b2451c0f8f1f091e89cccc47fa01c64aa22"
+      },
+      "scripts/check_teeth_mutations.py": {
+        "port": "sha256:d8c5575e4048eaa12b697028e39d27cd025491b6dc9f6fcbfefea5df4dfb0dbd",
+        "land": "sha256:9412e8db93e86618d5ef3a28bc81efd01a9fb79e263e71ae137f1b149a6840fe"
+      },
+      "scripts/suites/103_veldo_0124_macos.py": {
+        "port": "sha256:01f5b6a9459ec4b29e6a914b9cb2232893095728fc4a7cfeb863931e8f3f9a56",
+        "land": "sha256:3dc3e78520f1f282f6e77db7368f2b9fea2e1350411fe27bca61067076b66da1"
+      },
+      "scripts/suites/106_veldo_0125_routing.py": {
+        "port": "sha256:08c915b5ae5f0015e06f469b3dd8de0c1357a7eec2970edbf4074f52cea28536",
+        "land": "sha256:09b256ecddb2b074a80dca969fe85c6014ab760e7e24b437d778383afb723b57"
+      },
+      "scripts/suites/36_veldo_0023_journal.py": {
+        "port": "sha256:6c75dd2e0a91ab0980d18ad73fb3f199118ae675e104f1a06ac8b8e73e6705e4",
+        "land": "sha256:5cd820538988b0c9c776bb2dbdd38a076d0a3bc9d7e904c8cadbe39f91012819"
+      },
+      "scripts/suites/86_veldo_0168_text.py": {
+        "port": "sha256:0c105d44c13b40bbee85caef63e584ebca1b7b9fe0c8a935e4c5da8e323f3f1c",
+        "land": "sha256:122bd5dec6a05b3653b93320b9663d5e5d90027d4305d8c37a74300a51db6b6f"
+      },
+      "scripts/suites/manifest.json": {
+        "port": "sha256:50fe4f533585fcf5c30261c3ae03257770951481ccb356a0416a0a8920fe1559",
+        "land": "sha256:58ed243f45532ddcbd190cde970ea748cb4fd0f3d92b8c0c97e36f22f4733f72"
+      },
+      "scripts/suites/requires.json": {
+        "port": "sha256:c58e9d156bb46a7ee01bea437e4fb3c95e8b34e6b8abd21e0b3b7d5d57516926",
+        "land": "sha256:9e52ee6235581515c12ae0d1ac231108cf19ee6e4563403aaae9920cffde48d1"
+      },
+      "proof/VELDO-0125/bringup-blocked.md": {
+        "port": "sha256:7ace2221311b92f4c65f9ee4d5c3810644d622ae8e6bab36c6b04fc3f3005185",
+        "land": "sha256:30663b3ae64590072183ed879e84014273a028a225da8392cede18a5a9207a5c"
+      },
+      "proof/VELDO-0125/checks.py": {
+        "port": "sha256:007f057a8a6edadb91eb20734ebd10c6f29f6029760670ad463c92fda24cf24a",
+        "land": "sha256:8c1a7b3b874781c1883023b0f626ad48d16e2acc321e20436f98015436eaf772"
+      },
+      "proof/VELDO-0125/port-falsifiers.json": {
+        "port": "sha256:5151640b06c0cb76719dc74d80311a739a6e5ca1a10da80b19fd7520c9b22ca8",
+        "land": "sha256:57b13f94cafc420e2fcee8cdefcab7dbbc954561cde9a1be9189597062f36ce0"
+      },
+      "proof/VELDO-0125/port_falsifiers.py": {
+        "port": "sha256:3b3af0eec0cea3564b5a3bd55d11fa5e20f2e325e3f085499aec9212788088dd",
+        "land": "sha256:e9a614ec08543ae7471e05f769bc3bc4c86865f0668df8eef6cc3dc6e709f39f"
+      },
+      "proof/VELDO-0125/land-2026-11-26/land-falsifiers.json": {
+        "port": null,
+        "land": "sha256:45deeddc8baaca5105538e071a249e3910babb5c499c6256c090939d9ca8dcf5"
+      },
+      "proof/VELDO-0125/land-2026-11-26/invalid-mutant-cases.json": {
+        "port": null,
+        "land": "sha256:8864c23f9102a15eab5d33f3604937008b58722877415254722380e1047b3ae3"
+      }
+    },
+    "record": "research land report land-veldo-0125.md (owner workspace)"
   }
 }
