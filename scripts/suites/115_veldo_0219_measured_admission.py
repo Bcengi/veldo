@@ -554,7 +554,7 @@ def _v219_checks():
                     return types.SimpleNamespace(cleanup=lambda *a: {}, remove_tree=ownership.remove_tree)
                 return real_load(path)
             patches = dict(inventory=lambda *a: stage_cases,read_inputs=lambda *a: stage_files,
-                git=lambda *a: 'head',snapshot=lambda *a: None,inputs_unchanged=lambda *a: True,
+                git=lambda *a: 'a' * 40,snapshot=lambda *a: None,inputs_unchanged=lambda *a: True,
                 load=loader,CaseClaims=lambda: claim_store,
                 # Every fixture case is measured at 240s; since VELDO-0285 the stage reads its
                 # deadlines through case_deadlines, where an unmeasured case is None.

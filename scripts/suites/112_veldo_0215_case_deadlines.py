@@ -198,7 +198,7 @@ def _v215_case_deadlines():
             real_deadlines, real_record = gate.case_deadlines, gate.record_case_times
             with contextlib.ExitStack() as stack:
                 overrides = dict(inventory=lambda *a: [case], read_inputs=lambda *a: files,
-                    git=lambda *a: 'head', snapshot=lambda *a: None, inputs_unchanged=lambda *a: True,
+                    git=lambda *a: 'a' * 40, snapshot=lambda *a: None, inputs_unchanged=lambda *a: True,
                     load=loader, case_deadlines=lambda keys: real_deadlines(keys, store),
                     record_case_times=lambda root, samples, authority=False: real_record(
                         root, samples, times, authority=authority), CASE_TIMES=times)
