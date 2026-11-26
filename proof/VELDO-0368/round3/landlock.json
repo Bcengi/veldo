@@ -1,0 +1,2382 @@
+{
+  "head": "f345e09b62d737cc0dcce32aad82c398042f342f",
+  "host": "dmitry-pc",
+  "kernel": "7.0.0-38-generic",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "landlock_abi": 8,
+  "source_sha256": "bbf00fe1ccb881e4b38ad03afc312283c04029e2ab3c15690a3690dfa388a3f5",
+  "worker_grants": [
+    [
+      "/home/dmitry/remote-run-local/runs/rr20261126125200-be46/work",
+      13
+    ],
+    [
+      "/home/dmitry/remote-run-local/runs/rr20261126125200-be46/work/.local/0368/round3/scratch",
+      32767
+    ],
+    [
+      "/usr",
+      13
+    ],
+    [
+      "/usr/lib",
+      13
+    ],
+    [
+      "/usr/lib64",
+      13
+    ],
+    [
+      "/etc",
+      13
+    ],
+    [
+      "/home/dmitry/.nvm/versions/node",
+      13
+    ],
+    [
+      "/home/dmitry/.local/share/claude",
+      13
+    ],
+    [
+      "/home/dmitry/.local/share/codex-versions",
+      13
+    ],
+    [
+      "/home/dmitry/.local/share/veldo/langgraph",
+      13
+    ],
+    [
+      "/home/dmitry/.rustup",
+      13
+    ],
+    [
+      "/home/dmitry/.cargo/bin",
+      13
+    ],
+    [
+      "/dev/null",
+      6
+    ],
+    [
+      "/dev/urandom",
+      4
+    ]
+  ],
+  "implicit_grants": [
+    [
+      "/proc",
+      13
+    ],
+    [
+      "/dev/ptmx",
+      32774
+    ]
+  ],
+  "scope": [
+    {
+      "mode": "broad",
+      "applied_grants": [
+        [
+          "/home/dmitry/remote-run-local/runs/rr20261126125200-be46/work",
+          13
+        ],
+        [
+          "/home/dmitry/remote-run-local/runs/rr20261126125200-be46/work/.local/0368/round3/scratch",
+          32767
+        ],
+        [
+          "/usr",
+          13
+        ],
+        [
+          "/usr/lib",
+          13
+        ],
+        [
+          "/usr/lib64",
+          13
+        ],
+        [
+          "/etc",
+          13
+        ],
+        [
+          "/home/dmitry/.nvm/versions/node",
+          13
+        ],
+        [
+          "/home/dmitry/.local/share/claude",
+          13
+        ],
+        [
+          "/home/dmitry/.local/share/codex-versions",
+          13
+        ],
+        [
+          "/home/dmitry/.local/share/veldo/langgraph",
+          13
+        ],
+        [
+          "/home/dmitry/.rustup",
+          13
+        ],
+        [
+          "/home/dmitry/.cargo/bin",
+          13
+        ],
+        [
+          "/home/dmitry/.vg/gad61",
+          32767
+        ],
+        [
+          "/dev/null",
+          6
+        ],
+        [
+          "/dev/urandom",
+          4
+        ]
+      ],
+      "namespace": true,
+      "tracer": "TracerPid:\t0",
+      "allowed": {
+        "ok": true,
+        "value": 2833
+      },
+      "unrelated_read": {
+        "ok": true,
+        "value": 16852
+      },
+      "unrelated_stat": {
+        "ok": true,
+        "value": 16852
+      },
+      "unrelated_access": {
+        "ok": true,
+        "value": true
+      },
+      "repo_listing": {
+        "ok": true,
+        "value": 27
+      },
+      "repo_write": {
+        "ok": false,
+        "errno": 13
+      },
+      "system_read": {
+        "ok": true,
+        "value": 400
+      },
+      "preopened_read": {
+        "ok": true,
+        "value": 32
+      },
+      "native_read": {
+        "exit": 0,
+        "stdout_bytes": 16852,
+        "stderr": ""
+      },
+      "threads_before": 1,
+      "threads_after": 2,
+      "read_after_watchdog": {
+        "ok": true,
+        "value": 16852
+      }
+    },
+    {
+      "mode": "narrow",
+      "applied_grants": [
+        [
+          "/home/dmitry/remote-run-local/runs/rr20261126125200-be46/work",
+          13
+        ],
+        [
+          "/home/dmitry/remote-run-local/runs/rr20261126125200-be46/work/.local/0368/round3/scratch",
+          32767
+        ],
+        [
+          "/usr",
+          13
+        ],
+        [
+          "/usr/lib",
+          13
+        ],
+        [
+          "/usr/lib64",
+          13
+        ],
+        [
+          "/etc",
+          13
+        ],
+        [
+          "/home/dmitry/.nvm/versions/node",
+          13
+        ],
+        [
+          "/home/dmitry/.local/share/claude",
+          13
+        ],
+        [
+          "/home/dmitry/.local/share/codex-versions",
+          13
+        ],
+        [
+          "/home/dmitry/.local/share/veldo/langgraph",
+          13
+        ],
+        [
+          "/home/dmitry/.rustup",
+          13
+        ],
+        [
+          "/home/dmitry/.cargo/bin",
+          13
+        ],
+        [
+          "/home/dmitry/.vg/gff62",
+          32767
+        ],
+        [
+          "/dev/null",
+          6
+        ],
+        [
+          "/dev/urandom",
+          4
+        ]
+      ],
+      "namespace": true,
+      "tracer": "TracerPid:\t0",
+      "allowed": {
+        "ok": true,
+        "value": 2833
+      },
+      "unrelated_read": {
+        "ok": false,
+        "errno": 13
+      },
+      "unrelated_stat": {
+        "ok": true,
+        "value": 16852
+      },
+      "unrelated_access": {
+        "ok": true,
+        "value": true
+      },
+      "repo_listing": {
+        "ok": false,
+        "errno": 13
+      },
+      "repo_write": {
+        "ok": false,
+        "errno": 13
+      },
+      "system_read": {
+        "ok": true,
+        "value": 400
+      },
+      "preopened_read": {
+        "ok": true,
+        "value": 32
+      },
+      "native_read": {
+        "exit": 1,
+        "stdout_bytes": 0,
+        "stderr": "/usr/bin/cat: /home/dmitry/remote-run-local/runs/rr20261126125200-be46/work/specs/VELDO-0217-every-confined-case-has-a-reviewed-input-declaration.md: Permission denied\n"
+      },
+      "threads_before": 1,
+      "threads_after": 2,
+      "read_after_watchdog": {
+        "ok": false,
+        "errno": 13
+      }
+    }
+  ],
+  "samples": [
+    {
+      "rep": 0,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 876252,
+      "cpu_ns": 873809
+    },
+    {
+      "rep": 0,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 122536,
+      "cpu_ns": 121940
+    },
+    {
+      "rep": 0,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1092613,
+      "cpu_ns": 1091402
+    },
+    {
+      "rep": 0,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 441017,
+      "cpu_ns": 440668
+    },
+    {
+      "rep": 0,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 1983760,
+      "cpu_ns": 1982954
+    },
+    {
+      "rep": 0,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1252989,
+      "cpu_ns": 1252676
+    },
+    {
+      "rep": 0,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5571888,
+      "cpu_ns": 5565131
+    },
+    {
+      "rep": 0,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4233304,
+      "cpu_ns": 4232950
+    },
+    {
+      "rep": 0,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10764424,
+      "cpu_ns": 10743103
+    },
+    {
+      "rep": 0,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8708973,
+      "cpu_ns": 8692242
+    },
+    {
+      "rep": 1,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10488436,
+      "cpu_ns": 10469010
+    },
+    {
+      "rep": 1,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8580819,
+      "cpu_ns": 8581450
+    },
+    {
+      "rep": 1,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5556957,
+      "cpu_ns": 5557471
+    },
+    {
+      "rep": 1,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4237789,
+      "cpu_ns": 4237708
+    },
+    {
+      "rep": 1,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2084324,
+      "cpu_ns": 2082998
+    },
+    {
+      "rep": 1,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1139380,
+      "cpu_ns": 1139028
+    },
+    {
+      "rep": 1,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1033013,
+      "cpu_ns": 1032133
+    },
+    {
+      "rep": 1,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 384424,
+      "cpu_ns": 384144
+    },
+    {
+      "rep": 1,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 619943,
+      "cpu_ns": 619449
+    },
+    {
+      "rep": 1,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 106424,
+      "cpu_ns": 106181
+    },
+    {
+      "rep": 2,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 598405,
+      "cpu_ns": 597710
+    },
+    {
+      "rep": 2,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 108181,
+      "cpu_ns": 107988
+    },
+    {
+      "rep": 2,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 932821,
+      "cpu_ns": 922441
+    },
+    {
+      "rep": 2,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 378354,
+      "cpu_ns": 378207
+    },
+    {
+      "rep": 2,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 1838357,
+      "cpu_ns": 1824326
+    },
+    {
+      "rep": 2,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1158946,
+      "cpu_ns": 1158772
+    },
+    {
+      "rep": 2,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5350968,
+      "cpu_ns": 5339022
+    },
+    {
+      "rep": 2,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4175847,
+      "cpu_ns": 4168379
+    },
+    {
+      "rep": 2,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10596619,
+      "cpu_ns": 10597946
+    },
+    {
+      "rep": 2,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8671888,
+      "cpu_ns": 8672689
+    },
+    {
+      "rep": 3,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10860868,
+      "cpu_ns": 10780664
+    },
+    {
+      "rep": 3,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8777976,
+      "cpu_ns": 8779070
+    },
+    {
+      "rep": 3,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5741835,
+      "cpu_ns": 5741918
+    },
+    {
+      "rep": 3,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4323483,
+      "cpu_ns": 4323636
+    },
+    {
+      "rep": 3,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2109216,
+      "cpu_ns": 2108629
+    },
+    {
+      "rep": 3,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1186251,
+      "cpu_ns": 1186268
+    },
+    {
+      "rep": 3,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1156289,
+      "cpu_ns": 1155536
+    },
+    {
+      "rep": 3,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 422393,
+      "cpu_ns": 421793
+    },
+    {
+      "rep": 3,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 709308,
+      "cpu_ns": 708012
+    },
+    {
+      "rep": 3,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 116419,
+      "cpu_ns": 116065
+    },
+    {
+      "rep": 4,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 649674,
+      "cpu_ns": 648544
+    },
+    {
+      "rep": 4,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 120614,
+      "cpu_ns": 120583
+    },
+    {
+      "rep": 4,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1012806,
+      "cpu_ns": 1012004
+    },
+    {
+      "rep": 4,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 443898,
+      "cpu_ns": 443253
+    },
+    {
+      "rep": 4,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2076342,
+      "cpu_ns": 2076052
+    },
+    {
+      "rep": 4,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1211484,
+      "cpu_ns": 1210788
+    },
+    {
+      "rep": 4,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5732646,
+      "cpu_ns": 5733120
+    },
+    {
+      "rep": 4,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4321701,
+      "cpu_ns": 4230011
+    },
+    {
+      "rep": 4,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10755042,
+      "cpu_ns": 10755373
+    },
+    {
+      "rep": 4,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8909038,
+      "cpu_ns": 8902923
+    },
+    {
+      "rep": 5,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10589983,
+      "cpu_ns": 10590150
+    },
+    {
+      "rep": 5,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8604692,
+      "cpu_ns": 8605432
+    },
+    {
+      "rep": 5,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5558676,
+      "cpu_ns": 5558199
+    },
+    {
+      "rep": 5,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4233317,
+      "cpu_ns": 4233538
+    },
+    {
+      "rep": 5,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2010040,
+      "cpu_ns": 2009001
+    },
+    {
+      "rep": 5,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1148425,
+      "cpu_ns": 1148167
+    },
+    {
+      "rep": 5,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1071829,
+      "cpu_ns": 1070868
+    },
+    {
+      "rep": 5,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 412836,
+      "cpu_ns": 412554
+    },
+    {
+      "rep": 5,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 696608,
+      "cpu_ns": 695342
+    },
+    {
+      "rep": 5,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 113122,
+      "cpu_ns": 112593
+    },
+    {
+      "rep": 6,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 630616,
+      "cpu_ns": 629549
+    },
+    {
+      "rep": 6,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 121609,
+      "cpu_ns": 121391
+    },
+    {
+      "rep": 6,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1050839,
+      "cpu_ns": 1049695
+    },
+    {
+      "rep": 6,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 421562,
+      "cpu_ns": 421362
+    },
+    {
+      "rep": 6,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2045035,
+      "cpu_ns": 2043949
+    },
+    {
+      "rep": 6,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1175347,
+      "cpu_ns": 1175123
+    },
+    {
+      "rep": 6,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5551864,
+      "cpu_ns": 5477740
+    },
+    {
+      "rep": 6,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4166516,
+      "cpu_ns": 4166583
+    },
+    {
+      "rep": 6,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10509406,
+      "cpu_ns": 10498485
+    },
+    {
+      "rep": 6,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8882458,
+      "cpu_ns": 8884165
+    },
+    {
+      "rep": 7,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10981530,
+      "cpu_ns": 10982963
+    },
+    {
+      "rep": 7,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 9145982,
+      "cpu_ns": 9147874
+    },
+    {
+      "rep": 7,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5927881,
+      "cpu_ns": 5927979
+    },
+    {
+      "rep": 7,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4482948,
+      "cpu_ns": 4365282
+    },
+    {
+      "rep": 7,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2127594,
+      "cpu_ns": 2126346
+    },
+    {
+      "rep": 7,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1246378,
+      "cpu_ns": 1246187
+    },
+    {
+      "rep": 7,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1149687,
+      "cpu_ns": 1147739
+    },
+    {
+      "rep": 7,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 421208,
+      "cpu_ns": 420871
+    },
+    {
+      "rep": 7,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 779554,
+      "cpu_ns": 778511
+    },
+    {
+      "rep": 7,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 118355,
+      "cpu_ns": 117681
+    },
+    {
+      "rep": 8,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 730074,
+      "cpu_ns": 729093
+    },
+    {
+      "rep": 8,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 119497,
+      "cpu_ns": 118915
+    },
+    {
+      "rep": 8,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1136550,
+      "cpu_ns": 1135563
+    },
+    {
+      "rep": 8,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 454133,
+      "cpu_ns": 453606
+    },
+    {
+      "rep": 8,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2012063,
+      "cpu_ns": 2011343
+    },
+    {
+      "rep": 8,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1205986,
+      "cpu_ns": 1205810
+    },
+    {
+      "rep": 8,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5705281,
+      "cpu_ns": 5706248
+    },
+    {
+      "rep": 8,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4429305,
+      "cpu_ns": 4429567
+    },
+    {
+      "rep": 8,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10864107,
+      "cpu_ns": 10864928
+    },
+    {
+      "rep": 8,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8939890,
+      "cpu_ns": 8876653
+    },
+    {
+      "rep": 9,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 11009077,
+      "cpu_ns": 11010124
+    },
+    {
+      "rep": 9,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8922094,
+      "cpu_ns": 8923620
+    },
+    {
+      "rep": 9,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5936716,
+      "cpu_ns": 5931511
+    },
+    {
+      "rep": 9,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4471367,
+      "cpu_ns": 4465702
+    },
+    {
+      "rep": 9,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2176286,
+      "cpu_ns": 2175238
+    },
+    {
+      "rep": 9,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1220769,
+      "cpu_ns": 1220406
+    },
+    {
+      "rep": 9,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1158359,
+      "cpu_ns": 1157309
+    },
+    {
+      "rep": 9,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 433496,
+      "cpu_ns": 432713
+    },
+    {
+      "rep": 9,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 804719,
+      "cpu_ns": 803890
+    },
+    {
+      "rep": 9,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 116885,
+      "cpu_ns": 116158
+    },
+    {
+      "rep": 10,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 808674,
+      "cpu_ns": 807770
+    },
+    {
+      "rep": 10,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 109692,
+      "cpu_ns": 109586
+    },
+    {
+      "rep": 10,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1069658,
+      "cpu_ns": 1068805
+    },
+    {
+      "rep": 10,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 416408,
+      "cpu_ns": 416395
+    },
+    {
+      "rep": 10,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2095166,
+      "cpu_ns": 2095076
+    },
+    {
+      "rep": 10,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1208084,
+      "cpu_ns": 1207274
+    },
+    {
+      "rep": 10,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5706088,
+      "cpu_ns": 5707577
+    },
+    {
+      "rep": 10,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4450292,
+      "cpu_ns": 4436824
+    },
+    {
+      "rep": 10,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10855735,
+      "cpu_ns": 10857290
+    },
+    {
+      "rep": 10,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8901551,
+      "cpu_ns": 8901805
+    },
+    {
+      "rep": 11,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 11650114,
+      "cpu_ns": 11105444
+    },
+    {
+      "rep": 11,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8870302,
+      "cpu_ns": 8865248
+    },
+    {
+      "rep": 11,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5786725,
+      "cpu_ns": 5786894
+    },
+    {
+      "rep": 11,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4349253,
+      "cpu_ns": 4349488
+    },
+    {
+      "rep": 11,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2129165,
+      "cpu_ns": 2128724
+    },
+    {
+      "rep": 11,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1261730,
+      "cpu_ns": 1261095
+    },
+    {
+      "rep": 11,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1177675,
+      "cpu_ns": 1176609
+    },
+    {
+      "rep": 11,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 458116,
+      "cpu_ns": 457936
+    },
+    {
+      "rep": 11,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 832088,
+      "cpu_ns": 830963
+    },
+    {
+      "rep": 11,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 126056,
+      "cpu_ns": 125335
+    },
+    {
+      "rep": 12,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 670408,
+      "cpu_ns": 668994
+    },
+    {
+      "rep": 12,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 132784,
+      "cpu_ns": 132220
+    },
+    {
+      "rep": 12,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1124989,
+      "cpu_ns": 1123787
+    },
+    {
+      "rep": 12,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 449849,
+      "cpu_ns": 450132
+    },
+    {
+      "rep": 12,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2018973,
+      "cpu_ns": 2018488
+    },
+    {
+      "rep": 12,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1209225,
+      "cpu_ns": 1208777
+    },
+    {
+      "rep": 12,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5662627,
+      "cpu_ns": 5663468
+    },
+    {
+      "rep": 12,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4462561,
+      "cpu_ns": 4451828
+    },
+    {
+      "rep": 12,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 11150746,
+      "cpu_ns": 11151980
+    },
+    {
+      "rep": 12,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 9306367,
+      "cpu_ns": 9297432
+    },
+    {
+      "rep": 13,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10987458,
+      "cpu_ns": 10959855
+    },
+    {
+      "rep": 13,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 9151044,
+      "cpu_ns": 9152802
+    },
+    {
+      "rep": 13,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 6094024,
+      "cpu_ns": 6095493
+    },
+    {
+      "rep": 13,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4577245,
+      "cpu_ns": 4576764
+    },
+    {
+      "rep": 13,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2081304,
+      "cpu_ns": 2080138
+    },
+    {
+      "rep": 13,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1178631,
+      "cpu_ns": 1178577
+    },
+    {
+      "rep": 13,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1051109,
+      "cpu_ns": 1050502
+    },
+    {
+      "rep": 13,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 407514,
+      "cpu_ns": 406916
+    },
+    {
+      "rep": 13,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 754848,
+      "cpu_ns": 753204
+    },
+    {
+      "rep": 13,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 116727,
+      "cpu_ns": 116039
+    },
+    {
+      "rep": 14,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 729013,
+      "cpu_ns": 727979
+    },
+    {
+      "rep": 14,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 119475,
+      "cpu_ns": 119071
+    },
+    {
+      "rep": 14,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1070703,
+      "cpu_ns": 1070278
+    },
+    {
+      "rep": 14,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 452073,
+      "cpu_ns": 451136
+    },
+    {
+      "rep": 14,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 1998543,
+      "cpu_ns": 1998265
+    },
+    {
+      "rep": 14,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1229056,
+      "cpu_ns": 1228987
+    },
+    {
+      "rep": 14,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5648752,
+      "cpu_ns": 5649614
+    },
+    {
+      "rep": 14,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4337077,
+      "cpu_ns": 4337102
+    },
+    {
+      "rep": 14,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10985874,
+      "cpu_ns": 10987143
+    },
+    {
+      "rep": 14,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 9039044,
+      "cpu_ns": 9025121
+    },
+    {
+      "rep": 15,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 11209703,
+      "cpu_ns": 11200447
+    },
+    {
+      "rep": 15,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 9013895,
+      "cpu_ns": 8954685
+    },
+    {
+      "rep": 15,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5877543,
+      "cpu_ns": 5878137
+    },
+    {
+      "rep": 15,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4514438,
+      "cpu_ns": 4515405
+    },
+    {
+      "rep": 15,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2206755,
+      "cpu_ns": 2205786
+    },
+    {
+      "rep": 15,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1220341,
+      "cpu_ns": 1219780
+    },
+    {
+      "rep": 15,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1055188,
+      "cpu_ns": 1054901
+    },
+    {
+      "rep": 15,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 428333,
+      "cpu_ns": 427407
+    },
+    {
+      "rep": 15,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 695081,
+      "cpu_ns": 693983
+    },
+    {
+      "rep": 15,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 116270,
+      "cpu_ns": 115726
+    },
+    {
+      "rep": 16,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 705005,
+      "cpu_ns": 704590
+    },
+    {
+      "rep": 16,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 122598,
+      "cpu_ns": 122178
+    },
+    {
+      "rep": 16,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1113539,
+      "cpu_ns": 1112681
+    },
+    {
+      "rep": 16,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 448201,
+      "cpu_ns": 448260
+    },
+    {
+      "rep": 16,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2027673,
+      "cpu_ns": 2028000
+    },
+    {
+      "rep": 16,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1271420,
+      "cpu_ns": 1271189
+    },
+    {
+      "rep": 16,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 6132350,
+      "cpu_ns": 5828806
+    },
+    {
+      "rep": 16,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4601963,
+      "cpu_ns": 4580012
+    },
+    {
+      "rep": 16,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 11016546,
+      "cpu_ns": 11005719
+    },
+    {
+      "rep": 16,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8948839,
+      "cpu_ns": 8949674
+    },
+    {
+      "rep": 17,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 11135097,
+      "cpu_ns": 11136124
+    },
+    {
+      "rep": 17,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8912088,
+      "cpu_ns": 8913035
+    },
+    {
+      "rep": 17,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5792536,
+      "cpu_ns": 5793175
+    },
+    {
+      "rep": 17,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4464555,
+      "cpu_ns": 4465683
+    },
+    {
+      "rep": 17,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2202100,
+      "cpu_ns": 2202116
+    },
+    {
+      "rep": 17,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1253745,
+      "cpu_ns": 1253718
+    },
+    {
+      "rep": 17,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1177650,
+      "cpu_ns": 1177175
+    },
+    {
+      "rep": 17,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 448051,
+      "cpu_ns": 447267
+    },
+    {
+      "rep": 17,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 746658,
+      "cpu_ns": 745368
+    },
+    {
+      "rep": 17,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 115265,
+      "cpu_ns": 114966
+    },
+    {
+      "rep": 18,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 699953,
+      "cpu_ns": 698899
+    },
+    {
+      "rep": 18,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 118267,
+      "cpu_ns": 117688
+    },
+    {
+      "rep": 18,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1033531,
+      "cpu_ns": 1032879
+    },
+    {
+      "rep": 18,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 429466,
+      "cpu_ns": 428899
+    },
+    {
+      "rep": 18,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2035773,
+      "cpu_ns": 2035148
+    },
+    {
+      "rep": 18,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1203337,
+      "cpu_ns": 1203050
+    },
+    {
+      "rep": 18,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5701894,
+      "cpu_ns": 5703329
+    },
+    {
+      "rep": 18,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4427421,
+      "cpu_ns": 4428245
+    },
+    {
+      "rep": 18,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10971640,
+      "cpu_ns": 10972337
+    },
+    {
+      "rep": 18,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8742220,
+      "cpu_ns": 8726912
+    },
+    {
+      "rep": 19,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10983479,
+      "cpu_ns": 10952534
+    },
+    {
+      "rep": 19,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 9025711,
+      "cpu_ns": 9026996
+    },
+    {
+      "rep": 19,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5917994,
+      "cpu_ns": 5856407
+    },
+    {
+      "rep": 19,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4538218,
+      "cpu_ns": 4539294
+    },
+    {
+      "rep": 19,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2181124,
+      "cpu_ns": 2180290
+    },
+    {
+      "rep": 19,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1234623,
+      "cpu_ns": 1234476
+    },
+    {
+      "rep": 19,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1117964,
+      "cpu_ns": 1117177
+    },
+    {
+      "rep": 19,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 419463,
+      "cpu_ns": 418947
+    },
+    {
+      "rep": 19,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 647338,
+      "cpu_ns": 646557
+    },
+    {
+      "rep": 19,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 110121,
+      "cpu_ns": 109872
+    },
+    {
+      "rep": 20,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 597069,
+      "cpu_ns": 596385
+    },
+    {
+      "rep": 20,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 111655,
+      "cpu_ns": 111179
+    },
+    {
+      "rep": 20,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 951510,
+      "cpu_ns": 950878
+    },
+    {
+      "rep": 20,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 403362,
+      "cpu_ns": 403191
+    },
+    {
+      "rep": 20,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 1948937,
+      "cpu_ns": 1948448
+    },
+    {
+      "rep": 20,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1168077,
+      "cpu_ns": 1167679
+    },
+    {
+      "rep": 20,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5616054,
+      "cpu_ns": 5506464
+    },
+    {
+      "rep": 20,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4335884,
+      "cpu_ns": 4335894
+    },
+    {
+      "rep": 20,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10804586,
+      "cpu_ns": 10805970
+    },
+    {
+      "rep": 20,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8942408,
+      "cpu_ns": 8942727
+    },
+    {
+      "rep": 21,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10585288,
+      "cpu_ns": 10585080
+    },
+    {
+      "rep": 21,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8609788,
+      "cpu_ns": 8610395
+    },
+    {
+      "rep": 21,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5562258,
+      "cpu_ns": 5561587
+    },
+    {
+      "rep": 21,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4212307,
+      "cpu_ns": 4212234
+    },
+    {
+      "rep": 21,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2037872,
+      "cpu_ns": 2036748
+    },
+    {
+      "rep": 21,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1151500,
+      "cpu_ns": 1151103
+    },
+    {
+      "rep": 21,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1052745,
+      "cpu_ns": 1051448
+    },
+    {
+      "rep": 21,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 403657,
+      "cpu_ns": 403270
+    },
+    {
+      "rep": 21,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 676156,
+      "cpu_ns": 675507
+    },
+    {
+      "rep": 21,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 109822,
+      "cpu_ns": 109496
+    },
+    {
+      "rep": 22,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 610252,
+      "cpu_ns": 609660
+    },
+    {
+      "rep": 22,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 117270,
+      "cpu_ns": 116648
+    },
+    {
+      "rep": 22,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 949025,
+      "cpu_ns": 948219
+    },
+    {
+      "rep": 22,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 437172,
+      "cpu_ns": 436664
+    },
+    {
+      "rep": 22,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 1993005,
+      "cpu_ns": 1991839
+    },
+    {
+      "rep": 22,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1191388,
+      "cpu_ns": 1191239
+    },
+    {
+      "rep": 22,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5655713,
+      "cpu_ns": 5651640
+    },
+    {
+      "rep": 22,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4336210,
+      "cpu_ns": 4336729
+    },
+    {
+      "rep": 22,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10905472,
+      "cpu_ns": 10905820
+    },
+    {
+      "rep": 22,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8859586,
+      "cpu_ns": 8853438
+    },
+    {
+      "rep": 23,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10703242,
+      "cpu_ns": 10704021
+    },
+    {
+      "rep": 23,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 8736017,
+      "cpu_ns": 8737141
+    },
+    {
+      "rep": 23,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5647602,
+      "cpu_ns": 5646963
+    },
+    {
+      "rep": 23,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4364823,
+      "cpu_ns": 4242794
+    },
+    {
+      "rep": 23,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 2046507,
+      "cpu_ns": 2044447
+    },
+    {
+      "rep": 23,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1202840,
+      "cpu_ns": 1202694
+    },
+    {
+      "rep": 23,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1186949,
+      "cpu_ns": 1185682
+    },
+    {
+      "rep": 23,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 413318,
+      "cpu_ns": 413076
+    },
+    {
+      "rep": 23,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 714761,
+      "cpu_ns": 713644
+    },
+    {
+      "rep": 23,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 118758,
+      "cpu_ns": 118260
+    },
+    {
+      "rep": 24,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "full_existing_function",
+      "wall_ns": 715868,
+      "cpu_ns": 714880
+    },
+    {
+      "rep": 24,
+      "repository_rules": 1,
+      "shape": 0,
+      "kind": "read_layer_only",
+      "wall_ns": 124294,
+      "cpu_ns": 123895
+    },
+    {
+      "rep": 24,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "full_existing_function",
+      "wall_ns": 1035055,
+      "cpu_ns": 1034170
+    },
+    {
+      "rep": 24,
+      "repository_rules": 32,
+      "shape": 32,
+      "kind": "read_layer_only",
+      "wall_ns": 418255,
+      "cpu_ns": 417723
+    },
+    {
+      "rep": 24,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "full_existing_function",
+      "wall_ns": 1943126,
+      "cpu_ns": 1942455
+    },
+    {
+      "rep": 24,
+      "repository_rules": 128,
+      "shape": 128,
+      "kind": "read_layer_only",
+      "wall_ns": 1205398,
+      "cpu_ns": 1205393
+    },
+    {
+      "rep": 24,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "full_existing_function",
+      "wall_ns": 5609345,
+      "cpu_ns": 5543726
+    },
+    {
+      "rep": 24,
+      "repository_rules": 512,
+      "shape": 512,
+      "kind": "read_layer_only",
+      "wall_ns": 4315531,
+      "cpu_ns": 4315471
+    },
+    {
+      "rep": 24,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "full_existing_function",
+      "wall_ns": 10960705,
+      "cpu_ns": 10952421
+    },
+    {
+      "rep": 24,
+      "repository_rules": 1024,
+      "shape": 1024,
+      "kind": "read_layer_only",
+      "wall_ns": 9050465,
+      "cpu_ns": 9021180
+    }
+  ],
+  "summary": [
+    {
+      "kind": "full_existing_function",
+      "shape": 0,
+      "n": 25,
+      "median_wall_us": 705.005,
+      "median_cpu_us": 704.59,
+      "p95_wall_us": 832.088
+    },
+    {
+      "kind": "full_existing_function",
+      "shape": 32,
+      "n": 25,
+      "median_wall_us": 1070.703,
+      "median_cpu_us": 1070.278,
+      "p95_wall_us": 1177.675
+    },
+    {
+      "kind": "full_existing_function",
+      "shape": 128,
+      "n": 25,
+      "median_wall_us": 2045.035,
+      "median_cpu_us": 2043.949,
+      "p95_wall_us": 2202.1
+    },
+    {
+      "kind": "full_existing_function",
+      "shape": 512,
+      "n": 25,
+      "median_wall_us": 5701.894,
+      "median_cpu_us": 5703.329,
+      "p95_wall_us": 6094.024
+    },
+    {
+      "kind": "full_existing_function",
+      "shape": 1024,
+      "n": 25,
+      "median_wall_us": 10905.472,
+      "median_cpu_us": 10905.82,
+      "p95_wall_us": 11209.703
+    },
+    {
+      "kind": "read_layer_only",
+      "shape": 0,
+      "n": 25,
+      "median_wall_us": 117.27,
+      "median_cpu_us": 116.648,
+      "p95_wall_us": 126.056
+    },
+    {
+      "kind": "read_layer_only",
+      "shape": 32,
+      "n": 25,
+      "median_wall_us": 422.393,
+      "median_cpu_us": 421.793,
+      "p95_wall_us": 454.133
+    },
+    {
+      "kind": "read_layer_only",
+      "shape": 128,
+      "n": 25,
+      "median_wall_us": 1205.986,
+      "median_cpu_us": 1205.81,
+      "p95_wall_us": 1261.73
+    },
+    {
+      "kind": "read_layer_only",
+      "shape": 512,
+      "n": 25,
+      "median_wall_us": 4349.253,
+      "median_cpu_us": 4337.102,
+      "p95_wall_us": 4577.245
+    },
+    {
+      "kind": "read_layer_only",
+      "shape": 1024,
+      "n": 25,
+      "median_wall_us": 8909.038,
+      "median_cpu_us": 8901.805,
+      "p95_wall_us": 9151.044
+    }
+  ]
+}

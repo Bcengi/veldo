@@ -1,0 +1,29 @@
+{
+  "checks": [
+    "single-spec validator",
+    "receipt and case/control reconciliation",
+    "measurement source and result digest matching",
+    "250 raw sample summaries recomputed",
+    "broad and narrowed worker probe assertions",
+    "Python measurement source syntax",
+    "ASCII punctuation",
+    "whitespace diff check",
+    "avoid-ai-writing detect audit with model review"
+  ],
+  "product_code_changed": false,
+  "full_gates_run": false,
+  "certified_historical_cases": 0,
+  "pc1_run": "rr20261126125200-be46",
+  "files": {
+    "specs/VELDO-0368-confined-read-observation.md": "bbbf7ec31d3db9646eb4c996ba29fd1aa96f9cfcbbdfc4378039bc318db18401",
+    "proof/VELDO-0368/round3/measure-inventory.py": "f9c45f9de14ebc8dc00c369b8e742bf89bd8b94a9792a9dfef65e19fd3af702d",
+    "proof/VELDO-0368/round3/measure-landlock.py": "bbf00fe1ccb881e4b38ad03afc312283c04029e2ab3c15690a3690dfa388a3f5",
+    "proof/VELDO-0368/round3/run-pc1.py": "09512cf2ca635afbe5cd3a83694ec47dfde736e601652c38cc4e3df0db634215",
+    "proof/VELDO-0368/round3/inventory.json": "3d2d9d8fb98a2eb1a21e1fcce0e311240a0d6e3a3623e083d9f04bf2f264a1c1",
+    "proof/VELDO-0368/round3/landlock.json": "a733c5367e9f3bf5f1aed47715ad8c8114cc743a18d215369074ebb290bca7f2",
+    "proof/VELDO-0368/round3/README.md": "69512b2909099ed5c1d3f267ad82850c8bed508047617585c4f86259fac70242",
+    "proof/VELDO-0368/round3/pc1-run.log": "8d5db66a45bdad1dfaff3b4ad309d72ab3a3b4edaeda5dec5c7d882d4d3fbd42",
+    "proof/VELDO-0368/round3/provenance.json": "e8f3da928d2905f5ddcdecbaaa2065c6b08e5a9d1ffa36c0d5f821f3a3cdd422",
+    "proof/VELDO-0368/round3/writing-audit.md": "f0ecdf9d726fddc884d30474f34e9033b851041d43fa2b6e13349a7dcdee5c55"
+  }
+}

@@ -1,19 +1,30 @@
 ---
 schema: veldo.spec/v1
 id: VELDO-0368
-title: Record file reads inside the sandbox without a tracer
+title: Enforce a recorded read set for each confined validation item
 status: draft
 risk: high
 owner: Dmitry Grinberg
 human_approval: required
 lane: standalone
-depends_on: [VELDO-0367, VELDO-0210, VELDO-0208]
+depends_on: [VELDO-0367, VELDO-0217, VELDO-0210, VELDO-0208]
 placement: [enforcement]
 protected_paths:
   - scripts/agent_sandbox.py
   - engine/scripts/agent_sandbox.py
-  - scripts/confined_reads.py
-  - engine/scripts/confined_reads.py
+  - scripts/confined_inputs.py
+  - engine/scripts/confined_inputs.py
+  - scripts/mutation_sandbox.py
+  - engine/scripts/mutation_sandbox.py
+  - scripts/case_inputs.py
+  - engine/scripts/case_inputs.py
+  - scripts/veldo_userns.c
+  - engine/scripts/veldo_userns.c
+  - scripts/veldo-userns.apparmor
+  - engine/scripts/veldo-userns.apparmor
+  - scripts/selftest.py
+  - scripts/mutation_case_inputs.json
+  - proof/VELDO-0217/reviews/*
   - scripts/mutation_observer.py
   - engine/scripts/mutation_observer.py
   - scripts/reuse_worker.py
@@ -34,8 +45,19 @@ protected_paths:
 footprint:
   - scripts/agent_sandbox.py
   - engine/scripts/agent_sandbox.py
-  - scripts/confined_reads.py
-  - engine/scripts/confined_reads.py
+  - scripts/confined_inputs.py
+  - engine/scripts/confined_inputs.py
+  - scripts/mutation_sandbox.py
+  - engine/scripts/mutation_sandbox.py
+  - scripts/case_inputs.py
+  - engine/scripts/case_inputs.py
+  - scripts/veldo_userns.c
+  - engine/scripts/veldo_userns.c
+  - scripts/veldo-userns.apparmor
+  - engine/scripts/veldo-userns.apparmor
+  - scripts/selftest.py
+  - scripts/mutation_case_inputs.json
+  - proof/VELDO-0217/reviews/*
   - scripts/mutation_observer.py
   - engine/scripts/mutation_observer.py
   - scripts/reuse_worker.py
@@ -63,628 +85,505 @@ footprint:
   - proof/VELDO-0368/*
 behavior_bearing: true
 observability:
-  logs: Name the item, observer version, coverage state and first reason coverage became unknown.
-  metrics: Notification counts by syscall, service time, worker elapsed time, memory use and newly reusable items.
-  traces: Authority certificates bind the dependency digest to the launch, listener and completed process tree.
-  error_taxonomy: Missing coverage runs the item again; observer failure cannot issue a complete certificate.
+  logs: Name the item, mode, read-set digest, applied ruleset, coverage reason and reported permission failure.
+  metrics: Count narrowed items, declaration failures and unknown items; measure setup time and eligible worker seconds.
+  traces: The authority binds the applied grants and repository view to the dependency record and completed process tree.
+  error_taxonomy: Missing evidence runs fresh; denied required inputs fail; broad or unapplied grants cannot authorize carry.
 acceptance_criteria:
   - id: AC1
     text: >
-      A native file reader starts through worker_tree with TracerPid zero and one combined
-      notification listener. The AC7 traced-launch refusal and confinement denials still hold.
-      The same fixture runs through the gate profile and both repository script copies.
-    falsified_by: Skip tracer_problem in agent_sandbox.py; the traced-worker refusal fixture must fail.
+      A native reader launched through worker_tree reads its allowed file and receives
+      EACCES for an existing undeclared file, including after starting a watchdog and
+      child processes. TracerPid is zero. Existing write, IPC and traced-launch denials hold.
+      Exercise both script copies with focused fixtures.
+    falsified_by: Add the repository root to the narrowed grants; the undeclared-read fixture must fail.
   - id: AC2
     text: >
-      Focused native fixtures cover every syscall family in this spec, inherited descriptors,
-      failed probes, directory discovery and implicit executable inputs. Each input appears
-      in the dependency record or the entire item stays unknown with a specific reason.
-    falsified_by: Omit statx in confined_reads.py; the stat-only dependency fixture must fail.
+      The resolver combines declarations, Python imports, prerequisites and explicit fixture
+      directories. It records their sources and changes the item identity when any source
+      or grant changes. Unresolved imports cannot trigger a broader runtime retry.
+    falsified_by: Retry a missing import with its parent directory granted; the fixed-grants fixture must fail.
   - id: AC3
     text: >
-      Relative paths, directory descriptors, intermediate symlinks, missing components,
-      renamed directories and namespace roots produce correct dependencies or unknown.
-      An addition at a previously missing component selects the item again.
-    falsified_by: Resolve relative paths against the supervisor cwd; the foreign-dirfd fixture must fail.
+      File and directory grants cover names, contents, types, modes and symlink targets.
+      Adding, deleting, renaming or changing a descendant selects a directory consumer.
+      Adding a file that changes import resolution also selects its consumer.
+    falsified_by: Hash directory names without descendant bytes; the edited-data fixture must fail.
   - id: AC4
     text: >
-      A shared argument buffer, shared cwd, shared descriptor table and concurrent symlink
-      replacement each prevent certification. Ordinary independent fork children remain
-      observable through exec, double fork and reparenting. Thread creation stays unknown
-      under the initial certification rules even when sampled arguments look unchanged.
-    falsified_by: Certify after CLONE_VM in confined_reads.py; the swapped-path fixture must fail.
+      A worker, suite and mutation case each enter their recorded domain before candidate
+      code or threads run. Baseline, no-op and mutant evidence covers the same case policy.
+      Shared controls require matching grants, runtime, fixture state and prerequisites.
+    falsified_by: Reuse a baseline from a broader domain; the control-policy fixture must fail.
   - id: AC5
     text: >
-      Listener loss, receive or send failure, invalid IDs, truncated paths, capacity exhaustion,
-      early supervisor exit and missing descendant cleanup each leave incomplete evidence.
-      Repeated notifications cannot hide a gap or count a request twice.
-    falsified_by: Seal complete after a listener error; the interrupted-observer fixture must fail.
+      The trusted runner closes unaccounted descriptors and removes checkout aliases from
+      the certifiable filesystem view. Metadata-only probes, inherited file reads and
+      symlink escapes cannot depend on undeclared repository state.
+    falsified_by: Leave the original checkout visible to stat; the hidden-metadata fixture must fail certification.
   - id: AC6
     text: >
-      Existing seccomp and Landlock denials remain effective. Nested tracer, namespace and
-      filter-installation workloads stay unknown. Unknown syscall numbers and unsupported
-      executable formats cannot pass through as known empty dependencies.
-    falsified_by: Ignore a candidate seccomp installation; the stacked-filter fixture must fail.
+      Only the authority certifies successful ruleset installation on the exact launch.
+      A missing, failed, stale or skipped installation, an extra grant, a forged worker
+      complete flag or an incomplete process cleanup withholds complete coverage.
+    falsified_by: Issue the certificate without calling landlock_restrict_self; the unapplied-domain fixture must fail.
   - id: AC7
     text: >
-      Only an authority supervisor certificate can establish complete confined coverage.
-      Forged worker claims, missing setup coverage, wrong item or commit, stale certificates
-      and omitted control observations cannot authorize carry. A dependency edit selects
-      a certified item and an unrelated edit carries it through the existing selector.
-    falsified_by: Accept the worker complete flag without a certificate; the forged-complete fixture must fail.
+      A surfaced EACCES names the item, mode, policy digest and available path information.
+      The item fails without a wider retry or a replacement green result. A caught denial
+      does not enlarge the recorded set. Fixes use a new declaration and a fresh execution.
+    falsified_by: Convert a permission failure to a broad successful retry; the denied-input fixture must fail.
   - id: AC8
     text: >
-      Paired Linux measurements report wall and CPU cost for three confined suites of
-      different shapes, with three repetitions per mode and one generator at a time.
-      A historical worker inventory reports the cases and worker seconds still unknown.
-      Certification requires a separate demonstration that the threading races are closed.
-    falsified_by: Drop notifications after a service-time budget; the budget-exhaustion fixture must fail.
+      Interpreter, toolchain and system inputs belong to the runtime digest. A runtime
+      directory cannot hide repository files or external mutable inputs. Nested tracing,
+      whole-repository grants and unaccounted host inputs stay unknown.
+    falsified_by: Label an authority checkout as a runtime directory; the repository-alias fixture must fail.
+  - id: AC9
+    text: >
+      VELDO-0367 carries a certified item after an unrelated edit and selects it after an
+      input, directory descendant, runtime or read-set change. A row-only run retains the
+      prior full-suite dependencies. Missing certificates never become empty dependencies.
+    falsified_by: Compare only file bytes and ignore a changed read-set digest; the changed-grant fixture must fail.
+  - id: AC10
+    text: >
+      Measurements reconcile the historical case and control inventory, distinguish import
+      proposals from successful narrowed executions, and report setup cost from fresh
+      processes on pc1. Evidence includes raw samples and source digests. No full gate runs.
+    falsified_by: Count generated import candidates as certified runs; the eligibility-accounting fixture must fail.
 required_evidence: [unit, integration]
-rollback: Disable confined certification and retain unknown dependency records. Keep confinement and existing unconfined observation active. Repair with focused fixtures only.
+rollback: Disable certification and retain unknown dependency records. Preserve confinement. Fix with focused fixtures only.
 ---
 
 ## Intent
 
-The measured design provides no new carry eligibility for the historical mutation
-inventory. All 2,925 confined or tracing-excluded cases remain unknown, accounting
-for 91,034.33 worker-seconds, or 55.01% of all worker time. Keep this spec in draft.
-The listener can record calls, but the current certification rules exclude the
-mandatory watchdog thread in every confined mutation worker. Product implementation
-as a savings feature needs a different way to establish complete observations.
-
-Let the sandbox supervisor supply VELDO-0367 with file dependencies from confined
-workers. Use seccomp user notification, which stops a syscall until the supervisor
-answers it. Extend the sandbox's existing listener and keep file operations in the
-confined task. A complete dependency record requires a supervisor certificate.
-
-This is part 6 of VELDO-0367. AC7 of VELDO-0210 stays intact: `tracer_problem`
-still refuses a traced worker-tree entry, and the child profile still denies tracing.
-No AppArmor permission, Landlock grant or namespace-helper privilege changes here.
-The owner rule remains: no full gates; test only the changed behavior.
-
-The historical mutation measurement contains 2,925 always-run cases out of 4,023,
-accounting for 55.01% of mutant-plus-control worker seconds. Of those, 2,874 cases
-and 47.89% of worker seconds are confined. The remaining 51 cases and 7.12% are
-unconfined tracing exclusions. Those exclusions remain unknown under this spec.
-These numbers describe elapsed worker time, including waits. The eligibility
-measurement below applies this design's rules to those same workers. Source: the
-measurement table in `myday/research/claude-runs/veldo-0367-i45.md`.
-
-## Decision and evidence
-
-The prototype uses one seccomp listener with separate IPC and file-observation handlers.
-File observation records attempted dependencies before answering `CONTINUE`.
-This keeps the kernel's original permission checks and syscall behavior. It also
-requires conservative certification rules: a pathname copied before continuation
-can differ from the pathname the kernel consumes. Re-reading it afterward does
-not close that race. The [notification API](https://man7.org/linux/man-pages/man2/seccomp_unotify.2.html)
-documents this limitation. A general multithreaded read logger based on copying
-arguments and continuing calls cannot certify complete observations.
-
-Certification requires stable argument memory, path resolution and descriptor
-identities. The measurements show that these restrictions exclude the target
-workload. Supporting threads is a prerequisite for useful mutation savings.
-Do not weaken these rules to meet a reuse target or replace missing observations
-with a dependency on the entire checkout.
-
-The code inspection used main `68b1c45206b7b2efd1a887820834fb99e4f725f6` and
-the VELDO-0367 context at `63039fb88` in `change-scoped-i45`. In
-`scripts/agent_sandbox.py`, `Handoff.install` already requests `NEW_LISTENER`
-and `WAIT_KILLABLE_RECV`. `Broker.attach` duplicates the listener outside the
-tree. `Broker._read` reads task memory and `_descriptor` duplicates descriptors.
-These operations use kernel ptrace permission checks without attaching a tracer.
-Their existence does not establish that every new observation will be permitted.
-
-`confined_agent` installs the worker IPC filter before executing the authority
-bootstrap; the bootstrap then installs worker Landlock restrictions. The gate
-profile installs its restrictions before exec. `Broker._serve` currently returns
-on several errors and creates a daemon thread per request. `Broker._answer`
-does not check the response ioctl result. Those behaviors need explicit failure
-accounting before this listener can certify observations.
-
-Local inspection on November 26, 2026 found x86_64 Linux `7.0.0-38-generic`,
-UID 1000, no effective capabilities, `TracerPid: 0`, an unconfined AppArmor label,
-Yama ptrace scope 1 and unprivileged BPF disabled with value 2.
-Read-only seccomp queries accepted `USER_NOTIF` and returned notification,
-response and syscall-data sizes of 80, 24 and 64 bytes. The Landlock ABI query
-returned 8. These establish available interfaces on this host. They do not prove
-notification delivery, memory access across the worker profile or pc2 behavior.
-
-The round 2 experiment ran on pc1 through `myday/scripts/remote_run.sh` with
-Linux-only node selection. Its paired suite measurements and native watchdog
-probe are below. They establish notification delivery and argument inspection
-across the worker Landlock layer. They do not establish complete dependencies
-or inspection through the full worker-tree namespace and AppArmor path.
-
-Other mechanisms do not supply the required observations:
-
-* Unprivileged fanotify supports a restricted file-handle mode. It cannot request
-  permission events or mark a whole mount or filesystem, and another process's
-  PID is unavailable in that mode. Its event set does not establish all failed
-  lookups or metadata queries. Mapped accesses and recursive mark races add gaps.
-  It cannot be the completeness authority. See [fanotify initialization](https://man7.org/linux/man-pages/man2/fanotify_init.2.html)
-  and [fanotify limitations](https://man7.org/linux/man-pages/man7/fanotify.7.html).
-* Landlock enforces access restrictions. Its audit controls concern denied
-  accesses; it offers no complete stream of allowed reads. Keep it as enforcement.
-  See [Landlock audit controls](https://docs.kernel.org/userspace-api/landlock.html).
-* eBPF tracing requires privileges or host policy beyond this unprivileged
-  launcher. This host disables unprivileged BPF, and tracing access has separate
-  performance-monitoring permissions. Do not add capabilities or a privileged
-  service. See [kernel monitoring permissions](https://docs.kernel.org/admin-guide/perf-security.html).
-* Python audit hooks and preload wrappers miss native or direct syscalls.
-  Inotify misses failed probes and metadata-only reads. A new FUSE view would
-  require routing every input through a different filesystem, controlling its
-  caches and eliminating inherited descriptor bypasses. That changes the tested
-  filesystem and does not solve this supervisor extension.
-
-## Listener ownership and confinement
-
-Install the combined filter in the single-threaded trusted child before its first
-exec of worker code. Keep the existing architecture check and x32 rejection.
-Query notification sizes and supported flags at startup. No feature inferred
-from a kernel version alone may establish coverage.
-
-Use `Handoff`, including its host PID mapping, to transfer custody to the trusted
-launcher outside the confinement. The task closes its listener copy before the
-bootstrap runs. Candidate code receives neither a listener nor Store credentials.
-Bind the listener to an authority-created item and launch nonce. An environment
-variable or worker-supplied path cannot opt a run into complete coverage.
-Load the supervisor and its syscall table from the trusted authority, never from
-the candidate checkout. Bind their versions to the certificate and dependency
-record so editing observation code invalidates its consumers.
-
-Extend `ipc_program` to dispatch file observations through the same listener.
-A second listener is not a solution to the existing `EBUSY` nested-domain path.
-Preserve strict fallback for nested IPC confinement, but report observation
-coverage as unknown. The outer listener may retain useful observations; the
-nested launcher cannot certify a separate item from them.
-
-Keep IPC emulation under its existing rules. For file syscalls the observer
-copies arguments, records dependencies and continues the original call. It
-does not open files for the worker or inject replacement descriptors. An outside
-open followed by `ADDFD` would require reproducing the task's Landlock, AppArmor,
-credentials, mount view and flags. This spec does not authorize that change.
-
-Existing filter denials take precedence over notifications. Calls denied by the
-fixed authority filter cannot read files; retain the filter digest as evidence
-for excluding them. A candidate attempt to install another filter through
-`seccomp` or `prctl(PR_SET_SECCOMP)` makes the item unknown before continuation.
-Stronger actions can hide notifications, and later listeners can supersede a
-notification handler. Preserve the kernel's filter precedence and inheritance
-rules described in [seccomp filtering](https://docs.kernel.org/userspace-api/seccomp_filter.html).
-Only an authority-verified bootstrap sequence may install the expected confinement
-filters without setting unknown. Account for its exact filter bytes and the
-transition to candidate execution; a worker-supplied phase marker is insufficient.
-Changes to mounts, root directories or namespaces outside that trusted sequence
-also make the item unknown, including changes through an inherited namespace handle.
-
-Use a reviewed syscall classification for the supported ABI. Every number is
-either an observed dependency operation, a stability hazard, a fixed denial or
-a reviewed operation with no external input. The default is a notification
-that marks the item unknown, then preserves its normal behavior. This prevents
-a newly added syscall from silently acquiring an empty dependency set.
-
-## What the supervisor records
-
-A dependency set may contain extra paths. An attempted lookup can affect later
-execution even when it fails, so record it without waiting for a success result.
-`CONTINUE` supplies no syscall-exit event. Do not invent return values or infer
-successful opens from request counts. Record existing candidates in `paths`,
-missing candidates in `absent_paths`, and affected directory membership in
-`directories`. An uncertain result stays conservative or makes the item unknown.
-
-The syscall classification covers the following operations and their ABI variants:
-
-* `open`, `openat`, `openat2` and `creat`: copy the full path and open options,
-  including the sized `open_how` structure. Record even write-only opens because
-  their existence checks affect results. Unknown option bits or truncated
-  structures mean unknown. Record `O_PATH` handles as possible lookup inputs.
-* `stat`, `lstat`, `fstat`, `newfstatat`, `statx`, `statfs` and `fstatfs`: record
-  the object or descriptor, including flags that change link following or allow
-  an empty pathname. Filesystem properties that lack a stable runtime identity
-  make the item unknown.
-* `access`, `faccessat`, `faccessat2`, `readlink` and `readlinkat`: record the
-  lookup and each relevant symlink. Permission checks require stable mode,
-  ownership, ACL and credential inputs or an unknown runtime reason.
-* `getdents` and `getdents64`: identify the directory from its descriptor and
-  record membership. Additions, removals and renames select the item again.
-  Opening a directory can conservatively record membership before enumeration.
-* `read`, `pread64`, `readv`, `preadv`, `preadv2`, `sendfile`, `splice` and
-  `copy_file_range`: record source descriptors, including those inherited at
-  launch. Readable mappings through `mmap` record the whole file at mapping time,
-  even before a page fault. Track `mprotect`, `pkey_mprotect`, `mremap` and
-  `munmap` so later permission changes cannot hide a file input. Initial mappings
-  and executable images require an authority inventory.
-* `execve` and `execveat`: record the executable, its symlink chain and any
-  descriptor form, including `AT_EMPTY_PATH`. Account for the kernel's implicit
-  shebang interpreter and ELF `PT_INTERP` reads. The initial format decoder
-  supports reviewed ELF and shebang forms with bounded recursion. Unaccounted
-  binary-format handlers, loaders or unreadable headers make the item unknown.
-  Dynamic library opens are observed normally.
-* `rename`, `renameat`, `renameat2`, `unlink`, `unlinkat`, `rmdir`, `link`,
-  `linkat`, `symlink`, `symlinkat`, `mkdir`, `mkdirat`, `mknod` and `mknodat`:
-  record source and destination lookups and parent membership. An attempted
-  mutation also triggers the stability rules. Permission and ownership changes,
-  timestamps, truncation and file writes belong to that mutation classification.
-* Extended-attribute queries, `getcwd`, descriptor duplication and transfer,
-  `chdir`, `fchdir`, `close`, `close_range` and relevant `fcntl` commands:
-  account for their inputs or state changes. Unknown device `ioctl` commands,
-  file-handle opens and unclassified filesystem interfaces make the item unknown.
-
-Keep io_uring and the existing asynchronous alternatives denied. Review legacy
-AIO, shared memory and descriptor-receiving calls explicitly. A preexisting
-asynchronous request or an unexplained inherited handle makes launch coverage
-unknown. Network, service and process-state inputs retain VELDO-0367's unknown
-rules. File observation cannot erase an external-input reason. Brokered IPC
-operations must contribute their own dependency or unknown evidence because
-their syscalls execute outside the worker.
-
-## Paths and stability
-
-Resolve in the requesting task's filesystem view. An absolute path starts at
-its root; a relative path starts at its cwd for `AT_FDCWD`, otherwise at its
-directory descriptor. Pin the task identity and relevant root or directory
-objects while reading. Account for host and namespace PID differences, mount
-identity and task exit. Never use the supervisor's cwd or normalize away `..`
-before walking symlinks.
-
-Record every symlink component and resolved target, including an intermediate
-link outside the repository. Respect no-follow flags, trailing slashes, empty
-paths and `openat2` resolution restrictions. A failed lookup records its first
-missing component and enough parent membership to detect its later creation.
-Raw path bytes need a lossless representation. Deleted, disconnected or magic
-links that cannot be tied to stable input identities make the item unknown.
-Mapping a worker checkout path to a repository path uses authority-established
-root identity, never a string prefix alone. External targets belong in the
-runtime dependency inventory and must be revalidated before carry.
-
-Notification IDs identify live requests, not immutable arguments. The supervisor
-checks ID validity around argument reads and before responding. This prevents
-using a stale request but does not stop another thread from changing memory.
-The [kernel notification definitions](https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/seccomp.h)
-make the distinction explicit. The following are certification requirements:
-
-1. The authority starts with known descriptors and mappings and observes from
-   before candidate execution. All initial readable regular files and mappings
-   become dependencies. Opaque descriptors, shared argument memory and unknown
-   preexisting state make the item unknown.
-2. Each certified task has its own address space, cwd state and descriptor table.
-   Intercept `clone`, `clone3`, `fork` and `vfork`. Any attempt to share memory,
-   filesystem state or descriptors makes the item unknown before it proceeds.
-   This includes threads and `vfork`, even if the attempted call later fails.
-   Writable shared mappings, shared-memory attachment and unmodeled memory
-   writers do the same. Merely sampling one thread in `/proc` is insufficient.
-3. Repository and runtime inputs remain immutable for the observation interval
-   under authority custody. Read-only mounts or equivalent enforced isolation
-   must establish that property, including aliases and external symlink targets.
-   A clean status or matching hashes at the beginning and end cannot rule out a
-   temporary change. If the launch cannot establish custody, it stays unknown.
-   Existing writable fixture grants do not establish input custody. An authority
-   may prepare a private input snapshot before launch, record its source dependencies
-   and exclude writers from that copy. Mutant content must be fixed in that snapshot
-   before observation starts. Preserve expected path semantics; no new helper
-   privilege or silently substituted runtime is authorized here.
-4. Private generated files are usable only when the authority knows their initial
-   state and their producers' dependencies. A single task may change its private
-   files between observations. With multiple live tasks, an attempted filesystem
-   mutation that could affect another task's lookup makes the whole item unknown.
-   The first implementation may conservatively treat every such mutation as a
-   hazard. External writers or shared writable input files always mean unknown.
-5. Read task state at each request, including descriptor identity and cwd. A
-   prior `chdir` request does not prove that the change succeeded. Without shared
-   state, a task blocked in notification cannot change its own path arguments or
-   descriptor table. Signal cancellation, unreadable memory, unsupported exec
-   behavior or any failure to establish that premise leaves the item unknown.
-
-These rules support independent fork children reading stable inputs. They do
-not claim complete observation for arbitrary threads or mutable shared trees.
-Adding that support requires a separate design and race fixtures. Freezing a
-tree while copying arguments and then unfreezing it before `CONTINUE` leaves
-the same gap. A general syscall emulator would be a separate confinement project.
-
-## Measured eligibility and the threading limit
-
-The current design leaves 100% of the target cases and worker time unknown.
-The table uses the same receipt as VELDO-0367: admissions JSON at line 44525 of
-`myday/research/gate-stamps/cand-1122-55b511908-verify.log`. The source method is
-`proof/VELDO-0367/measure-confinement.py` on branch `veldo-0367-i45`, read from
-`/home/dmitry/projects/veldo-worktrees/change-scoped-i45`. The extension in
-`proof/VELDO-0368/measure-eligibility.py` reconciles all 4,023 case registrations
-and 5,495 worker outcomes. It uses each worker's actual leg and the unchanged
-tracing exclusions. It counts each control by its own suite and leg once.
-
-| Reason still unknown | Cases | Controls | Mutant seconds | Control seconds | Share of target worker time | Share of all worker time |
-| :- | :-: | :-: | :-: | :-: | :-: | :-: |
-| Mandatory confined-worker watchdog thread | 2,874 | 1,000 | 57,707.38 | 21,543.91 | 87.06% | 47.89% |
-| Unconfined tracing exclusions | 51 | 32 | 4,845.66 | 6,937.38 | 12.94% | 7.12% |
-| Total still unknown | 2,925 | 1,032 | 62,553.04 | 28,481.29 | 100.00% | 55.01% |
-| Newly carry-eligible under this design | 0 | 0 | 0.00 | 0.00 | 0.00% | 0.00% |
-
-This is a classification of measured worker time using an unconditional code
-path, not a replay of historical syscall traces. At receipt commit `55b511908`,
-the coordinator launches `reuse_worker.py`, which calls
-`mutation_observer.worker`. Before the shared preamble or suite fragment runs,
-that function calls `faulthandler.dump_traceback_later`. Python implements this
-timer with a native watchdog thread, as its
-[documentation](https://docs.python.org/3.12/library/faulthandler.html#dumping-the-tracebacks-after-a-timeout)
-states. The call also remains in the i45 observer. The separate selftest path
-starts this native timer and a Python progress-watchdog thread.
-
-All 148 confined suites therefore encounter a sharing attempt before their
-ordinary rows. Every confined case maps to both confined controls in the receipt.
-Even a mutant that removes a timer cannot remove the thread from its required
-baseline and no-op observations. The spec unions those observations, so the
-combined item stays unknown. This conclusion does not depend on whether an
-individual suite starts more threads or whether a sharing attempt succeeds.
-
-A confined pc1 probe confirms the native behavior: one call to
-`dump_traceback_later` changed the task count from one to two in both modes.
-The listener recorded `clone3` flags `0x3d0f00`, including `CLONE_VM`,
-`CLONE_FS`, `CLONE_FILES` and `CLONE_THREAD`. TracerPid stayed zero and the
-write-denial probe passed. `proof/VELDO-0368/watchdog-probe.json` contains the
-results. The eligibility JSON records the receipt and source hashes and all
-148 suite totals. Reproduce the classification with
-`python3 -B proof/VELDO-0368/measure-eligibility.py`; it launches no workers.
-
-Shared filesystem mutations, unresolved paths, external inputs and nested
-sandboxes can add reasons to these already unknown cases. They add zero cases
-to the union because the thread rule has excluded every confined case first.
-The receipt contains no syscall histories from which to count those overlapping
-reasons separately. Removing the watchdog exclusion alone would not establish
-that the remaining 87.06% of target worker time could be certified.
-
-A notification identifies the requesting tid, but that identity does not freeze
-the task's shared state. Suppose thread A calls `openat` with a pointer to `a`.
-The supervisor copies `a`. Thread B then overwrites the buffer with `b` using
-ordinary memory stores. The kernel can open `b` after `CONTINUE` without any
-notification for the buffer change. A second sample can miss a change back to
-`a`. Immutable input files do not prevent choosing a different immutable file.
-The [kernel API warning](https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/seccomp.h)
-describes this argument race.
-
-Shared cwd and fd tables have another problem. Reading `/proc/<tid>/cwd` or
-`/proc/<tid>/fd` gives the supervisor a view at inspection time. A sibling can
-finish `chdir`, replace an fd with `dup2`, close and reuse an fd, or rename a
-directory before the continued syscall resolves its path. Pinning the observed
-object protects that observer handle; it does not make the kernel use that
-handle for the worker's numeric fd. A correct design must keep the relevant
-state stable until the kernel has consumed it.
-
-Serializing notifications cannot provide that interval: `CONTINUE` has no
-syscall-exit acknowledgment. Allowing the next queued state change immediately
-can race with the continued lookup. Holding siblings until completion requires
-a reliable completion event and must handle calls that wait for those siblings.
-Freezing and then releasing the whole tree leaves the same gap. A Python lock
-does not constrain native code, direct syscalls or candidate memory writes.
-Labeling a thread as the trusted watchdog also cannot protect its shared
-address space from candidate code running in the same process.
-
-This spec therefore does not certify multithreaded processes. Doing so with
-unchanged worker semantics needs observation of the objects consumed in the
-kernel, or confinement-preserving syscall execution from stable arguments with
-reliable completion. The former is unavailable through this unprivileged
-notification API. The latter requires substantially more than continuing the
-original call. Opening files outside the worker and injecting descriptors would
-also require reproducing its Landlock, AppArmor, credentials and filesystem
-view, which the existing constraints prohibit. These are limits of this
-mechanism and scope, not evidence that all possible observers must fail.
-
-The expected newly eligible share is zero. The target of making most of the
-55.01% eligible is unmet. A replacement must demonstrate complete observation
-with threads, shared cwd and fd tables, and concurrent generated-file activity
-before claiming savings. It must then classify the same inventory and show
-more than 45,517.17 of its 91,034.33 target worker-seconds eligible. The existing
-44.99% tracing-compatible share retains its own completeness requirements.
-
-## Children, failures and the certificate
-
-Filters follow descendants across fork and exec. Keep observation active until
-the namespace init or existing subreaper has finished descendant cleanup.
-An early parent exit, a double fork or `setsid` cannot end observation. Use task
-identities that include lifetime and namespace information; a reused PID is not
-the same task. Unresolved membership or an unaccounted interval means unknown.
-
-The supervisor starts each item as incomplete. Its journal accounts for received
-requests, responses, canceled IDs and terminal failures. IDs need not be consecutive;
-sequence numbers assigned by the supervisor detect journal gaps, not unseen
-kernel events. Seccomp blocks the caller rather than providing a lossy audit ring,
-but transport failure, unhandled cancellation and lost application records still
-invalidate completeness. Handle `EINTR` retries explicitly. Initially, an invalid
-ID or `ENOENT` cancellation conservatively makes the item unknown.
-
-Use a bounded service queue with backpressure and checked response results.
-Do not retain the current unbounded thread-per-request pattern for file traffic.
-Capacity exhaustion makes the item unknown before any observation is discarded.
-After coverage is lost, a functioning supervisor can continue file requests while
-retaining the unknown reason. It must still enforce IPC policy. A dead supervisor
-or unusable listener terminates and cleans up the tree through existing custody.
-Do not reinterpret changed worker results as passing after such a failure.
-
-Only seal a certificate after the worker result, journal settlement and descendant
-cleanup are complete. Include the observer schema and code digest, ABI and filter
-digest, launch nonce, item identity, observed commit, input-root identities,
-runtime digest, request accounting, dependency digest, cleanup outcome and unknown
-reasons. Store it through the authority's existing authenticated Store. The
-certificate is evidence for one launch, never a reusable capability held by a worker.
-
-## Joining VELDO-0367
-
-Keep the dependency fields `item_id`, `observed_commit`, `paths`, `directories`,
-`absent_paths`, `runtime_digest`, `complete`, `unknown_reason` and `record_digest`.
-Add a versioned authority observation envelope naming the backend and certificate
-digest. Old dependency records do not acquire confined certification retroactively.
-
-Extend `mutation_observer.native_dependency` to consume validated supervisor
-evidence as well as the existing authority strace evidence. Python observations
-can add paths and attribution. They cannot establish completeness or remove a
-reason the supervisor reported. Validate item identity as well as commit and
-launch identity before combining sources.
-
-The complete item includes authority setup, fixture preparation and bootstrap
-reads before the listener boundary. Record those through the existing authority
-observer or explicit immutable authority inputs with their own coverage evidence.
-For a confined launch, keep any authority tracer off the process entering
-`worker_tree`; launching that entry under strace would still violate AC7.
-There must be a checked handoff between setup observation and the sandbox
-certificate. Missing setup coverage keeps the whole item unknown.
-
-Combine baseline, no-op and mutant dependencies. Keep shared control identities
-and fixture groups from VELDO-0367. A row-only run unions its new observations
-with the prior full-suite dependencies; it cannot shrink that set. A parent stage
-unions its own setup and every selected child's evidence. Any required incomplete
-piece leaves the combined record incomplete. Atomically publish dependencies,
-certificate references and results after cleanup through the existing Store.
-
-Keep `case_trace.compatible` and the unconfined declarations unchanged. A separate
-authority decision selects this backend only for ordinary confined launches.
-Existing exclusions naming ptrace, strace, namespace or confinement workloads
-stay unknown. At runtime, a nested sandbox or candidate filter installation also
-sets unknown. Do not relabel an excluded unconfined case as confined to make it
-eligible. `complete: true` requires both the certificate and all existing
-VELDO-0367 conditions; a green execution may still have unknown dependencies.
-
-## Measured recording cost
-
-The prototype added 51.8% to 165.4% to median wall time on three confined suites.
-These are recording costs, not measurements of a complete certifying observer.
-The experiment ran on November 26, 2026, on pc1, Linux `7.0.0-38-generic`,
-x86_64, with system Python 3.12.3. The remote wrapper selected pc1 in exclusive
-mode; Linux-only selection excluded the Mac. The one-minute host load ranged
-from 1.37 to 1.75. Scheduling used the wrapper's nice 19 and idle IO priority.
-
-The disposable prototype is `.local/0368/prototype.py`. It imports the existing
-`agent_sandbox` and extends its IPC filter in memory with file and state-change
-notifications. It uses one serial file handler instead of creating a thread
-for each file request. Each event records the notification ID, tid, syscall
-number and arguments. Path calls also copy pathname bytes and record the
-requesting task's root and relative-path base. Descriptor operations record
-the target in that task's fd table. The handler reads `open_how` and `clone3`
-flags, checks IDs and responses, writes a buffered JSON journal, and answers
-`CONTINUE`. Existing IPC handling and fixed denials remain in place.
-
-Both modes run the unmodified suite through `fork_gate_domain`,
-`mutation_sandbox.worker_grants` and `landlock` with the worker profile. The
-checkout and runtime are readable; only the private scratch is writable.
-Observation off retains the existing IPC listener. Observation on adds the file
-notifications to that same listener. This exercises the production confinement
-functions but does not run the outer worker-tree namespace launcher. The
-prototype is uncommitted experiment code and cannot issue certificates.
-
-The suites have different measured shapes:
-
-* IO: `108_veldo_0153_executor_profile` copies the installation's Python files
-  into fixtures. Each observed run made 1,200 `sendfile` attempts and nine
-  `vfork` attempts. It passed 33 assertions including the shared preamble.
-* Process: `15_warp_1405_reconciliation` runs the metrics report over the
-  repository corpus. Each observed run made 578 `vfork` attempts. It passed
-  87 assertions including the shared preamble.
-* Typical small Python suite: `61_scope_covers` loads membership code and checks
-  scope matching. Each observed run made two `vfork` attempts and passed 29
-  assertions including the shared preamble. It represents this common suite
-  structure; it is not a statistical estimate of the average mutation worker.
-
-Each suite ran three times per mode, in paired order off/on, on/off, off/on.
-Only one suite ran at a time. Earlier smoke pairs warmed the suites; these are
-warm-cache results. Each repetition used new scratch directories. Wall time
-starts before the confined fork and ends after the worker and broker cleanup.
-CPU seconds sum the supervisor's process CPU and the change in
-`RUSAGE_CHILDREN` after cleanup. That includes user and system CPU for the
-worker, its waited descendants and the existing bind helper. Repository clone,
-environment setup and result serialization are outside the interval.
-
-| Suite and repetition | Wall off, s | Wall on, s | CPU off, s | CPU on, s | File and state notifications |
-| :- | :-: | :-: | :-: | :-: | :-: |
-| IO 1 | 0.251456 | 0.595364 | 0.252383 | 0.544153 | 16,101 |
-| IO 2 | 0.251740 | 0.606951 | 0.251879 | 0.604021 | 16,115 |
-| IO 3 | 0.241142 | 0.637188 | 0.241612 | 0.630063 | 16,103 |
-| Process 1 | 2.498400 | 6.694840 | 2.519951 | 6.642408 | 197,717 |
-| Process 2 | 2.435083 | 6.509016 | 2.453311 | 6.488484 | 197,727 |
-| Process 3 | 2.452422 | 6.287301 | 2.462181 | 6.180808 | 197,732 |
-| Typical 1 | 0.160200 | 0.235418 | 0.160808 | 0.230246 | 3,312 |
-| Typical 2 | 0.155556 | 0.243135 | 0.156019 | 0.243905 | 3,312 |
-| Typical 3 | 0.162774 | 0.252504 | 0.162679 | 0.252535 | 3,314 |
-
-| Suite | Median wall off/on, s | Added wall | Median CPU off/on, s | Added CPU | Median supervisor CPU on, s |
-| :- | :-: | :-: | :-: | :-: | :-: |
-| IO | 0.251456 / 0.606951 | 141.4% | 0.251879 / 0.604021 | 139.8% | 0.297824 |
-| Process | 2.452422 / 6.509016 | 165.4% | 2.462181 / 6.488484 | 163.5% | 3.274232 |
-| Typical | 0.160200 / 0.243135 | 51.8% | 0.160808 / 0.243905 | 51.7% | 0.073085 |
-
-Percentages compare the mode medians. Added wall time divided by the median
-notification count is 22.08, 20.52 and 25.04 microseconds per notification for
-IO, process and typical respectively. This includes scheduling and worker
-effects; it is not pure handler latency. Maximum observed worker RSS was
-34,588, 32,448 and 25,104 KiB respectively. Supervisor maxima were 21,620,
-21,400 and 20,836 KiB. These are per-process maxima, not simultaneous tree
-memory. The raw repetitions provide the ranges; the JSON also stores them.
-
-All 18 runs returned the expected partial-suite status 2, with zero failed
-assertions and matching assertion totals between modes. TracerPid was zero.
-An attempted write outside scratch was denied in every run. All observed runs
-had zero argument-read or response errors. Output comparison used assertion
-totals, failures and status; temporary paths and printed elapsed times differ.
-Every run remained unknown. Passing these suites establishes neither complete
-dependencies nor the namespace entry's AC7 refusal fixture.
-
-The prototype records every requested syscall family on the reviewed x86_64
-list, subject to existing denials. A bootstrap write to its dedicated handoff
-fd, allocated at 10,000 or above, is exempt so the listener can be transferred.
-An arbitrary later reuse of that fd number is a known coverage hole. Unknown
-syscall numbers are not given the spec's future default notification treatment.
-The prototype does not walk every symlink component, inventory implicit ELF
-or shebang inputs, freeze inputs, close sharing races, or seal certificates.
-It therefore measures a subset of the work required by the design. These
-numbers cannot serve as an upper bound on the completed observer's cost.
-
-The measured commit is `bcee6b606327ff61028da27e8805f1de4f951c40` and the final
-remote run is `rr20261126121302-294a`. Data, syscall counts, source digest,
-output digests, CPU components and journal sizes are in
-`proof/VELDO-0368/paired-measurements.json`. The local raw outputs are in
-`.local/0368/results-3-108_veldo_0153_executor_profile/.local/0368/results.json`.
-The prototype and launcher remain under `.local/0368/`; their files were sent
-as command data to the clean remote clone. Reproduce the paired run with
-`python3 .local/0368/launch.py 3 108_veldo_0153_executor_profile 15_warp_1405_reconciliation 61_scope_covers`.
-
-## Conditions for further implementation
-
-The measurements do not justify enabling this design for mutation savings.
-Resolve multithreaded certification and remeasure eligible worker time before
-starting the product increments below. Keep the existing certificate and
-failure rules as requirements for any replacement. A notification budget must
-never silently truncate coverage. Use selected native race fixtures and the
-actual worker and gate entries to test the replacement; no full mutation stage
-is needed for this decision.
-
-Each increment below is conditional on that revision. A script pair means both `scripts/`
-and `engine/scripts/`. Fixtures and registered falsifiers accompany the increment
-that changes the behavior. Do not enable certification until increments 1 through
-5 have their focused evidence. No increment requests a seed or weekly full run.
-
-1. Add the certificate contract, unknown reasons and syscall classification to
-   a new `confined_reads.py` pair, disabled by default. Protect the pair through
-   the policy pair and add installation entries. Prove unprivileged listener
-   handoff, zero TracerPid, original Landlock denial and the shared-buffer race
-   on a Linux compute node. Test unsupported features and malformed certificates. No carry changes.
-2. Extend the `agent_sandbox.py` pair with the combined listener, bounded service,
-   checked responses and lifecycle journal. Keep certification off. Exercise
-   startup failure, listener loss, canceled calls, descendant exit and IPC policy
-   with tiny native fixtures. Run the existing targeted AC7 refusal fixtures.
-3. Implement path and descriptor observation in the new pair, including implicit
-   exec inputs and stability checks. Use one fixture per syscall family and race.
-   Prove independent fork coverage and explicit unknown for threads, shared state,
-   mutable inputs and unsupported paths. Keep real runs in observation-only mode.
-4. Join supervisor evidence through the `mutation_observer.py`, `reuse_worker.py`,
-   `case_reuse.py` and `gate_legs.py` pairs and `scripts/suites/shared.py`.
-   Extend the `gate_changes.py` and `gate_execution.py` pairs for certificate
-   validation and settlement. Test setup handoff, forged claims, shared controls,
-   row unions, mismatched identities and missing cleanup. Selection remains unchanged.
-5. Repeat the paired Linux measurements and selected worker/gate fixtures. Enable
-   certification in a separate small change only for launches satisfying every
-   stability rule. Demonstrate dependency-edit execution and unrelated carry on
-   a tiny authenticated inventory. Report the newly complete fraction and the
-   remaining unknown reasons before claiming savings. If custody or races cannot
-   be resolved, retain observation-only mode and narrow the implementation claim.
-
-Immutable runtime custody, inspection across AppArmor and PID namespaces,
-implicit executable inputs and complete multithreaded observation remain
-unresolved. The focused measurements do not resolve those requirements.
+Give each confined validation item an explicit read set and enforce it with Landlock.
+Record everything the item is allowed to read as its dependencies. This is an
+over-approximation: an allowed file counts even if the item never opens it. When
+those inputs and the read set are unchanged, VELDO-0367 can carry the result.
+An attempted read of an existing file denied by the ruleset receives EACCES. The runner never widens
+the set to make a failing item pass.
+
+This replaces the proposed file-observation listener. Keep the existing IPC broker,
+write restrictions, namespace launcher and VELDO-0210 AC7 traced-worker refusal.
+The design adds neither a tracer nor file syscall notifications. Threads inherit
+restrictions installed before their creation, so the mandatory watchdog is compatible.
+The owner rule is unchanged: no full gates, only fixtures for the changed behavior.
+
+Landlock alone does not prove that every dependency is inside the read set. It does
+not restrict metadata queries such as stat and access, and an already-open file
+can retain access after restriction. These limits are documented in the
+[kernel Landlock API](https://docs.kernel.org/userspace-api/landlock.html).
+Certification therefore also requires a filesystem view that exposes only the
+selected repository inputs and a clean descriptor handoff. A narrowed ruleset on
+the existing visible checkout is useful enforcement, but stays `complete=false`
+until these requirements hold. This draft specifies that completion condition.
+
+## Where the read set comes from
+
+The authority builds an immutable input plan for each item before launch. It names
+exact repository files, recursive directory grants, expected absent paths, runtime
+roots, private output roots and the source of each grant. It also binds the item
+identity, prerequisite group, generator version and normalized plan digest.
+Candidate code cannot submit an authoritative plan through environment variables,
+stdout or files in its scratch directory.
+
+Use `scripts/mutation_case_inputs.json` and VELDO-0217's reviewed-declaration
+machinery where available. Preserve the protected review path and exact
+`review_sha256` binding. An unreviewed or stale declaration can seed a proposal;
+it cannot pretend to be an approved grant. Keep the existing rules for legacy
+VELDO-0217 reuse. This extension does not turn an import scan into a review or
+relax that mechanism's sensitivity and non-file checks.
+
+For other items, generate the Python import closure, meaning the set of repository
+modules reachable through their imports. Seed it with the entry point, shared
+preamble, suite prerequisites, case projection, mutation target and authority
+bootstrap inputs. Resolve ordinary and relative imports against the fixed import
+search path. Include package initializers and literal file-location loads. Repeat
+until no new module appears. Recognize reviewed loader helpers with finite literal
+arguments. Preserve namespace-package search locations and the paths whose absence
+chose one module over another. Disable unkeyed bytecode caches and user site imports.
+Repository extension modules are repository inputs; installed extensions belong to
+the runtime digest.
+
+A computed module name, plugin scan, eval or subprocess command may require an
+explicit declaration. The generator reports the unresolved expression and its source
+location. It does not infer completeness from one successful execution. It may emit
+a proposal that will fail when an undeclared import is attempted. Review and fresh
+execution decide whether that proposal is usable. A fixture directory is never an
+automatic fallback for unresolved code.
+
+Static analysis need not prove that every possible branch can import successfully.
+A run can earn coverage when its fixed domain is enforced and its other certificate
+conditions hold, even if some dormant imports remain unresolved. Any executed read
+still stays within that domain. Qualification must establish that the narrowed run
+produces the expected observations; a missing required input cannot be excused as
+a successful coverage check.
+
+Declare fixture and data directories separately. Existing `case_inputs.selected`
+and `case_inputs.freeze` provide the starting point for expanding and copying
+declared inputs. Preserve the case's projected driver rather than importing the
+entire mutation registry into every case dependency. A directory used to build a
+fixture includes every source file that can be copied, including engine templates,
+configuration, shell scripts and support data. Record setup inputs even when the
+worker later reads only their generated copies. Inputs produced solely by the
+item in empty private scratch need no repository path of their own.
+
+The interpreter, loader, standard library, installed tools, system configuration and
+locale data belong to `runtime_digest`. Bind their actual immutable contents or a
+verified image digest, fixed environment and resolver configuration. A broad `/usr`
+or `/etc` grant means the digest covers that entire allowed input tree, including
+membership and symlink targets. A version string or executable timestamp is not
+enough. Reuse the digest across items consuming the same immutable runtime.
+Repository files cannot become runtime inputs by copying them into a tool directory
+or granting an authority checkout under a different name.
+
+Keep `/proc`, devices, services and shared caches distinct from immutable runtime
+files. Today's automatic `/proc` grant does not become a stable runtime digest.
+The trusted runner may use process identity for cleanup, but an item's unaccounted
+host-state dependency keeps it unknown. Preserve VELDO-0367's treatment of external
+inputs. This spec does not claim that Landlock removes clock, randomness or service
+dependencies, or change VELDO-0367's accepted limit on validating the validator.
+
+## Apply the plan to the item that runs
+
+Build the plan and freeze its inputs outside candidate execution. Resolve symlinks
+without permitting an ancestor of a forbidden root. Pin the files used to build the
+ruleset so a rename cannot replace them between hashing and grant installation.
+Build the repository view from the pinned commit, with untracked checkout files
+absent, and keep it immutable for the run. Hashing a live writable checkout
+before launch does not certify later bytes read from it.
+
+At the existing trusted bootstrap, install a read layer that handles `READ_FILE`,
+`READ_DIR` and `EXECUTE`, with only the plan's repository and runtime grants.
+Stacking this layer intersects it with the existing domain, so old write and IPC
+restrictions continue to apply. An alternative implementation may replace the
+existing read grants in the initial ruleset, provided it proves the same rights.
+In either form, check every ruleset creation, rule addition and restriction result.
+Never continue candidate execution after an installation failure.
+
+Apply the layer while the child is single-threaded, before the Python watchdog,
+shared preamble, imports or candidate code run. Future threads and descendants stay
+inside it. A long-lived worker cannot narrow itself for item A and then widen for
+item B. Fork a fresh trusted child for each distinct item policy. Thread count after
+installation is not an exclusion. Installing only on one thread of an already
+running item cannot earn a certificate.
+
+* A worker gets its exact item plan, private scratch and recorded runtime. A
+  launcher that reads candidate files before restriction must record those setup
+  inputs in the plan or keep the item unknown.
+* A suite gets its own plan plus the shared preamble and prerequisite closure.
+  Suites that exchange state run as a group under their union. A suite dispatcher
+  can retain its outer domain, but each child receives the narrowed domain before
+  its setup. Do not certify individual suites from a leg-wide union that grants
+  the whole repository.
+* A mutation case uses the union required by its baseline, no-op and mutant. Generate imports
+  for every projected mode, including code introduced by the mutation. Apply the
+  same normalized grant plan to each mode in a separate process. Bind each
+  mode's input contents, the projected case and mutation digest. Controls can be
+  shared only when the grant plan, prerequisite group, runtime and fixture state
+  match. Otherwise run focused controls for that case. The final dependency record
+  contains the union of the three modes and their setup inputs.
+
+A row-only mutation run retains the previous full-suite dependencies and adds its
+current grant set. It cannot shrink the suite record. Parent stages add their own
+setup dependencies to the union of their children, as VELDO-0367 requires.
+
+## Make the filesystem view match the claim
+
+A projected repository is a private tree containing only the selected files and
+expanded data directories. Metadata queries in that tree can reveal only those
+inputs and its fixed layout. Reuse the declared snapshot builder, then give the
+item a namespace view in which the original checkout, authority checkout, Git
+objects and host-path aliases are absent. A private tree at a different cwd is
+insufficient if the original paths are still visible to stat.
+
+The existing namespace helper must establish that view before it drops privileges.
+Keep its existing capability drop, namespace checks and traced-entry refusal.
+The installed helper profile currently permits only making mounts private and
+mounting procfs. It cannot construct this view. A separate protected launcher
+increment must define the managed view layout and authorize only its required
+mount and root-switch operations inside the private namespace. Keep the child
+profile's mount, capability and tracing denials. Add no host capability or
+privileged observation service. Focused escape fixtures must prove that the helper
+cannot expose extra host paths or leave the old root reachable. Certification
+stays disabled until that increment is reviewed and implemented; AC7 stays intact.
+
+Account for metadata that the view exposes: file type, permissions, size, link text,
+normalized timestamps and the directory layout. Normalize inode and ownership
+behavior where possible; otherwise treat a result that relies on unrecorded host
+metadata as unknown. An omitted repository path has fixed absence in this view.
+Omitted files can produce ENOENT rather than EACCES. Required imports and data
+loads must report either error as a missing declaration; expected absence remains
+a valid fixed input. Import search candidates and explicit absent declarations
+still enter `absent_paths`
+so a newly added input selects the item and regenerates its plan.
+
+Close inherited file and directory descriptors except reviewed authority channels
+and standard streams with known sources. An input on stdin must be recorded too.
+Start a fresh executable after removing unaccounted mappings and handles. The
+bootstrap's interpreter and loaded authority modules must already be in the plan's
+repository or runtime inputs. Prevent descriptor transfer from outside the item
+through the existing broker. Restrict process-root, cwd and fd aliases through
+`/proc` in the certifiable view. Keep source snapshots immutable and private outputs
+separate; a shared writable fixture directory cannot be certified as a stable input.
+
+These requirements cover metadata and inherited access without observing each
+syscall. Until they are implemented, narrowed Landlock runs remain useful for
+finding missing declarations but cannot establish complete dependencies.
+
+## Directory records and selection
+
+An exact file grant becomes a VELDO-0367 `paths` entry. Record its repository name,
+content and relevant metadata, plus every symlink component and resolved target.
+An expected missing input becomes an `absent_paths` entry. A symlink leaving the
+repository requires a recorded runtime target or an unknown reason.
+
+Every directory grant becomes a `directories` entry with recursive scope. Its
+digest covers sorted relative names, object types, file bytes, modes and symlink
+text for the entire granted subtree. VELDO-0367 must compare that scope against
+added, removed, renamed and modified descendants. Membership alone is insufficient:
+editing an existing data file must select the item. Persist expanded `paths` too
+if the current selector needs them, but retain the directory entry so new files
+cannot escape selection. Never silently reinterpret recursion as one level.
+
+Before considering carry, regenerate the plan from the current item definition and
+reviewed inputs. Compare its normalized digest with the previous certificate.
+Adding, removing or widening a grant selects the item even if every previously
+recorded file is unchanged. A changed generator, declaration binding or import
+resolution also selects its consumers. An unrelated edit outside these scopes can
+carry the item only when its runtime and all other VELDO-0367 conditions match.
+
+Evaluate the effective read permissions across all applied layers. A broad outer
+layer is compatible with a certified inner layer that narrows those permissions.
+Record both layers and their intersection. A whole-repository grant in that
+effective set, an ancestor grant that includes the checkout, or a set of
+grants that collectively covers all repository inputs receives
+`unknown_reason=whole_repository_grant`. A large fixture directory may be legitimate,
+but its fan-in must be reported. It cannot be hidden under a runtime label to make
+eligibility look better.
+
+## Permission failures and declaration repair
+
+Preserve the kernel's EACCES result. The runner reports a surfaced permission
+failure as `read_set_denied`, with item identity, mode, command, plan digest,
+exit status, stderr and the available failing path. Python import and fixture
+loaders should include the requested path and declaration source in their error.
+For a native child that returns only an error code, report that the path is unknown;
+do not invent it from the last successful open. Preserve the failed result and
+withhold carry. An ordinary failure cannot be converted into an unknown green result.
+
+Landlock does not force a program to terminate when it catches EACCES. It also does
+not supply the unprivileged runner with a complete denial stream. The runner cannot
+promise a path-specific report for every swallowed native denial without another
+mechanism. This design does not add one. A caught denial grants no access, and a
+successful result still has the same bounded file inputs. Focused qualification
+must verify that required fixture or import failures remain failures, rather than
+being hidden by a test's fallback. Compare expected observations with existing
+trusted results before approving a declaration for reuse.
+
+Declaration repair is explicit: identify the missing input, amend the protected
+declaration or supported import resolver, review the resulting plan, and execute
+the item again. A diagnostic run may use the existing broad profile if separately
+requested, but its result is unknown and cannot replace the failed narrowed run.
+The runner never retries with a parent directory, the entire checkout or a new
+runtime root. Adding a grant through a repair always changes the plan digest.
+
+## The VELDO-0367 certificate
+
+Keep the existing dependency record fields and add a coverage method identifying
+`enforced_read_set/v1`, a read-set digest and a certificate reference. The authority
+certificate binds the item, source commit, mode, run nonce, actual normalized grants,
+handled rights, runtime digest, repository-view digest, input-plan sources and
+launcher identity. It records successful installation before candidate execution,
+mode outcomes and completed descendant cleanup. Repository paths use the original
+repository names, regardless of their physical locations in a private snapshot.
+
+The trusted bootstrap acknowledges successful restriction over its existing
+supervised launch channel before handing control to the candidate. Close that
+channel in candidate code. The authority must match the acknowledgment to its child
+and expected policy. A worker's `complete` flag, a JSON file in scratch or the mere
+existence of a ruleset descriptor cannot prove enforcement. An installation error,
+missing acknowledgment, policy mismatch or skipped restriction cannot issue a
+certificate. An outside launcher certificate authenticates its trusted bootstrap;
+it is not a claim that the kernel exposes a query for the current Landlock ruleset.
+
+Set `complete=true` only after the runner certifies that the exact item ran under
+the narrowed set it recorded, the filesystem and descriptor conditions hold, all
+required modes finished, and no other unknown-input reason remains. Store the
+certificate, result and dependency record atomically after cleanup. A certificate
+for one mode, item, commit or runtime cannot authorize another. Carry retains its
+original evidence and source commit.
+
+Nested tracing workloads stay unknown, including the existing 51 unconfined tracing
+exclusions. Unsupported launchers, unresolved metadata visibility, unkeyed runtime
+or external inputs, whole-repository grants, missing controls and interrupted
+cleanup also stay unknown. Preserve the specific reason. Failures remain red.
+
+This extends VELDO-0367's coverage method for confined items. It retains its
+selection, baseline and publication rules and its unconfined observation path.
+Review records approve explicit grants; they do not restore VELDO-0217's old
+eligibility rules as a universal VELDO-0367 selector. Existing declarations and
+review tooling supply input plans, while runner enforcement supplies the coverage
+certificate for this new path.
+
+## Measured scope and setup cost
+
+The round 3 measurement uses `f345e09b62d737cc0dcce32aad82c398042f342f` and
+`proof/VELDO-0368/round3/measure-landlock.py`. It runs through the owner's
+`remote_run.sh` on pc1. Its raw result and setup samples accompany this spec.
+
+Source inspection finds that `agent_sandbox.grants_for` always includes the
+worktree, authority and scratch read roots. The gate profile replaces writable
+roots with scratch but retains the broad repository reads. Configured roots are
+`/usr`, `/lib`, `/lib64`, `/bin`, `/sbin` and `/etc`, plus installed optional tools,
+the launcher configuration and applicable Git common directories. Agent-only
+project roots are not gate roots.
+
+Fresh mutation workers use `mutation_sandbox.worker_grants`: the whole supplied
+repository or snapshot, explicit extra reads, private scratch, `/usr`, `/lib`,
+`/lib64`, `/etc`, installed tools and available private fixture roots. The worker
+profile's launcher installs IPC confinement first; `confine_in_tree` applies these
+Landlock grants in its bootstrap. `agent_sandbox.landlock` also grants
+`/proc` and, with the broker, the PTMX device. Neither path currently selects reads
+by item. A declared legacy worker's frozen root is narrower because of its copied
+contents, not because `worker_grants` enumerates individual files.
+
+The final pc1 run was `rr20261126125200-be46`, on Linux `7.0.0-38-generic`,
+Landlock ABI 8 and `/usr/bin/python3` 3.12.3. Both scope probes entered
+`worker_tree` and `confine_in_tree`; the measurement wrapper captured the grants
+passed to the production Landlock function without changing them.
+
+The applied worker roots included the entire checkout, private scratch, `/usr`,
+`/usr/lib`, `/usr/lib64`, `/etc`, `/home/dmitry/.nvm/versions/node`,
+`/home/dmitry/.local/share/claude`, `/home/dmitry/.local/share/codex-versions`,
+`/home/dmitry/.local/share/veldo/langgraph`, `/home/dmitry/.rustup`,
+`/home/dmitry/.cargo/bin`, `/dev/null` and `/dev/urandom`. The launcher added a
+private fixture root under `/home/dmitry/.vg/`, named `gad61` in the broad probe
+and `gff62` in the narrowed probe. The Landlock function also added `/proc` and
+brokered `/dev/ptmx`. Exact paths and rights are in `round3/landlock.json`.
+
+The current broad worker read an unrelated repository spec through Python and
+native cat, and listed the repository root. With a second read layer granting
+only `scripts/agent_sandbox.json` as a repository input, those new content reads
+and the listing failed with EACCES. The allowed file and `/etc/os-release` stayed
+readable. Both runs kept the repository write denial and `TracerPid: 0`.
+Starting the native watchdog increased the thread count from one to two; the
+narrowed content read still failed afterward.
+
+The narrowed worker could still stat the unrelated file, and access reported it
+readable. It also read 32 bytes through the deliberately preopened descriptor.
+These measured gaps are why this spec requires the private repository view and
+clean descriptor handoff before `complete=true`. Neither scope probe is certified.
+
+Setup measurements used one generator and 250 fresh child processes: 25 samples
+per shape for each of two routines. The full routine includes the existing strict
+IPC filter and Landlock setup. The added read-layer routine starts timing after
+that existing domain is installed. Shape order alternates by repetition. The
+fixed grants in the timing run are the recorded parent worker grants; the
+launcher-created fixture root is present in the scope probes only.
+
+| Repository grants | Full routine median wall ms | Full routine median CPU ms | Added layer median wall ms | Added layer median CPU ms | Added layer p95 wall ms |
+| :- | -: | -: | -: | -: | -: |
+| 1 broad root | 0.705 | 0.705 | 0.117 | 0.117 | 0.126 |
+| 32 files | 1.071 | 1.070 | 0.422 | 0.422 | 0.454 |
+| 128 files | 2.045 | 2.044 | 1.206 | 1.206 | 1.262 |
+| 512 files | 5.702 | 5.703 | 4.349 | 4.337 | 4.577 |
+| 1,024 files | 10.905 | 10.906 | 8.909 | 8.902 | 9.151 |
+
+The added layer costs milliseconds per item, reaching 8.91 ms at 1,024 file rules.
+It is not zero. Directory grants reduce rule count at the cost of selecting more
+items when their descendants change. These warm setup timings include path checks,
+file-descriptor opens and rule installation. They exclude process creation, input
+projection, import generation, runtime hashing and ongoing filesystem lookup cost.
+They do not establish total execution overhead or gate savings. The raw samples,
+source digest, reproduction script and pc1 log are under `proof/VELDO-0368/round3`.
+
+
+## Measured inventory and expected eligibility
+
+The inventory joins the same receipt as round 2, at line 44525 of
+`myday/research/gate-stamps/cand-1122-55b511908-verify.log`, commit `55b511908`.
+`proof/VELDO-0368/round3/measure-inventory.py` verifies the receipt hash and
+reconciles 4,023 cases and 5,495 worker outcomes. It reads historical sources from
+this repository's Git objects and uses the workers' actual legs. Each category
+counts its shared baseline and no-op controls once. Categories overlap.
+
+| Category | Cases | Controls | Worker seconds | Share of the 91,034.33 target seconds |
+| :- | -: | -: | -: | -: |
+| All confined cases | 2,874 | 1,000 | 79,251.29 | 87.06% |
+| Existing declarations | 19 | 34 | 1,187.52 | 1.30% |
+| Reviewed declarations | 0 | 0 | 0.00 | 0.00% |
+| Generated import candidates | 2,874 | 1,000 | 79,251.29 | 87.06% |
+| Imports proved complete by this static scan | 0 | 0 | 0.00 | 0.00% |
+| Existing declaration or proved import closure | 19 | 34 | 1,187.52 | 1.30% |
+| Unconfined tracing exclusions | 51 | 32 | 11,783.04 | 12.94% |
+
+The declaration file is identical at the receipt commit and the round 3 head:
+30 declarations overall, 19 attached to confined cases, all unreviewed. Declaration
+presence does not establish current completeness or successful narrowed execution.
+
+The static measurement follows ordinary imports and literal Python filenames,
+includes prerequisites, and projects the mutation drivers to remove their case
+registries. It does not apply each mutation to generate that mode's imports. It scans function bodies conservatively and includes every matching
+repository basename. The resulting proposals contain 1,014 to 1,020 Python files,
+with a median of 1,014. Every proposal encounters dynamic loaders. This simple
+algorithm demonstrates that candidate generation is possible, but its unresolved
+loads and omitted data inputs prevent calling it a complete import closure.
+A better resolver needs the reviewed loader rules and explicit data declarations
+specified above. These proposals should not be approved without narrowing review.
+
+The measured opportunity is 79,251.29 worker-seconds, or 47.89% of all historical
+worker time and 87.06% of the 55.01% target. That is the upper bound if every
+confined case qualifies. The 19 declaration-backed cases are a first qualification
+batch worth at most 1.30% of the target, including their controls. Their qualification
+rate has not been measured. No positive expected eligible percentage can be derived
+from this receipt alone: it contains no runs under narrowed grants. The supported
+range is 0 to 87.06% of target worker time, with zero currently demonstrated by
+historical cases. Unlike the round 2 watchdog exclusion, unresolved static imports
+do not impose a zero ceiling: successful enforced runs can establish bounded inputs
+without proving every dormant import branch. Do not present the upper bound as an expected saving.
+
+Measure a positive forecast by qualifying focused batches under the final view and
+read policies, then joining their successful item identities and exact controls to
+these same elapsed times. Report failures, whole-repository grants, unresolved
+runtime inputs and nested workloads separately. Unmeasured cases remain unknown;
+do not extrapolate a convenient suite sample across all 2,874 cases. Carry eligibility
+also differs from savings on a particular edit, which depends on directory fan-in
+and the changed paths.
+
+The round 2 notification results remain archived in `proof/VELDO-0368`: zero new
+eligibility and median wall overhead of 51.8% to 165.4%. They are not measurements
+of this enforcement design.
+
+## Independently landable increments
+
+1. Add the plan schema and resolver in `confined_inputs.py`, using declarations and
+   import candidates. Emit plans without changing execution or eligibility. Focused
+   fixtures cover relative imports, package shadowing, stale reviews and unresolved
+   loaders. A missing input source must prevent a complete plan.
+2. Add the read layer to the worker bootstrap and both sandbox copies. Keep all
+   results unknown. Test one native reader, EACCES, thread inheritance, write denial
+   and the existing AC7 refusal. Skipping restriction or adding a root grant must
+   break a fixture. Measure setup separately from fixture execution, snapshot construction and runtime hashing.
+3. Build the private repository view and close descriptor and process-path aliases.
+   Extend the existing namespace helper, its narrowly scoped profile and the snapshot
+   machinery. Keep certification
+   disabled. Test stat, access, symlink escapes, inherited descriptors, stdin and
+   immutable source contents. Any remaining live-checkout metadata access blocks
+   the next increment.
+4. Wire plans into suite groups and mutation modes. Record directory scopes and
+   runtime digests, preserve permission failures and require exact shared-control
+   compatibility. Use one suite and one mutation case with baseline, no-op and
+   mutant fixtures. Fix a missing declaration through review and a fresh execution.
+5. Add the authority certificate and VELDO-0367 selection join. Enable carry only
+   for supported, certified items. A small authenticated inventory covers an
+   unrelated edit, file edit, directory addition, runtime change and grant change.
+   Forged or unapplied certificates must never authorize carry.
+6. Qualify reviewed batches with focused cases and publish their measured eligibility
+   against the historical inventory. Leave all other items unknown. Do not run a
+   full gate to produce an attractive percentage or enable broad grants as a fallback.
+
+Each increment can land with certification disabled until its prerequisites hold.
+Rollback disables only the new certification path and preserves confinement and
+failed results. This round changes the specification and measurement evidence only.

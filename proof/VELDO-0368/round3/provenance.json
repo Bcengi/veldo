@@ -1,0 +1,8 @@
+{
+  "run": "rr20261126125200-be46",
+  "head": "f345e09b62d737cc0dcce32aad82c398042f342f",
+  "source_sha256": "bbf00fe1ccb881e4b38ad03afc312283c04029e2ab3c15690a3690dfa388a3f5",
+  "raw_result_sha256": "a733c5367e9f3bf5f1aed47715ad8c8114cc743a18d215369074ebb290bca7f2",
+  "full_transport_log_sha256": "df20cd22dbb7a6d9b59cbc2b3ad2e2e5ae657ec5d54f6c2bfc0df550fc07cebf",
+  "log_note": "The committed log omits the command line containing the encoded measurement source and trims trailing whitespace; source and source digest are committed separately."
+}

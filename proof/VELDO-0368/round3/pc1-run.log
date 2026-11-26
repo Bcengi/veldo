@@ -1,0 +1,97 @@
+remote_run[pc1 f345e09b62d7 12:52:00]: selected node pc1 (dmitry-pc (local)); mode=exclusive, slots=2
+remote_run[pc1 f345e09b62d7 12:52:00]: note: 2 uncommitted change(s) in the worktree are NOT shipped; the node runs f345e09b62d7 as committed
+remote_run[pc1 f345e09b62d7 12:52:00]: commit already on dmitry-pc (local)
+remote_run[pc1 f345e09b62d7 12:52:00]: run rr20261126125200-be46 started on dmitry-pc (local) (VELDO-0368: measure listener cost and remaining unknown cases); node log /home/dmitry/remote-run-local/runs/rr20261126125200-be46/log
+[remote_run pc1 12:52:00] run rr20261126125200-be46 selected node pc1 (Linux-x86_64)
+[remote_run pc1 12:52:00] setup 0s; f345e09b62d737cc0dcce32aad82c398042f342f in /home/dmitry/remote-run-local/runs/rr20261126125200-be46/work; python 3.12.13, node 22.22.0
+broad 0 SCOPE {"mode": "broad", "applied_grants": [["/home/dmitry/remote-run-local/runs/rr20261126125200-be46/work", 13], ["/home/dmitry/remote-run-local/runs/rr20261126125200-be46/work/.local/0368/round3/scratch", 32767], ["/usr", 13], ["/usr/lib", 13], ["/usr/lib64", 13], ["/etc", 13], ["/home/dmitry/.nvm/versions/node", 13], ["/home/dmitry/.local/share/claude", 13], ["/home/dmitry/.local/share/codex-versions", 13], ["/home/dmitry/.local/share/veldo/langgraph", 13], ["/home/dmitry/.rustup", 13], ["/home/dmitry/.cargo/bin", 13], ["/home/dmitry/.vg/gad61", 32767], ["/dev/null", 6], ["/dev/urandom", 4]], "namespace": true, "tracer": "TracerPid:\t0", "allowed": {"ok": true, "value": 2833}, "unrelated_read": {"ok": true, "value": 16852}, "unrelated_stat": {"ok": true, "value": 16852}, "unrelated_access": {"ok": true, "value": true}, "repo_listing": {"ok": true, "value": 27}, "repo_write": {"ok": false, "errno": 13}, "system_read": {"ok": true, "value": 400}, "preopened_read": {"ok": true, "value": 32}, "native_read": {"exit": 0, "stdout_bytes": 16852, "stderr": ""}, "threads_before": 1, "threads_after": 2, "read_after_watchdog": {"ok": true, "value": 16852}}
+
+narrow 0 SCOPE {"mode": "narrow", "applied_grants": [["/home/dmitry/remote-run-local/runs/rr20261126125200-be46/work", 13], ["/home/dmitry/remote-run-local/runs/rr20261126125200-be46/work/.local/0368/round3/scratch", 32767], ["/usr", 13], ["/usr/lib", 13], ["/usr/lib64", 13], ["/etc", 13], ["/home/dmitry/.nvm/versions/node", 13], ["/home/dmitry/.local/share/claude", 13], ["/home/dmitry/.local/share/codex-versions", 13], ["/home/dmitry/.local/share/veldo/langgraph", 13], ["/home/dmitry/.rustup", 13], ["/home/dmitry/.cargo/bin", 13], ["/home/dmitry/.vg/gff62", 32767], ["/dev/null", 6], ["/dev/urandom", 4]], "namespace": true, "tracer": "TracerPid:\t0", "allowed": {"ok": true, "value": 2833}, "unrelated_read": {"ok": false, "errno": 13}, "unrelated_stat": {"ok": true, "value": 16852}, "unrelated_access": {"ok": true, "value": true}, "repo_listing": {"ok": false, "errno": 13}, "repo_write": {"ok": false, "errno": 13}, "system_read": {"ok": true, "value": 400}, "preopened_read": {"ok": true, "value": 32}, "native_read": {"exit": 1, "stdout_bytes": 0, "stderr": "/usr/bin/cat: /home/dmitry/remote-run-local/runs/rr20261126125200-be46/work/specs/VELDO-0217-every-confined-case-has-a-reviewed-input-declaration.md: Permission denied\n"}, "threads_before": 1, "threads_after": 2, "read_after_watchdog": {"ok": false, "errno": 13}}
+
+[
+  {
+    "kind": "full_existing_function",
+    "shape": 0,
+    "n": 25,
+    "median_wall_us": 705.005,
+    "median_cpu_us": 704.59,
+    "p95_wall_us": 832.088
+  },
+  {
+    "kind": "full_existing_function",
+    "shape": 32,
+    "n": 25,
+    "median_wall_us": 1070.703,
+    "median_cpu_us": 1070.278,
+    "p95_wall_us": 1177.675
+  },
+  {
+    "kind": "full_existing_function",
+    "shape": 128,
+    "n": 25,
+    "median_wall_us": 2045.035,
+    "median_cpu_us": 2043.949,
+    "p95_wall_us": 2202.1
+  },
+  {
+    "kind": "full_existing_function",
+    "shape": 512,
+    "n": 25,
+    "median_wall_us": 5701.894,
+    "median_cpu_us": 5703.329,
+    "p95_wall_us": 6094.024
+  },
+  {
+    "kind": "full_existing_function",
+    "shape": 1024,
+    "n": 25,
+    "median_wall_us": 10905.472,
+    "median_cpu_us": 10905.82,
+    "p95_wall_us": 11209.703
+  },
+  {
+    "kind": "read_layer_only",
+    "shape": 0,
+    "n": 25,
+    "median_wall_us": 117.27,
+    "median_cpu_us": 116.648,
+    "p95_wall_us": 126.056
+  },
+  {
+    "kind": "read_layer_only",
+    "shape": 32,
+    "n": 25,
+    "median_wall_us": 422.393,
+    "median_cpu_us": 421.793,
+    "p95_wall_us": 454.133
+  },
+  {
+    "kind": "read_layer_only",
+    "shape": 128,
+    "n": 25,
+    "median_wall_us": 1205.986,
+    "median_cpu_us": 1205.81,
+    "p95_wall_us": 1261.73
+  },
+  {
+    "kind": "read_layer_only",
+    "shape": 512,
+    "n": 25,
+    "median_wall_us": 4349.253,
+    "median_cpu_us": 4337.102,
+    "p95_wall_us": 4577.245
+  },
+  {
+    "kind": "read_layer_only",
+    "shape": 1024,
+    "n": 25,
+    "median_wall_us": 8909.038,
+    "median_cpu_us": 8901.805,
+    "p95_wall_us": 9151.044
+  }
+]
+[remote_run pc1 12:52:02] command exit 0 after 2s
+[remote_run pc1 12:52:03] run ended rc=0
+  fetch: OK .local/0368/round3/landlock.json 48921
+remote_run[pc1 f345e09b62d7 12:52:05]: fetched into /home/dmitry/projects/veldo-worktrees/veldo-0367-p6-spec/proof/VELDO-0368/round3
+remote_run[pc1 f345e09b62d7 12:52:05]: rc=0 in 5s (run rr20261126125200-be46)
