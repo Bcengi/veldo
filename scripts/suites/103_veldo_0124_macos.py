@@ -489,6 +489,12 @@ def _v124_suite():
             sandbox='', startup_seconds=1, kill_grace_seconds=0, settle_seconds=1.0, dispatch_id='dispatch/f4')))
         (base / 'go').write_text(json.dumps(dict(runtime_seconds=0)))
         members, sent, gone = [ENGINE_A], [], threading.Event()
+        # The wrapper's monotonic clock is the row's own. It moves only when the wrapper waits for members to
+        # exit, by the time the wrapper asked to wait, so the settle bound never depends on how long a step took.
+        clock = [0.0]
+
+        def wait_members(pids, timeout):
+            clock[0] += max(0, timeout)
 
         class Child:
             pid, returncode = 4240, None
@@ -520,8 +526,9 @@ def _v124_suite():
         wrapper.wait_file = lambda path, timeout: path.exists()
         wrapper.coalition = lambda pid: 'job'
         wrapper.coalition_members = lambda job: list(members)
-        wrapper.wait_members = lambda pids, timeout: None
+        wrapper.wait_members = wait_members
         with patch.object(wrapper, 'os', fake_os), patch.object(wrapper.subprocess, 'Popen', lambda *a, **k: Child()), \
+                patch.object(wrapper, 'time', types.SimpleNamespace(monotonic=lambda: clock[0])), \
                 patch.object(wrapper.signal, 'signal', lambda *a: None):
             assert wrapper.main(base) == 0
         result = M.read(base / 'result.json')

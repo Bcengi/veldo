@@ -3,6 +3,7 @@ import contextlib
 import io
 import json
 from pathlib import Path
+import types
 from unittest.mock import patch
 
 
@@ -43,18 +44,23 @@ def cases(T, helper):
             return dict(record=dict(state='exited'), host_released=True)
         w.receive_locked = receive
         output = io.StringIO()
-        with patch.object(w.sys, 'stdin', io.StringIO('{"dispatch_id":"new"}\n')), contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
-            try:
-                w.main(config_path)
-            except P.P.Refused as error:
-                assert str(error) == 'unavailable_service:slot_migration_required'
-        entries = w.OUT.entries(config, ready_only=True)
-        assert len(entries) == 1, 'migration refusal parked the dispatch'
-        assert entries[0]['attempts'] == 1 and entries[0]['due'] > w.time.time()
-        assert not output.getvalue(), 'Linux was told the migration refusal was parked'
-        # QueueDirectories starts the drain even when bootstrap did not run on upgrade.
-        P.M.Supervisor(host.profile, host.qualification, backend=backend)
-        with patch.object(w.time, 'time', return_value=entries[0]['due']):
+        # A supplied clock, fixed at one instant: the retry time is set and read against it, never against real time.
+        fixed = types.SimpleNamespace(time=lambda: 1000.0)
+        with patch.object(w, 'time', fixed), patch.object(w.OUT, 'time', fixed):
+            with patch.object(w.sys, 'stdin', io.StringIO('{"dispatch_id":"new"}\n')), contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                try:
+                    w.main(config_path)
+                except P.P.Refused as error:
+                    assert str(error) == 'unavailable_service:slot_migration_required'
+            entries = w.OUT.entries(config, ready_only=True)
+            assert len(entries) == 1, 'migration refusal parked the dispatch'
+            assert entries[0]['attempts'] == 1 and entries[0]['due'] > fixed.time()
+            assert not output.getvalue(), 'Linux was told the migration refusal was parked'
+            # QueueDirectories starts the drain even when bootstrap did not run on upgrade.
+            P.M.Supervisor(host.profile, host.qualification, backend=backend)
+        # The clock is moved to the recorded retry time; the drain finds the entry due.
+        due_clock = types.SimpleNamespace(time=lambda: entries[0]['due'])
+        with patch.object(w, 'time', due_clock), patch.object(w.OUT, 'time', due_clock):
             w.resume_pending(config, drain=True)
         assert len(calls) == 1 and not w.OUT.entries(config)
 
@@ -66,7 +72,9 @@ def cases(T, helper):
             config = dict(runs=str(root))
             config_path = root / 'config.json'
             config_path.write_text(json.dumps(config))
-            due = w.time.time() + 300
+            # A supplied clock, fixed at one instant: the orphan stays 300 s short of due however long the row takes.
+            fixed = types.SimpleNamespace(time=lambda: 1000.0)
+            due = fixed.time() + 300
             orphan = dict(request=dict(dispatch_id='orphan'), due=due, attempts=7)
             with w.OUT.locked(config) as locked:
                 w.OUT.move(locked, w.OUT.locate(locked, 'orphan'), '.active', w.CL.durable_json, orphan)
@@ -76,7 +84,8 @@ def cases(T, helper):
                 raise OSError('offline') if transient else w.C.P.Refused('unauthorized:denied')
             w.receive_locked = fail
             w.install_resumer = lambda *args: None
-            with patch.object(w.sys, 'stdin', io.StringIO('{"dispatch_id":"incoming"}\n')), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            with patch.object(w, 'time', fixed), patch.object(w.OUT, 'time', fixed), \
+                    patch.object(w.sys, 'stdin', io.StringIO('{"dispatch_id":"incoming"}\n')), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
                 try:
                     w.main(config_path)
                 except OSError:

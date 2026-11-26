@@ -218,6 +218,18 @@ stays red against a line whose own baseline lacks these entries, and passes agai
 that carries them. The VELDO-0127 Claude capture was retaken with proof/VELDO-0127/live.py
 on Claude Code 2.1.317 (five subscription runs); the Codex capture is still the stale one.
 
+2026-11-26, land preparation, fix round 3: five rows that still depended on elapsed time no
+longer do. The wrapper rescan row in suite 103 and the wrapper exit row in suite 106 run the
+wrapper on a clock the row owns. The rescan row's clock moves only when the wrapper waits for
+members to exit. The exit row waits on the child's exit event, and its clock moves only if
+the child is still running at the wait hang bound. The three outbox rows of rounds 12 and 13
+hold the worker and outbox clocks at one instant while a retry is written and checked, then
+set them to the recorded due time for the drain. The factory-delivery row gives its role the
+fixture's 1800-second budget; its service and receiver are separate processes on the real
+clock, so no clock is injected there. Each of the five rows named in the review failed under
+a delay longer than its old bound and passes under the same delay now. No assertion changed
+and the baseline gained nothing.
+
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,

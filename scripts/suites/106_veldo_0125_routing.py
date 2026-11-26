@@ -416,7 +416,9 @@ def _v125_routing_suite():
             line = service_module.Line(loop, 'repo', {}, str(receiver_path))
             f.start()
             report = dict(offered=[], refused=[], waiting=[])
-            role = dict(identity='reviewer', adapter='codex', payload={}, configuration=f.configuration, seconds=30)
+            # The role's budget is the fixture's 1800 s contract deadline (Fixture.prepare's default). The service
+            # and the receiver are separate processes on the real clock, so the deadline has to outlast any load.
+            role = dict(identity='reviewer', adapter='codex', payload={}, configuration=f.configuration, seconds=1800)
             launched = line.offer(report, 'unit', 'review', role,
                 revision=T.git(f.repo, 'rev-parse', 'HEAD'), context={'reviewer': 'reviewer'})
             assert launched is not None, report

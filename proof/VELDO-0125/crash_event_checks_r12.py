@@ -13,6 +13,10 @@ import types
 from unittest.mock import patch
 
 
+# A hang bound, not a latency limit (VELDO-0358): far above any measured wait, so load cannot fail a row.
+WAIT_HANG_SECONDS = 600
+
+
 class Crash(BaseException):
     pass
 
@@ -301,6 +305,15 @@ def cases(T, helper):
         identity = lambda pid: {'pid': pid}
         real_popen = subprocess.Popen
         calls, scans = [], []
+        # The wrapper's monotonic clock is the row's own, and the wrapper waits on the child's exit event. The
+        # clock moves only if the child has not exited by the hang bound: then the runtime deadline passes on
+        # it, the wrapper escalates and the assertions below fail.
+        clock = [0.0]
+        class ExitEvent(threading.Event):
+            def wait(self, timeout=None):
+                if not super().wait(WAIT_HANG_SECONDS):
+                    clock[0] += timeout
+                return self.is_set()
         def launch(*args, **kwargs):
             child = real_popen([executable, '-c', 'pass'], **{k:v for k,v in kwargs.items() if k != 'process_group'}, start_new_session=True)
             wait = child.wait
@@ -319,7 +332,9 @@ def cases(T, helper):
             path.write_text('{"runtime_seconds": 120}')
             return True
         wrapper.wait_file = wait_file
-        with patch.object(wrapper.os, 'getpgrp', return_value=os.getpid()), patch.object(wrapper.subprocess, 'Popen', launch):
+        with patch.object(wrapper.os, 'getpgrp', return_value=os.getpid()), patch.object(wrapper.subprocess, 'Popen', launch), \
+                patch.object(wrapper, 'time', types.SimpleNamespace(monotonic=lambda: clock[0])), \
+                patch.object(wrapper, 'threading', types.SimpleNamespace(Event=ExitEvent, Thread=threading.Thread)):
             assert wrapper.main(base) == 0
         assert file_waits == ['go']
         assert calls == [None] and len(scans) == 1

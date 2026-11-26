@@ -76,18 +76,24 @@ def cases(T, helper):
         w = T.load('control_worker')
         config = dict(runs=str(base))
         request = dict(dispatch_id='future-orphan')
-        due = w.time.time() + 300
-        with w.OUT.locked(config) as root:
-            w.OUT.move(root, w.OUT.locate(root, request['dispatch_id']), '.active', w.CL.durable_json,
-                       dict(request=request, due=due, attempts=7))
-        w.receive_locked = lambda *args: (_ for _ in ()).throw(AssertionError('retried before due'))
-        w.resume_pending(config)
-        entries = w.OUT.entries(config, ready_only=True)
-        assert entries == [dict(request=request, due=due, attempts=7)], 'future orphan has no scheduled wake'
-        assert not list((base / '.active').iterdir())
+        # A supplied clock, fixed at one instant: the orphan's due time is 300 s ahead of it for as long as the
+        # row needs, whatever the setup and the first pass take.
+        fixed = types.SimpleNamespace(time=lambda: 1000.0)
+        due = fixed.time() + 300
+        with patch.object(w, 'time', fixed), patch.object(w.OUT, 'time', fixed):
+            with w.OUT.locked(config) as root:
+                w.OUT.move(root, w.OUT.locate(root, request['dispatch_id']), '.active', w.CL.durable_json,
+                           dict(request=request, due=due, attempts=7))
+            w.receive_locked = lambda *args: (_ for _ in ()).throw(AssertionError('retried before due'))
+            w.resume_pending(config)
+            entries = w.OUT.entries(config, ready_only=True)
+            assert entries == [dict(request=request, due=due, attempts=7)], 'future orphan has no scheduled wake'
+            assert not list((base / '.active').iterdir())
         calls = []
         w.receive_locked = lambda config, request: calls.append(request) or dict(host_released=True)
-        with patch.object(w.time, 'time', return_value=due):
+        # The clock is moved to the recorded due time; the drain finds the entry due.
+        due_clock = types.SimpleNamespace(time=lambda: due)
+        with patch.object(w, 'time', due_clock), patch.object(w.OUT, 'time', due_clock):
             w.resume_pending(config, drain=True)
         assert len(calls) == 1 and not w.OUT.entries(config)
 
