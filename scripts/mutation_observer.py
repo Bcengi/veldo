@@ -403,6 +403,8 @@ def worker(case, mutant=None, *, isolate_runtime=True):
     auditing[0] = False
     dependency.stop()
     dependency.read(ROOT / case.get('dir', '.veldo') / case['module'])
+    for definition in ('mutation_observer.py', 'reuse_worker.py', 'gate_changes.py', 'gate_fixtures.py'):
+        dependency.read(ROOT / 'scripts' / definition)
     commit = os.environ.get('VELDO_DEPENDENCY_COMMIT', '0' * 40)
     if commit == '0' * 40:
         dependency.unknown('observed commit unavailable')
@@ -422,8 +424,13 @@ def worker(case, mutant=None, *, isolate_runtime=True):
 # VELDO-0367: observations never authorize selection. Python audit events are
 # useful attribution, but are NOT a complete filesystem trace (notably stat and
 # native children). Only a closed syscall trace can remove that unknown reason.
+DEPENDENCY_MODULES = {}
+
+
 def dependency_module(name):
-    return runpy.run_path(str(Path(__file__).with_name(name + '.py')))
+    if name not in DEPENDENCY_MODULES:
+        DEPENDENCY_MODULES[name] = runpy.run_path(str(Path(__file__).with_name(name + '.py')))
+    return DEPENDENCY_MODULES[name]
 
 
 class DependencyReads:
@@ -432,7 +439,9 @@ class DependencyReads:
         self.root = Path(root).resolve()
         self.paths, self.directories, self.absent_paths = set(), set(), set()
         self.reasons = {'observation coverage unavailable'}
-        self.runtime = {'environment': dict(os.environ if environment is None else environment)}
+        values = os.environ if environment is None else environment
+        self.runtime = {'environment': {k: v for k, v in values.items()
+                                        if not k.startswith('VELDO_DEPENDENCY_')}}
         self.active, self.busy = False, False
 
     def unknown(self, reason):
@@ -442,6 +451,8 @@ class DependencyReads:
         if not isinstance(path, (str, bytes, os.PathLike)):
             self.unknown('unresolved descriptor or path')
             return
+        if '..' in Path(os.fsdecode(path)).parts:
+            self.unknown('ambiguous parent traversal')
         path = Path(os.path.abspath(os.fsdecode(path)))
         try:
             resolved = path.resolve()
@@ -513,11 +524,13 @@ class DependencyReads:
         self.active = False
         return self
 
-    def trace(self, trace, *, dropped=False):
+    def trace(self, trace, *, dropped=False, all_syscalls=False):
         """Read an authority-owned -f trace after all traced processes ended.
 
         A truncated, detached, malformed or namespace-changing trace stays unknown.
-        This does not start ptrace in worker trees: their existing prohibition stands.
+        all_syscalls is authority provenance: the launcher used -f and trace=all.
+        A legacy filtered trace cannot establish completeness. This does not start
+        ptrace in worker trees: their existing prohibition stands.
         """
         tracer = dependency_module('case_trace')
         try:
@@ -530,12 +543,18 @@ class DependencyReads:
                 if not pid.isdigit():
                     raise ValueError('lost events or tracer diagnostic')
                 seen.add(pid)
+                call = tracer['CALL'].search(line)
+                if call and call[1] in ('clone', 'clone3', 'fork', 'vfork'):
+                    child = call[3].split()[0]
+                    if child.isdigit() and child != '0':
+                        seen.add(child)
                 if tracer['ENDED'].match(line):
                     ended.add(pid)
                 elif not (tracer['CALL'].search(line) or '<unfinished ...>' in line
                           or ' resumed>' in line or '--- SIG' in line):
                     raise ValueError('unrecognized trace event')
-                if any(token in line for token in ('unshare(', 'setns(', 'chroot(', 'CLONE_FS', 'CLONE_NEW')):
+                if any(token in line for token in ('unshare(', 'setns(', 'chroot(', 'pivot_root(',
+                        'mount(', 'io_uring_', 'ptrace(', 'bpf(', 'CLONE_FS', 'CLONE_NEW')):
                     raise ValueError('ambiguous process filesystem')
                 if '...' in line and '<unfinished ...>' not in line and '<... ' not in line:
                     raise ValueError('truncated trace event')
@@ -543,7 +562,19 @@ class DependencyReads:
                 raise ValueError('lost events or incomplete child coverage')
             for path, kind, success in tracer['accesses'](trace, cwd=self.root):
                 self.read(path, kind, success)
-            self.reasons.discard('observation coverage unavailable')
+            # Descriptor inputs (including mmap and inherited descriptors) need
+            # their kernel-resolved path too; path-only traces cannot see these.
+            import re
+            for line in tracer['syscall_lines'](trace):
+                call = tracer['CALL'].search(line)
+                if call and call[1] in ('read', 'pread64', 'readv', 'preadv', 'preadv2',
+                                       'mmap', 'mmap2', 'sendfile', 'copy_file_range'):
+                    for name in re.findall(r'<(/[^<>]*)>', call[2]):
+                        self.read(name)
+                    if not re.search(r'<[^<>]+>', call[2]) and 'MAP_ANONYMOUS' not in call[2]:
+                        self.unknown('unresolved inherited descriptor')
+            if all_syscalls:
+                self.reasons.discard('observation coverage unavailable')
             if tracer['non_file_inputs'](trace):
                 self.unknown('unrecordable external inputs in trace')
         except (OSError, ValueError, SyntaxError) as error:

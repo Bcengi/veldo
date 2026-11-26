@@ -74,8 +74,12 @@ def _dependency_capture():
         for name, reads in sorted(captures.items()):
             reads.stop()
             reads.read(ROOT / 'scripts/suites' / (name + '.py'))
+            for definition in ('suites/shared.py', 'selftest.py', 'run_scope.py', 'mutation_observer.py',
+                               'suites/manifest.json', 'suites/requires.json'):
+                reads.read(ROOT / 'scripts' / definition)
             if commit == '0' * 40:
                 reads.unknown('observed commit unavailable')
+        for name, reads in sorted(captures.items()):
             identity = changes['identity']('suite', os.environ.get('VELDO_DEPENDENCY_STAGE', 'unit'),
                                           os.environ.get('VELDO_GATE_LEG', 'confined'), name)
             records = [member.record(identity, commit) for member in captures.values()]

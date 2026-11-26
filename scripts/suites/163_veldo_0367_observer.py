@@ -92,23 +92,28 @@ def _v367_observer():
         trace.write_text('\n'.join(lines) + '\n')
         for leg in ('confined', 'unconfined'):
             identity = C['identity']('suite', 'unit', leg, 'fixture')
-            complete = O.DependencyReads(repo, {}).trace(trace).record(identity, commit)
+            complete = O.DependencyReads(repo, {}).trace(trace, all_syscalls=True).record(identity, commit)
             row('trace-' + leg, complete['complete'] and complete['unknown_reason'] is None and
                 {'data/input', 'module367.py', 'data/child', 'alias'} <= set(complete['paths']) and
                 complete['directories'] == ['data'] and complete['absent_paths'] == ['missing'] and
                 complete['item_id'] == identity)
-        row('lost-events', not O.DependencyReads(repo, {}).trace(trace, dropped=True).record(item, commit)['complete'])
+        row('filtered-unknown', not O.DependencyReads(repo, {}).trace(trace).record(item, commit)['complete'])
+        row('lost-events', not O.DependencyReads(repo, {}).trace(trace, dropped=True, all_syscalls=True).record(item, commit)['complete'])
         trace.write_text('\n'.join(lines[:-2]) + '\n')
-        broken = O.DependencyReads(repo, {}).trace(trace).record(item, commit)
+        broken = O.DependencyReads(repo, {}).trace(trace, all_syscalls=True).record(item, commit)
         row('incomplete-not-empty', not broken['complete'] and bool(broken['unknown_reason']))
         trace.write_text('11 openat(AT_FDCWD, "data/input", O_RDONLY <unfinished ...>\n11 +++ exited with 0 +++\n')
-        row('unfinished', not O.DependencyReads(repo, {}).trace(trace).record(item, commit)['complete'])
+        row('unfinished', not O.DependencyReads(repo, {}).trace(trace, all_syscalls=True).record(item, commit)['complete'])
         trace.write_text('')
-        row('empty-trace', not O.DependencyReads(repo, {}).trace(trace).record(item, commit)['complete'])
-        fresh = O.DependencyReads(repo, {})
-        fresh.read(repo / 'module367.py')
+        row('empty-trace', not O.DependencyReads(repo, {}).trace(trace, all_syscalls=True).record(item, commit)['complete'])
+        trace.write_text('11 openat(AT_FDCWD, "module367.py", O_RDONLY) = 3\n11 +++ exited with 0 +++\n')
+        fresh = O.DependencyReads(repo, {}).trace(trace, all_syscalls=True)
         refreshed = fresh.record(item, commit)
-        row('refresh', refreshed['paths'] == ['module367.py'] and refreshed['record_digest'] != complete['record_digest'])
+        row('refresh', refreshed['complete'] and refreshed['paths'] == ['module367.py'] and
+            refreshed['record_digest'] != complete['record_digest'])
+        external = O.DependencyReads(repo, {})
+        external.read('/proc/self/status')
+        row('external-unknown', 'unrecordable external input' in external.record(item, commit)['unknown_reason'])
         union = O.combine_dependencies([complete, refreshed], item, commit)
         row('union', set(union['paths']) == set(complete['paths']) | set(refreshed['paths']))
         retained = O.combine_dependencies([refreshed], item, commit, prior=complete, rows=True)
@@ -157,6 +162,19 @@ def _v367_observer():
                 value.get('dependency', {}).get('item_id') == C['identity']('stage', 'fixture-' + leg))
             row('native-' + leg, {'module367.py', 'data/child'} <= set(stage['dependency']['paths']) and
                 not stage['dependency']['complete'] and bool(stage['dependency']['unknown_reason']))
+
+        taking = G.TakeOpened(repo, None, 'overflow-fixture', store=store)
+        real_stop = taking.watch.stop
+        def dropped_stop():
+            opened, late, overflowed = real_stop()
+            return opened, late, True
+        taking.watch.stop = dropped_stop
+        row('overflow-finish', taking.finish('overflow-fixture', 0) == 0)
+        values = [store.get(path.stem) for path in store.directory.glob('*.json')]
+        overflow = next(value for value in values if value and value.get('dependency', {}).get('item_id') ==
+                        C['identity']('stage', 'overflow-fixture'))
+        row('overflow-unknown', not overflow['dependency']['complete'] and
+            'lost events' in overflow['dependency']['unknown_reason'])
 
         # The real shared collector attributes fragments and names their common
         # setup group. Only its installation seam is isolated from preamble rows.

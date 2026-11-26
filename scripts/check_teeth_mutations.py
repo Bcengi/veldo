@@ -18996,6 +18996,8 @@ def cases():
         'dependency=dependency, result=result)', 'dependency=dependency, result={})', ['atomic-result'])
     observer367('stage-native', 'gate_legs.py',
         'own.read(self.root / path)', 'pass  # defect: stage child reads omitted', ['native-confined', 'native-unconfined'])
+    observer367('overflow', 'gate_legs.py',
+        'if overflowed or late:', 'if False:', ['overflow-unknown'])
     observer367('worker-publication', 'reuse_worker.py',
         '    owner.publish_dependencies(store, dependency,', '    (lambda *args: None)(store, dependency,', ['worker-published'])
 

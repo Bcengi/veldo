@@ -75,6 +75,7 @@ def main():
         raise ValueError('a declared case never runs inside a tree')
     gate = load(authority / 'scripts/check_gate_mutations.py')
     owner = load(authority / 'scripts/mutation_observer.py')
+    owner.dependency_module('gate_changes')  # authority schema before its path becomes unreadable
     owner.ROOT = root
     ownership = load(authority / 'scripts/mutation_ownership.py')
     # Ownership is persisted from the authority copy before any candidate code runs, so the

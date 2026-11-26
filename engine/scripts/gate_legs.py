@@ -838,6 +838,8 @@ class TakeOpened:
             own.unknown('observed commit unavailable')
         if overflowed or late:
             own.unknown('lost events or incomplete directory coverage')
+        for definition in ('gate_legs.py', 'gate_unconfined.json', 'mutation_observer.py'):
+            own.read(self.root / 'scripts' / definition)
         for path in opened:
             own.read(self.root / path)
         records = []
@@ -872,7 +874,11 @@ def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, l
     """One gate stage (above). With `take_opened`, the authority takes the opened-files record while it runs."""
     if taking is None and (take_opened or dependency_observer() is not None):
         taking = TakeOpened(root, take_opened, stage)
-        code = run_stage(root, stage, command, record, path, times, leg, prior, taking=taking)
+        try:
+            code = run_stage(root, stage, command, record, path, times, leg, prior, taking=taking)
+        except BaseException:
+            taking.finish(stage, 1)
+            raise
         return taking.finish(stage, code)
     keep = taking.fd if taking else None
 
