@@ -23,7 +23,7 @@ import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
-BASE = '68b1c4520'
+BASE = 'cf2f81505'
 NEW = ('163_veldo_0367_observer', '164_veldo_0367_selection', '165_veldo_0367_selection_repairs',
        '166_veldo_0367_enable', '167_veldo_0367_weekly')
 MODULES = ('case_reuse', 'check_gate_mutations', 'mutation_reuse', 'mutation_observer', 'case_trace', 'gate_changes')
