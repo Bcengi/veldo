@@ -79,7 +79,7 @@ def failed_condition(files, name, declaration):
         return 'review_mismatch'
     try:
         runs = declaration['proposal']['runs']
-        if not {'baseline', 'noop', 'mutant'} <= {run['mode'] for run in runs} or any(run['exit'] != 0 for run in runs):
+        if {run['mode'] for run in runs} != {'baseline', 'noop', 'mutant'} or any(run['exit'] != 0 for run in runs):
             return 'trace_failed'
         for run in runs:
             if run['non_file']:
@@ -94,6 +94,12 @@ def failed_condition(files, name, declaration):
 
 
 class Session(M.Session):
+    @classmethod
+    def for_changes(cls, root, store, repository, commit, inventory, runtimes):
+        changes = M.change_module()
+        changes.require(changes.SELECTION_ENABLED, 'change selection is inactive until increment 5')
+        return ChangeSession(root, store, repository, commit, inventory, runtimes)
+
     def __init__(self, root, files, cases, head, configuration, *, force_fresh=False,
                  environment=None, cache_directory=None):
         # Retain v1 receipt methods, but never admit a whole-tree profile here.

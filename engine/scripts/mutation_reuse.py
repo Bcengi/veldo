@@ -270,6 +270,10 @@ def change_module():
 
 def suite_identity(case, configuration):
     """Sharing is by suite, leg, runtime and fixture configuration, across modules."""
+    C = change_module()
+    C.require(configuration['leg'] in ('confined', 'unconfined') and
+              C.hex_id(configuration['runtime_digest']) and isinstance(configuration['fixture_configuration'], dict),
+              'suite configuration')
     return dict(suite=case['suite'], leg='confined' if case.get('confined_only') is True else configuration['leg'],
                 runtime=configuration['runtime_digest'],
                 fixture=configuration['fixture_configuration'])
@@ -352,8 +356,11 @@ def prior_killing_rows(store, key, case, validate):
         rows = [entry['row'] for entry in result['kills'] if entry['kill_by'] in ('assertion', 'terminal')]
         C.require(rows and len(rows) == len(set(rows)), 'unusable prior kills')
         return rows
-    except (OSError, ValueError, KeyError, TypeError, RuntimeError):
-        return None
+    except Exception as error:
+        if isinstance(error, (OSError, ValueError, KeyError, TypeError, RuntimeError)) or getattr(error, 'code', None) in (
+                'control_failed', 'hung_not_killed', 'missing_target', 'mutation_survived', 'driver_error'):
+            return None
+        raise
 
 
 def selected_mutation(case, controls, execute, validate, *, store, prior=None):

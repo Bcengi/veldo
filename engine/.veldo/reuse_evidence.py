@@ -252,10 +252,13 @@ def change_record(value, key):
     if not isinstance(value, dict):
         return False
     schemas = {'veldo.dependency/v1', 'veldo.change-inventory/v1', 'veldo.change-receipt/v1',
-               'veldo.change-result/v1', 'veldo.change-gate/v1', 'veldo.suite-controls/v1',
-               'veldo.mutation-kill/v1'}
+               'veldo.change-result/v1', 'veldo.change-result/v2', 'veldo.change-gate/v1', 'veldo.suite-controls/v1',
+               'veldo.mutation-kill/v1', 'veldo.change-observation/v1'}
     if value.get('schema') in schemas:
         return value.get('record_digest') == key == digest({k: v for k, v in value.items() if k != 'record_digest'})
+    if value.get('schema') == 'veldo.change-successor/v1':
+        return (set(value) == {'schema', 'repository', 'commit', 'previous_record_digest', 'record_digest'} and
+                key == digest({k: v for k, v in value.items() if k != 'record_digest'}))
     return (set(value) == {'repository', 'commit', 'record_digest'} and
             key == digest(dict(schema='veldo.change-index/v1', repository=value['repository'], commit=value['commit'])))
 

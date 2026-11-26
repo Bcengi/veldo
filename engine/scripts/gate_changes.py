@@ -12,6 +12,7 @@ DEPENDENCY = 'veldo.dependency/v1'
 INVENTORY = 'veldo.change-inventory/v1'
 RECEIPT = 'veldo.change-receipt/v1'
 RESULT = 'veldo.change-result/v1'
+RESULT_V2 = 'veldo.change-result/v2'
 GATE = 'veldo.change-gate/v1'
 
 
@@ -269,12 +270,61 @@ def item_evidence(store, item):
     require(dependency['record_digest'] == item['dependency_record_digest'] and
             dependency['item_id'] == item['item_id'] and
             dependency['observed_commit'] == item['source_commit'], 'dependency source')
-    result = referenced(store, item['result_digest'], RESULT,
-                        ('item_id', 'source_commit', 'status', 'complete', 'dependency_record_digest'))
+    raw = store.get(item['result_digest'])
+    scoped = isinstance(raw, dict) and raw.get('schema') == RESULT_V2
+    result = referenced(store, item['result_digest'], RESULT_V2 if scoped else RESULT,
+                        ('item_id', 'source_commit', 'status', 'complete', 'dependency_record_digest') +
+                        (('execution_record_digest',) if scoped else ()))
     require(result['item_id'] == item['item_id'] and result['source_commit'] == item['source_commit']
             and result['status'] == 'passed' and result['complete'] is True and
             result['dependency_record_digest'] == dependency['record_digest'], 'result source')
+    try:
+        coordinates = json.loads(item['item_id'])
+    except ValueError:
+        coordinates = None
+    if isinstance(coordinates, list) and coordinates and coordinates[0] == 'case':
+        require(scoped, 'mutation execution reference required')
+    if scoped:
+        execution_evidence(store, result, dependency, coordinates)
     return dependency
+
+
+def execution_evidence(store, result, dependency, coordinates):
+    from importlib.util import module_from_spec, spec_from_file_location
+    from pathlib import Path
+    execution = referenced(store, result['execution_record_digest'], 'veldo.mutation-kill/v1',
+                           ('source_commit', 'dependency', 'result'))
+    require(execution['dependency'] == dependency and execution['source_commit'] == result['source_commit'],
+            'execution dependency source')
+    spec = spec_from_file_location('change_mutations', Path(__file__).with_name('check_gate_mutations.py'))
+    gate = module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    mutation = execution['result']
+    case = mutation['case']
+    require(isinstance(coordinates, list) and len(coordinates) == 6 and coordinates[0:2] == ['case', 'mutation']
+            and coordinates[3:] == [case['suite'], case['driver'], case['name']], 'execution identity')
+    require(mutation['schema'] == 'veldo.mutation-result/v2', 'scoped execution required')
+    try:
+        gate.validate_result(mutation, case, store=store)
+    except gate.Refused as error:
+        raise ValueError('invalid mutation execution: ' + str(error)) from error
+    controls = store.get(mutation['control_receipt_digest'])
+    require(controls['suite']['leg'] == coordinates[2] and all(k['kill_by'] in ('assertion', 'terminal')
+            for k in mutation['kills']), 'execution leg and rejection')
+
+
+def historical_gate(store, key, repository):
+    """A baseline was green when published; missing siblings do not erase its identity.
+
+    Revalidate all evidence actually carried by the new gate, rather than forcing
+    every item to rerun because an unrelated historical reference was revoked.
+    """
+    gate = referenced(store, key, GATE, ('repository', 'inventory', 'receipt', 'status', 'complete'))
+    require(gate['repository'] == repository and gate['status'] == 'green' and gate['complete'] is True,
+            'historical green gate')
+    validate_receipt(gate['receipt'], gate['inventory'])
+    require(all(i['status'] != 'failed' for i in gate['receipt']['items']), 'failed historical item')
+    return gate
 
 
 def green_record(root, store, gate, repository, seen=()):
@@ -288,8 +338,7 @@ def green_record(root, store, gate, repository, seen=()):
     candidate = receipt['candidate_commit']
     prior = None
     if receipt['baseline_record_digest'] is not None:
-        prior = store.get(receipt['baseline_record_digest'])
-        green_record(root, store, prior, repository, seen)
+        prior = historical_gate(store, receipt['baseline_record_digest'], repository)
         require(prior['record_digest'] == receipt['baseline_record_digest'] and
                 prior['receipt']['candidate_commit'] == receipt['baseline_commit'] and
                 receipt['baseline_commit'] in first_parents(root, candidate), 'baseline provenance')
@@ -314,8 +363,8 @@ def green_record(root, store, gate, repository, seen=()):
                             if source['status'] == 'executed' else source['source_gate_digest']))
             require(item == expected, 'carried provenance')
             require(dependency['complete'] and not intersects(dependency, changed), 'stale carried evidence')
-            origin = store.get(item['source_gate_digest'])
-            green_record(root, store, origin, repository, seen)
+            origin = historical_gate(store, item['source_gate_digest'], repository)
+            require(item['source_commit'] in first_parents(root, candidate), 'source ancestry')
             require(origin['record_digest'] == item['source_gate_digest'] and
                     origin['receipt']['candidate_commit'] == item['source_commit'] and
                     dict(item, status='executed', source_gate_digest=None) in origin['receipt']['items'],
@@ -329,6 +378,19 @@ def eligible_baseline(root, store, repository, candidate):
         try:
             index = store.get(store.change_gate_key(repository, commit))
             require(index['repository'] == repository and index['commit'] == commit, 'index provenance')
+            visited = set()
+            while True:
+                previous = index['record_digest']
+                require(previous not in visited, 'index cycle')
+                visited.add(previous)
+                successor = store.get(successor_key(repository, commit, previous))
+                if successor is None:
+                    break
+                require(set(successor) == {'schema', 'repository', 'commit', 'previous_record_digest', 'record_digest'}
+                        and successor['schema'] == 'veldo.change-successor/v1'
+                        and successor['repository'] == repository and successor['commit'] == commit
+                        and successor['previous_record_digest'] == previous, 'successor binding')
+                index = successor
             gate = store.get(index['record_digest'])
             check_seal(gate, GATE, ('repository', 'inventory', 'receipt', 'status', 'complete'))
             require(gate['repository'] == repository and gate['status'] == 'green' and gate['complete'] is True,
@@ -360,8 +422,8 @@ def select(root, store, repository, candidate, current, runtimes):
                 try:
                     source = old[key]
                     if source['status'] == 'carried':
-                        origin = store.get(source['source_gate_digest'])
-                        green_record(root, store, origin, repository)
+                        origin = historical_gate(store, source['source_gate_digest'], repository)
+                        require(source['source_commit'] in first_parents(root, candidate), 'source ancestry')
                         require(origin['record_digest'] == source['source_gate_digest'] and
                                 dict(source, status='executed', source_gate_digest=None) in origin['receipt']['items'],
                                 'original source binding')
@@ -423,6 +485,10 @@ def row_source(source, selected_rows):
     selected = {name.split()[-1] for name in selected_rows}
     tree = ast.parse(source)
     found = []
+    expressions = {id(node.value) for node in tree.body if isinstance(node, ast.Expr)}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'expect':
+            require(id(node) in expressions, 'row body is not independently addressable')
 
     class Rows(ast.NodeTransformer):
         def visit_Expr(self, node):
@@ -440,3 +506,30 @@ def row_source(source, selected_rows):
     tree = Rows().visit(tree)
     require(sorted(found) == sorted(selected) and len(found) == len(selected_rows), 'prior rows unavailable')
     return ast.unparse(ast.fix_missing_locations(tree)) + '\n'
+
+
+def successor_key(repository, commit, previous):
+    return digest(dict(schema='veldo.change-successor/v1', repository=repository,
+                       commit=commit, previous_record_digest=previous))
+
+
+def publish_gate(root, store, repository, current, receipt):
+    """Append authenticated green records, including successive gates of one commit.
+
+    The initial index stays immutable. Same-commit refreshes append a single
+    authenticated successor; concurrent conflicting publications fail closed.
+    """
+    gate = sealed(GATE, repository=repository, inventory=current, receipt=receipt, status='green', complete=True)
+    green_record(root, store, gate, repository)
+    commit = receipt['candidate_commit']
+    require(store.change_put(gate), 'gate publication')
+    if receipt['baseline_commit'] == commit:
+        previous = receipt['baseline_record_digest']
+        key = successor_key(repository, commit, previous)
+        index = dict(schema='veldo.change-successor/v1', repository=repository, commit=commit,
+                     previous_record_digest=previous, record_digest=gate['record_digest'])
+    else:
+        key = store.change_gate_key(repository, commit)
+        index = dict(repository=repository, commit=commit, record_digest=gate['record_digest'])
+    require(store.put(key, index), 'gate index publication')
+    return gate

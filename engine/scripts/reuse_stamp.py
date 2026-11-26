@@ -116,8 +116,6 @@ def main(argv):
     return 0
 
 
-if __name__ == '__main__':
-    sys.exit(main(sys.argv))
 
 
 def change_fields(root, store, gate, repository):
@@ -130,3 +128,7 @@ def change_fields(root, store, gate, repository):
     payload = dict(schema='veldo.change-landing/v1', commit=gate['receipt']['candidate_commit'],
                    repository=repository, gate_digest=gate['record_digest'], counts=counts)
     return dict(change_evidence=E.sign(payload, store.secret))
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

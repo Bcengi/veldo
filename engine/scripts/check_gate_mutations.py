@@ -1204,7 +1204,7 @@ class Workers:
                         # as its suite does in the unit stage (VELDO-0208, owner decision): the
                         # worker installs no boundary. It is never a declared case, so never traced.
                         leg = 'unconfined' if in_leg(self.leg, job['case'], selected_rows=job.get('selected_rows'),
-                                                    row_legs=job.get('row_legs')) else 'confined'
+                                                    row_legs=job.get('row_legs'), suite_leg=job.get('suite_leg')) else 'confined'
                         if leg == 'unconfined' and 'snapshot_root' in job:
                             raise Refused('driver_error', name + ': an unconfined case cannot be declared')
                         self.legs[name] = leg
@@ -1227,10 +1227,10 @@ class Workers:
                         # fresh worker's own tree nests in it (VELDO-0210 AC6, AC7).
                         worker_env = fixed_env if 'snapshot_root' in job else fresh_env
                         environment = worker_env(home, str(bindir) + ':/usr/bin:/bin')
-                        if job['case'].get('confined_only') is True and self.leg:
+                        if (job['case'].get('confined_only') is True or job.get('suite_leg')) and self.leg:
                             # The whole worker stays confined; only the authority's existing
                             # row split omits census rows assigned to its other leg.
-                            environment.update(VELDO_GATE_LEG='confined',
+                            environment.update(VELDO_GATE_LEG=leg,
                                                VELDO_GATE_UNCONFINED=','.join(self.leg['entries']),
                                                VELDO_GATE_DECLARATION=self.leg['declaration'])
                         if meter_fd is not None:
@@ -1332,18 +1332,24 @@ def worker(job, keep=()):
 ROWS_SCOPED_CASE = 'rows_scoped_unconfined_case'
 
 
-def in_leg(leg, case, *, selected_rows=None, row_legs=None):
-    """Whether this case runs in the unconfined leg: its suite is one the authority's list names
-    whole, unless its registry explicitly narrows it with confined_only=True. That flag can
-    only retain the worker boundary, never remove it. A case still runs its whole suite: a
-    rows-scoped suite without that explicit narrowing is refused rather than run unconfined.
-    Its target rows must actually pass the confined controls and reject the mutant."""
-    if case.get('confined_only') is True:
+def in_leg(leg, case, *, selected_rows=None, row_legs=None, suite_leg=None):
+    """Keep the authority's suite/row grant and an explicit confinement narrowing.
+
+    Scoped jobs install the declared leg's row split in Workers. Legacy jobs
+    cannot broaden a row grant into whole-suite unconfined execution.
+    """
+    if suite_leg not in (None, 'confined', 'unconfined'):
+        raise Refused('invalid_suite_leg', str(suite_leg))
+    if case.get('confined_only') is True or suite_leg == 'confined':
         return False
     suite = case['suite']
     if leg is None or not suite.endswith('.py') or suite[:-3] not in leg['suites']:
+        if suite_leg == 'unconfined':
+            raise Refused('invalid_suite_leg', 'suite is not in the authority unconfined list')
         return False
     if suite[:-3] in {e.split(':', 1)[0] for e in leg['entries'] if ':' in e}:
+        if suite_leg == 'unconfined':
+            return True  # Workers installs the authority's row split in its environment.
         if selected_rows is not None and row_legs is not None:
             assignments = {row_legs.get(row) for row in selected_rows}
             if assignments == {'confined'}:
@@ -1426,11 +1432,16 @@ def publish_case_dependencies(root, head, cases, results, workers, *, store=None
 
 def run_stage(root, expected_common, capacities=None, findings=None, names=None, log_dir=None,
               drivers=None, parallel=None, diff_dir=None, force_fresh=False, leg=None, measure=False,
-              admission=None, admit=False):
+              admission=None, admit=False, change_context=None):
     """expected_common is the trusted Git common directory of root, named by the caller that owns
     root: the authority's own for the gate, a fixture's own for the fixture's creator. leg is the
     authority's unconfined leg (gate_legs.mutation_leg), None for every case confined. Only
     the authority CLI sets measure=True; library/fixture drives do not write owner timings."""
+    if change_context is not None:
+        if findings or names or drivers or force_fresh:
+            raise Refused('invalid_change_scope', 'diagnostic selectors cannot supply a complete change plan')
+        return run_change_stage(root, expected_common, change_context, capacities=capacities,
+                                parallel=parallel, leg=leg, admission=admission, admit=admit)
     started = time.monotonic()
     workers = Workers(None, parallel=parallel, admission=admission)
     workers.leg = leg
@@ -1881,12 +1892,10 @@ def main():
     return 0 if receipt['status'] == 'passed' else 1
 
 
-if __name__ == '__main__':
-    sys.exit(main())
 
 
 def run_selected_cases(workers, cases, directory, frozen, *, store, commit, changed,
-                       configurations, registered_cases, prior_kills=None, prior_controls=None):
+                       configurations, registered_cases, prior_kills=None, prior_controls=None, claims=None):
     """Increment 3 coordinator seam. Increment 5 supplies the authenticated selection.
 
     Uses the existing confined workers, reservations and cleanup, with controls
@@ -1910,7 +1919,9 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
             continue
         def execute_controls(members):
             jobs = control_jobs(members, lambda case: group, {},
-                                {case['identity']: WORKER_BUDGET for case in members})
+                                {case['identity']: WORKER_BUDGET for case in members}, claims)
+            for job in jobs.values():
+                job['suite_leg'] = suite['leg']
             observations = workers.run(jobs, directory, frozen)
             baseline, noop = (observations[group + ':' + mode]['result']['observation']
                               for mode in ('baseline', 'noop'))
@@ -1938,7 +1949,9 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
                         C.row_source((frozen / 'scripts/suites' / case['suite']).read_text(), selected)
                     except ValueError:
                         return None
-                job = dict(case=case, mode='mutant', budget_seconds=WORKER_BUDGET)
+                job = dict(case=case, mode='mutant', budget_seconds=WORKER_BUDGET, suite_leg=suite['leg'])
+                if claims is not None:
+                    job['claim'] = claims[case['identity']]
                 if selected is not None:
                     job['selected_rows'] = selected
                 completed = workers.run({case['identity']: job}, directory, frozen)[case['identity']]['result']
@@ -1952,11 +1965,94 @@ def run_selected_cases(workers, cases, directory, frozen, *, store, commit, chan
             previous = store.get(prior_kills[case['identity']]) if case['identity'] in prior_kills else None
             dependencies = [shared['dependency'], *(a['observation']['dependency']
                             for a in result['attempts'] if 'observation' in a)]
-            dependency = O.combine_dependencies(dependencies, case['identity'], commit,
+            dependency = O.combine_dependencies(dependencies, C.identity('case', 'mutation', suite['leg'],
+                case['suite'], case['driver'], case['name']), commit,
                 prior=previous['dependency'] if previous else None, rows=result['execution_scope'] == 'rows')
             C.require(not workers.active and not workers.meters and not workers.owned_snapshots,
                       'publication before cleanup')
             envelope = C.sealed(M.KILL_RECORD, source_commit=commit, dependency=dependency, result=result)
-            C.require(store.change_put(envelope), 'kill publication')
-            results[case['identity']] = envelope
+            C.require(store.change_put(dependency) and store.change_put(envelope), 'kill publication')
+            result_record = C.sealed(C.RESULT_V2, item_id=dependency['item_id'], source_commit=commit,
+                status='passed', complete=True, dependency_record_digest=dependency['record_digest'],
+                execution_record_digest=envelope['record_digest'])
+            C.require(store.change_put(result_record), 'mutation result publication')
+            results[case['identity']] = dict(item_id=dependency['item_id'], status='executed',
+                dependency_record_digest=dependency['record_digest'], result_digest=result_record['record_digest'],
+                source_commit=commit, source_gate_digest=None)
     return results
+
+
+def run_change_stage(root, expected_common, context, *, capacities=None, parallel=None, leg=None,
+                     admission=None, admit=False):
+    """Authority-only mutation child of the common plan; no CLI enables it yet."""
+    reuse = load(ROOT / 'scripts/case_reuse.py')
+    session = reuse.Session.for_changes(root, context['store'], context['repository'],
+        context['candidate_commit'], context['inventory'], context['runtimes'])
+    C, store = session.changes, context['store']
+    cases = inventory(root, expected_common)
+    configurations = context['configurations']
+    C.require(set(configurations) == {c['identity'] for c in cases}, 'case configuration inventory')
+    selected = {i['item_id']: i for i in session.plan['items']}
+    identities = {c['identity']: C.identity('case', 'mutation',
+        reuse.M.suite_identity(c, configurations[c['identity']])['leg'], c['suite'], c['driver'], c['name']) for c in cases}
+    C.require(set(identities.values()) <= set(selected), 'mutation selection inventory')
+    fresh = [c for c in cases if selected[identities[c['identity']]]['status'] == 'run']
+    carried = [selected[identities[c['identity']]]['evidence'] for c in cases if c not in fresh]
+    C.require(all(item and item['status'] == 'carried' for item in carried), 'mutation carry inventory')
+    files = read_inputs(root, expected_common)
+    head = git(root, expected_common, 'rev-parse', 'HEAD')
+    C.require(head == context['candidate_commit'], 'candidate changed')
+    workers = Workers(None, parallel=parallel, admission=admission)
+    workers.leg = leg
+    try:
+        if admit:
+            workers.admission = Admission.authority()
+            if parallel is None:
+                workers.parallel = worker_count()
+        claims = ({c['identity']: CaseClaims().claim(c, C.digest([c, configurations[c['identity']]]))
+                   for c in cases} if workers.admission else None)
+        prior_kills, prior_controls = {}, {}
+        if session.plan['baseline_record_digest'] is not None:
+            baseline = C.historical_gate(store, session.plan['baseline_record_digest'], context['repository'])
+            old = {i['item_id']: i for i in baseline['receipt']['items']}
+            for case in cases:
+                try:
+                    previous = store.get(old[identities[case['identity']]]['result_digest'])
+                    kill = store.get(previous['execution_record_digest'])
+                    C.require(kill['result']['case'] == case, 'prior case definition')
+                    prior_kills[case['identity']] = previous['execution_record_digest']
+                    group = C.digest(reuse.M.suite_identity(case, configurations[case['identity']]))
+                    prior_controls[group] = kill['result']['control_receipt_digest']
+                except (KeyError, TypeError, ValueError):
+                    continue  # an unusable prior means a full case and fresh controls
+        executed = {}
+        if fresh:
+            with tempfile.TemporaryDirectory(prefix='veldo-selected-mutations-') as temporary:
+                directory = Path(temporary)
+                frozen = directory / 'input'
+                frozen_common = snapshot(root, expected_common, frozen, files, head)
+                C.require(inventory(frozen, frozen_common) == cases, 'registry changed while snapshotting')
+                workers.resources = SuiteResources.from_root(frozen, capacities)
+                executed = run_selected_cases(workers, fresh, directory, frozen, store=store, commit=head,
+                    changed=session.plan['changed_paths'], configurations=configurations, registered_cases=cases,
+                    prior_kills=prior_kills, prior_controls=prior_controls, claims=claims)
+        C.require(inputs_unchanged(root, expected_common, files, head), 'inputs changed during stage')
+        items = [*carried, *executed.values()]
+        for item in items:
+            C.item_evidence(store, item)
+        fallbacks = sum(len(store.get(store.get(i['result_digest'])['execution_record_digest'])['result']['attempts']) == 2
+                        for i in executed.values())
+        return dict(schema='veldo.mutation-stage/v2', status='passed', items=items,
+                    registered=len(cases), executed=len(executed), carried=len(carried),
+                    worker_invocations=workers.invocations, peak_workers=workers.peak, fallback_count=fallbacks,
+                    worker_seconds=sum(o['elapsed'] for o in workers.outcomes), worker_outcomes=workers.outcomes)
+    finally:
+        errors = workers.cleanup()
+        if workers.admission:
+            workers.admission.close()
+        if errors:
+            raise Refused('worker_cleanup_error', str(errors))
+
+
+if __name__ == '__main__':
+    sys.exit(main())

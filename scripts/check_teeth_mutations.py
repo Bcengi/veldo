@@ -19117,6 +19117,28 @@ def cases():
         "and not change_record(payload['result'], key)", 'and True', ['authority-dependency'])
     result[-1]['dir'] = '.veldo'
 
+    selection367('worker-forwarding', 'reuse_worker.py',
+        "**({'selected_rows': job['selected_rows']} if 'selected_rows' in job else {})", '**{}', ['worker-rows'])
+    selection367('observer-bodies', 'mutation_observer.py',
+        "source = dependency_module('gate_changes')['row_source'](source, selected_rows)",
+        'source = source', ['observer-rows'])
+    selection367('control-source', 'mutation_reuse.py',
+        "C.require(record['source_commit'] == record['dependency']['observed_commit'], 'control source')",
+        "C.require(True, 'control source')", ['control-forgery'])
+    selection367('inactive', 'gate_changes.py',
+        'SELECTION_ENABLED = False', 'SELECTION_ENABLED = True', ['inactive'])
+    selection367('landing-rows', 'gate_changes.py',
+        '        gate.validate_result(mutation, case, store=store)\n',
+        '        pass  # defect: authenticated summary replaces row validation\n', ['landing-missing-rows'])
+
+    selection367('dispatch-carried', 'gate_changes.py',
+        "execute(i['item_id']) for i in plan['items'] if i['status'] == 'run'",
+        "execute(i['item_id']) for i in plan['items']", ['dispatch-carried'])
+
+    selection367('runtime-local', 'gate_changes.py',
+        "require(dependency['runtime_digest'] == runtimes.get(key), 'runtime changed')",
+        "require(True, 'runtime changed')", ['runtime-local'])
+
     # Suite 48's registered falsifiers target its ordinary confined rows, not the
     # ptrace census composite. Explicitly retain the worker boundary for the whole
     # suite; its census claim still stands down there, and suite 113 proves it in
@@ -20049,6 +20071,8 @@ def worker(case, mutant=None, *, selected_rows=None):
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
         if selected_rows is not None:
             source = _coordinator().load(ROOT / 'scripts/gate_changes.py').row_source(source, selected_rows)
+            if any(ok is not True for _, ok in rows):
+                raise RuntimeError('selected row setup failed')
             rows.clear()
             details.clear()
         ns['__suite_file__'] = str(suite)

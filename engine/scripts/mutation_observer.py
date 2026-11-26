@@ -393,6 +393,8 @@ def worker(case, mutant=None, *, isolate_runtime=True, selected_rows=None):
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
         if selected_rows is not None:
             source = dependency_module('gate_changes')['row_source'](source, selected_rows)
+            if any(ok is not True for _, ok in rows):
+                raise RuntimeError('selected row setup failed')
             rows.clear()  # setup ran, but selected observations belong to the requested rows
             details.clear()
         ns['__suite_file__'] = str(suite)
@@ -425,7 +427,8 @@ def worker(case, mutant=None, *, isolate_runtime=True, selected_rows=None):
             'failed_rows': [name for name, ok in rows if not ok],
             'failed_details': details,
             'targets': {label: [ok for name, ok in rows if name.split()[-1] == label]
-                        for label in case['rows']}}
+                        for label in (case['rows'] if selected_rows is None else
+                                      [name.split()[-1] for name in selected_rows])}}
 
 # VELDO-0367: observations never authorize selection. Python audit events are
 # useful attribution, but are NOT a complete filesystem trace (notably stat and

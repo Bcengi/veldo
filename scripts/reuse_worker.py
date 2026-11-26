@@ -120,7 +120,7 @@ def observe(gate, owner, job, root):
     mutant = prepared['mutant']
     observation = owner.worker(case, str(mutant) if mutant else None,
                                isolate_runtime='runtime_paths' not in job and 'snapshot_root' not in job,
-                               selected_rows=job.get('selected_rows'))
+                               **({'selected_rows': job['selected_rows']} if 'selected_rows' in job else {}))
     if case['driver'] == gate.DRIVERS[1]:
         matches = observation['targets'][case['rows'][0]]
         observation.update(case=case['name'], row=case['rows'][0],
