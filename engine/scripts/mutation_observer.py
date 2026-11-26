@@ -345,10 +345,13 @@ def private_runtime():
 
 
 def worker(case, mutant=None, *, isolate_runtime=True, selected_rows=None):
-    """Capture every assertion, including the shared preamble, with exact row identities."""
+    """Capture every assertion, including the shared preamble, with exact row identities.
+
+    Dependencies are observed only when the coordinator asked for it: reuse_worker then names the
+    observed commit in VELDO_DEPENDENCY_COMMIT. Without it no audit hook is installed."""
     shared = ROOT / 'scripts/suites/shared.py'
     dependency = DependencyReads(ROOT, discover_git=False, translate=(
-        (lambda path: materialized_origin(case, mutant, path, ROOT)) if mutant else None)).start()
+        (lambda path: materialized_origin(case, mutant, path, ROOT)) if mutant else None)).start() if 'VELDO_DEPENDENCY_COMMIT' in os.environ else None
     rows = []
     opened = set()
     auditing = [True]
@@ -440,19 +443,22 @@ def worker(case, mutant=None, *, isolate_runtime=True, selected_rows=None):
             waits.run_ended()
     faulthandler.cancel_dump_traceback_later()
     auditing[0] = False
-    dependency.stop()
-    dependency.read(ROOT / ('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')) / case['module'])
-    for definition in ('mutation_observer.py', 'reuse_worker.py', 'gate_changes.py', 'gate_fixtures.py'):
-        # These authority modules were loaded before confinement. Recording their
-        # names must not probe absent counterparts in a declared input snapshot.
-        dependency.paths.add('scripts/' + definition)
-    commit = os.environ.get('VELDO_DEPENDENCY_COMMIT', '0' * 40)
-    if commit == '0' * 40:
-        dependency.unknown('observed commit unavailable')
-    changes = dependency_module('gate_changes')
-    item_id = changes['identity']('case', 'mutation', os.environ.get('VELDO_DEPENDENCY_LEG', 'confined'),
-                                  case['suite'], case.get('driver', ''), case['name'])
-    return {'dependency': dependency.record(item_id, commit), 'opened_files': sorted(opened),
+    claim = {}
+    if dependency is not None:
+        dependency.stop()
+        dependency.read(ROOT / ('scripts/fixtures' if case.get('fixture') else case.get('dir', '.veldo')) / case['module'])
+        for definition in ('mutation_observer.py', 'reuse_worker.py', 'gate_changes.py', 'gate_fixtures.py'):
+            # These authority modules were loaded before confinement. Recording their
+            # names must not probe absent counterparts in a declared input snapshot.
+            dependency.paths.add('scripts/' + definition)
+        commit = os.environ.get('VELDO_DEPENDENCY_COMMIT', '0' * 40)
+        if commit == '0' * 40:
+            dependency.unknown('observed commit unavailable')
+        changes = dependency_module('gate_changes')
+        item_id = changes['identity']('case', 'mutation', os.environ.get('VELDO_DEPENDENCY_LEG', 'confined'),
+                                      case['suite'], case.get('driver', ''), case['name'])
+        claim = {'dependency': dependency.record(item_id, commit)}
+    return {**claim, 'opened_files': sorted(opened),
             'failure_kinds': {name: 'terminal' if name in terminal_rows else 'assertion'
                               for name, ok in rows if not ok},
             'count': len(rows), 'observations': rows,
@@ -473,6 +479,19 @@ def dependency_module(name):
     if name not in DEPENDENCY_MODULES:
         DEPENDENCY_MODULES[name] = runpy.run_path(str(Path(__file__).with_name(name + '.py')))
     return DEPENDENCY_MODULES[name]
+
+
+def observing():
+    """Whether this installation observes dependencies at all: only while change selection is on.
+
+    The weekly seed is a run under that switch (gate_weekly.main and gate_execution.main refuse
+    without it). With the switch off no tracer, audit hook, commit lookup or publication runs,
+    so a gate behaves as it did before VELDO-0367.
+    """
+    try:
+        return dependency_module('gate_changes').get('SELECTION_ENABLED') is True
+    except Exception:
+        return False
 
 
 class DependencyReads:

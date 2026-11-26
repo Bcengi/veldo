@@ -39,6 +39,9 @@ def _v367_observer():
         for name in ('gate_fixtures.py', 'gate_changes.py', 'gate_reuse.py'):
             shutil.copyfile(ROOT / 'scripts' / name, authority / 'scripts' / name)
         shutil.copyfile(ROOT / '.veldo/reuse_evidence.py', authority / '.veldo/reuse_evidence.py')
+        # Observation runs only while change selection is on, so this authority has it on.
+        switch = authority / 'scripts/gate_changes.py'
+        switch.write_text(switch.read_text().replace('SELECTION_ENABLED = False', 'SELECTION_ENABLED = True'))
         O = load(authority / 'scripts/mutation_observer.py')
         G = load(authority / 'scripts/gate_legs.py')
         W = load(authority / 'scripts/reuse_worker.py')
@@ -533,8 +536,13 @@ def _v367_observer():
         main = sys.modules['__main__']
         old_ledger = getattr(main, '_LEDGER', None)
         fd = os.open(top / 'suite-ledger', os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
+        named = os.environ.get('VELDO_DEPENDENCY_COMMIT')
         try:
             main._LEDGER = fd
+            # A stage that observes names its commit; without the name nothing is captured.
+            os.environ.pop('VELDO_DEPENDENCY_COMMIT', None)
+            row('suite-capture-needs-observing-stage', namespace['_dependency_capture']() is None)
+            os.environ['VELDO_DEPENDENCY_COMMIT'] = '0' * 40
             capture = namespace['_dependency_capture']()
             namespace['__suite_file__'] = 'first.py'
             (repo / 'data/input').read_text()
@@ -546,6 +554,10 @@ def _v367_observer():
         finally:
             main._LEDGER = old_ledger
             os.close(fd)
+            if named is None:
+                os.environ.pop('VELDO_DEPENDENCY_COMMIT', None)
+            else:
+                os.environ['VELDO_DEPENDENCY_COMMIT'] = named
         claims = [json.loads(line) for line in (top / 'suite-ledger').read_text().splitlines()]
         row('suite-attribution', len(claims) == 2 and
             {tuple(c['result']['rows']) for c in claims} == {(1, 0), (0, 1)} and

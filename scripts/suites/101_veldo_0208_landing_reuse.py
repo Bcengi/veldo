@@ -2385,7 +2385,9 @@ def _v208_mutation_leg():
         for name in ('listed', 'unlisted'):
             (authority / 'scripts/suites' / (name + '.py')).write_text(
                 'import os\nmodule = ROOT / ".veldo" / "fixture.py"\n'
-                'try:\n    (Path(%r) / ("%s." + str(os.getpid()))).write_text("x")\nexcept OSError:\n    pass\n'
+                'try:\n    (Path(%r) / ("%s." + str(os.getpid()))).write_text(\n'
+                '        next(l for l in open("/proc/self/status") if l.startswith("TracerPid:")).split()[1])\n'
+                'except OSError:\n    pass\n'
                 'expect("fixture/teeth", "answer = True" in module.read_text())\n' % (str(outside), name))
         (authority / '.veldo/fixture.py').write_text('answer = True')
         registry = ('\ndef cases():\n    return %r\n' % [
@@ -2418,11 +2420,18 @@ def _v208_mutation_leg():
                                  env=dict({k: v for k, v in os.environ.items() if not k.startswith('VELDO_GATE_')},
                                           **forged), pass_fds=launcher_fds())
             markers = sorted(m.name.split('.')[0] for m in outside.iterdir())
+            tracers[:] = [m.read_text() for m in outside.iterdir()]
             document = json.loads(receipt.read_text()) if receipt.exists() else {}
             return ran, markers, document
 
+        tracers = []  # each unconfined worker's TracerPid, as its suite read it while it ran
         record = top / 'record'
         ran, markers, receipt = stage(record)
+        # With change selection off a worker starts as it did before VELDO-0367: under no tracer.
+        switched = subprocess.run([sys.executable, '-I', '-S', str(authority / 'scripts/gate_changes.py'), '--enabled'],
+                                  capture_output=True, text=True).stdout.strip()
+        expect('VELDO-0367 off/mutation-unconfined-worker-starts-untraced: ' + repr((switched, tracers)),
+               switched == 'off' and len(tracers) >= 4 and set(tracers) == {'0'})
         output = ran.stdout + ran.stderr
         digest = 'sha256:' + hashlib.sha256(authority_list.read_bytes()).hexdigest()
         # Each worker by the suite it ran (controls are named by suite, mutants by case) and its leg.

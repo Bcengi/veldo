@@ -75,7 +75,10 @@ def main():
     owner = load(authority / 'scripts/mutation_observer.py')
     owner.dependency_module('gate_changes')  # authority schema before its path becomes unreadable
     owner.ROOT = root
-    dependency_context(root, mode, commit=job.get('observed_commit'), declared='snapshot_root' in job)
+    os.environ.pop('VELDO_DEPENDENCY_COMMIT', None)
+    if job.get('observe') is True:
+        # Only a coordinator that observes dependencies asks: never while change selection is off.
+        dependency_context(root, mode, commit=job.get('observed_commit'), declared='snapshot_root' in job)
     ownership = load(authority / 'scripts/mutation_ownership.py')
     # Ownership is persisted from the authority copy before any candidate code runs, so the
     # coordinator can reap this worker's allocations even after SIGKILL. Candidate code can

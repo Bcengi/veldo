@@ -800,9 +800,11 @@ class TakeOpened:
         self.directory = Path(tempfile.mkdtemp(prefix='veldo-opened-'))
         self.ledger = self.directory / 'ledger'
         self.fd = os.open(str(self.ledger), os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_APPEND | os.O_CLOEXEC, 0o600)
-        self.watch = OpenWatch(root, areas=('.',))
+        self.watch = OpenWatch(root, areas=('.',)) if self.observer else OpenWatch(root)
 
     def env(self, env):
+        if not self.observer:
+            return dict(env, **{OPENED_FD: str(self.fd)})
         return dict(env, **{OPENED_FD: str(self.fd), 'VELDO_DEPENDENCY_COMMIT': self.commit,
                             'VELDO_DEPENDENCY_STAGE': self.stage})
 
@@ -946,13 +948,19 @@ class TakeOpened:
 
 
 def dependency_observer():
+    """The observer, or None while change selection is off: a stage then starts and is recorded
+    exactly as it was before VELDO-0367 (no tracer, no whole-tree watch, no commit lookup)."""
     source = HERE / 'mutation_observer.py'
     if not source.is_file() or not (HERE / 'gate_changes.py').is_file():
         return None
     spec = importlib.util.spec_from_file_location('gate_dependency_observer', source)
     observer = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(observer)
-    return observer
+    return observer if observing(observer) else None
+
+
+def observing(observer):
+    return observer.observing()
 
 
 

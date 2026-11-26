@@ -1194,7 +1194,10 @@ class Workers:
                     if job.get('declared_case'):
                         self.owned_snapshots[name] = directory / 'cases' / str(self.invocations)
                         job.update(self.case_reuse.prepare(job['case'], self.owned_snapshots[name]))
-                    job['observed_commit'] = getattr(self, 'observed_commit', None)
+                    if observing():
+                        # Asks the worker to observe its dependencies; absent while selection is off.
+                        job['observed_commit'] = getattr(self, 'observed_commit', None)
+                        job['observe'] = True
                     jobpath = home / 'job.json'
                     jobpath.write_bytes(canonical(job))
                     out, err = (open(directory / (str(self.invocations) + '-' + f), 'w+b')
@@ -1234,7 +1237,10 @@ class Workers:
                                 'worker' if leg == 'confined' else 'unconfined',
                                 str(worker_root), str(ledger), str(jobpath)]
                         tracer = load(ROOT / 'scripts/case_trace.py')
-                        if 'snapshot_root' in job or (leg == 'unconfined' and Path('/usr/bin/strace').is_file()
+                        # A declared case is always traced (VELDO-0217). An unconfined worker is
+                        # traced only to observe its dependencies, so never while selection is off.
+                        if 'snapshot_root' in job or (leg == 'unconfined' and observing()
+                                and Path('/usr/bin/strace').is_file()
                                 and tracer.compatible(ROOT, [job['case']['suite']])):
                             argv = tracer.command(directory / ('trace-' + str(self.invocations)), argv)
                         # A worker reads its job from its file, never from the coordinator's
@@ -1420,6 +1426,12 @@ def snapshot(root, expected_common, destination, files, head):
 
 
 
+def observing():
+    """mutation_observer.observing: dependency observation runs only while change selection is on."""
+    source = ROOT / 'scripts/mutation_observer.py'
+    return source.is_file() and _load_audit(source).observing()
+
+
 def publish_case_dependencies(root, head, cases, results, workers, *, store=None):
     """Publish observations only after the authority has reaped worker allocations."""
     # Fixture doubles of Workers or load stand for a coordinator without observation (VELDO-0367 N2).
@@ -1521,11 +1533,12 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             receipt['case_claims'] = claims
             receipt['mutation_floor'] = admission.floor
         head = git(root, expected_common, 'rev-parse', 'HEAD')
-        try:
-            workers.observed_commit = _load_audit(ROOT / 'scripts/mutation_observer.py').clean_commit(root)
-        except (OSError, AttributeError) as observation_error:
-            print('dependency observation not stored: %s' % observation_error, file=sys.stderr)
-            workers.observed_commit = '0' * 40
+        workers.observed_commit = '0' * 40
+        if observing():
+            try:
+                workers.observed_commit = _load_audit(ROOT / 'scripts/mutation_observer.py').clean_commit(root)
+            except (OSError, AttributeError) as observation_error:
+                print('dependency observation not stored: %s' % observation_error, file=sys.stderr)
         receipt['input_digest'] = digest({'files': file_identity(files), 'head': head})
         receipt['implementation_digest'] = hashlib.sha256(
             files['scripts/check_gate_mutations.py'][1]).hexdigest()
@@ -1761,7 +1774,7 @@ def run_stage(root, expected_common, capacities=None, findings=None, names=None,
             for case in cases:
                 validate_result(results[case['identity']], case)
         workers.check()
-        if fresh:
+        if fresh and observing():
             try:
                 publish_case_dependencies(root, head, fresh, results, workers)
             except (OSError, ValueError, KeyError, TypeError, AttributeError) as observation_error:

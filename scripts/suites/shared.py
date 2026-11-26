@@ -45,6 +45,9 @@ def _dependency_capture():
     spec = importlib.util.spec_from_file_location('suite_dependency_observer', source)
     observer = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(observer)
+    if 'VELDO_DEPENDENCY_COMMIT' not in os.environ:
+        # The stage names an observed commit only while change selection is on (gate_legs.TakeOpened).
+        return None
     captures, results = {}, {}
     enabled = [True]
 
