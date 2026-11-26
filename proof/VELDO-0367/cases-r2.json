@@ -1,0 +1,31 @@
+{
+ "cases": [
+  "observer367-coordinator-cleanup",
+  "observer367-coordinator-cleanup-failed",
+  "observer367-coordinator-union",
+  "observer367-anchored-markers",
+  "observer367-data-buffers",
+  "observer367-thread-fs",
+  "observer367-private-run-files",
+  "observer367-copy-origin",
+  "observer367-fixture-tree-origin",
+  "observer367-stand-in-ledger",
+  "observer367-dirty-publication",
+  "observer367-mixed-stamp",
+  "observer367-suite-alone",
+  "observer367-suite-setup-only",
+  "observer367-unclaimed-suite",
+  "observer367-trace-session",
+  "repair367-row-runtime",
+  "repair367-carried-controls-complete",
+  "selection367-control-source-range",
+  "weekly367-reservation-owner",
+  "weekly367-dead-owner",
+  "weekly367-recover-reservation",
+  "weekly367-thread-group",
+  "weekly367-two-callers",
+  "enable367-chain-select",
+  "enable367-chain-green",
+  "enable367-runtime-authority"
+ ]
+}
