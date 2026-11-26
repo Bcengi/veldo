@@ -18966,6 +18966,39 @@ def cases():
     baseline367('result-completeness', 'gate_reuse.py',
         "and result['complete'] is True", "and True", ['result-completeness'])
 
+    # VELDO-0367 increment 2: every case runs the real single-case coordinator.
+    def observer367(name, module, old, new, rows):
+        add(367, 'observer367-' + name, '163_veldo_0367_observer.py', module, old, new,
+            ['observer/' + row for row in rows])
+        result[-1]['dir'] = 'scripts'
+        result[-1]['confined_only'] = True
+
+    observer367('python-reads', 'mutation_observer.py',
+        "            if event == 'open':", "            if event == 'never-open':", ['python-import'])
+    observer367('directories', 'mutation_observer.py',
+        'self.directories.add(relative)', 'pass  # defect: discovery omitted', ['discovery'])
+    observer367('missing', 'mutation_observer.py',
+        'self.absent_paths.add(relative)', 'pass  # defect: absent probes omitted', ['missing'])
+    observer367('symlink', 'mutation_observer.py',
+        'for candidate in {path, resolved}:', 'for candidate in {resolved}:', ['symlink'])
+    observer367('child', 'mutation_observer.py',
+        "self.unknown('native child coverage unavailable')", 'pass  # defect: child coverage omitted', ['child-unknown'])
+    observer367('lost-events', 'mutation_observer.py',
+        'if dropped or not seen or seen != ended:', 'if not seen or seen != ended:', ['lost-events'])
+    observer367('incomplete-empty', 'mutation_observer.py',
+        "self.unknown('incomplete trace: ' + str(error))", 'pass  # defect: incomplete becomes empty',
+        ['incomplete-not-empty', 'empty-trace', 'unfinished'])
+    observer367('native-path', 'mutation_observer.py',
+        'self.read(path, kind, success)', 'pass  # defect: native reads lost', ['trace-confined', 'trace-unconfined'])
+    observer367('rows-shrink', 'mutation_observer.py',
+        'records.append(prior)', 'pass  # defect: row run discards complete suite reads', ['rows-retain'])
+    observer367('result-lost', 'mutation_observer.py',
+        'dependency=dependency, result=result)', 'dependency=dependency, result={})', ['atomic-result'])
+    observer367('stage-native', 'gate_legs.py',
+        'own.read(self.root / path)', 'pass  # defect: stage child reads omitted', ['native-confined', 'native-unconfined'])
+    observer367('worker-publication', 'reuse_worker.py',
+        '    owner.publish_dependencies(store, dependency,', '    (lambda *args: None)(store, dependency,', ['worker-published'])
+
     # Suite 48's registered falsifiers target its ordinary confined rows, not the
     # ptrace census composite. Explicitly retain the worker boundary for the whole
     # suite; its census claim still stands down there, and suite 113 proves it in
@@ -18987,6 +19020,8 @@ def cases():
         # copy directly. Keep that copy's imports complete without changing its fixture grants.
         if case['module'] in ('agent_sandbox.py', 'run_scope.py', 'mutation_observer.py') and not case.get('siblings'):
             case['companions'] = sorted(set(case.get('companions', ())) | {'gate_fixtures.py'})
+        if case['module'] == 'mutation_observer.py' and not case.get('siblings'):
+            case['companions'] = sorted(set(case.get('companions', ())) | {'gate_changes.py', 'case_trace.py'})
         # The re-land suite also loads the isolated containment copy directly to
         # check its release parser. Its import loads the adjacent timers table.
         if case['module'] == 'control_containment.py' and not case.get('siblings'):

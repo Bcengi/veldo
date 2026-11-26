@@ -635,7 +635,7 @@ class OpenWatch:
     """The files under the candidate's scripts/ and proof/ opened while this watch is held, as the kernel
     reports them to this process. Event driven: the reader thread wakes on an event or on stop()."""
 
-    def __init__(self, root):
+    def __init__(self, root, areas=OPENED_AREAS):
         import ctypes
         self.root = Path(root).resolve()
         self.libc = ctypes.CDLL(None, use_errno=True)
@@ -644,7 +644,7 @@ class OpenWatch:
             raise OSError(ctypes.get_errno(), 'inotify_init1')
         self.directories, self.opened, self.late, self.overflowed = {}, set(), set(), False
         self.wake, self.waker = os.pipe2(os.O_CLOEXEC)
-        for area in OPENED_AREAS:
+        for area in areas:
             if (self.root / area).is_dir():
                 self._tree(self.root / area, late=False)
         self.thread = threading.Thread(target=self._read, name='veldo-opened-watch', daemon=True)
@@ -703,7 +703,7 @@ class OpenWatch:
                     if directory.rsplit('/', 1)[-1] == '__pycache__' and '.cpython-' in name:
                         # The module's compiled form was read in place of its source.
                         parent, name = directory.rsplit('/', 1)[0], name.split('.cpython-', 1)[0] + '.py'
-                    self.opened.add(parent + '/' + name)
+                    self.opened.add((parent + '/' if parent != '.' else '') + name)
 
     def stop(self):
         """What was seen: (opened paths, directories made meanwhile, whether the kernel's queue overflowed)."""
@@ -777,28 +777,43 @@ def publish_opened(target, parts):
 class TakeOpened:
     """The authority's taking of the record for one stage run: the ledger and the watch, then the record."""
 
-    def __init__(self, root, target):
-        self.root, self.target = Path(root), Path(target)
+    def __init__(self, root, target, stage='unit', store=None):
+        self.root, self.target = Path(root), Path(target) if target else None
+        self.stage, self.store = stage, store
+        self.observer = dependency_observer()
+        pin = subprocess.run(['git', '-C', str(root), 'rev-parse', 'HEAD'], capture_output=True, text=True)
+        self.commit = pin.stdout.strip() if pin.returncode == 0 else '0' * 40
         self.directory = Path(tempfile.mkdtemp(prefix='veldo-opened-'))
         self.ledger = self.directory / 'ledger'
         self.fd = os.open(str(self.ledger), os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_APPEND | os.O_CLOEXEC, 0o600)
-        self.watch = OpenWatch(root)
+        self.watch = OpenWatch(root, areas=('.',))
 
     def env(self, env):
-        return dict(env, **{OPENED_FD: str(self.fd)})
+        return dict(env, **{OPENED_FD: str(self.fd), 'VELDO_DEPENDENCY_COMMIT': self.commit,
+                            'VELDO_DEPENDENCY_STAGE': self.stage})
 
     def finish(self, stage, code):
         """Write the record; the stage's status, red when the ledger holds a line no dispatcher writes."""
         opened, late, overflowed = self.watch.stop()
         os.close(self.fd)
         try:
-            record, dropped = opened_record(self.root, self.ledger.read_text(), opened, late, overflowed)
-        except (Invalid, OSError) as error:
+            claims = self.ledger.read_text()
+            legacy, dependencies = [], []
+            for line in claims.splitlines():
+                entry = json.loads(line)
+                if isinstance(entry, dict) and set(entry) == {'dependency_claim', 'result'}:
+                    dependencies.append(entry)
+                else:
+                    legacy.append(line)
+            record, dropped = opened_record(self.root, '\n'.join(legacy), opened, late, overflowed)
+            self.publish(stage, code, dependencies, opened, late, overflowed)
+        except (Invalid, OSError, ValueError, KeyError, TypeError) as error:
             print('   %s: the opened-files record was not taken: %s; the stage is RED' % (stage, error), flush=True)
             return 1
         finally:
             shutil.rmtree(str(self.directory), ignore_errors=True)
-        write_opened(self.target, record)
+        if self.target is not None:
+            write_opened(self.target, record)
         print('   %s: opened-files record taken by the authority: %d suites, %d files%s%s' % (
             stage, len(record), len({p for paths in record.values() for p in paths}),
             ''.join('; %d claim%s dropped (%s)' % (n, '' if n == 1 else 's', why.replace('_', ' '))
@@ -808,11 +823,55 @@ class TakeOpened:
         return code
 
 
+    def publish(self, stage, code, claims, opened, late, overflowed):
+        if self.observer is None:
+            return  # old fixture installations have no dependency schema
+        observer = self.observer
+        changes = observer.dependency_module('gate_changes')
+        reuse = observer.dependency_module('gate_reuse')
+        store = self.store or reuse['_suite_store'](self.root, os.environ)
+        if store is None:
+            raise OSError('dependency Store unavailable')
+        own = observer.DependencyReads(self.root)
+        own.unknown('native attribution and failed lookup coverage unavailable')
+        if self.commit == '0' * 40:
+            own.unknown('observed commit unavailable')
+        if overflowed or late:
+            own.unknown('lost events or incomplete directory coverage')
+        for path in opened:
+            own.read(self.root / path)
+        records = []
+        for claim in claims:
+            dependency = changes['validate_dependency'](claim['dependency_claim'])
+            if dependency['observed_commit'] != self.commit:
+                raise Invalid('dependency commit differs from executing stage')
+            # Python claims cannot certify children or missing kernel events.
+            if dependency['complete']:
+                raise Invalid('Python dependency claim asserts complete native coverage')
+            records.append(dependency)
+            observer.publish_dependencies(store, dependency, dict(claim['result'], stage_returncode=code))
+        item_id = changes['identity']('stage', stage)
+        records.append(own.record(item_id, self.commit))
+        combined = observer.combine_dependencies(records, item_id, self.commit)
+        observer.publish_dependencies(store, combined, dict(returncode=code, children=[r['item_id'] for r in records[:-1]]))
+
+
+def dependency_observer():
+    source = HERE / 'mutation_observer.py'
+    if not source.is_file() or not (HERE / 'gate_changes.py').is_file():
+        return None
+    spec = importlib.util.spec_from_file_location('gate_dependency_observer', source)
+    observer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(observer)
+    return observer
+
+
+
 def run_stage(root, stage, command, record, path=DECLARATION, times=LEG_TIMES, leg=None, prior=None,
               take_opened=None, taking=None):
     """One gate stage (above). With `take_opened`, the authority takes the opened-files record while it runs."""
-    if take_opened and taking is None:
-        taking = TakeOpened(root, take_opened)
+    if taking is None and (take_opened or dependency_observer() is not None):
+        taking = TakeOpened(root, take_opened, stage)
         code = run_stage(root, stage, command, record, path, times, leg, prior, taking=taking)
         return taking.finish(stage, code)
     keep = taking.fd if taking else None

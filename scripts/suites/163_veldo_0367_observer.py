@@ -1,0 +1,191 @@
+"""VELDO-0367 AC2: item attribution and explicit unknowns at coverage boundaries."""
+
+
+def _v367_observer():
+    import importlib.util
+    import json
+    import os
+    from pathlib import Path
+    import shutil
+    import subprocess
+    import sys
+    import tempfile
+
+    sources = {'mutation_observer.py': ROOT / "scripts" / "mutation_observer.py",
+               'gate_legs.py': ROOT / "scripts" / "gate_legs.py",
+               'reuse_worker.py': ROOT / "scripts" / "reuse_worker.py"}
+
+    def load(path):
+        spec = importlib.util.spec_from_file_location('observer367_' + path.stem, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def row(name, condition):
+        expect('VELDO-0367 observer/' + name, condition)
+
+    with tempfile.TemporaryDirectory(prefix='v367-observer-') as directory:
+        top = Path(directory)
+        authority, repo = top / 'authority', top / 'repo'
+        (authority / 'scripts').mkdir(parents=True)
+        (authority / '.veldo').mkdir()
+        repo.mkdir()
+        for name, source in sources.items():
+            shutil.copyfile(source, authority / 'scripts' / name)
+        for name in ('gate_fixtures.py', 'gate_changes.py', 'gate_reuse.py', 'case_trace.py'):
+            shutil.copyfile(ROOT / 'scripts' / name, authority / 'scripts' / name)
+        shutil.copyfile(ROOT / '.veldo/reuse_evidence.py', authority / '.veldo/reuse_evidence.py')
+        O = load(authority / 'scripts/mutation_observer.py')
+        G = load(authority / 'scripts/gate_legs.py')
+        W = load(authority / 'scripts/reuse_worker.py')
+        R = load(authority / 'scripts/gate_reuse.py')
+        C = O.dependency_module('gate_changes')
+        for relative in R.E.AUTHORITY_FILES:
+            path = authority / relative
+            if not path.exists():
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('# fixture authority input\n')
+        (repo / 'data').mkdir()
+        (repo / 'data/input').write_text('input')
+        (repo / 'data/child').write_text('child')
+        (repo / 'module367.py').write_text('value = 367\n')
+        (repo / 'alias').symlink_to('data/input')
+        for args in (['init', '-q'], ['add', '.'], ['-c', 'user.name=Dmitry Grinberg',
+                     '-c', 'user.email=dmitry@bcengi.com', 'commit', '-qm', 'observer fixture']):
+            subprocess.run(['git', '-C', str(repo), *args], check=True, stdout=subprocess.PIPE)
+        commit = subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], text=True).strip()
+        item = C['identity']('suite', 'unit', 'confined', 'fixture')
+        reads = O.DependencyReads(repo, {}).start()
+        (repo / 'data/input').read_text()
+        load(repo / 'module367.py')
+        list((repo / 'data').iterdir())
+        try:
+            (repo / 'missing').read_text()
+        except FileNotFoundError:
+            pass
+        (repo / 'alias').read_text()
+        subprocess.run(['/bin/cat', str(repo / 'data/child')], check=True, stdout=subprocess.PIPE)
+        reads.stop()
+        dep = reads.record(item, commit)
+        row('python-import', {'data/input', 'module367.py'} <= set(dep['paths']))
+        row('discovery', 'data' in dep['directories'])
+        row('missing', 'missing' in dep['absent_paths'])
+        row('symlink', {'alias', 'data/input'} <= set(dep['paths']))
+        row('python-unknown', not dep['complete'] and 'syscall' in dep['unknown_reason'])
+        row('child-unknown', not dep['complete'] and 'native child' in dep['unknown_reason'])
+        row('runtime', dep['runtime_digest'] != O.DependencyReads(repo, {'NEW': 'value'}).record(item, commit)['runtime_digest'])
+
+        # Both legs have identical completeness rules. Closed trace fixtures include
+        # forked native children, an imported module, a directory and a failed lookup.
+        lines = [
+            '11 openat(AT_FDCWD, "data/input", O_RDONLY) = 3',
+            '11 openat(AT_FDCWD, "module367.py", O_RDONLY) = 4',
+            '11 getdents64(5<%s/data>, [], 32768) = 0' % repo,
+            '11 newfstatat(AT_FDCWD, "missing", 0x0, 0) = -1 ENOENT (No such file)',
+            '11 openat(AT_FDCWD, "alias", O_RDONLY) = 6',
+            '11 clone(child_stack=NULL, flags=SIGCHLD) = 12',
+            '12 openat(AT_FDCWD, "data/child", O_RDONLY) = 3',
+            '12 +++ exited with 0 +++', '11 +++ exited with 0 +++']
+        trace = top / 'trace'
+        trace.write_text('\n'.join(lines) + '\n')
+        for leg in ('confined', 'unconfined'):
+            identity = C['identity']('suite', 'unit', leg, 'fixture')
+            complete = O.DependencyReads(repo, {}).trace(trace).record(identity, commit)
+            row('trace-' + leg, complete['complete'] and complete['unknown_reason'] is None and
+                {'data/input', 'module367.py', 'data/child', 'alias'} <= set(complete['paths']) and
+                complete['directories'] == ['data'] and complete['absent_paths'] == ['missing'] and
+                complete['item_id'] == identity)
+        row('lost-events', not O.DependencyReads(repo, {}).trace(trace, dropped=True).record(item, commit)['complete'])
+        trace.write_text('\n'.join(lines[:-2]) + '\n')
+        broken = O.DependencyReads(repo, {}).trace(trace).record(item, commit)
+        row('incomplete-not-empty', not broken['complete'] and bool(broken['unknown_reason']))
+        trace.write_text('11 openat(AT_FDCWD, "data/input", O_RDONLY <unfinished ...>\n11 +++ exited with 0 +++\n')
+        row('unfinished', not O.DependencyReads(repo, {}).trace(trace).record(item, commit)['complete'])
+        trace.write_text('')
+        row('empty-trace', not O.DependencyReads(repo, {}).trace(trace).record(item, commit)['complete'])
+        fresh = O.DependencyReads(repo, {})
+        fresh.read(repo / 'module367.py')
+        refreshed = fresh.record(item, commit)
+        row('refresh', refreshed['paths'] == ['module367.py'] and refreshed['record_digest'] != complete['record_digest'])
+        union = O.combine_dependencies([complete, refreshed], item, commit)
+        row('union', set(union['paths']) == set(complete['paths']) | set(refreshed['paths']))
+        retained = O.combine_dependencies([refreshed], item, commit, prior=complete, rows=True)
+        row('rows-retain', retained['paths'] == union['paths'])
+        row('rows-no-prior', not O.combine_dependencies([refreshed], item, commit, rows=True)['complete'])
+        row('union-unknown', not O.combine_dependencies([complete, broken], item, commit)['complete'])
+
+        store = R.Store(top / 'store', repo)
+        outcome = {'returncode': 0, 'rows': [4, 0]}
+        envelope = O.publish_dependencies(store, complete, outcome)
+        row('atomic-result', store.get(envelope['record_digest']) == envelope and
+            envelope['dependency'] == complete and envelope['result'] == outcome)
+        original = store._publish
+        def interrupted(*args, **kwargs):
+            raise OSError('fixture interruption before publication')
+        store._publish = interrupted
+        failed = False
+        try:
+            O.publish_dependencies(store, refreshed, outcome)
+        except OSError:
+            failed = True
+        store._publish = original
+        pending = C['sealed']('veldo.change-observation/v1', dependency=refreshed, result=outcome)
+        row('atomic-interrupted', failed and store.get(pending['record_digest']) is None and
+            store.get(envelope['record_digest']) == envelope)
+
+        # Real children in either leg's environment are observed by the outside
+        # kernel watch, beyond scripts/ and proof/. The dependency remains unknown
+        # because inotify cannot attribute metadata probes or certify descendants.
+        for leg in ('confined', 'unconfined'):
+            taking = G.TakeOpened(repo, None, 'fixture-' + leg, store=store)
+            env = taking.env(dict(os.environ, VELDO_GATE_LEG=leg))
+            import shlex
+            command = shlex.join([sys.executable, '-c',
+                'import pathlib, subprocess; pathlib.Path("module367.py").read_text(); '
+                'subprocess.run(["/bin/cat", "data/child"], check=True, stdout=subprocess.PIPE)'])
+            here = G.HERE
+            G.HERE = ROOT / 'scripts'
+            try:
+                code = (G.confined if leg == 'confined' else G.unconfined)(repo, command, env, taking.fd)
+            finally:
+                G.HERE = here
+            row('stage-' + leg, taking.finish('fixture-' + leg, code) == 0)
+            observed = [store.get(path.stem) for path in store.directory.glob('*.json')]
+            stage = next(value for value in observed if value and
+                value.get('dependency', {}).get('item_id') == C['identity']('stage', 'fixture-' + leg))
+            row('native-' + leg, {'module367.py', 'data/child'} <= set(stage['dependency']['paths']) and
+                not stage['dependency']['complete'] and bool(stage['dependency']['unknown_reason']))
+
+        # Exercise the worker publication boundary with a real child protocol and
+        # an isolated Store. The candidate never receives a Store object/key.
+        job = top / 'job.json'
+        job.write_text(json.dumps({'mode': 'baseline', 'case': {'suite': 'fixture.py', 'name': 'case', 'driver': 'teeth'}}))
+        boundary = type('Boundary', (), {'launcher_fds': staticmethod(lambda: ())})
+        reuse = type('Reuse', (), {'_suite_store': staticmethod(lambda root, env: store)})
+        real_load, real_argv, real_orig, real_run = W.load, sys.argv, sys.orig_argv, W.subprocess.run
+        output = dict(observation=dict(dependency=dep))
+        class Output:
+            def __init__(self):
+                self.buffer = self
+            def write(self, value):
+                return len(value)
+            def flush(self):
+                pass
+        original_stdout = sys.stdout
+        ledger = os.open(top / 'ledger', os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
+        try:
+            W.load = lambda p: O if p.name == 'mutation_observer.py' else reuse if p.name == 'gate_reuse.py' else boundary
+            sys.argv = ['reuse_worker.py', 'unconfined', str(repo), str(ledger), str(job)]
+            sys.orig_argv = [sys.executable, '-c', 'import json; print(' + repr(json.dumps(output)) + ')']
+            sys.stdout = Output()
+            W.record_execution(authority, repo, 'unconfined')
+        finally:
+            sys.stdout = original_stdout
+            W.load, sys.argv, sys.orig_argv = real_load, real_argv, real_orig
+            os.close(ledger)
+        values = [store.get(path.stem) for path in store.directory.glob('*.json')]
+        row('worker-published', any(value and value.get('result', {}).get('mode') == 'baseline' and
+            value['dependency'] == dep for value in values))
+
+
+_v367_observer()

@@ -31,6 +31,68 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 
+def _dependency_capture():
+    """Attribute Python observations to the current fragment, including its preamble.
+
+    The existing authority ledger crosses shard boundaries. Native children and
+    unobservable metadata remain unknown; a claim never asserts trace completeness.
+    """
+    main = sys.modules.get('__main__')
+    ledger = getattr(main, '_LEDGER', None)
+    source = ROOT / 'scripts/mutation_observer.py'
+    if ledger is None or not source.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location('suite_dependency_observer', source)
+    observer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(observer)
+    captures, results = {}, {}
+    enabled = [True]
+
+    def current():
+        name = Path(globals().get('__suite_file__', str(Path(__file__)))).stem
+        if name not in captures:
+            read = observer.DependencyReads(ROOT)
+            read.unknown('Python audit lacks complete syscall coverage')
+            read.active = True
+            captures[name] = read
+        return name, captures[name]
+
+    def audit(event, args):
+        if enabled[0]:
+            name, reads = current()
+            reads.audit(event, args)
+
+    def row(condition):
+        name, reads = current()
+        counts = results.setdefault(name, [0, 0])
+        counts[0 if condition else 1] += 1
+
+    def finish():
+        enabled[0] = False
+        commit = os.environ.get('VELDO_DEPENDENCY_COMMIT', '0' * 40)
+        changes = observer.dependency_module('gate_changes')
+        for name, reads in sorted(captures.items()):
+            reads.stop()
+            reads.read(ROOT / 'scripts/suites' / (name + '.py'))
+            if commit == '0' * 40:
+                reads.unknown('observed commit unavailable')
+            identity = changes['identity']('suite', os.environ.get('VELDO_DEPENDENCY_STAGE', 'unit'),
+                                          os.environ.get('VELDO_GATE_LEG', 'confined'), name)
+            records = [member.record(identity, commit) for member in captures.values()]
+            record = observer.combine_dependencies(records, identity, commit)
+            # The dispatcher may share state with prerequisites. Without a closed
+            # group observation this remains unknown even if its own reads are known.
+            claim = dict(dependency_claim=record, result=dict(rows=results.get(name, [0, 0]), group=sorted(captures)))
+            body = (json.dumps(claim, sort_keys=True) + '\n').encode()
+            if os.write(ledger, body) != len(body):
+                raise OSError('lost dependency ledger events')
+
+    sys.addaudithook(audit)
+    return row, finish
+
+
+_DEPENDENCY_CAPTURE = _dependency_capture()
+
 def git_fixture_dependency(path):
     """Copies of runtime modules carry their shared Git dependency beside them."""
     path = Path(path)
@@ -105,6 +167,12 @@ def _support(name):
 WAITS = _support("waits")
 HOLDERS = _support("holders")
 PORTS = _support("ports")
+if _DEPENDENCY_CAPTURE is not None:
+    if WAITS is not None:
+        WAITS.RUNTIME.before_exit.append(_DEPENDENCY_CAPTURE[1])
+    else:
+        import atexit
+        atexit.register(_DEPENDENCY_CAPTURE[1])
 
 PASS = 0
 FAIL = 0
@@ -112,6 +180,8 @@ FAIL = 0
 
 def expect(name, condition):
     global PASS, FAIL
+    if _DEPENDENCY_CAPTURE is not None:
+        _DEPENDENCY_CAPTURE[0](condition)
     if condition:
         PASS += 1
     else:

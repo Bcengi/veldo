@@ -2660,6 +2660,15 @@
     "162_veldo_0367_baseline"
    ],
    "requires_note": "Only ROOT and expect; scratch Git repositories and private fixture stores. No live services or clock sites."
+  },
+  {
+   "name": "163_veldo_0367_observer",
+   "file": "163_veldo_0367_observer.py",
+   "regions": "VELDO-0367 AC2: dependency observations, child coverage, lost events and atomic publication.",
+   "requires": [
+    "163_veldo_0367_observer"
+   ],
+   "requires_note": "Only ROOT and expect; private stores, native children and synthetic syscall traces. No live captures or clock sites."
   }
  ],
  "resource_capacities": {

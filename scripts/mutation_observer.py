@@ -315,6 +315,7 @@ def private_runtime():
 def worker(case, mutant=None, *, isolate_runtime=True):
     """Capture every assertion, including the shared preamble, with exact row identities."""
     shared = ROOT / 'scripts/suites/shared.py'
+    dependency = DependencyReads(ROOT).start()
     rows = []
     opened = set()
     auditing = [True]
@@ -400,7 +401,15 @@ def worker(case, mutant=None, *, isolate_runtime=True):
             waits.run_ended()
     faulthandler.cancel_dump_traceback_later()
     auditing[0] = False
-    return {'opened_files': sorted(opened),
+    dependency.stop()
+    dependency.read(ROOT / case.get('dir', '.veldo') / case['module'])
+    commit = os.environ.get('VELDO_DEPENDENCY_COMMIT', '0' * 40)
+    if commit == '0' * 40:
+        dependency.unknown('observed commit unavailable')
+    changes = dependency_module('gate_changes')
+    item_id = changes['identity']('case', 'mutation', os.environ.get('VELDO_DEPENDENCY_LEG', 'confined'),
+                                  case['suite'], case.get('driver', ''), case['name'])
+    return {'dependency': dependency.record(item_id, commit), 'opened_files': sorted(opened),
             'failure_kinds': {name: 'terminal' if name in terminal_rows else 'assertion'
                               for name, ok in rows if not ok},
             'count': len(rows), 'observations': rows,
@@ -409,3 +418,175 @@ def worker(case, mutant=None, *, isolate_runtime=True):
             'failed_details': details,
             'targets': {label: [ok for name, ok in rows if name.split()[-1] == label]
                         for label in case['rows']}}
+
+# VELDO-0367: observations never authorize selection. Python audit events are
+# useful attribution, but are NOT a complete filesystem trace (notably stat and
+# native children). Only a closed syscall trace can remove that unknown reason.
+def dependency_module(name):
+    return runpy.run_path(str(Path(__file__).with_name(name + '.py')))
+
+
+class DependencyReads:
+    """One executing item's reads, including failed probes and discovery inputs."""
+    def __init__(self, root, environment=None):
+        self.root = Path(root).resolve()
+        self.paths, self.directories, self.absent_paths = set(), set(), set()
+        self.reasons = {'observation coverage unavailable'}
+        self.runtime = {'environment': dict(os.environ if environment is None else environment)}
+        self.active, self.busy = False, False
+
+    def unknown(self, reason):
+        self.reasons.add(reason)
+
+    def read(self, path, kind='content', success=True):
+        if not isinstance(path, (str, bytes, os.PathLike)):
+            self.unknown('unresolved descriptor or path')
+            return
+        path = Path(os.path.abspath(os.fsdecode(path)))
+        try:
+            resolved = path.resolve()
+        except (OSError, RuntimeError):
+            self.unknown('unresolved symlink')
+            return
+        for candidate in {path, resolved}:
+            try:
+                relative = candidate.relative_to(self.root).as_posix()
+            except ValueError:
+                # External inputs are represented by their bytes or directory
+                # entries, not merely by the interpreter's version string.
+                try:
+                    if str(candidate).startswith(('/proc/', '/sys/', '/dev/', '/run/')):
+                        raise ValueError('volatile runtime')
+                    if not success and not candidate.exists():
+                        value = ['absent']
+                    elif candidate.is_file():
+                        value = ['file', hashlib.sha256(candidate.read_bytes()).hexdigest(),
+                                 candidate.stat().st_mode]
+                    elif candidate.is_dir():
+                        value = ['directory', sorted(os.listdir(candidate))]
+                    else:
+                        raise ValueError('external input')
+                    self.runtime[str(candidate)] = value
+                except (OSError, ValueError):
+                    self.unknown('unrecordable external input: ' + str(candidate))
+                continue
+            if kind == 'listing':
+                self.directories.add(relative)
+            elif relative != '.':
+                self.paths.add(relative)
+            if not success and relative != '.':
+                self.absent_paths.add(relative)
+        # A symlink in an intermediate component also affects the lookup.
+        for parent in path.parents:
+            if parent == self.root:
+                break
+            if self.root in parent.parents and parent.is_symlink():
+                self.paths.add(parent.relative_to(self.root).as_posix())
+
+    def audit(self, event, args):
+        if not self.active or self.busy:
+            return
+        self.busy = True
+        try:
+            if event == 'open':
+                self.read(args[0], success=os.path.exists(args[0]) if isinstance(args[0], (str, bytes)) else True)
+            elif event == 'import' and args[1]:
+                self.read(args[1])
+            elif event in ('os.listdir', 'os.scandir'):
+                self.read(args[0] if args and args[0] is not None else os.getcwd(), 'listing')
+            elif event in ('subprocess.Popen', 'os.system', 'os.fork', 'os.posix_spawn', 'os.exec'):
+                self.unknown('native child coverage unavailable')
+            elif event.startswith(('socket.', 'ctypes.')):
+                self.unknown('unrecordable external input: ' + event)
+        except (OSError, ValueError, TypeError):
+            self.unknown('unresolved audit event')
+        finally:
+            self.busy = False
+
+    def start(self):
+        self.unknown('Python audit lacks complete syscall coverage')
+        sys.addaudithook(self.audit)
+        self.active = True
+        return self
+
+    def stop(self):
+        self.active = False
+        return self
+
+    def trace(self, trace, *, dropped=False):
+        """Read an authority-owned -f trace after all traced processes ended.
+
+        A truncated, detached, malformed or namespace-changing trace stays unknown.
+        This does not start ptrace in worker trees: their existing prohibition stands.
+        """
+        tracer = dependency_module('case_trace')
+        try:
+            lines = Path(trace).read_text().splitlines()
+            seen, ended = set(), set()
+            for line in lines:
+                if not line.strip():
+                    continue
+                pid = line.split(None, 1)[0]
+                if not pid.isdigit():
+                    raise ValueError('lost events or tracer diagnostic')
+                seen.add(pid)
+                if tracer['ENDED'].match(line):
+                    ended.add(pid)
+                elif not (tracer['CALL'].search(line) or '<unfinished ...>' in line
+                          or ' resumed>' in line or '--- SIG' in line):
+                    raise ValueError('unrecognized trace event')
+                if any(token in line for token in ('unshare(', 'setns(', 'chroot(', 'CLONE_FS', 'CLONE_NEW')):
+                    raise ValueError('ambiguous process filesystem')
+                if '...' in line and '<unfinished ...>' not in line and '<... ' not in line:
+                    raise ValueError('truncated trace event')
+            if dropped or not seen or seen != ended:
+                raise ValueError('lost events or incomplete child coverage')
+            for path, kind, success in tracer['accesses'](trace, cwd=self.root):
+                self.read(path, kind, success)
+            self.reasons.discard('observation coverage unavailable')
+            if tracer['non_file_inputs'](trace):
+                self.unknown('unrecordable external inputs in trace')
+        except (OSError, ValueError, SyntaxError) as error:
+            self.unknown('incomplete trace: ' + str(error))
+        return self
+
+    def record(self, item_id, commit):
+        changes = dependency_module('gate_changes')
+        value = changes['sealed'](changes['DEPENDENCY'], item_id=item_id, observed_commit=commit,
+            paths=sorted(self.paths), directories=sorted(self.directories), absent_paths=sorted(self.absent_paths),
+            runtime_digest=changes['digest'](self.runtime), complete=not self.reasons,
+            unknown_reason='; '.join(sorted(self.reasons)) or None)
+        return changes['validate_dependency'](value)
+
+
+def combine_dependencies(records, item_id, commit, *, prior=None, rows=False):
+    """Controls/mutants and prerequisite groups use their union. Rows never shrink it."""
+    changes = dependency_module('gate_changes')
+    records = list(records)
+    if rows and prior is not None:
+        records.append(prior)
+    for record in records:
+        changes['validate_dependency'](record)
+    reasons = {r['unknown_reason'] for r in records if not r['complete']}
+    if not records or rows and prior is None:
+        reasons.add('missing complete suite observation')
+    if any(r['observed_commit'] != commit for r in records if r is not prior):
+        reasons.add('mixed observed commits')
+    return changes['sealed'](changes['DEPENDENCY'], item_id=item_id, observed_commit=commit,
+        **{field: sorted({p for r in records for p in r[field]})
+           for field in ('paths', 'directories', 'absent_paths')},
+        runtime_digest=changes['digest'](sorted({r['runtime_digest'] for r in records})),
+        complete=not reasons, unknown_reason='; '.join(sorted(reasons)) or None)
+
+
+def publish_dependencies(store, dependency, result):
+    """One authenticated atomic publication contains BOTH result and dependencies.
+
+    Interruption cannot expose an envelope with half of its evidence. No green gate/index is published here.
+    """
+    changes = dependency_module('gate_changes')
+    changes['validate_dependency'](dependency)
+    envelope = changes['sealed']('veldo.change-observation/v1', dependency=dependency, result=result)
+    if not store.change_put(envelope):
+        raise OSError('dependency/result publication failed')
+    return envelope
