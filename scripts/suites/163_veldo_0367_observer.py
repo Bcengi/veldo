@@ -210,36 +210,22 @@ def _v367_observer():
                 {'data/input', 'data/child'} <= set(c['dependency_claim']['paths']) and
                 not c['dependency_claim']['complete'] for c in claims))
 
-        # Exercise the worker publication boundary with a real child protocol and
-        # an isolated Store. The candidate never receives a Store object/key.
-        job = top / 'job.json'
-        job.write_text(json.dumps({'mode': 'baseline', 'case': {'suite': 'fixture.py', 'name': 'case', 'driver': 'teeth'}}))
-        boundary = type('Boundary', (), {'launcher_fds': staticmethod(lambda: ())})
-        reuse = type('Reuse', (), {'_suite_store': staticmethod(lambda root, env: store)})
-        real_load, real_argv, real_orig, real_run = W.load, sys.argv, sys.orig_argv, W.subprocess.run
-        output = dict(observation=dict(dependency=dep))
-        class Output:
-            def __init__(self):
-                self.buffer = self
-            def write(self, value):
-                return len(value)
-            def flush(self):
-                pass
-        original_stdout = sys.stdout
-        ledger = os.open(top / 'ledger', os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
+        # The worker binds coordinates before entering confinement. Store writes
+        # stay with the authority after cleanup, never in this bootstrap seam.
+        variables = ('VELDO_DEPENDENCY_COMMIT', 'VELDO_DEPENDENCY_LEG')
+        saved = {name: os.environ.get(name) for name in variables}
         try:
-            W.load = lambda p: O if p.name == 'mutation_observer.py' else reuse if p.name == 'gate_reuse.py' else boundary
-            sys.argv = ['reuse_worker.py', 'unconfined', str(repo), str(ledger), str(job)]
-            sys.orig_argv = [sys.executable, '-c', 'import json; print(' + repr(json.dumps(output)) + ')']
-            sys.stdout = Output()
-            W.record_execution(authority, repo, 'unconfined')
+            for leg in ('confined', 'unconfined'):
+                W.dependency_context(repo, 'worker' if leg == 'confined' else leg)
+                row('worker-' + leg, os.environ['VELDO_DEPENDENCY_COMMIT'] == commit and
+                    os.environ['VELDO_DEPENDENCY_LEG'] == leg)
         finally:
-            sys.stdout = original_stdout
-            W.load, sys.argv, sys.orig_argv = real_load, real_argv, real_orig
-            os.close(ledger)
-        values = [store.get(path.stem) for path in store.directory.glob('*.json')]
-        row('worker-published', any(value and value.get('result', {}).get('mode') == 'baseline' and
-            value['dependency'] == dep for value in values))
+            for name, value in saved.items():
+                if value is None:
+                    os.environ.pop(name, None)
+                else:
+                    os.environ[name] = value
+
 
 
 _v367_observer()

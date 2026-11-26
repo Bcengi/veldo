@@ -18998,8 +18998,8 @@ def cases():
         'own.read(self.root / path)', 'pass  # defect: stage child reads omitted', ['native-confined', 'native-unconfined'])
     observer367('overflow', 'gate_legs.py',
         'if overflowed or late:', 'if False:', ['overflow-unknown'])
-    observer367('worker-publication', 'reuse_worker.py',
-        '    owner.publish_dependencies(store, dependency,', '    (lambda *args: None)(store, dependency,', ['worker-published'])
+    observer367('worker-attribution', 'reuse_worker.py',
+        "'unconfined' if mode == 'unconfined' else 'confined'", "'confined'", ['worker-unconfined'])
 
     add(367, 'observer367-suite-attribution', '163_veldo_0367_observer.py', 'shared.py',
         "        counts[0 if condition else 1] += 1", "        counts[0] += 1", ['observer/suite-attribution'])

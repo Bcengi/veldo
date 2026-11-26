@@ -42,8 +42,6 @@ def main():
     join_worker_cgroup()
     authority = Path(__file__).resolve().parents[1]
     mode, root = sys.argv[1], Path(sys.argv[2])
-    if mode in ('worker', 'unconfined') and sys.argv[-1] != '--dependency-child':
-        return record_execution(authority, root, mode)
     if mode == 'inventory':  # Already confined by gate_candidate before this import.
         gate = load(authority / 'scripts/check_gate_mutations.py')
         print(json.dumps(gate.inventory_local(root)))
@@ -77,6 +75,7 @@ def main():
     owner = load(authority / 'scripts/mutation_observer.py')
     owner.dependency_module('gate_changes')  # authority schema before its path becomes unreadable
     owner.ROOT = root
+    dependency_context(root, mode)
     ownership = load(authority / 'scripts/mutation_ownership.py')
     # Ownership is persisted from the authority copy before any candidate code runs, so the
     # coordinator can reap this worker's allocations even after SIGKILL. Candidate code can
@@ -103,49 +102,16 @@ def main():
     observe(gate, owner, job, root)
 
 
-def record_execution(authority, root, mode):
-    """Authority parent publishes after the worker's owned runtime has ended.
+def dependency_context(root, mode):
+    """Pin worker observation coordinates before confinement hides Git metadata.
 
-    The child receives no Store key or writable Store descriptor. Both confinement
-    legs use this wrapper; the original worker protocol and selection are unchanged.
+    Publication belongs to the coordinator after descendant and allocation cleanup;
+    the worker only returns observation data on its existing result channel.
     """
-    owner = load(authority / 'scripts/mutation_observer.py')
-    reuse = load(authority / 'scripts/gate_reuse.py')
-    boundary = load(authority / 'scripts/agent_sandbox.py')
-    job = json.loads(Path(sys.argv[4]).read_text())
-    case = job['case']
     commit = subprocess.run(['git', '-C', str(root), 'rev-parse', 'HEAD'],
                             capture_output=True, text=True).stdout.strip()
-    known = len(commit) in (40, 64)
-    commit = commit if known else '0' * 40
-    leg = 'unconfined' if mode == 'unconfined' else 'confined'
-    environment = dict(os.environ, VELDO_DEPENDENCY_COMMIT=commit, VELDO_DEPENDENCY_LEG=leg)
-    keep = (int(sys.argv[3]), *boundary.launcher_fds())
-    if os.environ.get('VELDO_MUTATION_LIFECYCLE_FD'):
-        keep += (int(os.environ['VELDO_MUTATION_LIFECYCLE_FD']),)
-    child = subprocess.run([sys.executable, *sys.orig_argv[1:], '--dependency-child'],
-                           env=environment, pass_fds=keep, stdout=subprocess.PIPE)
-    try:
-        payload = json.loads(child.stdout)
-        dependency = payload['observation']['dependency']
-    except (ValueError, KeyError, TypeError):
-        reads = owner.DependencyReads(root)
-        reads.unknown('worker ended without dependency evidence')
-        if not known:
-            reads.unknown('observed commit unavailable')
-        changes = owner.dependency_module('gate_changes')
-        dependency = reads.record(changes['identity']('case', 'mutation', leg, case['suite'],
-                                   case.get('driver', ''), case['name']), commit)
-        payload = None
-    store = reuse._suite_store(root, os.environ)
-    if store is None:
-        raise RuntimeError('dependency Store unavailable')
-    owner.publish_dependencies(store, dependency,
-        dict(mode=job['mode'], returncode=child.returncode, observation=payload))
-    sys.stdout.buffer.write(child.stdout)
-    sys.stdout.flush()
-    if child.returncode:
-        raise SystemExit(child.returncode)
+    os.environ['VELDO_DEPENDENCY_COMMIT'] = commit if len(commit) in (40, 64) else '0' * 40
+    os.environ['VELDO_DEPENDENCY_LEG'] = 'unconfined' if mode == 'unconfined' else 'confined'
 
 
 def observe(gate, owner, job, root):
