@@ -7,12 +7,11 @@ def _v147_login():
     import json
     from pathlib import Path
     import tempfile
-    import time
 
     spec = importlib.util.spec_from_file_location('v147_login', ROOT / 'engine/.veldo/project_runner_macos_login.py')
     L = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(L)
-    now = time.time()
+    now = 1_900_000_000.0  # a fixed instant: frame() takes the clock as an argument
 
     def refused(call, code):
         try:

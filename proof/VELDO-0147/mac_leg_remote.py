@@ -87,11 +87,16 @@ def cmd_open(run):
     return 0 if result['status'] == 'open' else 3
 
 
-def pump(source, sinks):
+# A hang bound only (VELDO-0358 contracts.md): no verdict depends on how long anything takes.
+WAIT_HANG_SECONDS = 600
+
+def pump(source, sinks, each=None):
     for chunk in iter(lambda: source.read1(65536), b''):
         for sink in sinks:
             sink.write(chunk)
             sink.flush()
+        if each is not None:
+            each()
 
 
 def cmd_run(run):
@@ -136,7 +141,7 @@ def cmd_run(run):
         return 6
     sandboxed = ['/usr/bin/sandbox-exec', '-p', policy, str(PINNED)]
     status = subprocess.run(sandboxed + ['auth', 'status', '--json'], env=environment, cwd=clone,
-                            stdin=subprocess.DEVNULL, capture_output=True, timeout=120)
+                            stdin=subprocess.DEVNULL, capture_output=True, timeout=WAIT_HANG_SECONDS)
     try:
         report = json.loads(status.stdout)
     except ValueError:
@@ -148,22 +153,19 @@ def cmd_run(run):
     err_copy = open(scratch / 'engine.err', 'wb')
     engine = subprocess.Popen(sandboxed + FLAGS, env=environment, cwd=clone, stdin=subprocess.PIPE,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    threads = [threading.Thread(target=pump, args=(engine.stdout, [out_copy, sys.stdout.buffer])),
+    # Every process this run launched, command line and environment, kept for the main node's scan:
+    # taken on the engine's 1st, 4th and 8th output chunk (while it works), never on a timer.
+    snapshot, chunks = [], [0]
+
+    def observe():
+        chunks[0] += 1
+        if chunks[0] in (1, 4, 8) and engine.poll() is None:
+            snapshot.append(subprocess.run(['/bin/ps', '-E', '-ww', '-o', 'pid=,ppid=,command=', '-U',
+                                            str(os.getuid())], capture_output=True, text=True).stdout)
+    threads = [threading.Thread(target=pump, args=(engine.stdout, [out_copy, sys.stdout.buffer], observe)),
                threading.Thread(target=pump, args=(engine.stderr, [err_copy, sys.stderr.buffer]))]
     for thread in threads:
         thread.start()
-    # Every process this run launched, command line and environment, kept for the main node's scan.
-    snapshot = []
-
-    def observe():
-        while engine.poll() is None:
-            snapshot.append(subprocess.run(['/bin/ps', '-E', '-ww', '-o', 'pid=,ppid=,command=', '-U',
-                                            str(os.getuid())], capture_output=True, text=True).stdout)
-            if len(snapshot) >= 3:
-                break
-            threading.Event().wait(4)
-    watcher = threading.Thread(target=observe)
-    watcher.start()
     def forward():
         try:
             for chunk in iter(lambda: sys.stdin.buffer.read1(65536), b''):
@@ -174,8 +176,8 @@ def cmd_run(run):
             pass
     # The main node's input can stay open after the engine exits; the engine's exit ends the run.
     threading.Thread(target=forward, daemon=True).start()
-    code = engine.wait(timeout=900)
-    for thread in threads + [watcher]:
+    code = engine.wait(timeout=WAIT_HANG_SECONDS)
+    for thread in threads:
         thread.join()
     out_copy.close()
     err_copy.close()

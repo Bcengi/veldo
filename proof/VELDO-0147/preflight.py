@@ -17,6 +17,9 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[2]
 
 
+# A hang bound only (VELDO-0358 contracts.md): no verdict depends on how long anything takes.
+WAIT_HANG_SECONDS = 600
+
 def main():
     if sys.platform != 'darwin':
         print(json.dumps({'status': 'not_run', 'reason': 'requires_selected_mac'}))
@@ -59,7 +62,7 @@ def main():
         try:
             done = subprocess.run(['/usr/bin/sandbox-exec', '-p', policy, str(executable),
                 'auth', 'status', '--json'], env=environment, cwd=scratch,
-                stdin=subprocess.DEVNULL, capture_output=True, timeout=120)
+                stdin=subprocess.DEVNULL, capture_output=True, timeout=WAIT_HANG_SECONDS)
             # Raw stdout can contain account identifiers. Neither stream is logged.
             report = json.loads(done.stdout)
             logged_in = report.get('loggedIn') is True

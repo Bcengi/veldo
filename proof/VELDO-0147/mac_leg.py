@@ -21,6 +21,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tarfile
+import threading
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -28,6 +29,8 @@ VELDO = ROOT / 'engine/.veldo'
 SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20', '-o', 'ServerAliveInterval=30']
 REMOTE = 'veldo-mac-runs/veldo-0147-r2'
 PY = '/opt/homebrew/bin/python3.12'
+# A hang bound only (VELDO-0358 contracts.md): no verdict depends on how long anything takes.
+WAIT_HANG_SECONDS = 600
 PROMPT = ('This is a qualification unit. Do exactly these steps and nothing else. '
           '1) Use the Bash tool to run this exact command: ls /nonexistent-veldo-0147; echo leg-done '
           '(it is expected to print an error to its error stream). '
@@ -65,8 +68,8 @@ def lease_held_by_this_run(account_dir):
     return dict(named_by_ancestor=ours, flock_held=held)
 
 
-def ssh(target, args, data=None, timeout=300):
-    return subprocess.run(SSH + [target, args], input=data, capture_output=True, timeout=timeout)
+def ssh(target, args, data=None):
+    return subprocess.run(SSH + [target, args], input=data, capture_output=True, timeout=WAIT_HANG_SECONDS)
 
 
 def redact(data, values):
@@ -111,13 +114,14 @@ def main(account, target, out):
         first, _ = guard.opening(PROMPT.encode())
         engine = subprocess.Popen(SSH + [target, remote + ' run ' + run], stdin=subprocess.PIPE,
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        import threading
         errs = []
         reader = threading.Thread(target=lambda: errs.append(engine.stderr.read()))
         reader.start()
         engine.stdin.write(first)
         engine.stdin.flush()
-        lines, closed, deadline = [], False, time.monotonic() + 900
+        lines, closed = [], False
+        hang = threading.Timer(WAIT_HANG_SECONDS, engine.kill)  # hang detector only
+        hang.start()
         for line in iter(engine.stdout.readline, b''):
             lines.append(line)
             guard.feed(line)
@@ -132,11 +136,10 @@ def main(account, target, out):
                 event = {}
             if event.get('type') == 'result' and not closed:
                 engine.stdin.close(); closed = True
-            if time.monotonic() > deadline:
-                engine.kill(); break
         if not closed:
             engine.stdin.close()
-        engine.wait(timeout=120)
+        engine.wait(timeout=WAIT_HANG_SECONDS)
+        hang.cancel()
         reader.join()
         linux_out, linux_err = b''.join(lines), errs[0] if errs else b''
         record['guard'] = dict(confirmed=guard.confirmed, released=guard.released, stop=guard.stop,
@@ -144,7 +147,7 @@ def main(account, target, out):
     finally:
         closed_result = ssh(target, remote + ' close ' + run)
         record['close'] = json.loads(closed_result.stdout or b'{}')
-    fetched = ssh(target, remote + ' fetch ' + run, timeout=120).stdout
+    fetched = ssh(target, remote + ' fetch ' + run).stdout
     mac = {}
     with tarfile.open(fileobj=io.BytesIO(fetched), mode='r:gz') as archive:
         for member in archive.getmembers():
