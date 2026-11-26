@@ -17,7 +17,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / '.local/weekly-validation'
 BASE = '68b1c4520'
-SUITE = '165_veldo_0367_weekly'
+SUITE = '167_veldo_0367_weekly'
 STAGES = ('extra', 'lint', 'generated', 'docs', 'packaging', 'security', 'personal_setup', 'wallclock')
 
 
