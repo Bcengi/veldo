@@ -240,3 +240,203 @@ def baseline(root, candidate, store, repository):
                         changed_paths=changed_paths(root, commit, candidate))
     return dict(candidate_commit=candidate, baseline_commit=None, baseline_record_digest=None,
                 changed_paths=None)
+
+
+# Only increment 5 changes this authority-owned switch. Environment variables and
+# candidate receipts cannot enable selection.
+SELECTION_ENABLED = False
+
+
+def intersects(dependency, changed):
+    """Reads, failed lookups and directory discovery all participate in selection."""
+    validate_dependency(dependency)
+    return any(path in dependency['paths'] or path in dependency['absent_paths'] or
+               any(directory == '.' or path == directory or path.startswith(directory + '/')
+                   for directory in dependency['directories']) for path in changed)
+
+
+def referenced(store, key, schema, fields):
+    require(hex_id(key), 'reference digest')
+    value = store.get(key)  # Store.get also checks authentication and revocation.
+    check_seal(value, schema, fields)
+    require(value['record_digest'] == key, 'reference binding')
+    return value
+
+
+def item_evidence(store, item):
+    dependency = store.get(item['dependency_record_digest'])
+    validate_dependency(dependency)
+    require(dependency['record_digest'] == item['dependency_record_digest'] and
+            dependency['item_id'] == item['item_id'] and
+            dependency['observed_commit'] == item['source_commit'], 'dependency source')
+    result = referenced(store, item['result_digest'], RESULT,
+                        ('item_id', 'source_commit', 'status', 'complete', 'dependency_record_digest'))
+    require(result['item_id'] == item['item_id'] and result['source_commit'] == item['source_commit']
+            and result['status'] == 'passed' and result['complete'] is True and
+            result['dependency_record_digest'] == dependency['record_digest'], 'result source')
+    return dependency
+
+
+def green_record(root, store, gate, repository, seen=()):
+    """Validate the entire authenticated chain, including original execution provenance."""
+    check_seal(gate, GATE, ('repository', 'inventory', 'receipt', 'status', 'complete'))
+    require(gate['record_digest'] not in seen, 'cyclic provenance')
+    seen = (*seen, gate['record_digest'])
+    require(gate['repository'] == repository and gate['status'] == 'green' and gate['complete'] is True,
+            'eligible green gate')
+    receipt = validate_receipt(gate['receipt'], gate['inventory'])
+    candidate = receipt['candidate_commit']
+    prior = None
+    if receipt['baseline_record_digest'] is not None:
+        prior = store.get(receipt['baseline_record_digest'])
+        green_record(root, store, prior, repository, seen)
+        require(prior['record_digest'] == receipt['baseline_record_digest'] and
+                prior['receipt']['candidate_commit'] == receipt['baseline_commit'] and
+                receipt['baseline_commit'] in first_parents(root, candidate), 'baseline provenance')
+        changed = changed_paths(root, receipt['baseline_commit'], candidate)
+        require(digest(changed) == receipt['changed_paths_digest'], 'changed paths binding')
+    old = {i['item_id']: i for i in prior['receipt']['items']} if prior else {}
+    definitions = {i['item_id']: i for i in prior['inventory']['items']} if prior else {}
+    current = {i['item_id']: i for i in gate['inventory']['items']}
+    for item in receipt['items']:
+        require(item['status'] != 'failed', 'failed item')
+        if item['status'] == 'removed':
+            require(item['item_id'] in definitions, 'unknown removed identity')
+        if item['status'] not in ('executed', 'carried'):
+            continue
+        dependency = item_evidence(store, item)
+        if item['status'] == 'carried':
+            key = item['item_id']
+            require(prior is not None and definitions.get(key) == current[key], 'carried definition')
+            source = old.get(key)
+            require(source is not None and source['status'] in ('executed', 'carried'), 'missing baseline item')
+            expected = dict(source, status='carried', source_gate_digest=(prior['record_digest']
+                            if source['status'] == 'executed' else source['source_gate_digest']))
+            require(item == expected, 'carried provenance')
+            require(dependency['complete'] and not intersects(dependency, changed), 'stale carried evidence')
+            origin = store.get(item['source_gate_digest'])
+            green_record(root, store, origin, repository, seen)
+            require(origin['record_digest'] == item['source_gate_digest'] and
+                    origin['receipt']['candidate_commit'] == item['source_commit'] and
+                    dict(item, status='executed', source_gate_digest=None) in origin['receipt']['items'],
+                    'original execution')
+    return gate
+
+
+def eligible_baseline(root, store, repository, candidate):
+    history = first_parents(root, candidate)
+    for commit in history:
+        try:
+            index = store.get(store.change_gate_key(repository, commit))
+            require(index['repository'] == repository and index['commit'] == commit, 'index provenance')
+            gate = store.get(index['record_digest'])
+            check_seal(gate, GATE, ('repository', 'inventory', 'receipt', 'status', 'complete'))
+            require(gate['repository'] == repository and gate['status'] == 'green' and gate['complete'] is True,
+                    'eligible baseline')
+            validate_receipt(gate['receipt'], gate['inventory'])
+            require(all(i['status'] != 'failed' for i in gate['receipt']['items']), 'failed baseline')
+            require(gate['record_digest'] == index['record_digest'] and
+                    gate['receipt']['candidate_commit'] == commit, 'index binding')
+            return gate
+        except (OSError, ValueError, TypeError, KeyError):
+            continue
+    return None
+
+
+def select(root, store, repository, candidate, current, runtimes):
+    """Plan every identity. Unknown evidence runs just that item; there are no audits."""
+    validate_inventory(current)
+    pin(root, candidate)
+    prior = eligible_baseline(root, store, repository, candidate)
+    changed = changed_paths(root, prior['receipt']['candidate_commit'], candidate) if prior else None
+    old = {i['item_id']: i for i in prior['receipt']['items']} if prior else {}
+    rows = []
+    for item in reconcile(current, prior['inventory'] if prior else None):
+        key = item['item_id']
+        status, reason, evidence = item['state'], item['reason'], None
+        if status == 'required':
+            status = 'run'
+            if reason == 'unchanged':
+                try:
+                    source = old[key]
+                    if source['status'] == 'carried':
+                        origin = store.get(source['source_gate_digest'])
+                        green_record(root, store, origin, repository)
+                        require(origin['record_digest'] == source['source_gate_digest'] and
+                                dict(source, status='executed', source_gate_digest=None) in origin['receipt']['items'],
+                                'original source binding')
+                    require(source['status'] in ('executed', 'carried'), 'missing green result')
+                    dependency = item_evidence(store, source)
+                    require(dependency['complete'], 'unknown dependency')
+                    require(dependency['runtime_digest'] == runtimes.get(key), 'runtime changed')
+                    require(not intersects(dependency, changed), 'dependency changed')
+                    status, reason = 'carried', 'dependencies unchanged'
+                    evidence = dict(source, status='carried', source_gate_digest=(prior['record_digest']
+                                    if source['status'] == 'executed' else source['source_gate_digest']))
+                except (OSError, ValueError, TypeError, KeyError) as error:
+                    reason = str(error) or 'unknown evidence'
+            rows.append(dict(item_id=key, status=status, reason=reason, evidence=evidence))
+        else:
+            rows.append(dict(item_id=key, status=status, reason=item['catalog_reason'] or reason, evidence=None))
+    return dict(candidate_commit=candidate, baseline_commit=prior['receipt']['candidate_commit'] if prior else None,
+                baseline_record_digest=prior['record_digest'] if prior else None,
+                changed_paths=changed, inventory=current, items=rows)
+
+
+def assemble(plan, executed):
+    """No worker runs for carried entries; diagnostics cannot fill missing executions."""
+    require(set(executed) == {i['item_id'] for i in plan['items'] if i['status'] == 'run'},
+            'execution inventory')
+    entries = []
+    for item in plan['items']:
+        if item['status'] == 'run':
+            entry = executed[item['item_id']]
+            require(entry['item_id'] == item['item_id'] and entry['status'] == 'executed', 'execution identity')
+        elif item['status'] == 'carried':
+            entry = item['evidence']
+        else:
+            entry = dict(item_id=item['item_id'], status=item['status'], dependency_record_digest=None,
+                         result_digest=None, source_commit=None, source_gate_digest=None)
+        entries.append(entry)
+    receipt = sealed(RECEIPT, candidate_commit=plan['candidate_commit'], baseline_commit=plan['baseline_commit'],
+                     baseline_record_digest=plan['baseline_record_digest'], changed_paths_digest=digest(plan['changed_paths']),
+                     inventory_digest=plan['inventory']['record_digest'], items=entries)
+    return validate_receipt(receipt, plan['inventory'])
+
+
+def dispatch(plan, execute):
+    """The common child dispatcher, callable only by the authority's inactive path."""
+    require(SELECTION_ENABLED, 'change selection is inactive until increment 5')
+    return assemble(plan, {i['item_id']: execute(i['item_id']) for i in plan['items'] if i['status'] == 'run'})
+
+
+def row_source(source, selected_rows):
+    """Skip independent assertion bodies before evaluation, retaining suite setup.
+
+    Only literal expect calls are selectable. Computed labels and wrapper-driven
+    suites need a complete run until they expose independently addressable rows.
+    This conservative refusal also handles missing or changed prior row identities.
+    """
+    import ast
+    require(isinstance(selected_rows, list) and selected_rows and
+            len(set(selected_rows)) == len(selected_rows), 'selected row inventory')
+    selected = {name.split()[-1] for name in selected_rows}
+    tree = ast.parse(source)
+    found = []
+
+    class Rows(ast.NodeTransformer):
+        def visit_Expr(self, node):
+            call = node.value
+            if isinstance(call, ast.Call) and isinstance(call.func, ast.Name) and call.func.id == 'expect':
+                require(call.args and isinstance(call.args[0], ast.Constant) and
+                        isinstance(call.args[0].value, str), 'unaddressable row')
+                label = call.args[0].value.split(':', 1)[0].split()[-1]
+                if label in selected:
+                    found.append(label)
+                    return node
+                # Removing this expression also removes its condition's evaluation.
+                return ast.copy_location(ast.Pass(), node)
+            return self.generic_visit(node)
+    tree = Rows().visit(tree)
+    require(sorted(found) == sorted(selected) and len(found) == len(selected_rows), 'prior rows unavailable')
+    return ast.unparse(ast.fix_missing_locations(tree)) + '\n'

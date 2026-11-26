@@ -639,9 +639,10 @@ def baselined(case, observation, baseline=None):
     return any(entry['file'] in paths and entry['count'] > 0 for entry in entries)
 
 
-def validate_result(record, case, *, baseline=None):
+def validate_result(record, case, *, baseline=None, store=None):
     try:
-        if (record['schema'] != SCHEMA or record['case'] != case
+        scoped = record['schema'] == 'veldo.mutation-result/v2'
+        if (record['schema'] not in (SCHEMA, 'veldo.mutation-result/v2') or record['case'] != case
                 or record['fixture_version'] != FIXTURE_VERSION):
             raise ValueError('identity mismatch')
         honest, noop, broken = (observations(record[k]) for k in ('baseline', 'noop', 'mutant'))
@@ -659,11 +660,17 @@ def validate_result(record, case, *, baseline=None):
         stalled.update(n.split()[-1] for n, state in broken if state in ('hung', 'not_run'))
         if mutant.get('watchdog_fired') or stalled.intersection(case['rows']):
             raise Refused('hung_not_killed', case['identity'] + ': target hung or not run')
+        targets = case['rows']
+        if scoped:
+            validate_scope(record, case, store, baseline=baseline)
+            if record['execution_scope'] == 'rows':
+                targets = [n.split()[-1] for n in record['selected_rows']]
+                honest = [row for row in honest if row[0] in record['selected_rows']]
         if not (collections.Counter(n for n, _ in honest) <=
                 collections.Counter(n for n, _ in broken)):
             raise Refused('missing_target', case['identity'] + ': baseline rows removed')
         killed = []
-        for label in case['rows']:
+        for label in targets:
             before = [ok for name, ok in honest if name.split()[-1] == label]
             after = [(name, ok) for name, ok in broken if name.split()[-1] == label]
             if before != [True] or len(after) != 1:
@@ -688,6 +695,48 @@ def validate_result(record, case, *, baseline=None):
         return record
     except (KeyError, TypeError, ValueError) as error:
         raise Refused('driver_error', str(error)) from error
+
+
+def validate_scope(record, case, store, *, baseline=None):
+    M = load(ROOT / 'scripts/mutation_reuse.py')
+    C = M.change_module()
+    scope, selected = record['execution_scope'], record['selected_rows']
+    C.require(scope in ('rows', 'suite'), 'execution scope')
+    C.require(store is not None, 'authenticated controls required')
+    controls = store.get(record['control_receipt_digest'])
+    C.check_seal(controls, M.CONTROL_RECORD,
+                 ('suite', 'cases', 'source_commit', 'dependency', 'baseline', 'noop'))
+    M.authenticated_controls(store, record['control_receipt_digest'], controls['suite'], controls['cases'])
+    C.require(case in controls['cases'] and record['baseline'] == controls['baseline'] and
+              record['noop'] == controls['noop'], 'control references')
+    C.require(record['observed_rows'] == record['mutant']['row_names'], 'observed rows')
+    attempts = record['attempts']
+    C.require(isinstance(attempts, list) and 1 <= len(attempts) <= 2 and
+              attempts[-1] == dict(execution_scope=scope, selected_rows=selected,
+                                   observation=record['mutant']), 'attempt evidence')
+    if scope == 'rows':
+        C.require(isinstance(selected, list) and selected and len(set(selected)) == len(selected) and
+                  collections.Counter(selected) == collections.Counter(record['observed_rows']), 'selected row inventory')
+        C.require(all(n.split()[-1] in case['rows'] for n in selected), 'selected target identity')
+    else:
+        C.require(selected == [], 'suite row selection')
+    prior_key = record['prior_kill_receipt_digest']
+    if scope == 'rows' or len(attempts) == 2:
+        prior = C.referenced(store, prior_key, M.KILL_RECORD, ('source_commit', 'dependency', 'result'))
+        C.validate_dependency(prior['dependency'])
+        previous = prior['result']
+        C.require(previous['case'] == case and prior['source_commit'] == prior['dependency']['observed_commit'],
+                  'prior case source')
+        # Its authenticated result must itself prove a kill, including passing controls.
+        validate_result(previous, case, store=store, baseline=baseline)
+        wanted = [k['row'] for k in previous['kills'] if k['kill_by'] in ('assertion', 'terminal')]
+        C.require(wanted and attempts[0]['selected_rows'] == wanted, 'prior kill provenance')
+        if len(attempts) == 2 and not attempts[0].get('unavailable'):
+            first = observations(attempts[0]['observation'])
+            C.require(collections.Counter(n for n, _ in first) == collections.Counter(wanted) and
+                      all(ok is True for _, ok in first), 'fallback from incomplete attempt')
+    else:
+        C.require(prior_key is None, 'unexpected prior receipt')
 
 
 class SuiteResources:
@@ -1154,7 +1203,8 @@ class Workers:
                         # A case of a suite the authority's list names runs in the unconfined leg,
                         # as its suite does in the unit stage (VELDO-0208, owner decision): the
                         # worker installs no boundary. It is never a declared case, so never traced.
-                        leg = 'unconfined' if in_leg(self.leg, job['case']) else 'confined'
+                        leg = 'unconfined' if in_leg(self.leg, job['case'], selected_rows=job.get('selected_rows'),
+                                                    row_legs=job.get('row_legs')) else 'confined'
                         if leg == 'unconfined' and 'snapshot_root' in job:
                             raise Refused('driver_error', name + ': an unconfined case cannot be declared')
                         self.legs[name] = leg
@@ -1282,7 +1332,7 @@ def worker(job, keep=()):
 ROWS_SCOPED_CASE = 'rows_scoped_unconfined_case'
 
 
-def in_leg(leg, case):
+def in_leg(leg, case, *, selected_rows=None, row_legs=None):
     """Whether this case runs in the unconfined leg: its suite is one the authority's list names
     whole, unless its registry explicitly narrows it with confined_only=True. That flag can
     only retain the worker boundary, never remove it. A case still runs its whole suite: a
@@ -1294,13 +1344,21 @@ def in_leg(leg, case):
     if leg is None or not suite.endswith('.py') or suite[:-3] not in leg['suites']:
         return False
     if suite[:-3] in {e.split(':', 1)[0] for e in leg['entries'] if ':' in e}:
+        if selected_rows is not None and row_legs is not None:
+            assignments = {row_legs.get(row) for row in selected_rows}
+            if assignments == {'confined'}:
+                return False
+            if assignments == {'unconfined'}:
+                return True
         raise Refused(ROWS_SCOPED_CASE, '%s is a case of %s, which the unconfined list names only for '
                       'some rows, and a case runs its whole suite; refusing rather than running every '
                       'row of it unconfined' % (case.get('identity') or case.get('name'), suite[:-3]))
     return True
 
 
-def control_group(case):
+def control_group(case, configuration=None):
+    if configuration is not None:
+        return digest(load(ROOT / 'scripts/mutation_reuse.py').suite_identity(case, configuration))
     # A deliberately confined case cannot borrow a whole-suite unconfined control.
     return (case['suite'] + ':' + case['module'] + ':' + str(case.get('fixture') is True)
             + (':confined' if case.get('confined_only') is True else ''))
@@ -1825,3 +1883,80 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
+
+
+def run_selected_cases(workers, cases, directory, frozen, *, store, commit, changed,
+                       configurations, registered_cases, prior_kills=None, prior_controls=None):
+    """Increment 3 coordinator seam. Increment 5 supplies the authenticated selection.
+
+    Uses the existing confined workers, reservations and cleanup, with controls
+    completed and validated before any case of their suite starts.
+    """
+    M = load(ROOT / 'scripts/mutation_reuse.py')
+    C = M.change_module()
+    C.require(C.SELECTION_ENABLED, 'change selection is inactive until increment 5')
+    O = load(ROOT / 'scripts/mutation_observer.py')
+    prior_kills, prior_controls = prior_kills or {}, prior_controls or {}
+    requested = {c['identity'] for c in cases}
+    C.require(requested <= {c['identity'] for c in registered_cases}, 'selected case inventory')
+    groups = {}
+    for case in registered_cases:
+        suite = M.suite_identity(case, configurations[case['identity']])
+        groups.setdefault(C.digest(suite), (suite, []))[1].append(case)
+    controls = M.SuiteControls(store, changed, commit)
+    results = {}
+    for group, (suite, members) in groups.items():
+        if not any(c['identity'] in requested for c in members):
+            continue
+        def execute_controls(members):
+            jobs = control_jobs(members, lambda case: group, {},
+                                {case['identity']: WORKER_BUDGET for case in members})
+            observations = workers.run(jobs, directory, frozen)
+            baseline, noop = (observations[group + ':' + mode]['result']['observation']
+                              for mode in ('baseline', 'noop'))
+            # Controls also read each target's original bytes and validate its anchor,
+            # even when the representative worker targets another module.
+            for member in members:
+                base = frozen / ('scripts/fixtures' if member.get('fixture') else member.get('dir', '.veldo'))
+                source = (base / member['module']).read_bytes()
+                C.require(source.count(member['old'].encode()) == 1, 'control target wiring')
+            dependency = O.combine_dependencies([baseline['dependency'], noop['dependency']], group, commit)
+            dependency = C.sealed(C.DEPENDENCY, **{k: v for k, v in dependency.items()
+                if k not in ('schema', 'record_digest', 'paths')},
+                paths=sorted(set(dependency['paths']) | {
+                    ('scripts/fixtures' if c.get('fixture') else c.get('dir', '.veldo')) + '/' + c['module']
+                    for c in members}))
+            return baseline, noop, dependency
+
+        shared = controls.get(suite, members, execute_controls, prior_controls.get(group))
+        for case in members:
+            if case['identity'] not in requested:
+                continue
+            def execute(selected):
+                if selected is not None:
+                    try:
+                        C.row_source((frozen / 'scripts/suites' / case['suite']).read_text(), selected)
+                    except ValueError:
+                        return None
+                job = dict(case=case, mode='mutant', budget_seconds=WORKER_BUDGET)
+                if selected is not None:
+                    job['selected_rows'] = selected
+                completed = workers.run({case['identity']: job}, directory, frozen)[case['identity']]['result']
+                return dict(case=case, fixture_version=FIXTURE_VERSION, input_digest=C.digest(case),
+                            mutant=completed['observation'],
+                            **{k: completed[k] for k in ('replacement_count', 'old_digest', 'new_digest')})
+
+            result = M.selected_mutation(case, shared, execute,
+                lambda record, definition: validate_result(record, definition, store=store),
+                store=store, prior=prior_kills.get(case['identity']))
+            previous = store.get(prior_kills[case['identity']]) if case['identity'] in prior_kills else None
+            dependencies = [shared['dependency'], *(a['observation']['dependency']
+                            for a in result['attempts'] if 'observation' in a)]
+            dependency = O.combine_dependencies(dependencies, case['identity'], commit,
+                prior=previous['dependency'] if previous else None, rows=result['execution_scope'] == 'rows')
+            C.require(not workers.active and not workers.meters and not workers.owned_snapshots,
+                      'publication before cleanup')
+            envelope = C.sealed(M.KILL_RECORD, source_commit=commit, dependency=dependency, result=result)
+            C.require(store.change_put(envelope), 'kill publication')
+            results[case['identity']] = envelope
+    return results

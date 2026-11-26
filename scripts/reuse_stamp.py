@@ -118,3 +118,15 @@ def main(argv):
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
+
+
+def change_fields(root, store, gate, repository):
+    """Increment 3 receipt reducer; verify.sh starts calling it in increment 5."""
+    C = load('gate_changes')
+    C.green_record(root, store, gate, repository)
+    C.require(store.get(gate['record_digest']) == gate, 'unpublished gate')
+    counts = {status: sum(i['status'] == status for i in gate['receipt']['items'])
+              for status in ('executed', 'carried', 'removed', 'not-applicable', 'waived')}
+    payload = dict(schema='veldo.change-landing/v1', commit=gate['receipt']['candidate_commit'],
+                   repository=repository, gate_digest=gate['record_digest'], counts=counts)
+    return dict(change_evidence=E.sign(payload, store.secret))

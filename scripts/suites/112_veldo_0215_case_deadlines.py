@@ -70,8 +70,9 @@ def _v215_case_deadlines():
         row('key-binding', all(k != key and gate.case_deadline(k, store) == 120 for k in keys)
             and gate.case_time_key(case, dict(files, **{'proof/note': (0o644, b'new')}), None) == key)
 
-        other = dict(case, identity='second', name='second')
-        controls = gate.control_jobs([case, other], gate.control_group, {},
+        other = dict(case, identity='second', name='second', module='other.py')
+        configuration = dict(leg='confined', runtime_digest='0' * 64, fixture_configuration={})
+        controls = gate.control_jobs([case, other], lambda c: gate.control_group(c, configuration), {},
                                      {case['identity']: 120, 'second': 480})
         row('shared-controls', len(controls) == 2
             and all(j['budget_seconds'] == 480 for j in controls.values()))

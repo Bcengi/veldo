@@ -2669,6 +2669,15 @@
     "163_veldo_0367_observer"
    ],
    "requires_note": "Only ROOT and expect; private stores, native children and synthetic syscall traces. No live captures or clock sites."
+  },
+  {
+   "name": "164_veldo_0367_selection",
+   "file": "164_veldo_0367_selection.py",
+   "regions": "VELDO-0367 AC3/AC4: dependency selection, carried provenance, selected mutation rows and shared suite controls.",
+   "requires": [
+    "164_veldo_0367_selection"
+   ],
+   "requires_note": "Only ROOT and expect; private authenticated stores and scratch repositories. No clocks or live services."
   }
  ],
  "resource_capacities": {

@@ -312,7 +312,7 @@ def private_runtime():
                     os.environ[name] = value
 
 
-def worker(case, mutant=None, *, isolate_runtime=True):
+def worker(case, mutant=None, *, isolate_runtime=True, selected_rows=None):
     """Capture every assertion, including the shared preamble, with exact row identities."""
     shared = ROOT / 'scripts/suites/shared.py'
     dependency = DependencyReads(ROOT, discover_git=False).start()
@@ -391,6 +391,10 @@ def worker(case, mutant=None, *, isolate_runtime=True):
             if not source.count(anchor):
                 raise RuntimeError('suite production-copy anchor moved')
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
+        if selected_rows is not None:
+            source = dependency_module('gate_changes')['row_source'](source, selected_rows)
+            rows.clear()  # setup ran, but selected observations belong to the requested rows
+            details.clear()
         ns['__suite_file__'] = str(suite)
         # Declared workers have only their keyed scratch grant and cannot reach the
         # host runtime. Fresh workers, including direct single-case drives, own a

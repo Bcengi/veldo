@@ -257,3 +257,131 @@ class Session:
     def evidence(self, case, record, reused):
         return dict(record, reuse_key=self.keys[case['identity']],
                     source='reused' if reused else 'fresh', reuse_reason=self.reasons[case['identity']])
+
+
+SCOPED_RESULT = 'veldo.mutation-result/v2'
+CONTROL_RECORD = 'veldo.suite-controls/v1'
+KILL_RECORD = 'veldo.mutation-kill/v1'
+
+
+def change_module():
+    return R._sibling('gate_changes')
+
+
+def suite_identity(case, configuration):
+    """Sharing is by suite, leg, runtime and fixture configuration, across modules."""
+    return dict(suite=case['suite'], leg='confined' if case.get('confined_only') is True else configuration['leg'],
+                runtime=configuration['runtime_digest'],
+                fixture=configuration['fixture_configuration'])
+
+
+def control_rows(record, cases):
+    """Controls prove every row and every case's target wiring before any mutant starts."""
+    honest, noop = record['baseline'], record['noop']
+    for value in (honest, noop):
+        rows = value['observations']
+        if (not rows or value['count'] != len(rows) or value['row_names'] != [n for n, _ in rows]
+                or any(ok is not True for _, ok in rows) or len({n for n, _ in rows}) != len(rows)
+                or any(value.get(k) for k in ('watchdog_fired', 'hung_rows', 'not_run_rows', 'failed_rows'))):
+            raise ValueError('control_failed')
+    if honest['observations'] != noop['observations']:
+        raise ValueError('control_failed')
+    for case in cases:
+        for target in case['rows']:
+            if [ok for name, ok in honest['observations'] if name.split()[-1] == target] != [True]:
+                raise ValueError('missing control target')
+    return honest['row_names']
+
+
+def authenticated_controls(store, key, suite, cases):
+    C = change_module()
+    record = C.referenced(store, key, CONTROL_RECORD,
+                          ('suite', 'cases', 'source_commit', 'dependency', 'baseline', 'noop'))
+    C.require(record['suite'] == suite and record['cases'] == sorted(cases, key=lambda c: c['identity']),
+              'control identity')
+    C.validate_dependency(record['dependency'])
+    C.require(record['source_commit'] == record['dependency']['observed_commit'], 'control source')
+    control_rows(record, cases)
+    return record
+
+
+class SuiteControls:
+    """One control pair per compatible suite per gate, including dependency-based carry."""
+    def __init__(self, store, changed, source_commit):
+        self.store, self.changed, self.source_commit = store, changed, source_commit
+        self.results = {}
+
+    def get(self, suite, cases, execute, prior=None):
+        C = change_module()
+        key = C.digest(suite)
+        if key in self.results:
+            C.require(self.results[key]['cases'] == sorted(cases, key=lambda c: c['identity']), 'control membership')
+            return self.results[key]
+        record = None
+        if prior is not None and self.changed is not None:
+            try:
+                previous = authenticated_controls(self.store, prior, suite, cases)
+                dependency = previous['dependency']
+                if (dependency['complete'] and dependency['runtime_digest'] == suite['runtime'] and
+                        not C.intersects(dependency, self.changed)):
+                    record = previous
+            except (OSError, ValueError, KeyError, TypeError):
+                pass
+        if record is None:
+            baseline, noop, dependency = execute(cases)
+            C.validate_dependency(dependency)
+            C.require(dependency['observed_commit'] == self.source_commit, 'fresh control source')
+            record = C.sealed(CONTROL_RECORD, suite=suite, cases=sorted(cases, key=lambda c: c['identity']),
+                              source_commit=self.source_commit, dependency=dependency, baseline=baseline, noop=noop)
+            control_rows(record, cases)
+            C.require(self.store.change_put(record), 'control publication')
+        self.results[key] = record
+        return record
+
+
+def prior_killing_rows(store, key, case, validate):
+    if key is None:
+        return None
+    C = change_module()
+    try:
+        prior = C.referenced(store, key, KILL_RECORD, ('source_commit', 'dependency', 'result'))
+        C.validate_dependency(prior['dependency'])
+        C.require(prior['source_commit'] == prior['dependency']['observed_commit'], 'kill source')
+        result = prior['result']
+        validate(result, case)
+        rows = [entry['row'] for entry in result['kills'] if entry['kill_by'] in ('assertion', 'terminal')]
+        C.require(rows and len(rows) == len(set(rows)), 'unusable prior kills')
+        return rows
+    except (OSError, ValueError, KeyError, TypeError, RuntimeError):
+        return None
+
+
+def selected_mutation(case, controls, execute, validate, *, store, prior=None):
+    """Try authenticated killing rows, then the suite. Failed controls stop first."""
+    control_rows(controls, [case])
+    rows = prior_killing_rows(store, prior, case, validate)
+    attempts = []
+    for selected in ([rows, None] if rows else [None]):
+        result = execute(selected)
+        # Unsupported row bodies explicitly request fallback before executing them.
+        if result is None and selected is not None:
+            attempts.append(dict(execution_scope='rows', selected_rows=selected, unavailable=True))
+            continue
+        result.update(schema=SCOPED_RESULT, execution_scope='rows' if selected else 'suite',
+                      selected_rows=selected or [], observed_rows=result['mutant']['row_names'],
+                      prior_kill_receipt_digest=prior if rows else None,
+                      control_receipt_digest=controls['record_digest'],
+                      baseline=controls['baseline'], noop=controls['noop'])
+        attempt = dict(execution_scope=result['execution_scope'], selected_rows=selected or [],
+                       observation=result['mutant'])
+        attempts.append(attempt)
+        result['attempts'] = list(attempts)
+        try:
+            validate(result, case)
+            return result
+        except Exception as error:
+            # Hangs, incomplete execution and invalid evidence are never kills.
+            # Only a complete survivor qualifies for the ordinary fallback.
+            if selected is None or getattr(error, 'code', None) != 'mutation_survived':
+                raise
+    raise ValueError('mutation_survived')

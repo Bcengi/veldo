@@ -130,7 +130,7 @@ def record(directory, key, secret):
     payload = authenticated(envelope, secret)
     if (set(payload) != {'schema', 'key', 'result', 'provenance', 'authority'} or payload['schema'] != SCHEMA
             or payload['key'] != key or payload['provenance'] != PROVENANCE
-            or payload['authority'] != authority_identity()):
+            or (payload['authority'] != authority_identity() and not change_record(payload['result'], key))):
         raise ValueError('missing non-agent gate provenance')
     return payload['result']
 
@@ -241,3 +241,41 @@ def landing_problem(document):
         return None
     except (OSError, ValueError, TypeError, KeyError, AttributeError):
         return 'missing_evidence:gate/authenticated_reuse_required'
+
+
+def change_record(value, key):
+    """Dependency records survive authority edits; dependents are selected by reads.
+
+    Authentication and revocation remain mandatory. Only this explicit namespace
+    is exempt from the historical whole-authority fingerprint.
+    """
+    if not isinstance(value, dict):
+        return False
+    schemas = {'veldo.dependency/v1', 'veldo.change-inventory/v1', 'veldo.change-receipt/v1',
+               'veldo.change-result/v1', 'veldo.change-gate/v1', 'veldo.suite-controls/v1',
+               'veldo.mutation-kill/v1'}
+    if value.get('schema') in schemas:
+        return value.get('record_digest') == key == digest({k: v for k, v in value.items() if k != 'record_digest'})
+    return (set(value) == {'repository', 'commit', 'record_digest'} and
+            key == digest(dict(schema='veldo.change-index/v1', repository=value['repository'], commit=value['commit'])))
+
+
+def change_landing(document, root, store):
+    """Landing reopens every reference; the signed count is never sufficient."""
+    from importlib.util import module_from_spec, spec_from_file_location
+    spec = spec_from_file_location('landing_changes', Path(__file__).resolve().parents[1] / 'scripts/gate_changes.py')
+    changes = module_from_spec(spec)
+    spec.loader.exec_module(changes)
+    payload = authenticated(document['change_evidence'], store.secret)
+    if (set(payload) != {'schema', 'commit', 'repository', 'gate_digest', 'counts'} or
+            payload['schema'] != 'veldo.change-landing/v1' or payload['commit'] != document['commit']):
+        raise ValueError('landing change binding')
+    gate = store.get(payload['gate_digest'])
+    changes.green_record(root, store, gate, payload['repository'])
+    if gate['record_digest'] != payload['gate_digest'] or gate['receipt']['candidate_commit'] != document['commit']:
+        raise ValueError('landing change source')
+    counts = {status: sum(i['status'] == status for i in gate['receipt']['items'])
+              for status in ('executed', 'carried', 'removed', 'not-applicable', 'waived')}
+    if counts != payload['counts']:
+        raise ValueError('landing change counts')
+    return gate

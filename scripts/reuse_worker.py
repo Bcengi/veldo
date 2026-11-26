@@ -119,7 +119,8 @@ def observe(gate, owner, job, root):
     prepared = owner.materialize(case, job['mode'], Path(os.environ['TMPDIR']), root=root)
     mutant = prepared['mutant']
     observation = owner.worker(case, str(mutant) if mutant else None,
-                               isolate_runtime='runtime_paths' not in job and 'snapshot_root' not in job)
+                               isolate_runtime='runtime_paths' not in job and 'snapshot_root' not in job,
+                               selected_rows=job.get('selected_rows'))
     if case['driver'] == gate.DRIVERS[1]:
         matches = observation['targets'][case['rows'][0]]
         observation.update(case=case['name'], row=case['rows'][0],

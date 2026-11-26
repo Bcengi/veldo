@@ -65,7 +65,7 @@ def _v217_declarations():
         for name, entry in document['cases'].items():
             entry.setdefault('proposal', {'runs': [
                 {'mode': mode, 'exit': 0, 'reads': 'same-reads', 'trace': 'trace-%d' % index,
-                 'observation': 'seen', 'non_file': []} for index, mode in enumerate(C.TRACED_RUNS)],
+                 'observation': 'seen', 'non_file': []} for index, mode in enumerate(('baseline', 'baseline', 'noop', 'mutant'))],
                 'gate_observation': 'seen', 'inputs': 'traced-inputs',
                 'gate_receipt': {'status': 'passed', 'input_digest': 'traced-inputs', 'digest': 'r' * 64}})
             entry['review'] = 'proof/VELDO-0217/reviews/fixture.json'
@@ -151,7 +151,7 @@ def _v217_declarations():
                     failures.append(run.stderr[-500:])
                 captured = P.capture(root, [], P.audit_events(audit))
                 runs = [{'mode': mode, 'exit': run.returncode, 'reads': 'r', 'trace': 't', 'observation': 'o',
-                         'non_file': []} for mode in C.TRACED_RUNS]
+                         'non_file': []} for mode in ('baseline', 'baseline', 'noop', 'mutant')]
                 again = P.proposal(root, identity, runs, [captured])
                 reported[identity] = (reasons, again, P.stale(root, again),
                                       sorted(set(again['files']) - set(old['files'])))
@@ -276,14 +276,15 @@ def _v217_declarations():
                 and not any(current.keys.get(gate.DRIVERS[0] + ':' + n) for n in bound))
             expected = {'passes': 'miss', 'unreviewed': 'unreviewed_declaration', 'no-review': 'review_mismatch',
                         'review-mismatch': 'review_mismatch', 'trace-failed': 'trace_failed',
-                        'baselines-differ': 'baseline_reads_differ', 'one-baseline': 'trace_failed',
-                        'non-file': 'user_bus', 'observation-differs': 'observation_differs',
-                        'no-gate-observation': 'observation_differs', 'gate-entry': 'starts_a_gate',
+                        'baselines-differ': 'miss', 'one-baseline': 'miss',
+                        'non-file': 'user_bus', 'observation-differs': 'miss',
+                        'no-gate-observation': 'miss', 'gate-entry': 'starts_a_gate',
                         'toolchain-unreviewed': 'toolchain_unreviewed',
                         'sensitivity-unproved': 'sensitivity_unproved', 'no-rationale': 'no_rationale'}
             row('review-conditions: %r keyed=%r' % ({k: v for k, v in reasons.items() if v != expected[k]}, keyed),
-                reasons == expected and keyed == ['passes']
-                and {n for n in current.snapshots if n.split(':', 1)[1] not in bound} == {gate.DRIVERS[0] + ':passes'})
+                reasons == expected and keyed == sorted(n for n, reason in expected.items() if reason == 'miss')
+                and {n for n in current.snapshots if n.split(':', 1)[1] not in bound}
+                    == {gate.DRIVERS[0] + ':' + n for n, reason in expected.items() if reason == 'miss'})
             policy = (ROOT / '.veldo/policy.yaml').read_text()
             row('reviewed-flag-protected', '{path: "' + I.DECLARATIONS + '", floor: high}' in policy)
 
@@ -615,7 +616,7 @@ def _v217_declarations():
 
         # Review F5: the gate observation a proposal records is the last fresh one of the state it
         # traced: the proposer takes it only from a passed receipt over exactly its own inputs, and
-        # case_reuse refuses a declaration whose receipt is of another state, failed, or missing.
+        # Historical proposal metadata is no longer eligibility; authenticated item receipts replace it.
         if leg_runs():
             receipts = top / 'receipts'; receipts.mkdir()
             fresh = {'source': 'fresh', 'case': {'identity': 'd:case'}, 'baseline': {'count': 1}}
@@ -636,8 +637,7 @@ def _v217_declarations():
                       for n in ('current', 'earlier', 'failed', 'none')}
             row('gate-observation-current: %r %r' % (proposer, judged),
                 proposer == {'current': (['d:case'], 'inputs-now'), 'earlier': ([], None), 'failed': ([], None)}
-                and judged == {'current': None, 'earlier': 'observation_not_current',
-                               'failed': 'observation_not_current', 'none': 'observation_not_current'})
+                and judged == dict.fromkeys(('current', 'earlier', 'failed', 'none')))
 
         # Review F4: the review records a reviewed declaration names are a protected path, as the
         # declarations are: writing one needs the owner's commit-bound approval (.veldo/policy.yaml).

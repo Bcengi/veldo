@@ -11972,11 +11972,6 @@ def cases():
         "            if '.git' in path.parts or '__pycache__' in path.parts or name.startswith('scripts/suites/support/'):\n",
         ['declarations/stale-found'])
     result[-1]['dir'] = 'scripts'
-    add(217, 'declarations217-one-trace-enough', suite217, 'case_reuse.py',
-        "        if len(baselines) != 2 or baselines[0]['reads'] != baselines[1]['reads']:\n",
-        "        if not baselines:\n",
-        ['declarations/review-conditions'])
-    result[-1]['dir'] = 'scripts'
     add(217, 'declarations217-proof-skipped', suite217, 'case_reuse.py',
         "                if not sensitivity_proved(store_directory(), self.case_digests[name]):\n",
         "                if False:  # the sensitivity proof is skipped\n",
@@ -12017,11 +12012,6 @@ def cases():
         "                withheld.add('incomplete_trace')\n",
         "                error = incomplete\n",
         ['declarations/incomplete-trace-demoted'])
-    result[-1]['dir'] = 'scripts'
-    add(217, 'declarations217-receipt-unchecked', suite217, 'case_reuse.py',
-        "            return 'observation_not_current'\n",
-        "            pass  # an observation from any receipt taken as the last one\n",
-        ['declarations/gate-observation-current'])
     result[-1]['dir'] = 'scripts'
     add(217, 'declarations217-reviews-unprotected', suite217, 'policy.yaml',
         '  - {path: "proof/VELDO-0217/reviews/*", floor: high}\n',
@@ -19070,6 +19060,63 @@ def cases():
     result[-1]['dir'] = 'scripts/suites'
     result[-1]['confined_only'] = True
 
+    # VELDO-0367 increment 3: replaced whole-suite premises have scoped falsifiers.
+    def selection367(name, module, old, new, rows):
+        add(367, 'selection367-' + name, '164_veldo_0367_selection.py', module, old, new,
+            ['selection/' + row for row in rows])
+        result[-1]['dir'] = 'scripts'
+        result[-1]['confined_only'] = True
+        result[-1]['siblings'] = True
+
+    selection367('dependency', 'gate_changes.py',
+        "require(not intersects(dependency, changed), 'dependency changed')",
+        "require(True, 'dependency changed')", ['dependency-edit'])
+    selection367('unrelated', 'gate_changes.py',
+        "require(not intersects(dependency, changed), 'dependency changed')",
+        "require(not changed, 'dependency changed')", ['unrelated'])
+    selection367('unknown', 'gate_changes.py',
+        "require(dependency['complete'], 'unknown dependency')",
+        "require(True, 'unknown dependency')", ['unknown-runs'])
+    selection367('provenance', 'gate_changes.py',
+        "evidence = dict(source, status='carried', source_gate_digest=",
+        "evidence = dict(source, status='carried', source_commit=candidate, source_gate_digest=", ['provenance'])
+    selection367('stale', 'gate_changes.py',
+        "require(dependency['complete'] and not intersects(dependency, changed), 'stale carried evidence')",
+        "require(dependency['complete'], 'stale carried evidence')", ['stale-carry'])
+    selection367('scope-bodies', 'gate_changes.py',
+        'return ast.copy_location(ast.Pass(), node)', 'return node', ['row-bodies'])
+    selection367('once', 'mutation_reuse.py',
+        'if key in self.results:', 'if False:', ['controls-once'])
+    selection367('control-carry', 'mutation_reuse.py',
+        'not C.intersects(dependency, self.changed)', 'True', ['controls-dependency'])
+    selection367('control-forced', 'mutation_reuse.py',
+        'record = previous', 'record = None', ['controls-carry'])
+    selection367('prior', 'mutation_reuse.py',
+        'rows = prior_killing_rows(store, prior, case, validate)', 'rows = None', ['prior-first'])
+    selection367('fallback', 'mutation_reuse.py',
+        "getattr(error, 'code', None) != 'mutation_survived'", 'True', ['fallback'])
+    selection367('controls-stop', 'mutation_reuse.py',
+        '    control_rows(controls, [case])', '    pass  # defect: failed controls launch a mutant', ['failed-control'])
+    selection367('suite-group', 'mutation_reuse.py',
+        "return dict(suite=case['suite'], leg=", "return dict(suite=case['suite'] + case['module'], leg=", ['suite-group'])
+    selection367('row-inventory', 'check_gate_mutations.py',
+        "collections.Counter(selected) == collections.Counter(record['observed_rows'])", 'True', ['incomplete-row'])
+    selection367('landing-source', 'reuse_evidence.py',
+        "payload['schema'] != 'veldo.change-landing/v1' or payload['commit'] != document['commit']", "payload['schema'] != 'veldo.change-landing/v1'", ['landing-candidate'])
+    result[-1]['dir'] = '.veldo'
+    selection367('teeth-bodies', 'check_teeth_mutations.py',
+        "            source = _coordinator().load(ROOT / 'scripts/gate_changes.py').row_source(source, selected_rows)\n",
+        '            source = source\n', ['teeth-rows'])
+
+    selection367('session-plan', 'case_reuse.py',
+        'self.plan = self.changes.select(root, store, repository, commit, inventory, runtimes)',
+        "self.plan = dict(items=[])", ['session'])
+    selection367('stamp-validation', 'reuse_stamp.py',
+        '    C.green_record(root, store, gate, repository)\n', '    pass\n', ['stamp-forged'])
+    selection367('authority-blanket', 'reuse_evidence.py',
+        "and not change_record(payload['result'], key)", 'and True', ['authority-dependency'])
+    result[-1]['dir'] = '.veldo'
+
     # Suite 48's registered falsifiers target its ordinary confined rows, not the
     # ptrace census composite. Explicitly retain the worker boundary for the whole
     # suite; its census claim still stands down there, and suite 113 proves it in
@@ -19968,7 +20015,7 @@ def materialize(case, mode, directory, root=ROOT):
                 new_digest=hashlib.sha256(after).hexdigest())
 
 
-def worker(case, mutant=None):
+def worker(case, mutant=None, *, selected_rows=None):
     """Capture every assertion, including the shared preamble, with exact row identities."""
     os.environ['VELDO_MUTATION_DRIVER'] = '1'  # a row that asks a real engine never runs here (VELDO-0306)
     shared = ROOT / 'scripts/suites/shared.py'
@@ -20000,6 +20047,10 @@ def worker(case, mutant=None):
             if not source.count(anchor):
                 raise RuntimeError('suite production-copy anchor moved')
             source = source.replace(anchor, '__import__("pathlib").Path(' + repr(mutant) + ')')
+        if selected_rows is not None:
+            source = _coordinator().load(ROOT / 'scripts/gate_changes.py').row_source(source, selected_rows)
+            rows.clear()
+            details.clear()
         ns['__suite_file__'] = str(suite)
         exec(compile(source, str(suite), 'exec'), ns)
     return {'count': len(rows), 'observations': rows,
@@ -20007,7 +20058,8 @@ def worker(case, mutant=None):
             'failed_rows': [name for name, ok in rows if not ok],
             'failed_details': details,
             'targets': {label: [ok for name, ok in rows if name.split()[-1] == label]
-                        for label in case['rows']}}
+                        for label in (case['rows'] if selected_rows is None else
+                                      [name.split()[-1] for name in selected_rows])}}
 
 
 def reuse_definition(case, definitions=None):
