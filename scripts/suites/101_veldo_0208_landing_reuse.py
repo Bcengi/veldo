@@ -930,8 +930,8 @@ def _v208_traced_workers():
             argv, channel = worker_argv(job)
             try:
                 process = subprocess.run(tracer.legacy_command(trace, argv), cwd=worker_root, pass_fds=(channel,),
-                    env=gate.fixed_env(scratch), capture_output=True, text=True, timeout=20,
-                    stdin=subprocess.DEVNULL)
+                    env=gate.fixed_env(scratch), capture_output=True, text=True,
+                    timeout=WAITS.WAIT_HANG_SECONDS, stdin=subprocess.DEVNULL)
             finally:
                 os.close(channel)
             expect('VELDO-0208 candidate/authority-worker-' + mode + ': ' + process.stderr[-400:],
@@ -1552,7 +1552,8 @@ def _v208_unconfined_leg():
             ran = subprocess.run([sys.executable, '-I', '-S', '-c', stage_driver or off_driver,
                                   str(ROOT / 'scripts/gate_legs.py'),
                                   str(off), 'unit', 'python3 scripts/selftest.py', str(legs_record), str(off_list),
-                                  str(taken)], capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL,
+                                  str(taken)], capture_output=True, text=True, timeout=WAITS.WAIT_HANG_SECONDS,
+                                 stdin=subprocess.DEVNULL,
                                  env=dict(os.environ, PATH=str(shim) + os.pathsep + os.environ.get('PATH', ''),
                                           VELDO_DEPENDENCY_COMMIT='1' * 40,
                                           **({'V367_FORGE': forge, 'V367_CLAIM': claim} if forge else {})),

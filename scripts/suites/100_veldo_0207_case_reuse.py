@@ -330,7 +330,8 @@ print(json.dumps(results))
             trace = top / 'startup.trace'
             result = subprocess.run(T.legacy_command(trace, [sys.executable, '-B', '-S', '-c',
                                     'open(' + repr(str(startup_input)) + ').read()']),
-                                    cwd=root, env=gate.fixed_env(scratch), capture_output=True, timeout=15)
+                                    cwd=root, env=gate.fixed_env(scratch), capture_output=True,
+                                    timeout=WAITS.WAIT_HANG_SECONDS)
             try:
                 T.check(trace, root, [], runtime=('/usr','/lib','/lib64','/etc'), scratch=scratch)
             except ValueError as error:
