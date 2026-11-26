@@ -1,0 +1,149 @@
+{
+ "account": "acct7",
+ "capability": {
+  "difference": null,
+  "equal_both_directions": true,
+  "expected": {
+   "accepted_plugins": [
+    "cc-plugin-sec-default@builtin"
+   ],
+   "mcp_servers": [],
+   "model": "claude-opus-5-5",
+   "plugins": [],
+   "skills": [],
+   "slash_commands": [],
+   "tools": [
+    "Bash",
+    "Edit",
+    "Read"
+   ]
+  },
+  "init_seen": true,
+  "revision": "sha256:76f7127fdd8c3e412b2025f655adedfbca075290ee70a62bd8a0712403269129"
+ },
+ "cleaned": {
+  "cleaned": true
+ },
+ "close": {
+  "base_absent": true,
+  "detached": true,
+  "device": "/dev/disk12",
+  "keychain_claude_items": 2,
+  "keychain_unchanged": true,
+  "removed": true,
+  "status": "closed"
+ },
+ "code_digests": {
+  "mac_leg_remote.py": "sha256:8665db7a847d281cc75731cc84e84232e285690c8a3008ddb02fed916f7d18cc",
+  "project_runner_macos_login.py": "sha256:fccc7e389cc8c975682c0108ee2f3268003d23bae154df767181cab3acc7977f",
+  "project_runner_macos_profile.py": "sha256:84e91bbda80528df582028dd564fbc8a8a18beb20c251ffdac05beea456fe257"
+ },
+ "engine": "claude_code",
+ "execution_record": {
+  "bash_error_output_seen": true,
+  "init_api_key_source": "none",
+  "init_mcp_servers": [],
+  "init_model": "claude-opus-5-5",
+  "init_plugins": [],
+  "init_skills": [],
+  "init_slash_commands": [],
+  "init_tools": [
+   "Bash",
+   "Edit",
+   "Read"
+  ],
+  "result_is_error": false,
+  "result_subtype": "success",
+  "stderr_digest": "sha256:85f65c34ee51b1e57e7d8b582be1aabe33673e3797f6d41b3c1959deac2a1a14",
+  "stderr_identical_in_order": true,
+  "stderr_lines": 206,
+  "stdout_digest": "sha256:3acbd96acc108d807562b3580bdffb4377826a5d0489a15513ed8858d1fa9f49",
+  "stdout_identical_in_order": true,
+  "stdout_lines": 72,
+  "tool_uses": [
+   "Bash",
+   "Read",
+   "Edit"
+  ]
+ },
+ "frame": {
+  "bytes": 555,
+  "files": [
+   ".credentials.json"
+  ],
+  "redaction_values": 1,
+  "refresh_credential_sent": false
+ },
+ "guard": {
+  "confirmed": true,
+  "released": true,
+  "source": "none",
+  "stop": null
+ },
+ "lease": {
+  "flock_held": true,
+  "named_by_ancestor": true
+ },
+ "leg": "AC1+AC3+AC4-login",
+ "mac": {
+  "binary_bound": true,
+  "binary_digest": "sha256:09f153b46b5df9e8b3454716d682a91901de020cbca630f61dec1a015b32b5e9",
+  "edit_diff": "diff --git a/notes.txt b/notes.txt\nindex 197b842..434a9b1 100644\n--- a/notes.txt\n+++ b/notes.txt\n@@ -1,2 +1,2 @@\n title: mac leg unit\n-status: draft\n+status: edited\n",
+  "engine_exit": 0,
+  "login_status": {
+   "exit": 0,
+   "logged_in": true,
+   "method": "claude.ai"
+  },
+  "policy_denies_keychain": true,
+  "policy_digest": "sha256:793e985cd8fa8d4433a476666a130313586363b8b6e8d42dfd9fe7bd2e473ca8",
+  "readback": {
+   "config_dir_is_delivered_profile": true,
+   "names": [
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY",
+    "CLAUDE_CODE_DISABLE_CLAUDE_MDS",
+    "CLAUDE_CODE_TMPDIR",
+    "CLAUDE_CONFIG_DIR",
+    "DISABLE_AUTOUPDATER",
+    "HOME",
+    "LANG",
+    "PATH",
+    "TEMP",
+    "TERM",
+    "TMP",
+    "TMPDIR",
+    "VELDO_DISPATCH_ID"
+   ],
+   "paid_present": [],
+   "profile_on_ram_disk": true
+  },
+  "refusal": null
+ },
+ "note": "Round 3 real Mac Claude leg, acct7, lease held by this run's runner. Engine-stderr mode (--debug-to-stderr): 206 error-stream lines kept on Linux identical in order to the Mac copy. Capability comparison against mac-capability-revision.json with the 2.1.317 qualification entry applied as production's handoff applies it: equal in both directions before the prompt was released. Not through the signed relay or production receiver (control_launch invoke_remote and control_worker are not on this base).",
+ "open": {
+  "account": "acct7",
+  "base_mode": "0o700",
+  "device": "/dev/disk12",
+  "dispatch": "r3-20261126013625",
+  "engine": "claude_code",
+  "files": {
+   ".credentials.json": 370
+  },
+  "profile_mode": "0o700",
+  "ram_disk": true,
+  "status": "open"
+ },
+ "qualification": true,
+ "role_settings": "sha256:40425f12a65c8c2ca324ee6b4156de4911f0e56483fc758fe9b895cf244ca2ac",
+ "run": "r3-20261126013625",
+ "scan": {
+  "ps_lines_scanned": 24,
+  "redaction_marker_count": 0,
+  "value_in_mac_process_commands_or_environment": false,
+  "value_in_mac_summary": false,
+  "value_in_raw_stream_before_redaction": false,
+  "value_in_redacted_record": false
+ },
+ "schema": "veldo.macos_qualification_run/v1",
+ "spec": "VELDO-0147"
+}

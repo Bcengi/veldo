@@ -78,11 +78,12 @@ def redact(data, values):
     return data
 
 
-def main(account, target, out):
+def main(account, target, out, mode=''):
     out = Path(out)
     accounts_root = Path(os.environ.get('CLAUDE_ACCOUNTS_ROOT') or Path(os.environ['CLAUDE_CONFIG_DIR']).parent)
     account_dir = accounts_root / account
-    run = 'r2-' + time.strftime('%Y%m%d%H%M%S')
+    run = 'r3-' + time.strftime('%Y%m%d%H%M%S')
+    stderr_leg = mode == 'stderr'
     L, C = organ('project_runner_macos_login'), organ('control_engine_claude')
     record = dict(schema='veldo.macos_qualification_run/v1', spec='VELDO-0147', leg='AC1+AC3+AC4-login',
                   engine='claude_code', account=account, run=run, qualification=False)
@@ -93,11 +94,20 @@ def main(account, target, out):
     body, values = L.frame('claude_code', account_dir, run, account)
     record['frame'] = dict(bytes=len(body), files=sorted(json.loads(body)['files']),
                            refresh_credential_sent=b'refreshToken' in body, redaction_values=len(values))
+    entry = json.loads((ROOT / 'engine/runtime/claude-qualification.json').read_text())['versions']['2.1.317']
+    role_settings = (json.dumps(dict(disableAllHooks=True, disableBundledSkills=True,
+                                     enabledPlugins={name: False for name in entry.get('engine_plugins', [])},
+                                     skillOverrides={name: 'off' for name in entry.get('engine_skills', [])}),
+                                sort_keys=True)).encode()
+    record['role_settings'] = 'sha256:' + hashlib.sha256(role_settings).hexdigest()
     shipped = io.BytesIO()
     with tarfile.open(fileobj=shipped, mode='w') as archive:
         for path in (VELDO / 'project_runner_macos_login.py', VELDO / 'project_runner_macos_profile.py',
                      Path(__file__).with_name('mac_leg_remote.py')):
             archive.add(path, arcname=path.name)
+        member = tarfile.TarInfo('role-settings.json')
+        member.size = len(role_settings)
+        archive.addfile(member, io.BytesIO(role_settings))
     done = ssh(target, 'mkdir -p %s/code && tar -x -C %s/code' % (REMOTE, REMOTE), shipped.getvalue())
     assert done.returncode == 0, 'ship failed'
     record['code_digests'] = {p.name: 'sha256:' + hashlib.sha256(p.read_bytes()).hexdigest() for p in
@@ -111,8 +121,20 @@ def main(account, target, out):
             record['refusal'] = 'unavailable_service:login_delivery'
             return record
         guard = C.Guard()
+        # VELDO-0127 AC2 on the Mac: the capabilities the engine reports at launch against the role's
+        # revision, in both directions; a difference stops the run before the prompt is released.
+        H = organ('control_agent_config_handoff')
+        revision_path = Path(__file__).with_name('mac-capability-revision.json')
+        capability = json.loads(revision_path.read_text())
+        guard.expected = H.expected(capability, {})
+        # The version's qualification entry, as production's handoff (H.claude) applies it: every built-in
+        # plugin it lists in engine_plugins turned off, bundled skills off, accepted_plugins accepted.
+        if entry.get('accepted_plugins'):
+            guard.expected['accepted_plugins'] = sorted(entry['accepted_plugins'])
+        record['capability'] = dict(revision='sha256:' + hashlib.sha256(revision_path.read_bytes()).hexdigest(),
+                                    expected=guard.expected)
         first, _ = guard.opening(PROMPT.encode())
-        engine = subprocess.Popen(SSH + [target, remote + ' run ' + run], stdin=subprocess.PIPE,
+        engine = subprocess.Popen(SSH + [target, remote + ' run ' + run + (' stderr' if stderr_leg else '')], stdin=subprocess.PIPE,
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         errs = []
         reader = threading.Thread(target=lambda: errs.append(engine.stderr.read()))
@@ -175,6 +197,8 @@ def main(account, target, out):
                                                     'No such file' in json.dumps(r) for r in results),
         init_api_key_source=init.get('apiKeySource'), init_tools=sorted(init.get('tools', [])),
         init_mcp_servers=init.get('mcp_servers'), init_model=init.get('model'),
+        init_slash_commands=init.get('slash_commands'), init_skills=init.get('skills'),
+        init_plugins=[p.get('name') for p in init.get('plugins') or [] if isinstance(p, dict)],
         result_subtype=final.get('subtype'), result_is_error=final.get('is_error'))
     # AC4 on the Mac for the login: no value in the kept record, the Mac's command lines or environments.
     scanned = {'linux_stdout': kept_out, 'linux_stderr': kept_err}
@@ -190,7 +214,12 @@ def main(account, target, out):
         redaction_marker_count=sum(d.count(b'<redacted:credential>') for d in scanned.values()))
     del unredacted
     record['cleaned'] = json.loads(ssh(target, remote + ' clean ' + run).stdout or b'{}')
+    record['capability']['init_seen'] = bool(init)
+    record['capability']['difference'] = H.difference(init, guard.expected, guard.builtin_commands) if init else 'no_init'
+    record['capability']['equal_both_directions'] = bool(init) and record['capability']['difference'] is None
     record['qualification'] = bool(
+        record['capability']['equal_both_directions']
+        and (not stderr_leg or record['execution_record']['stderr_lines'] > 0) and
         record['guard']['confirmed'] and record['mac'].get('binary_bound') and record['close'].get('base_absent')
         and record['close'].get('keychain_unchanged') and not record['scan']['value_in_redacted_record']
         and not record['scan']['value_in_mac_process_commands_or_environment']
@@ -209,12 +238,12 @@ def main(account, target, out):
         names = [b.get('name') for b in (event.get('message') or {}).get('content') or []
                  if isinstance(b, dict) and b.get('type') == 'tool_use']
         shape.append([event.get('type'), event.get('subtype') or inner.get('type')] + names)
-    (out / 'mac-claude-record-shape.json').write_text(json.dumps(dict(
+    (out / ('mac-claude-record-shape-%s.json' % run.split('-')[0])).write_text(json.dumps(dict(
         run=run, stdout_lines=len(shape), stderr_lines=len(kept_err.splitlines()), rows=shape)) + '\n')
     return record
 
 
 if __name__ == '__main__':
-    result = main(*sys.argv[1:4])
+    result = main(*sys.argv[1:5])
     print(json.dumps(result, sort_keys=True, indent=1))
     sys.exit(0 if result.get('qualification') else 2)

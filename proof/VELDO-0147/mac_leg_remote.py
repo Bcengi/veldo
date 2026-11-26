@@ -223,6 +223,13 @@ def cmd_clean(run):
 
 if __name__ == '__main__':
     command, run = sys.argv[1], checked(sys.argv[2])
+    if command == 'run' and (CODE / 'role-settings.json').is_file():
+        # The role's generated settings as production's handoff writes them (engine plugins off).
+        FLAGS[FLAGS.index('--settings') + 1] = (CODE / 'role-settings.json').read_text()
+    if command == 'run' and sys.argv[3:] == ['stderr']:
+        # The engine-stderr leg: the binary's own debug stream on its error stream (--debug-to-stderr,
+        # proof/VELDO-0060/cli-options.json), so the relayed record has a non-empty error stream.
+        FLAGS.append('--debug-to-stderr')
     code = dict(open=cmd_open, run=cmd_run, close=cmd_close, fetch=cmd_fetch, clean=cmd_clean)[command](run)
     sys.stdout.flush(); sys.stderr.flush()
     os._exit(code)  # never wait on the input-forwarding thread

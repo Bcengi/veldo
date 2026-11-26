@@ -1,0 +1,6 @@
+{
+ "schema": "veldo.mac_capability_revision/v1",
+ "note": "The role revision the VELDO-0147 Mac Claude leg compares the engine's launch-time capabilities with (control_agent_config_handoff.expected and .difference, both directions, VELDO-0127 AC2). Native tools only, no MCP server, no skill, no plugin, the model the launch names. A proof fixture of the revision's form, not a revision read from a signed authority store.",
+ "revision": {"native_tools": ["Bash", "Edit", "Read"], "settings": {"model": "claude-opus-5-5"}},
+ "skills": []
+}
