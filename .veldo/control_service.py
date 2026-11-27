@@ -3424,7 +3424,7 @@ class Line:
                                runs=L.runs_root(receiver), profile=receiver.get('profile'),
                                observe=lambda event: service._log(dict(event, kind='loop')),
                                admission=self.space_requests.prepare,
-                               worker_profiles=getattr(service, 'profiles', service.config.get('worker_profiles')), local_host=host,
+                               worker_profiles=self.worker_profiles(service), local_host=host,
                                remote_receivers=receiver.get('remote_receivers'))
         # VELDO-0148: the land station, when the work configuration names this repository's `land`: each land
         # of a unit its own land dispatch on the service's connection, written as the service's principal.
@@ -3436,6 +3436,15 @@ class Line:
         # VELDO-0239: the owner's `/batch <project>` requests of this repository, run with the same land
         # configuration, the repository's identity record and the repository's inbox for his approval.
         self.batches = self.batch_line() if roles.get('land') else None
+
+    @staticmethod
+    def worker_profiles(service):
+        """The service's `profiles` when it has the attribute, else its configuration's `worker_profiles`.
+        The configuration is read only then, and a service with neither has none: VELDO-0316's fixtures
+        build a Line on a service object that carries no configuration."""
+        if hasattr(service, 'profiles'):
+            return service.profiles
+        return getattr(service, 'config', {}).get('worker_profiles')
 
     def batch_line(self):
         service, land = self.service, self.roles['land']

@@ -25,8 +25,12 @@ def main():
         command = [sys.executable, '-I', 'proof/VELDO-0125/run_suite.py', str(ROOT), case['suite'], case['row']]
         key = (case['suite'], case['row'])
         if key not in greens:
-            green = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=300)
-            greens[key] = (green.returncode, green.stdout + green.stderr)
+            try:
+                green = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=300)
+                greens[key] = (green.returncode, green.stdout + green.stderr)
+            except subprocess.TimeoutExpired:
+                # A green control that hangs is a failed control: its cases are not rejected, the rest still run.
+                greens[key] = (124, 'Hang detector expired on the green control.\n')
         green_code, green_log = greens[key]
         source = (ROOT / case.get('source', '.veldo/' + case['file'])).read_text()
         assert source.count(case['before']) == 1, name

@@ -593,7 +593,7 @@
       },
       "engine/.veldo/control_service.py": {
         "port": "sha256:1ab68a53c8b2f769b1dfd82a575c3a56461d343b242e94e997924c31f391d4f1",
-        "land": "sha256:f57448d446cfd993a5ff4c4582dfbfa85456efcfc091185c8b7f496ac6200050"
+        "land": "sha256:7005c6401b87ba8f70ad10b8888e2400b051dcc4471e64ad61bd0229498f39dd"
       },
       "engine/.veldo/control_store.py": {
         "port": "sha256:117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
@@ -661,7 +661,11 @@
       },
       "proof/VELDO-0125/port_falsifiers.py": {
         "port": "sha256:3b3af0eec0cea3564b5a3bd55d11fa5e20f2e325e3f085499aec9212788088dd",
-        "land": "sha256:e9a614ec08543ae7471e05f769bc3bc4c86865f0668df8eef6cc3dc6e709f39f"
+        "land": "sha256:bc2b8797c45b3bcda38170d8520ef21c9106b3d8fab9922e6dc6ef0fa32b7529"
+      },
+      "proof/VELDO-0125/run_suite.py": {
+        "port": "sha256:bd998a9ed5020e53b39142656253e7958cbd89bbbeec4aff66975abbc775985a",
+        "land": "sha256:ad6f48d037d1267f21938e9fd6db49e70955be08fc230aee0734e00244c91fe3"
       },
       "proof/VELDO-0125/land-2026-11-26/land-falsifiers.json": {
         "port": null,

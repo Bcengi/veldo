@@ -250,6 +250,18 @@ manifest's land digests for the nine files main changed were taken again. Suite 
 rows fail on main and here with the same message: control_launch.py changed and the
 captures were not retaken.
 
+2026-11-27, land preparation, round 6: the review of round 5 found main's suite
+157_veldo_0316_space_admission red on this line, 63 passed and 2 failed against 65 and 0 on
+main. The Line read the service's configuration for the worker profiles before it looked for
+the service's own `profiles`, and that suite builds a Line on a service object with no
+configuration. The Line now reads the configuration only when the service has no `profiles`,
+and a service with neither has no worker profiles. The proof driver run_suite.py gives a
+suite the same `WAITS` module the selftest dispatcher gives, so a row that names
+WAITS.WAIT_HANG_SECONDS runs under the driver; before, land-F4's green control hung there.
+port_falsifiers.py records a green control that hangs as a failed control and goes on to the
+next case. The manifest's land digests for control_service.py, port_falsifiers.py and
+run_suite.py were taken again.
+
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,

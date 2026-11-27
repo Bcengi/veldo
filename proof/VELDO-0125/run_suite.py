@@ -4,6 +4,7 @@ python3 -I proof/VELDO-0125/run_suite.py <checkout root> <suite name>
 """
 import sys
 import ast
+import importlib.util
 from pathlib import Path
 
 ROOT = Path(sys.argv[1]).resolve()
@@ -26,6 +27,14 @@ if len(sys.argv) > 3:
             name = node.target.elts[0].id
             node.body.insert(0, ast.parse(f'if {name} != {selected!r}: continue').body[0])
     ast.fix_missing_locations(tree)
-exec(compile(tree, path.name, 'exec'), {'ROOT': ROOT, 'expect': expect, '__name__': 'suite'})
+# The suites name their hang bounds through WAITS (WAITS.WAIT_HANG_SECONDS), which the selftest dispatcher
+# supplies. This driver supplies the same module, loaded the same way under the name `waits`, so a row's
+# bounded wait reads the same bound here as in a gate run. The dispatcher's keeper and watchdog are not
+# started: this process runs one suite's rows and its caller holds the hang detector.
+spec = importlib.util.spec_from_file_location('waits', ROOT / 'scripts/suites/support/waits.py')
+WAITS = importlib.util.module_from_spec(spec)
+sys.modules['waits'] = WAITS
+spec.loader.exec_module(WAITS)
+exec(compile(tree, path.name, 'exec'), {'ROOT': ROOT, 'expect': expect, 'WAITS': WAITS, '__name__': 'suite'})
 print('passed %d failed %d' % (sum(r[1] for r in results), sum(not r[1] for r in results)))
 sys.exit(0 if results and all(r[1] for r in results) else 1)
