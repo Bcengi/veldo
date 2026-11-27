@@ -575,13 +575,13 @@
     "proof/VELDO-0125/run_suite.py": "sha256:bd998a9ed5020e53b39142656253e7958cbd89bbbeec4aff66975abbc775985a"
   },
   "land_2026_11_26": {
-    "base": "68b1c4520 (origin/main)",
+    "base": "83ed59642 (origin/main)",
     "restacked_from": "9bb58b9b4",
     "note": "The port maps above bind the bytes at the port commit. This map gives, for every file the restack or the review fixes changed, the port digest and the bytes on this line.",
     "digests": {
       "engine/.veldo/control_assignment.py": {
         "port": "sha256:78c3f25c8da3b918d931a3640dee5f896603325e49dc4d721912789178a06139",
-        "land": "sha256:686f0599da0a452006b6475f0177b07104e26458529a295bda76053fdb459250"
+        "land": "sha256:323e576fc8796ce2d80588e439001ccbc67fecfed79708dbf74f9081bed30d22"
       },
       "engine/.veldo/control_dispatch.py": {
         "port": "sha256:4c2731f4986d1d9282e3cda9960a840adcb3952fe7c20c690528cc93d894bc91",
@@ -589,11 +589,11 @@
       },
       "engine/.veldo/control_launch.py": {
         "port": "sha256:8c04804183adc7ba0c2dfaf6269808a5e40fc31e32e38dbc7c1c646d3e7b3855",
-        "land": "sha256:af6fc1290e1eefe14fb3f85bdf0cfe19e5370e4ca2bc7accbcb6ddfdba3643b1"
+        "land": "sha256:8139c5e9c3097a776520663a5486eef576485d5ef0f0da3cebea0e9f83377d5d"
       },
       "engine/.veldo/control_service.py": {
         "port": "sha256:1ab68a53c8b2f769b1dfd82a575c3a56461d343b242e94e997924c31f391d4f1",
-        "land": "sha256:a1767b6be92d9d5eb7ba72aba1f1d914d6de24c58c5eb04928f8a403712ae641"
+        "land": "sha256:f57448d446cfd993a5ff4c4582dfbfa85456efcfc091185c8b7f496ac6200050"
       },
       "engine/.veldo/control_store.py": {
         "port": "sha256:117a5bd7a9f02795301c96551a9bf5084ebfef9c54f4ac2d3fd848597c08cb7e",
@@ -601,7 +601,7 @@
       },
       "engine/.veldo/init_scaffold.py": {
         "port": "sha256:b10f7240135a8878e858035bf2b3fb0bc65c2e862ba0c9cf05af9bf37769d521",
-        "land": "sha256:46eeab8efcaa83d762e91e349b804122559416e6ff3cb758810dcc107f3a86ad"
+        "land": "sha256:c7aecc010f89be2d0fabba86571f8d105862abb053d43b86e325961253f83773"
       },
       "engine/.veldo/project_runner_macos.py": {
         "port": "sha256:8f1ab267b24f97cae718c5148018eef8e025f381fde29e60674d85ebf38b16a5",
@@ -617,11 +617,11 @@
       },
       "scripts/check_space_boundary.py": {
         "port": "sha256:d723752acc08c097a86a15d8ff1bbcf510dd4982e9e0e9d82434d6510cdf6d36",
-        "land": "sha256:fcd16e6c4c1d3d5f0da154e20f269b2451c0f8f1f091e89cccc47fa01c64aa22"
+        "land": "sha256:906a8ca8cb491ad654f3d288c1d44b8b3f8d1f0e32db7aa4b85433223590c0d6"
       },
       "scripts/check_teeth_mutations.py": {
         "port": "sha256:d8c5575e4048eaa12b697028e39d27cd025491b6dc9f6fcbfefea5df4dfb0dbd",
-        "land": "sha256:9412e8db93e86618d5ef3a28bc81efd01a9fb79e263e71ae137f1b149a6840fe"
+        "land": "sha256:0f8a09ca8d57baa92b2544ef61eaae8a8ac22e5c9f9ec9e50f984c743e03345a"
       },
       "scripts/suites/103_veldo_0124_macos.py": {
         "port": "sha256:01f5b6a9459ec4b29e6a914b9cb2232893095728fc4a7cfeb863931e8f3f9a56",
@@ -641,11 +641,11 @@
       },
       "scripts/suites/manifest.json": {
         "port": "sha256:50fe4f533585fcf5c30261c3ae03257770951481ccb356a0416a0a8920fe1559",
-        "land": "sha256:58ed243f45532ddcbd190cde970ea748cb4fd0f3d92b8c0c97e36f22f4733f72"
+        "land": "sha256:dac522e2c754402bf1fecfb4e83a0b27bdf6dbb040a73ec2bed57476c9cee191"
       },
       "scripts/suites/requires.json": {
         "port": "sha256:c58e9d156bb46a7ee01bea437e4fb3c95e8b34e6b8abd21e0b3b7d5d57516926",
-        "land": "sha256:9e52ee6235581515c12ae0d1ac231108cf19ee6e4563403aaae9920cffde48d1"
+        "land": "sha256:44c9e1b4f7a6eba150e8fdd4ec6ffeb64d93930001da041b20e827d412c5801f"
       },
       "proof/VELDO-0125/bringup-blocked.md": {
         "port": "sha256:7ace2221311b92f4c65f9ee4d5c3810644d622ae8e6bab36c6b04fc3f3005185",
@@ -725,7 +725,7 @@
       },
       "scripts/suites/wallclock_baseline.json": {
         "port": "sha256:6f88697a41a6f746c34a89852d5f964d669c2abf61e21b61c4670978233e6795",
-        "land": "sha256:f6547a3bb4a610732aef645427bc9680fa9970b5abffdcabd37b47600c028743"
+        "land": "sha256:2fb21e7f596b1c77996ed93442536fe049407ec27ae2c4cb5958ccd111030879"
       },
       "proof/VELDO-0127/codex-live.json": {
         "port": "sha256:153c09fb51b4fe9187d12e99c13cec7c4a4d60a1e97371d636917ba997e82f27",

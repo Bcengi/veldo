@@ -240,6 +240,16 @@ passes, and the round 3 row fails. The two due-time drains of rounds 12 and 13 n
 row if the worker sleeps, so a drain that skips a due entry is a failed row and not a hung
 run. The round 13 retry assertion reads the worker's clock again, as it did before round 3.
 
+2026-11-27, land preparation, round 5: the line was moved onto main 83ed59642 (Space V1 and
+VELDO-0367). Two places needed a decision by hand. The Runner keeps main's space admission
+argument and waiting-account cache next to this spec's routing arguments, and a routed
+prepare clears the waiting account as main's direct prepare does. The mutation case
+space316-admission-at-acceptance keeps main's first replacement and this line's second, which
+targets the routed submit. The baseline is main's 2651 entries plus the same 33. The proof
+manifest's land digests for the nine files main changed were taken again. Suite 86's two live
+rows fail on main and here with the same message: control_launch.py changed and the
+captures were not retaken.
+
 2026-09-22: new draft for PLAN-0019 revision 3, Release 1 stage 2, under the owner's
 complete-factory MVP decisions. Simple function and its meaningful refusal checks are in this
 release; recovery and robustness are Release 2, governance depth Release 3, broader hosts/channels,
