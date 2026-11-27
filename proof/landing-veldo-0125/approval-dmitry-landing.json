@@ -1,0 +1,17 @@
+{
+  "schema": "veldo.approval/v1",
+  "id": "APPROVAL-LANDING-VELDO-0125",
+  "decision": "approved",
+  "approver": "dmitry",
+  "scope": {
+    "spec_id": "VELDO-0125",
+    "commit": "6f7bbcc4bdb3ff2f6f21285ff4171d9aeeb27db7",
+    "paths": [
+      "scripts/suites/wallclock_baseline.json"
+    ]
+  },
+  "basis": "Landed under Dmitry's standing landing approval, Telegram 43770 (2026-11-26): \"I don't want to keep rubberstamping it, just aprove it all\" - land Veldo and core protected-path changes when the review is PASS and the what-changed tests are green, record the approval, and tell him after. VELDO-0125 (Mac relay capability routing), rebased onto main 83ed59642. Reviews: land fix-check r4 PASS at bed0d93b2; rebase fix-check r5 FIX (suite 157_0316 two rows, land falsifier driver hang) fixed in round 6 6f7bbcc4b, round 6 delta reviewed PASS by the lead. What changed, pc2 run rr20261127070411-7134 at 6f7bbcc4b against main 83ed59642: suites 103 58/0, 105 45/0, 106 273/0, 158 census 32/0, 157_0316 65/0 (main 65/0), 151 66/0 (main 66/0); wallclock passes with this branch's 33 baseline entries; f1 and land-F4, land-F7 REJECTED with green controls; registered mutation cases executed 9 of 9 with the same result as main (rejected 5 on both). Inherited, identical on main: suite 86's two VELDO-0127 live capture rows (stale capture; recapture needs the owner's approval), personal_setup rc 2, the four unrejected mutation cases. The one protected path is scripts/suites/wallclock_baseline.json: main's 2651 entries plus 33 for this branch's proof drivers, each at existing source text; nothing of main's removed. No full gate, by owner order 43733.",
+  "recorded_at": "2026-11-27T07:34:26Z",
+  "recorded_by": "Ava (recording under Dmitry's standing approval; author and committer of the record is Dmitry per repository rule)",
+  "expires_at": "2026-12-27T07:34:26Z"
+}
