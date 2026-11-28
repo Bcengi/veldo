@@ -528,7 +528,8 @@ def main(config_path, resume=False, install=False):
                 limit = organ('project_runner_macos_login').MAX_FRAME + 2
                 frames = [line for line in (sys.stdin.readline(limit) for _ in range(3)) if line]
             # VELDO-0147 AC3: the run's output goes down this same channel, before the last line below.
-            result = receive(config, request, frames=frames, relay=Relay(sys.stdout.buffer))
+            channel = getattr(sys.stdout, 'buffer', None)  # a receiver with no byte channel sends no output
+            result = receive(config, request, frames=frames, relay=Relay(channel) if channel is not None else None)
         except Exception as error:
             if OUT.retryable(error):
                 raise
