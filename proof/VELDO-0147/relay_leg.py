@@ -2,15 +2,17 @@
 
 One dispatch goes the production way: a disposable Linux authority (the VELDO-0125 fixture's real
 store, service and signatures) prepares it; control_launch.invoke_remote starts the SSH transport and
-writes the prepared binding, the login frame of the dispatch's account and, for Claude Code, one secrets
-frame; the Mac's production receiver (control_worker) mounts the login on a RAM disk, claims the dispatch
-through the signed relay (control_relay on the Mac, carried back to this authority's socket inside the
-same SSH connection) and runs the pinned engine. Nothing here is a qualification: the Mac profile is a
-candidate and its qualification stamp is skipped, as in the VELDO-0124 and VELDO-0125 native probes.
+writes the prepared binding and the login frame of the dispatch's account; the Mac's production receiver
+(control_worker) mounts the login on a RAM disk, claims the dispatch through the signed relay
+(control_relay on the Mac, carried back to this authority's socket inside the same SSH connection), runs
+the pinned engine and sends its ordered output down the same channel. This node keeps that output as the
+run's execution record and compares its totals with the ones the Mac signed (AC3). Nothing here is a
+qualification: the Mac profile is a candidate and its qualification stamp is skipped, as in the
+VELDO-0124 and VELDO-0125 native probes.
 
 The account's lease must be held for the whole Mac run (scripts/account_lease.sh flock) by this run's
-holder. The account record and the MCP server are supplied by this driver, not read from an account
-store or a keystore; the MCP value is a random test value, never a real credential.
+holder. The account record is supplied by this driver, not read from an account store. No MCP server is
+selected: no outside-service credential is delivered into a run (VELDO-0254).
 
 Usage: python3 relay_leg.py <claude_code|codex> <ssh target> <out dir>
 """
@@ -21,13 +23,11 @@ import io
 import json
 import os
 from pathlib import Path
-import secrets
 import subprocess
 import sys
 import tarfile
 import tempfile
 import time
-import types
 
 ROOT = Path(__file__).resolve().parents[2]
 SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20', '-o', 'ServerAliveInterval=30',
@@ -55,13 +55,13 @@ def main(engine, target, out):
         account_dir = Path(os.environ.get('CLAUDE_ACCOUNTS_ROOT') or Path(os.environ['CLAUDE_CONFIG_DIR']).parent) / account_name
     else:
         account_name, account_dir = 'codex1', Path.home() / '.codex'
-    run = 'r5-%s-%s' % (engine.split('_')[0], time.strftime('%Y%m%d%H%M%S'))
+    run = 'r6-%s-%s' % (engine.split('_')[0], time.strftime('%Y%m%d%H%M%S'))
     record = dict(schema='veldo.macos_relay_run/v1', spec='VELDO-0147', engine=engine, account=account_name,
                   run=run, qualification=False, lease_flock_held=lease_held(account_dir))
     if not record['lease_flock_held']:
         record['refusal'] = 'unavailable_service:account_lease_not_held'
         return record
-    remote_root = 'veldo-mac-runs/veldo-0147-r5/' + run
+    remote_root = 'veldo-mac-runs/veldo-0147-r6/' + run
     remote = 'cd %s && %s proof/VELDO-0147/relay_leg_remote.py' % (remote_root, PY)
 
     def ssh(command, data=None):
@@ -106,15 +106,6 @@ def main(engine, target, out):
                 L.ACC.read = lambda conn, name: account if name == 'account' else None
                 values = [v.encode() for v in L._organ('project_runner_macos_login').frame(
                     engine, account_dir, dispatch, 'account')[1]]
-                if engine == 'claude_code':
-                    test_value = 'veldo-0147-test-' + secrets.token_hex(16)
-                    values.append(test_value.encode())
-                    server = dict(id='tracker', revision=1, transport='http', command=None, arguments=[],
-                                  url='https://tracker.invalid/mcp', environment={},
-                                  headers={'Authorization': {'credential': 'tracker-token', 'handle':
-                                           types.SimpleNamespace(reveal=lambda: 'Bearer ' + test_value)}})
-                    L.DL.selections = lambda configuration: [('tracker', 1)]
-                    L.DL.resolve = lambda conn, domain, configuration, keystore=None: [server]
                 receiver = dict(argv=SSH + ['-R', socket_path + ':' + f.config['socket'], target, remote + ' receive'],
                                 login='delivered', main_host='main')
                 launch = L.invoke_remote(receiver, contract, f.ds)
@@ -122,6 +113,18 @@ def main(engine, target, out):
                                         refusal=(launch.record or {}).get('refusal'))
                 final = launch.wait(timeout=WAIT_HANG_SECONDS) if launch.result == 'pending' else launch.record
                 record['authority'] = {k: final.get(k) for k in ('state', 'refusal', 'host', 'reason')}
+                # AC3: what the exit committed (the Mac's signed totals), what this node received, and the
+                # comparison, as the launch made it and as a reader of the record gets it.
+                ER = L.ER
+                committed = final.get('execution_record')
+                record['ac3'] = dict(signed=(committed or {}).get('streams'), received=getattr(launch, 'received', None),
+                                     record_refusal=getattr(launch, 'record_refusal', None))
+                kept_lines = None
+                try:
+                    kept_lines = ER.read(ER.directory({'store': str(f.store)}), dispatch, 0, 100000, committed=committed)['lines']
+                    record['ac3']['read'] = dict(lines=len(kept_lines))
+                except ER.Refused as error:
+                    record['ac3']['read'] = dict(refusal=error.code)
                 worker = f.conn.execute('SELECT data FROM entities WHERE id=?', ('worker:' + dispatch,)).fetchone()
                 if worker:
                     data = json.loads(worker[0])
@@ -140,6 +143,24 @@ def main(engine, target, out):
                             # A short engine error is kept as text, with the Mac's own paths replaced.
                             import re
                             record['engine_err_text'] = re.sub(r'/(Users|private|var)/[^\s\'":]+', '<path>', data.decode(errors='replace'))
+                        if member.name == 'engine.stream' and kept_lines is not None:
+                            # Line by line and in order: the Mac's one ordered file against the record kept here.
+                            pending, emitted = {'stdout': b'', 'stderr': b''}, []
+                            for raw in data.splitlines():
+                                name, piece = L.MS.parse(raw)
+                                *whole, pending[name] = (pending[name] + piece).split(b'\n')
+                                emitted += [(name, line.decode('utf-8', 'surrogateescape')) for line in whole]
+                            emitted += [(name, rest.decode('utf-8', 'surrogateescape')) for name, rest in pending.items() if rest]
+                            names = {'engine': 'stdout', 'stderr': 'stderr'}
+                            pairs = list(zip(emitted, kept_lines))
+                            record['ac3']['lines'] = dict(
+                                mac=len(emitted), main=len(kept_lines),
+                                mac_by_stream={n: sum(1 for name, _ in emitted if name == n) for n in ('stdout', 'stderr')},
+                                order_equal=[name for name, _ in emitted] == [names[line['stream']] for line in kept_lines],
+                                identical=sum(1 for (_, text), line in pairs if line['payload'] == text),
+                                redacted=sum(1 for (_, text), line in pairs if line['payload'] != text and line['redacted']),
+                                differ_unredacted=sum(1 for (_, text), line in pairs if line['payload'] != text and not line['redacted']),
+                                values_in_record=sum(json.dumps(line).encode().count(v) for line in kept_lines for v in values))
                         if member.name == 'engine.out':
                             kinds = {}
                             for line in data.splitlines():

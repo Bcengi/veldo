@@ -43,7 +43,10 @@ interpreted, and no transition here writes a completion receipt: a worker's exit
 
 THE EXECUTION RECORD (VELDO-0141). An exit also commits the line count, byte count and digest of the run's
 execution record (control_execution_record), {lines, bytes, digest}, so the record the API serves after the
-run is checked against what the authority committed.
+run is checked against what the authority committed. A run on a remote host (VELDO-0147) commits instead
+{streams: {stdout, stderr}}, each stream's line count, byte count and SHA-256 as the remote host signed
+them in its result: the record is kept on this node by another process, so its exit commits what was sent
+and the record's reader compares what was received (control_execution_record.read).
 
 THE ENGINE'S ARTIFACT (VELDO-0060, VELDO-0061). An engine worker's `exit` also binds the verdict and
 digest of the artifact document the receiver decoded from its terminal output (control_launch's
@@ -150,6 +153,9 @@ TERMINATION_FIELDS = ('returncode', 'signal', 'output_digest', 'output_bytes', '
 ARTIFACT_FIELDS = ('verdict', 'complete', 'digest')
 # VELDO-0141: what an exit commits of the run's execution record (control_execution_record).
 EXECUTION_RECORD_FIELDS = ('lines', 'bytes', 'digest')
+# VELDO-0147: what a remote run's exit commits instead, from the remote host's signed result.
+REMOTE_STREAMS = ('stdout', 'stderr')
+REMOTE_STREAM_FIELDS = ('lines', 'bytes', 'sha256')
 
 TAXONOMY = {
     'invalid_input': 'invalid_input', 'incomplete_contract': 'invalid_input', 'binding_mismatch': 'invalid_input',
@@ -330,9 +336,16 @@ def _artifact_problems(value):
 
 def _execution_record_problems(value):
     """Whether an exit's execution record binding is malformed: None (no record kept) or exactly {lines,
-    bytes, digest}, the record's line count, byte count and SHA-256 (VELDO-0141)."""
+    bytes, digest}, the record's line count, byte count and SHA-256 (VELDO-0141), or, for a remote run,
+    exactly {streams: {stdout, stderr}}, each exactly {lines, bytes, sha256} (VELDO-0147)."""
     if value is None:
         return False
+    if isinstance(value, dict) and set(value) == {'streams'}:
+        streams = value['streams']
+        return (not isinstance(streams, dict) or set(streams) != set(REMOTE_STREAMS) or any(
+            not isinstance(s, dict) or set(s) != set(REMOTE_STREAM_FIELDS) or not _count(s['lines'], 0)
+            or not _count(s['bytes'], 0) or not isinstance(s['sha256'], str) or len(s['sha256']) != 64
+            or any(c not in '0123456789abcdef' for c in s['sha256']) for s in streams.values()))
     if not isinstance(value, dict) or set(value) != set(EXECUTION_RECORD_FIELDS):
         return True
     digest_text = value['digest']

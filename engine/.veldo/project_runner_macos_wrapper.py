@@ -1,5 +1,9 @@
 """Trusted launchd child. Engine output never shares the wrapper's evidence files.
 
+VELDO-0147 AC3: the wrapper reads the engine's two output pipes itself and appends each chunk, as it
+reads it, to engine.out or engine.err and, tagged with its stream, to one ordered file
+(project_runner_macos_stream). The totals of what the engine printed go into result.json.
+
 The engine runs in its own process group, so a group SIGKILL of the engine leaves
 this wrapper alive to reap it and record the outcome. The wrapper enforces the
 elapsed deadline itself: a dead or killed supervisor cannot leave the engine, or
@@ -9,6 +13,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import select
 import signal
 import subprocess
 import sys
@@ -19,6 +24,7 @@ import threading
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from project_runner_macos_os import coalition, coalition_members, identity, wait_file, wait_members
 from project_runner_macos_profile import Refused, claude_settings
+import project_runner_macos_stream as stream_frames
 
 
 def write(path, value):
@@ -32,6 +38,35 @@ def read(path):
         return json.loads(path.read_text())
     except (FileNotFoundError, ValueError):
         return None
+
+
+def pump(pipes, framed, tally, wake):
+    """Copy every chunk of the engine's pipes to its own file and, tagged, to the ordered file, until both
+    pipes end or `wake` is written; then take what is already in the pipes and stop. Returns whether every
+    chunk read was written: a failed write keeps reading, so the engine never blocks on a full pipe."""
+    whole = True
+    open_pipes = {source.fileno(): (name, sink) for name, source, sink in pipes}
+    last = False
+    while open_pipes:
+        ready, _, _ = select.select(list(open_pipes) + ([] if last else [wake]), [], [], 0 if last else None)
+        if not last and wake in ready:
+            last = True
+            continue
+        if last and not ready:
+            break
+        for descriptor in ready:
+            name, sink = open_pipes[descriptor]
+            data = os.read(descriptor, stream_frames.CHUNK)
+            if not data:
+                del open_pipes[descriptor]
+                continue
+            tally.feed(name, data)
+            try:
+                sink.write(data)
+                framed.write(stream_frames.chunk(name, data))
+            except OSError:
+                whole = False
+    return whole
 
 
 def main(path):
@@ -78,10 +113,18 @@ def main(path):
             except (ProcessLookupError, PermissionError):
                 pass
 
-    with open(directory / 'engine.out', 'wb') as out, open(directory / 'engine.err', 'wb') as err:
+    tally, kept, reader, wake = stream_frames.Tally(), [], None, None
+    with open(directory / 'engine.out', 'wb', buffering=0) as out, \
+            open(directory / 'engine.err', 'wb', buffering=0) as err, \
+            open(directory / stream_frames.FILE, 'wb', buffering=0) as framed:
         child = subprocess.Popen(['/usr/bin/sandbox-exec', '-p', request['sandbox'], *request['argv']],
                                  cwd=request['clone'], env=request['environment'], stdin=subprocess.DEVNULL,
-                                 stdout=out, stderr=err, close_fds=True, process_group=0)
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True, process_group=0)
+        pipes = [(name, getattr(child, name, None), sink) for name, sink in (('stdout', out), ('stderr', err))]
+        if all(source is not None for _, source, _ in pipes):
+            wake = os.pipe()
+            reader = threading.Thread(target=lambda: kept.append(pump(pipes, framed, tally, wake[0])), daemon=True)
+            reader.start()
         # Keep this unsandboxed wrapper alive until waitpid observes engine exit and
         # the coalition holds no other process, or the backstop has spent its bounds.
         write(directory / 'worker.json', dict(process=identity(child.pid), pgid=os.getpgid(child.pid)))
@@ -127,8 +170,16 @@ def main(path):
                 if remaining is None:
                     raise OSError('coalition_unreadable')
                 wait_members(remaining, due - time.monotonic())
-    write(directory / 'result.json', dict(returncode=returncode, process=parent, dispatch_id=request['dispatch_id'],
-                                          deadline_stop=deadline_stop, remaining=remaining))
+        if reader is not None:
+            # The engine and its coalition are gone or were given their bounds: take what is in the pipes.
+            os.write(wake[1], b'x')
+            reader.join()
+    result = dict(returncode=returncode, process=parent, dispatch_id=request['dispatch_id'],
+                  deadline_stop=deadline_stop, remaining=remaining)
+    if kept == [True]:
+        # What the engine printed, by stream. Absent when a chunk could not be written: nothing is signed then.
+        result['streams'] = tally.totals()
+    write(directory / 'result.json', result)
     return 0
 
 

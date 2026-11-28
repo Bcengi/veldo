@@ -439,9 +439,16 @@ class Service(SV.Service):
                 if (D._termination_problems(termination) or len(termination['output_digest']) != 71
                         or any(c not in '0123456789abcdef' for c in termination['output_digest'][7:])):
                     raise SV.Refused('invalid_input:termination')
+                # VELDO-0147 AC3: the totals of what the engine printed, as the Mac signed them in this
+                # result. The exit commits them and nothing else about the record: whoever reads the record
+                # kept on this node compares what was received with these (control_execution_record.read).
+                streams = observation.get('streams')
+                if streams is not None and D._execution_record_problems({'streams': streams}):
+                    raise SV.Refused('invalid_input:streams')
                 if record['state'] == 'running':
                     ds.exit(dispatch, record['contract_digest'], record['process'], termination, now=now,
-                            artifact=dict(verdict='incomplete', complete=False, digest=D.digest(references)))
+                            artifact=dict(verdict='incomplete', complete=False, digest=D.digest(references)),
+                            execution_record={'streams': streams} if streams is not None else None)
                 elif record['state'] == 'accepted':
                     ds.unknown(dispatch, record['contract_digest'], 'remote_launch_evidence_missing', now=now,
                                expected_state='accepted')

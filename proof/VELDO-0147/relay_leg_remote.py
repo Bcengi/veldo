@@ -1,9 +1,9 @@
 """Mac half of the VELDO-0147 relay leg. Runs from the run's own export on the Mac.
 
 The production receiver (control_worker.main) is what runs here: it reads the prepared binding and the
-login and secrets frames from this SSH channel, mounts the login on a RAM disk, claims the dispatch from
-the Linux authority through the signed relay, runs the pinned engine under the VELDO-0124 supervisor and
-reports the result. This driver only prepares a candidate profile, skips the qualification stamp (as the
+login frame from this SSH channel, mounts the login on a RAM disk, claims the dispatch from the Linux
+authority through the signed relay, runs the pinned engine under the VELDO-0124 supervisor, sends the
+engine's ordered output down the same channel and reports the signed result. This driver only prepares a candidate profile, skips the qualification stamp (as the
 VELDO-0124 and VELDO-0125 native probes do; nothing here is a qualification), keeps the launchd resumer
 uninstalled and writes down what the receiver did, in identifiers, modes and counts, never a value.
 
@@ -148,12 +148,6 @@ def receive():
                     note()
                     return path
 
-                def secrets(self):
-                    super().secrets()
-                    seen['order'].append('secrets_after_acceptance')
-                    seen.update(secrets=self.report.get('secrets'))
-                    note()
-
                 def close(self):
                     result = super().close()
                     seen['order'].append('close')
@@ -166,9 +160,9 @@ def receive():
     W.install_resumer = lambda *arguments, **named: None  # no launch agent is left on this Mac by a probe
     production = W.receive_locked
 
-    def observed(config, request, frames=None):
+    def observed(config, request, frames=None, relay=None):
         try:
-            return production(config, request, frames)
+            return production(config, request, frames, relay)
         except BaseException:
             import traceback
             (STATE / 'receive-error.txt').write_text(traceback.format_exc())
@@ -221,7 +215,8 @@ def summary(engine):
             kept = json.loads(evidence.read_text())
             out['observation'] = dict(state=kept['observation'].get('state'),
                                       termination=kept['observation'].get('termination'),
-                                      cleanup=kept['observation'].get('cleanup'), usage=kept.get('usage'))
+                                      cleanup=kept['observation'].get('cleanup'), usage=kept.get('usage'),
+                                      streams=kept['observation'].get('streams'))
         archive = run / 'deliverables.tar'
         if archive.exists():
             with tarfile.open(archive) as tar:
@@ -243,7 +238,7 @@ def fetch():
     buffer = io.BytesIO()
     with tarfile.open(fileobj=buffer, mode='w:gz') as archive:
         slot, run = slot_directory(), run_directory()
-        for directory, names in ((slot, ('request.json', 'engine.out', 'engine.err', 'slot.json', 'go')),
+        for directory, names in ((slot, ('request.json', 'engine.out', 'engine.err', 'engine.stream', 'slot.json', 'go')),
                                  (run, ('result-evidence.json', 'run-context.json', 'result-request.json',
                                         'result-request.json.ack', 'delivery-complete.json'))):
             for name in names if directory is not None else ():

@@ -18889,15 +18889,31 @@ def cases():
     add(147, 'mac147-codex-roots-unset', '157_veldo_0147_login.py', 'project_runner_macos_control.py',
         "        environment.setdefault('SSL_CERT_FILE', SYSTEM_ROOTS)\n", '        pass  # defect\n',
         ['AC2/mac-codex-root-certificates'])
-    # AC4: put a credential value in the packet sent to the Mac instead of the secrets frame; the Mac
-    # no-value-in-packet row must fail.
+    # AC4: put a credential value in the packet sent to the Mac; the Mac no-value-in-packet row must fail.
+    # Since round 6 no outside-service credential is sent at all, so the value planted is the login's.
     add(147, 'mac147-value-in-packet', '157_veldo_0147_login.py', 'control_launch.py',
         "        launch.child.stdin.write(json.dumps(request).encode() + b'\\n')\n"
         "        for frame in frames:\n",
-        "        request['secrets'] = [frame.decode() for frame in frames[1:]]  # defect: values in the packet\n"
+        "        request['login'] = [frame.decode() for frame in frames]  # defect: values in the packet\n"
         "        launch.child.stdin.write(json.dumps(request).encode() + b'\\n')\n"
-        "        for frame in frames[:1]:\n",
+        "        for frame in frames[:0]:\n",
         ['AC4/mac-no-value-in-packet'])
+    # AC4: let a Mac run that selects a server needing a credential through; the same row must fail.
+    add(147, 'mac147-credentialed-server-not-refused', '157_veldo_0147_login.py', 'control_launch.py',
+        "            raise DL.Undeliverable('unsupported_configuration:credential_in_run:' + server, None, OUTSIDE_GATE_REASON)\n",
+        "            pass  # defect\n", ['AC4/mac-no-value-in-packet'])
+    # AC3, the spec's falsifier: drop the Mac run's error stream at the relay; the Mac complete-record check
+    # must fail.
+    add(147, 'mac147-drop-error-stream', '157_veldo_0147_login.py', 'control_worker.py',
+        "        if parsed is None or parsed[0] == S.END:\n            return\n        self.send(line)\n",
+        "        if parsed is None or parsed[0] in (S.END, 'stderr'):  # defect: the error stream is dropped\n"
+        "            return\n        self.send(line)\n", ['AC3/mac-complete-record'])
+    # AC3: stop comparing what the main node received with what the Mac signed; a chunk altered in transit
+    # and a run resumed with no channel must then be served, and their rows must fail.
+    add(147, 'mac147-record-comparison-skipped', '157_veldo_0147_login.py', 'control_execution_record.py',
+        "    if not isinstance(kept, dict) or not isinstance(signed, dict) or kept.get('streams') != signed:\n"
+        "        return REMOTE_INCOMPLETE\n", '',
+        ['AC3/mac-altered-chunk-refused', 'AC3/mac-resumed-run-record-refused'])
 
     # VELDO-0210 AC6: a stop queued before child registration must be masked, then
     # kill the starting tree. Both controls and mutants run the complete confined suite.

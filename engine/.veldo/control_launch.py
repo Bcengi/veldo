@@ -264,6 +264,7 @@ ER = _organ('control_execution_record')
 CFG = _organ('control_agent_config')
 HANDOFF = _organ('control_agent_config_handoff')
 DL = _organ('control_credential_delivery')
+MS = _organ('project_runner_macos_stream')  # VELDO-0147: a Mac run's ordered output frames
 # VELDO-0184: the file memory directory handed to every run whose role lists it.
 FM = _organ('control_memory_file')
 # VELDO-0062: the account records (the instance the reservations module reads windows through), the
@@ -2965,10 +2966,91 @@ def _receiver_errors(records, dispatch_id):
 class RemoteLaunch(Launch):
     """An outstanding remote receiver, observed through its pipe and the Linux authority.
 
-    Transport output is only a wakeup. Signed worker commands, never stdout, decide
-    the dispatch state. Pending submission must not block the authority's IPC loop.
+    Signed worker commands, never stdout, decide the dispatch state. Pending submission
+    must not block the authority's IPC loop.
+
+    VELDO-0147 AC3: the receiver's output is the run's ordered stream (project_runner_macos_stream).
+    Each chunk is fed to this run's execution record as it arrives, the delivered login's values
+    replaced before the scanner runs, and counted by stream. When the authority has the run's end,
+    the rest is read up to the end frame and the record is closed with those totals. The record is
+    the complete one only when they equal the totals the Mac signed in its result, which the exit
+    committed (control_execution_record.remote_problem): `record_refusal` names it when they do not.
     """
     remote = True
+    recorder = None
+    tally = None
+    stream_end = None
+    last_line = False
+    record_refusal = None
+    received = None
+    buffer = b''
+
+    def record_stream(self, values=()):
+        """Open this run's execution record before the receiver can print; a record that cannot be opened
+        leaves the run without one, and its readers refuse it by name."""
+        resolved = ER.Resolved()
+        for value in values:
+            resolved.add('subscription_token', value)
+        records = self.records
+        try:
+            if records is None:
+                database = self.dispatches.conn.execute('PRAGMA database_list').fetchone()[2]
+                records = ER.directory({'store': database})
+            contract = self.contract
+            header = {'dispatch_id': contract['dispatch_id'], 'contract_digest': D.digest(contract),
+                      'unit': contract['unit'], 'station': contract['station'],
+                      'project': contract['reservation']['project'], 'account': contract['reservation']['account'],
+                      'host': contract['input']['context']['host_route']['host']}
+            self.recorder, self.tally = ER.Recorder(records, header, resolved), MS.Tally()
+        except (OSError, KeyError, TypeError, ValueError):
+            self.recorder = None
+
+    def _take(self, chunk):
+        frames = MS
+        *lines, self.buffer = (self.buffer + chunk).split(b'\n')
+        for line in lines:
+            parsed = frames.parse(line)
+            if parsed is None:
+                # The receiver's own last line: nothing of the run follows it.
+                self.last_line = self.last_line or line.startswith(b'{"state"')
+            elif parsed[0] == frames.END:
+                self.stream_end = parsed[1]
+            elif self.recorder is not None and self.stream_end is None:
+                self.tally.feed(*parsed)
+                self.recorder.feed({'stdout': 'engine', 'stderr': 'stderr'}[parsed[0]], parsed[1])
+
+    def _read_to_end(self):
+        """The authority has the run's end, so the Mac has sent its end frame: read up to it. Bounded by the
+        timers table's ACCEPT_SECONDS, because SSH can keep the channel open after the receiver has ended."""
+        deadline = time.monotonic() + timer('ACCEPT_SECONDS')
+        while self.stream_end is None and not self.last_line and not self.lost and self.fileno() is not None:
+            ready, _, _ = select.select([self.fileno()], [], [], max(0, deadline - time.monotonic()))
+            if not ready:
+                break
+            chunk = os.read(self.fileno(), 65536)
+            if not chunk:
+                self.lost = True
+            else:
+                self._take(chunk)
+
+    def _close_record(self):
+        """Close the record with what was received, and compare it with what the Mac signed when the run's
+        exit carries that. Returns nothing; `received` and `record_refusal` hold the outcome."""
+        if self.recorder is None or self.received is not None:
+            return
+        self.received = dict(streams=self.tally.totals(), ended=self.stream_end is not None)
+        self.received['record'] = self.recorder.close(streams=self.received['streams'], ended=self.received['ended'])
+        committed = (self.dispatches.record(self.dispatch_id) or {}).get('execution_record') or {}
+        if 'streams' in committed:
+            self.record_refusal = ER.remote_problem(self.received, committed['streams'])
+
+    def _end_receiver(self):
+        super()._end_receiver()
+        if self.pending:
+            # What the reaped receiver had still left in its pipe is part of the run's stream.
+            taken, self.pending = self.pending, b''
+            self._take(taken)
+        self._close_record()
 
     @property
     def ends_at(self):
@@ -2980,6 +3062,8 @@ class RemoteLaunch(Launch):
         self.record = self.dispatches.record(self.dispatch_id)
         if (self.record or {}).get('state') in ('exited', 'refused', 'unknown'):
             # The authority can finish while SSH keeps stdout open indefinitely.
+            if self.record['state'] != 'refused' and self.recorder is not None:
+                self._read_to_end()
             self._end_receiver()
             self.ended = True
             return True
@@ -2990,6 +3074,8 @@ class RemoteLaunch(Launch):
             chunk = os.read(self.fileno(), 65536)
             if not chunk:
                 self.ended = self.lost = True
+            else:
+                self._take(chunk)
         return self.ended
 
     def stop(self, reason='requested'):
@@ -3035,27 +3121,35 @@ class RemoteLaunch(Launch):
         return self.record
 
 
-def remote_frames(receiver, contract, conn, *, keystore=None, now=None):
+def remote_frames(receiver, contract, conn, *, now=None):
     """VELDO-0147: what follows the prepared binding on the channel of a receiver configured
     `login: delivered` (a Mac that keeps no login): the login frame of the dispatch's own account, read from
-    this main node's profile of it, and, when the configuration selects MCP servers, one secrets frame with
-    exactly their credential values (VELDO-0158's resolution). Returns (frames, report); the report names the
-    account, servers and credential ids, never a value. A receiver without that setting gets no frame."""
+    this main node's profile of it. That is the engine's own sign-in and the only credential sent. No
+    outside-service credential is delivered into a run (VELDO-0254): a configuration that selects an MCP
+    server whose catalog revision names a credential is refused as
+    unsupported_configuration:credential_in_run:<server>, because that server's calls go through the outside
+    gate (VELDO-0257), and nothing is resolved or sent. Returns (frames, report, values): the report names
+    the account and servers, never a value; `values` are the login's exact values, for the run's record to
+    replace. A receiver without that setting gets no frame."""
     if not isinstance(receiver, dict) or receiver.get('login') != 'delivered':
-        return [], None
+        return [], None, []
     ML = _organ('project_runner_macos_login')
     engine, dispatch, account = contract['capability']['adapter'], contract['dispatch_id'], contract['reservation']['account']
+    selected = DL.selections(contract['capability']['configuration'])
+    for server, revision in selected:
+        row = DL.MC.entity(conn, DL.MC.revision_id(contract['domain'], server, revision))
+        if row is None or row['kind'] != DL.MC.KIND or row['data'].get('id') != server:
+            raise DL.Undeliverable('missing_evidence:mcp_server:%s:%d' % (server, revision))
+        if any('reference' in item for field in ('environment', 'headers') for item in row['data'][field].values()):
+            raise DL.Undeliverable('unsupported_configuration:credential_in_run:' + server, None, OUTSIDE_GATE_REASON)
     profile = ACC.profile(ACC.read(conn, account), receiver.get('main_host') or socket.gethostname())[1]
-    frames, routes, servers = [ML.frame(engine, profile, dispatch, account, now=now)[0]], [], []
-    configuration = contract['capability']['configuration']
-    if DL.selections(configuration):
-        if engine != 'claude_code':
-            raise DL.Undeliverable('invalid_input:mcp_delivery:' + str(engine))
-        servers = DL.resolve(conn, contract['domain'], configuration, keystore)
-        entries = {server['id']: ENGINES[engine]._mcp_entry(server, routes) for server in servers}
-        frames.append(ML.secrets_frame(dispatch, account, entries, {route['credential'] for route in routes}))
-    return frames, dict(DL.report(dispatch, servers, routes=routes), event='remote_frames', account=account,
-                        login_frame=True, secrets_frame=len(frames) == 2)
+    frame, values = ML.frame(engine, profile, dispatch, account, now=now)
+    return [frame], dict(DL.report(dispatch, [], selected=selected), event='remote_frames', account=account,
+                         login_frame=True), values
+
+
+# Why a Mac run that names a credentialed MCP server is refused (remote_frames), for the report.
+OUTSIDE_GATE_REASON = 'calls to this server go through the outside gate (VELDO-0257); no credential is delivered into a run'
 
 
 def invoke_remote(receiver, contract, dispatches, *, clock=time.time):
@@ -3064,7 +3158,7 @@ def invoke_remote(receiver, contract, dispatches, *, clock=time.time):
     The installed endpoint calls control_worker.receive on the Mac. No shell or
     command-line argument is built from unit data, and no Linux receiver is used.
     The binding line never carries a login or a credential value: for a receiver
-    configured for it, those follow as frames on the same channel (remote_frames).
+    configured for it, the login follows as one frame on the same channel (remote_frames).
     """
     launch = RemoteLaunch(None, contract, dispatches, clock)
     argv = receiver.get('argv') if isinstance(receiver, dict) else None
@@ -3074,14 +3168,17 @@ def invoke_remote(receiver, contract, dispatches, *, clock=time.time):
         launch.result, launch.ended = 'refused', True
         return launch
     try:
-        frames, launch.delivered = remote_frames(receiver, contract, dispatches.conn)
+        frames, launch.delivered, values = remote_frames(receiver, contract, dispatches.conn)
     except Exception as error:  # noqa: BLE001 - nothing was sent: a conclusive refusal by name, never a held unit
         code = getattr(error, 'code', None)
-        launch.record = dispatches.refuse(contract['dispatch_id'], D.digest(contract),
-            code if isinstance(code, str) and code else 'unavailable_service:login_delivery',
+        code = code if isinstance(code, str) and code else 'unavailable_service:login_delivery'
+        launch.record = dispatches.refuse(contract['dispatch_id'], D.digest(contract), code,
             now=clock(), expected_state='prepared')
+        launch.delivered = dict(event='remote_frames', dispatch_id=contract['dispatch_id'], refusal=code,
+                                reason=getattr(error, 'reason', None))
         launch.result, launch.ended = 'refused', True
         return launch
+    launch.record_stream(values)
     try:
         launch.child = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                         stderr=subprocess.DEVNULL)

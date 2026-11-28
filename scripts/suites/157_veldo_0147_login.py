@@ -1,4 +1,6 @@
-"""VELDO-0147 main-node login delivery rows. The real Mac run is proof/VELDO-0147/mac-claude-leg.json."""
+"""VELDO-0147 rows: the login delivered to a Mac run, the refusal of an outside-service credential, and the
+Mac run's ordered output kept as its execution record on the main node. The real Mac runs are under
+proof/VELDO-0147/."""
 
 
 def _v147_login():
@@ -163,7 +165,6 @@ def _v147_login():
         """The VELDO-0125 authority fixture over this tree's modules, with one prepared Claude dispatch whose
         account's main-node profile holds a subscription login good far past any run."""
         import os
-        import types
         os.environ['VELDO_0125_MODULES'] = str(launch_module.parent)
         try:
             loaded = importlib.util.spec_from_file_location('v147_relay', ROOT / 'proof/VELDO-0125/checks.py')
@@ -178,11 +179,19 @@ def _v147_login():
         claude(profile, expiresAt=4_102_444_800_000)
         record = dict(id='account', status='active', provider='claude_code', profiles={'main': str(profile)})
         launch.ACC.read = lambda conn, account: record if account == 'account' else None
-        server = dict(id='tracker', revision=1, transport='http', command=None, arguments=[], url='https://tracker.invalid/mcp',
-                      environment={}, headers={'Authorization': {'credential': 'tracker-token', 'handle':
-                                                                 types.SimpleNamespace(reveal=lambda: 'Bearer mcp-value-147')}})
-        launch.DL.selections = lambda configuration: [('tracker', 1)]
-        launch.DL.resolve = lambda conn, domain, configuration, keystore=None: [server]
+        # The catalog as the launcher reads it: `tracker` names a credential, `notes` names none. A test selects
+        # one by filling `selected`. Nothing may resolve a reference: the keystore entry raises.
+        catalog = {'tracker': dict(id='tracker', environment={}, headers={'Authorization': {'reference': 'keychain:veldo/tracker-token'}}),
+                   'notes': dict(id='notes', environment={'MODE': {'literal': 'read'}}, headers={})}
+        selected = []
+        launch.DL.selections = lambda configuration: list(selected)
+        launch.DL.MC.revision_id = lambda domain, server, revision: server
+        launch.DL.MC.entity = lambda conn, identity: dict(kind=launch.DL.MC.KIND, data=catalog[identity]) if identity in catalog else None
+
+        def resolved(*arguments, **named):
+            raise AssertionError('a keystore reference was resolved for a Mac run')
+        launch.DL.resolve = resolved
+        f.selected = selected
         return T, f, launch
 
     def sink(base):
@@ -192,37 +201,44 @@ def _v147_login():
                                     str(received)], login='delivered', main_host='main')
 
     def relay_frames(base):
-        # AC4 on the relay transport: the binding line is identity only; the login and the one secrets frame
-        # follow it on the same channel; what is kept names ids, never a value.
+        # AC4 on the relay transport: the binding line is identity only and the login is the one frame after
+        # it. No outside-service credential value is sent anywhere: a run that selects a server needing one
+        # is refused by name before a receiver is contacted, and nothing is resolved.
         T, f, launch = relay_fixture(base)
         try:
             contract = f.prepare(required=['macos'], engine='claude_code')['contract']
-            assert launch.remote_frames(dict(argv=['x']), contract, f.conn) == ([], None)
+            assert launch.remote_frames(dict(argv=['x']), contract, f.conn) == ([], None, [])
+            f.selected.append(('notes', 1))  # a server that names no credential is not refused
             received, receiver = sink(base)
             started = launch.invoke_remote(receiver, contract, f.ds)
             assert started.result == 'pending', (started.result, (started.record or {}).get('refusal'))
             started.child.wait(timeout=T.WAIT_HANG_SECONDS)
             lines = received.read_bytes().splitlines()
-            assert len(lines) == 3, len(lines)
+            assert len(lines) == 2, len(lines)
             packet = json.loads(lines[0])
             assert set(packet) == {'dispatch_id', 'contract_digest', 'domain', 'repository'}, sorted(packet)
-            values = (b'access-value-147', b'mcp-value-147', b'refresh-value-147')
+            values = (b'access-value-147', b'refresh-value-147')
             assert not any(value in lines[0] for value in values), 'a credential value is in the packet'
-            login, secrets = json.loads(lines[1]), json.loads(lines[2])
+            login = json.loads(lines[1])
             assert login['schema'] == L.SCHEMA and login['dispatch'] == contract['dispatch_id'] and login['account'] == 'account'
-            assert b'access-value-147' in lines[1] and b'refresh' not in lines[1] and b'mcp-value-147' not in lines[1]
-            assert secrets['schema'] == L.SECRETS_SCHEMA and secrets['credentials'] == ['tracker-token']
-            assert secrets['dispatch'] == contract['dispatch_id'] and set(secrets['files']) == {L.SECRETS_FILE}
-            entry = json.loads(secrets['files'][L.SECRETS_FILE])['mcpServers']['tracker']
-            assert entry['headers'] == {'Authorization': 'Bearer mcp-value-147'} and b'access-value-147' not in lines[2]
+            assert b'access-value-147' in lines[1] and b'refresh' not in lines[1]
             report = started.delivered
-            assert report['credentials'] == ['tracker-token'] and report['account'] == 'account'
-            assert report['login_frame'] and report['secrets_frame']
-            assert [route['route'] for route in report['routes']] == ['private_file']
+            assert report['credentials'] == [] and report['routes'] == [] and report['account'] == 'account'
+            assert report['login_frame'] and 'secrets_frame' not in report
+            started.stop()
             kept = json.dumps([report, contract, f.ds.record(contract['dispatch_id'])]).encode()
             f.conn.commit()
             kept += b''.join(path.read_bytes() for path in sorted(f.store.parent.glob(f.store.name + '*')))
             assert not any(value in kept for value in values), 'a credential value was kept on the main node'
+            # A server whose catalog revision names a credential: refused by name, nothing sent.
+            del f.selected[:]
+            f.selected.append(('tracker', 1))
+            second = f.prepare(dispatch='dispatch/credentialed', required=['macos'], engine='claude_code', unit='unit-2')['contract']
+            received.unlink()
+            refused_launch = launch.invoke_remote(receiver, second, f.ds)
+            assert refused_launch.result == 'refused' and refused_launch.child is None
+            assert refused_launch.record['refusal'] == 'unsupported_configuration:credential_in_run:tracker', refused_launch.record['refusal']
+            assert 'outside gate' in refused_launch.delivered['reason'] and not received.exists()
         finally:
             f.close()
 
@@ -241,27 +257,26 @@ def _v147_login():
             f.close()
 
     def mac_delivery(base):
-        # The Mac receiver's side: frames checked before a disk is made, the secrets file 0600 in a 0700
-        # directory on the mounted login only, and nothing left after close.
+        # The Mac receiver's side: the one login frame checked before a disk is made, any other line refused
+        # by name (a secrets frame among them), and nothing left after close.
         login, _ = L.frame('claude_code', claude(base), 'd-147', 'acct-test', now=now)
-        secrets = L.secrets_frame('d-147', 'acct-test', {'tracker': {'type': 'http', 'url': 'https://tracker.invalid/mcp',
-                                  'headers': {'Authorization': 'Bearer mcp-value-147'}}}, {'tracker-token'})
+        secrets = json.dumps(dict(schema='veldo.macos_secrets_frame/v1', dispatch='d-147', account='acct-test',
+                                  credentials=['tracker-token'], files={'mcp.json': '{}'})).encode()
         target = base / 'login'
         for lines, arguments, code in (
                 (None, ('d-147', 'acct-test', 'claude_code'), 'missing_evidence:login_frame'),
-                ([secrets], ('d-147', 'acct-test', 'claude_code'), 'missing_evidence:login_frame'),
+                ([secrets], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame'),
                 ([login], ('d-other', 'acct-test', 'claude_code'), 'binding_mismatch:login_frame'),
                 ([login], ('d-147', 'acct-other', 'claude_code'), 'binding_mismatch:login_frame'),
                 ([login], ('d-147', 'acct-test', 'codex'), 'binding_mismatch:login_frame'),
-                ([login, L.secrets_frame('d-other', 'acct-test', {}, [])], ('d-147', 'acct-test', 'claude_code'),
-                 'binding_mismatch:secrets_frame'),
+                ([login, secrets], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame'),
                 ([login, login], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame'),
-                ([login, secrets, secrets], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame'),
-                ([login, b'{"schema": "other"}'], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame'),
-                ([login, b'x' * (L.MAX_FRAME + 1)], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame_size')):
+                ([b'{"schema": "other"}'], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame'),
+                ([b'x' * (L.MAX_FRAME + 1)], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame_size')):
             refused(lambda: L.Delivery(lines, target, *arguments), code)
         assert not target.exists()
-        delivery = L.Delivery([login.decode(), secrets.decode()], target, 'd-147', 'acct-test', 'claude_code')
+        assert not hasattr(L, 'secrets_frame') and not hasattr(L, 'write_secrets') and not hasattr(L.Delivery, 'secrets')
+        delivery = L.Delivery([login.decode()], target, 'd-147', 'acct-test', 'claude_code')
         mounted = []
 
         def fake_open(directory, stream):
@@ -276,24 +291,239 @@ def _v147_login():
             shutil.rmtree(directory)
             mounted.clear()
             return dict(status='closed')
-        real = L.open_profile, L.close_profile, L._mounted
-        L.open_profile, L.close_profile, L._mounted = fake_open, fake_close, lambda path: Path(path) in [m.resolve() for m in mounted]
+        real = L.open_profile, L.close_profile
+        L.open_profile, L.close_profile = fake_open, fake_close
         try:
-            refused(lambda: L.write_secrets(target, secrets), 'unavailable_service:ram_disk_mount')
             assert delivery.open() == str(target / 'profile')
-            assert not (target / 'profile' / L.SECRETS_DIRECTORY).exists(), 'the secrets file was written before acceptance'
-            delivery.secrets()
-            written = delivery.report['secrets']
-            assert written['file_mode'] == '0o600' and written['directory_mode'] == '0o700'
-            assert written['credentials'] == ['tracker-token'] and 'mcp-value-147' not in json.dumps(delivery.report)
-            text = (target / 'profile' / L.SECRETS_DIRECTORY / L.SECRETS_FILE).read_text()
-            assert json.loads(text)['mcpServers']['tracker']['headers']['Authorization'] == 'Bearer mcp-value-147'
+            assert sorted(path.name for path in target.iterdir()) == ['profile'] and not any((target / 'profile').iterdir())
             assert delivery.close() == dict(status='closed') and not target.exists()
-            assert delivery.close() == dict(status='closed')  # a second close finds nothing and changes nothing
+            assert delivery.close() is None  # a second close finds nothing and changes nothing
         finally:
-            L.open_profile, L.close_profile, L._mounted = real
+            L.open_profile, L.close_profile = real
 
-    for name, test in {'AC4/mac-no-value-in-packet': relay_frames, 'AC4/relay-login-refused-by-name': relay_refusal,
+    # ---- AC3: the Mac run's output, kept on the main node as its execution record -------------------------
+
+    # What the fixture engine prints: both streams, a line carrying the delivered login's value, and a last
+    # line with no newline. Whole lines per write, flushed, so each is one chunk of its pipe.
+    ENGINE = ('import sys\n'
+              'for number in range(3):\n'
+              '    sys.stdout.write("out %d token=access-value-147\\n" % number); sys.stdout.flush()\n'
+              '    sys.stderr.write("err %d\\n" % number); sys.stderr.flush()\n'
+              'sys.stdout.write("last out, no newline"); sys.stdout.flush()\n')
+    # The Mac's half, run as the receiver's transport: it reads the binding and the login frame, runs the
+    # fixture engine under the production wrapper's pump, sends the ordered file with the production
+    # receiver's Relay, and leaves the wrapper's totals where the row reads them. `alter` changes one chunk
+    # between the Mac and the main node.
+    MAC = ('import importlib.util, json, os, subprocess, sys\n'
+           'modules, work, alter = sys.argv[1], sys.argv[2], sys.argv[3]\n'
+           'sys.path.insert(0, modules)\n'
+           'def load(name):\n'
+           '    spec = importlib.util.spec_from_file_location("mac_" + name, os.path.join(modules, name + ".py"))\n'
+           '    module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module); return module\n'
+           'wrapper, worker = load("project_runner_macos_wrapper"), load("control_worker")\n'
+           'frames = worker.S\n'
+           'sys.stdin.readline(); sys.stdin.readline()\n'
+           'class Channel:\n'
+           '    count = 0\n'
+           '    def write(self, data):\n'
+           '        parsed = frames.parse(data)\n'
+           '        if alter == "alter" and parsed and parsed[0] == "stderr":\n'
+           '            Channel.count += 1\n'
+           '            if Channel.count == 2:\n'
+           '                data = frames.chunk("stderr", parsed[1].replace(b"err", b"ERR"))\n'
+           '        sys.stdout.buffer.write(data)\n'
+           '    def flush(self):\n'
+           '        sys.stdout.buffer.flush()\n'
+           'relay = worker.Relay(Channel())\n'
+           'relay.start(os.path.join(work, frames.FILE))\n'
+           'tally = frames.Tally()\n'
+           'child = subprocess.Popen([sys.executable, os.path.join(work, "engine.py")], stdin=subprocess.DEVNULL,\n'
+           '                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n'
+           'wake = os.pipe()\n'
+           'with open(os.path.join(work, "engine.out"), "wb", buffering=0) as out, \\\n'
+           '        open(os.path.join(work, "engine.err"), "wb", buffering=0) as err, \\\n'
+           '        open(os.path.join(work, frames.FILE), "wb", buffering=0) as framed:\n'
+           '    whole = wrapper.pump([("stdout", child.stdout, out), ("stderr", child.stderr, err)], framed, tally, wake[0])\n'
+           'child.wait()\n'
+           'relay.finish()\n'
+           'with open(os.path.join(work, "totals.json"), "w") as stream:\n'
+           '    json.dump(dict(whole=whole, totals=tally.totals()), stream)\n'
+           'print(json.dumps(dict(state="exited")), flush=True)\n')
+
+    def mac_run(base, alter='whole', transport=None):
+        """One prepared Mac dispatch run to its signed end: (T, f, launch module, started launch, contract,
+        the Mac's work directory, the wrapper's totals). The signed result carries the wrapper's totals."""
+        import sys
+        T, f, launch = relay_fixture(base)
+        work = base / 'mac'
+        work.mkdir()
+        (work / 'engine.py').write_text(ENGINE)
+        (work / 'mac.py').write_text(MAC)
+        contract = f.prepare(required=['macos'], engine='claude_code')['contract']
+        f.start()
+        client = f.client()
+        receiver = dict(argv=transport or [sys.executable, str(work / 'mac.py'), str(launch_module.parent), str(work), alter],
+                        login='delivered', main_host='main')
+        started = launch.invoke_remote(receiver, contract, f.ds)
+        assert started.result == 'pending', (started.result, (started.record or {}).get('refusal'))
+        binding = T.launch(client, contract['dispatch_id'])
+        started.child.wait(timeout=T.WAIT_HANG_SECONDS)
+        totals = None
+        if transport is None:
+            kept = json.loads((work / 'totals.json').read_text())
+            assert kept['whole'], 'the wrapper could not write a chunk'
+            totals = kept['totals']
+        return T, f, launch, started, contract, work, totals, client, binding
+
+    def expected_lines(work, frames):
+        """The lines the engine emitted on the Mac, in the order of the Mac's one ordered file: (record
+        stream, text). A stream's last line with no newline comes at the end, as the record keeps it."""
+        pending, lines = {'stdout': b'', 'stderr': b''}, []
+        for raw in (work / frames.FILE).read_bytes().splitlines():
+            name, data = frames.parse(raw)
+            *whole, pending[name] = (pending[name] + data).split(b'\n')
+            lines += [(name, line.decode()) for line in whole]
+        return lines + [(name, rest.decode()) for name, rest in pending.items() if rest]
+
+    def complete_record(base):
+        # AC3, the Mac complete-record check: the record kept on the main node holds, line by line and in the
+        # order of the Mac's ordered stream, what the engine emitted there, the error stream included, with
+        # the delivered login's value replaced; the totals this node computed equal the ones the Mac signed.
+        T, f, launch, started, contract, work, totals, client, binding = mac_run(base)
+        try:
+            frames, ER, dispatch = launch.MS, launch.ER, contract['dispatch_id']
+            assert totals['stderr']['lines'] == 3 and totals['stdout']['lines'] == 4, totals
+            assert (work / 'engine.err').read_bytes() == b'err 0\nerr 1\nerr 2\n'
+            client.result(binding, dict(T.observation(), streams=totals), references={})
+            record = started.wait(timeout=T.WAIT_HANG_SECONDS)
+            assert record['state'] == 'exited' and record['execution_record'] == {'streams': totals}, record.get('execution_record')
+            assert started.received['ended'] and started.received['streams'] == totals, started.received
+            assert started.record_refusal is None, started.record_refusal
+            records = ER.directory({'store': str(f.store)})
+            page = ER.read(records, dispatch, 0, 1000, committed=record['execution_record'])
+            emitted = expected_lines(work, frames)
+            assert [name for name, _ in emitted if name == 'stderr'] and len(emitted) == 7, emitted
+            assert [text for name, text in emitted if name == 'stdout'][:3] == ['out %d token=access-value-147' % n for n in range(3)]
+            kept = [({'engine': 'stdout', 'stderr': 'stderr'}[line['stream']], line['payload']) for line in page['lines']]
+            marker = ER.marker('subscription_token')
+            assert kept == [(name, text.replace('access-value-147', marker)) for name, text in emitted], (kept, emitted)
+            assert [line['seq'] for line in page['lines']] == list(range(1, 8))
+            assert b'access-value-147' not in Path(ER.path(records, dispatch)).read_bytes()
+            assert all('subscription_token' in line['redacted'] for line in page['lines'] if marker in line['payload'])
+        finally:
+            f.close()
+
+    def altered_chunk(base):
+        # One chunk changed between the Mac and the main node, same length: the main node's totals no longer
+        # equal the signed ones, so the launch names the refusal and every reader of the record is refused.
+        T, f, launch, started, contract, work, totals, client, binding = mac_run(base, alter='alter')
+        try:
+            ER, dispatch = launch.ER, contract['dispatch_id']
+            client.result(binding, dict(T.observation(), streams=totals), references={})
+            record = started.wait(timeout=T.WAIT_HANG_SECONDS)
+            assert record['state'] == 'exited' and record['execution_record'] == {'streams': totals}
+            assert started.received['ended'] and started.received['streams']['stdout'] == totals['stdout']
+            assert started.received['streams']['stderr']['bytes'] == totals['stderr']['bytes']
+            assert started.received['streams']['stderr']['sha256'] != totals['stderr']['sha256']
+            assert started.record_refusal == 'unknown_outcome:record_incomplete', started.record_refusal
+            records = ER.directory({'store': str(f.store)})
+            try:
+                ER.read(records, dispatch, 0, 1000, committed=record['execution_record'])
+            except ER.Refused as error:
+                assert error.code == 'unknown_outcome:record_incomplete', error.code
+            else:
+                raise AssertionError('an altered record was served')
+        finally:
+            f.close()
+
+    def resumed_run(base):
+        # A run whose channel ended before the engine did (the receiver crashed and the run was resumed with
+        # no channel): the Mac still signs what the engine printed, the main node received none of it, and
+        # the record is refused by name; so is one whose receiver kept nothing at all. A signed result whose
+        # totals are malformed is refused before it ends the dispatch.
+        import sys
+        T, f, launch, started, contract, work, totals, client, binding = mac_run(
+            base, transport=[sys.executable, '-c', 'import sys; sys.stdin.read()'])
+        try:
+            frames, ER, dispatch = launch.MS, launch.ER, contract['dispatch_id']
+            tally = frames.Tally()
+            tally.feed('stdout', b'printed after the channel ended\n')
+            tally.feed('stderr', b'and an error line\n')
+            signed = tally.totals()
+            T.refused(lambda: client.result(binding, dict(T.observation(), streams=dict(signed, stdout={'lines': 1})),
+                                            references={}), 'invalid_input:streams')
+            assert f.ds.record(dispatch)['state'] == 'running'
+            client.result(binding, dict(T.observation(), streams=signed), references={})
+            record = started.wait(timeout=T.WAIT_HANG_SECONDS)
+            assert record['state'] == 'exited' and record['execution_record'] == {'streams': signed}
+            assert not started.received['ended'] and started.received['streams']['stdout']['bytes'] == 0
+            assert started.record_refusal == 'unknown_outcome:record_incomplete', started.record_refusal
+            records = ER.directory({'store': str(f.store)})
+
+            def refused_by_name():
+                try:
+                    ER.read(records, dispatch, 0, 1000, committed=record['execution_record'])
+                except ER.Refused as error:
+                    return error.code
+                return None
+            assert refused_by_name() == 'unknown_outcome:record_incomplete'
+            Path(ER.received_path(ER.path(records, dispatch))).unlink()
+            assert refused_by_name() == 'unknown_outcome:record_incomplete'
+        finally:
+            f.close()
+
+    def wrapper_stream(base):
+        # The production wrapper, whole, over a real child with two pipes: engine.out and engine.err hold
+        # what the engine printed, the one ordered file holds the same bytes by stream, and result.json
+        # carries the totals the Mac signs.
+        import hashlib
+        import os
+        import subprocess
+        import sys
+        from unittest.mock import patch
+        loaded = importlib.util.spec_from_file_location('v147_wrapper', launch_module.parent / 'project_runner_macos_wrapper.py')
+        wrapper = importlib.util.module_from_spec(loaded)
+        loaded.loader.exec_module(wrapper)
+        frames = wrapper.stream_frames
+        executable = str(Path(sys.executable).resolve())
+        (base / 'engine.py').write_text(ENGINE)
+        (base / 'request.json').write_text(json.dumps(dict(
+            engine='codex', login_profile=str(base), argv=[executable, str(base / 'engine.py')],
+            binary_digest='sha256:' + hashlib.sha256(Path(executable).read_bytes()).hexdigest(),
+            startup_seconds=2, dispatch_id='wrapper-147', clone=str(base), environment=dict(os.environ), sandbox='',
+            kill_grace_seconds=1, settle_seconds=1)))
+        real_popen = subprocess.Popen
+
+        def launch(argv, **named):
+            named.pop('process_group')
+            return real_popen(argv[3:], start_new_session=True, **named)  # without the macOS sandbox prefix
+
+        def wait_file(path, seconds):
+            path.write_text('{"runtime_seconds": 600}')
+            return True
+        wrapper.identity = lambda pid: {'pid': pid}
+        wrapper.coalition = lambda pid: 1
+        wrapper.coalition_members = lambda job: [os.getpid()]
+        wrapper.wait_file = wait_file
+        with patch.object(wrapper.os, 'getpgrp', return_value=os.getpid()), patch.object(wrapper.subprocess, 'Popen', launch):
+            assert wrapper.main(base) == 0
+        out, err = (base / 'engine.out').read_bytes(), (base / 'engine.err').read_bytes()
+        assert err == b'err 0\nerr 1\nerr 2\n' and out.endswith(b'last out, no newline') and out.count(b'\n') == 3
+        result = json.loads((base / 'result.json').read_text())
+        assert result['returncode'] == 0 and not frames.problems(result['streams'])
+        assert result['streams'] == {
+            'stdout': {'lines': 4, 'bytes': len(out), 'sha256': hashlib.sha256(out).hexdigest()},
+            'stderr': {'lines': 3, 'bytes': len(err), 'sha256': hashlib.sha256(err).hexdigest()}}, result['streams']
+        tally, joined = frames.Tally(), {'stdout': b'', 'stderr': b''}
+        for raw in (base / frames.FILE).read_bytes().splitlines():
+            name, data = frames.parse(raw)
+            tally.feed(name, data)
+            joined[name] += data
+        assert joined == {'stdout': out, 'stderr': err} and tally.totals() == result['streams']
+
+    for name, test in {'AC3/mac-complete-record': complete_record, 'AC3/mac-altered-chunk-refused': altered_chunk,
+                       'AC3/mac-resumed-run-record-refused': resumed_run, 'AC3/mac-wrapper-ordered-stream': wrapper_stream,
+                       'AC4/mac-no-value-in-packet': relay_frames, 'AC4/relay-login-refused-by-name': relay_refusal,
                        'AC4/mac-delivery-checked-and-removed': mac_delivery,
                        'AC4/claude-frame-access-only': claude_frame, 'AC1/claude-frame-refusals': claude_refusals,
                        'AC2/codex-frame-access-only': codex_frame, 'AC4/mac-frame-refusals': mac_side_refusals,

@@ -2730,8 +2730,8 @@
    "requires": [
     "157_veldo_0147_login"
    ],
-   "regions": "Mac login frame: access credential only, refusals before a RAM disk is made.",
-   "requires_note": "Only ROOT and expect."
+   "regions": "VELDO-0147: Mac login frame (access credential only, refusals before a RAM disk is made), refusal of a Mac run that selects a credentialed MCP server, and AC3 (the Mac run's ordered output kept as its execution record; a chunk altered in transit and a run resumed with no channel refused by name).",
+   "requires_note": "Only ROOT and expect. The VELDO-0125 authority fixture with signed worker commands; a fixture engine and the production wrapper pump and receiver relay as child processes on Linux. No Mac, no engine, no network."
   }
  ],
  "resource_capacities": {

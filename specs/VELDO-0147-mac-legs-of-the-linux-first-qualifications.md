@@ -29,6 +29,10 @@ footprint:
   - "engine/.veldo/control_relay*.py"
   - ".veldo/control_relay*.py"
   - "packs/*/.veldo/control_relay*.py"
+  - "engine/.veldo/control_dispatch.py"
+  - ".veldo/control_dispatch.py"
+  - "packs/*/.veldo/control_dispatch.py"
+  - "scripts/suites/103_veldo_0124_macos.py"
   - "engine/.veldo/control_execution_record*.py"
   - ".veldo/control_execution_record*.py"
   - "packs/*/.veldo/control_execution_record*.py"
@@ -179,6 +183,22 @@ requirement. The Linux specifications keep their own evidence; this one records 
 negative controls. It is built after VELDO-0124 and VELDO-0125 in stage 3 of the design's critical path.
 
 ## History
+
+2026-11-28: round 6 (lead decisions). Two things changed, no criterion text.
+AC4's MCP part waits for the outside gate (VELDO-0257). VELDO-0254 says no outside-service credential is
+delivered into a run, so the secrets frame built in round 4 is removed from `invoke_remote` and from the
+Mac side. The login frame stays: it is the engine's own sign-in. A Mac run whose configuration selects an
+MCP server that needs a credential is refused as `unsupported_configuration:credential_in_run:<server>`,
+because that server's calls go through the outside gate. The falsifier `mac147-value-in-packet` stays and
+now proves that no value is sent in the packet.
+AC3 is built. The Mac wrapper writes one ordered stream, each chunk tagged stdout or stderr. The Mac
+receiver sends the chunks while the engine runs and then an end frame. The Mac signs each stream's line
+count, byte count and SHA-256 in its result, and the dispatch's exit commits them. The main node feeds
+what it receives to the run's execution record and counts it; the record is the complete one only when
+those counts and digests equal the signed ones, and a run resumed with no channel is refused as
+`unknown_outcome:record_incomplete`. The footprint gains `control_dispatch.py`, because the exit of a
+remote run now commits the signed stream totals instead of a record digest the Mac cannot know, and
+`scripts/suites/103_veldo_0124_macos.py`, which counts the Mac runner modules (one was added).
 
 2026-11-27: round 4 (owner brief). The footprint gains `control_worker*.py`: the Mac receiver of VELDO-0125
 is where the login and secrets frames are read, so the wiring the owner ordered cannot be made outside it.

@@ -17,11 +17,12 @@ Two halves, one file, so both ends agree on the frame:
     mounts it at <base>/profile; `close <base>` detaches the disk and removes <base>. Both
     print one JSON line of identifiers, file names and sizes, never a value.
 
-On the production path (VELDO-0125) both frames travel on the receiver's own SSH channel, as the
-lines after the prepared binding: control_launch.invoke_remote writes them, control_worker reads
-them and hands them to Delivery below. The second frame is the secrets frame (AC4): the run's MCP
-servers with their credential values, written as one 0600 file in a 0700 directory on the same RAM
-disk only after the authority accepted the launch, and gone with the disk when the run ends.
+On the production path (VELDO-0125) the frame travels on the receiver's own SSH channel, as the
+line after the prepared binding: control_launch.invoke_remote writes it, control_worker reads it
+and hands it to Delivery below. It is the engine's own sign-in and the only credential a Mac run is
+sent. No outside-service credential is delivered (VELDO-0254): a Mac run whose configuration names
+an MCP server that needs one is refused on the main node before anything is sent, and any second
+line here is refused by name.
 
 macOS facts this relies on (recorded in proof/VELDO-0147): Claude Code on macOS reads its
 login from the keychain first and, when the keychain is unreachable (the run's Seatbelt
@@ -42,8 +43,6 @@ MAX_FRAME = 256 * 1024
 DISK_SECTORS = 16384  # 8 MiB of RAM: a login profile is a few kilobytes.
 FILES = {'claude_code': ('.credentials.json',), 'codex': ('auth.json',)}
 MARGIN_SECONDS = 1800  # an access credential must outlive the run by this much
-SECRETS_SCHEMA = 'veldo.macos_secrets_frame/v1'
-SECRETS_DIRECTORY, SECRETS_FILE = 'secrets', 'mcp.json'
 
 
 class Refused(Exception):
@@ -92,18 +91,6 @@ def frame(engine, profile, dispatch, account, now=None):
     if len(body) > MAX_FRAME:
         raise Refused('invalid_input:frame_size')
     return body, values
-
-
-def secrets_frame(dispatch, account, servers, credentials):
-    """The one secrets frame of a Mac run: `servers` is the MCP configuration's server entries with
-    their credential values in place, `credentials` the ids of the credentials inside it."""
-    text = json.dumps({'mcpServers': servers}, sort_keys=True)
-    body = json.dumps(dict(schema=SECRETS_SCHEMA, dispatch=dispatch, account=account,
-                           credentials=sorted(credentials), files={SECRETS_FILE: text}),
-                      sort_keys=True).encode() + b'\n'
-    if len(body) > MAX_FRAME:
-        raise Refused('invalid_input:frame_size')
-    return body
 
 
 # ---- Mac -------------------------------------------------------------------------------
@@ -189,37 +176,15 @@ def close_profile(base):
     return dict(status='closed' if gone else 'left_behind', device=device, detached=detached, removed=gone)
 
 
-def write_secrets(base, raw):
-    """Write the secrets frame's one file on the run's RAM disk; return ids and sizes, never a value."""
-    document = json.loads(raw)
-    files = document.get('files') or {}
-    credentials = document.get('credentials')
-    if (set(files) != {SECRETS_FILE} or not isinstance(files[SECRETS_FILE], str)
-            or not isinstance(credentials, list) or not all(isinstance(c, str) for c in credentials)):
-        raise Refused('invalid_input:frame_files')
-    mount = Path(base) / 'profile'
-    if not _mounted(mount.resolve()):
-        raise Refused('unavailable_service:ram_disk_mount')
-    directory = mount / SECRETS_DIRECTORY
-    os.mkdir(directory, 0o700)
-    descriptor = os.open(directory / SECRETS_FILE, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(descriptor, 'w') as out:
-        out.write(files[SECRETS_FILE])
-    return dict(status='written', credentials=credentials, file=SECRETS_DIRECTORY + '/' + SECRETS_FILE,
-                size=len(files[SECRETS_FILE].encode()),
-                file_mode=oct(os.stat(directory / SECRETS_FILE).st_mode & 0o777),
-                directory_mode=oct(os.stat(directory).st_mode & 0o777))
-
-
 class Delivery:
-    """One run's frames in the Mac receiver (control_worker): checked on construction, before a clone
-    or a disk is made; the login mounted before admission; the secrets file written only after the
-    authority accepted the launch; everything detached and removed when the run ends."""
+    """One run's login frame in the Mac receiver (control_worker): checked on construction, before a
+    clone or a disk is made; the login mounted before admission; detached and removed when the run ends.
+    Exactly one line is accepted, and it must be the login frame of this dispatch, account and engine."""
 
     def __init__(self, lines, base, dispatch, account, engine):
         self.base, self.frames, self.report = Path(base), {}, {}
         lines = [line.encode() if isinstance(line, str) else line for line in lines or ()]
-        if len(lines) > 2:
+        if len(lines) > 1:
             raise Refused('invalid_input:frame')
         for raw in lines:
             if len(raw) > MAX_FRAME:
@@ -228,9 +193,8 @@ class Delivery:
                 document = json.loads(raw)
             except ValueError:
                 raise Refused('invalid_input:frame')
-            kind = {SCHEMA: 'login', SECRETS_SCHEMA: 'secrets'}.get(
-                document.get('schema') if isinstance(document, dict) else None)
-            if kind is None or kind in self.frames:
+            kind = 'login' if isinstance(document, dict) and document.get('schema') == SCHEMA else None
+            if kind is None:
                 raise Refused('invalid_input:frame')
             if document.get('dispatch') != dispatch or document.get('account') != account:
                 raise Refused('binding_mismatch:' + kind + '_frame')
@@ -244,10 +208,6 @@ class Delivery:
         """Mount the login; the directory the account's login variable names for this run."""
         self.report['login'] = open_profile(self.base, io.BytesIO(self.frames['login']))
         return str(self.base / 'profile')
-
-    def secrets(self):
-        if 'secrets' in self.frames:
-            self.report['secrets'] = write_secrets(self.base, self.frames['secrets'])
 
     def close(self):
         if self.base.exists():

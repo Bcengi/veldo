@@ -79,6 +79,10 @@ import urllib.parse
 
 SCHEMA = 'veldo.execution_record/v1'
 HINT_SCHEMA = 'veldo.execution_record_hint/v1'
+# VELDO-0147: what a remote run's receiver kept of the bytes it received, and the name a record is refused
+# by when that is not what the remote host signed.
+RECEIVED_SCHEMA = 'veldo.execution_record_received/v1'
+REMOTE_INCOMPLETE = 'unknown_outcome:record_incomplete'
 STREAMS = ('engine', 'stderr', 'wrapper')
 DIRECTORY = 'records'
 PAGE_BYTES = 1024 * 1024
@@ -594,8 +598,11 @@ class Recorder:
             self.hinted = self.sequence
             self.hint(False)
 
-    def close(self):
-        """Keep each stream's last line that has no newline, close the file and return {lines, bytes, digest}."""
+    def close(self, streams=None, ended=None):
+        """Keep each stream's last line that has no newline, close the file and return {lines, bytes, digest}.
+        VELDO-0147: a remote run's receiver passes `streams`, its own totals of the bytes it received by
+        remote stream, and `ended`, whether it read the sender's end frame; they are kept beside the record
+        (`received_path`) with the record's own count, size and digest, for `read` to compare."""
         if self.closed is None:
             for stream in STREAMS:
                 if self.pending[stream]:
@@ -605,6 +612,9 @@ class Recorder:
             self._drain()
             os.close(self.fd)
             self.closed = {'lines': self.sequence, 'bytes': self.size, 'digest': 'sha256:' + self.hasher.hexdigest()}
+            if streams is not None:
+                _write_received(self.path, {'schema': RECEIVED_SCHEMA, 'dispatch_id': self.dispatch_id,
+                                            'streams': streams, 'ended': bool(ended), 'record': dict(self.closed)})
         return dict(self.closed)
 
     def hint(self, ended):
@@ -657,12 +667,50 @@ def push(target, body):
         channel.close()
 
 
+def received_path(record_path):
+    """Where a remote run's receiver keeps what it received, beside the record at `record_path`."""
+    return str(record_path)[:-len('.jsonl')] + '.received.json'
+
+
+def _write_received(record_path, document):
+    place = received_path(record_path)
+    fd = os.open(place + '.tmp', os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_CLOEXEC, 0o600)
+    with os.fdopen(fd, 'w') as handle:
+        json.dump(document, handle, sort_keys=True)
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(place + '.tmp', place)
+
+
+def received(records, dispatch_id):
+    """What the receiver of a remote run kept beside its record, or None when there is none."""
+    try:
+        with open(received_path(path(records, dispatch_id))) as handle:
+            document = json.load(handle)
+    except (OSError, ValueError):
+        return None
+    return document if isinstance(document, dict) and document.get('dispatch_id') == dispatch_id else None
+
+
+def remote_problem(kept, signed):
+    """VELDO-0147 AC3, the one comparison of a remote run's record: None when the totals this node computed
+    over what it received (`kept`, from `received`) equal the totals the remote host signed in its result
+    (`signed`, {stdout, stderr}, as the dispatch's exit committed them), else REMOTE_INCOMPLETE. A run whose
+    receiver kept nothing (it was resumed with no channel, or the receiver ended before the run did) has no
+    `kept` and is refused the same way. The end frame is not evidence: only the signed totals are compared."""
+    if not isinstance(kept, dict) or not isinstance(signed, dict) or kept.get('streams') != signed:
+        return REMOTE_INCOMPLETE
+    return None
+
+
 def read(records, dispatch_id, after, limit, committed=None):
     """{header, lines, total}: the kept lines of `dispatch_id` with a sequence after `after`, at most `limit`,
     and how many the file holds. Refused by name: no record (missing_evidence:unknown_run), a header binding
     another dispatch (unknown_outcome:record_binding), a cursor past the end (invalid_input:cursor_past_end),
     and, when `committed` ({lines, bytes, digest} of the dispatch's exit) is given, a file whose count, size
-    or digest differ (unknown_outcome:record_digest). A line still being written is not yet a line."""
+    or digest differ (unknown_outcome:record_digest). A remote run's `committed` is {streams} (VELDO-0147): a
+    record whose receiver did not receive exactly what the remote host signed is refused as
+    unknown_outcome:record_incomplete. A line still being written is not yet a line."""
     try:
         with open(path(records, dispatch_id), 'rb') as handle:
             data = handle.read()
@@ -675,6 +723,13 @@ def read(records, dispatch_id, after, limit, committed=None):
         header = None
     if not isinstance(header, dict) or header.get('schema') != SCHEMA or header.get('dispatch_id') != dispatch_id:
         raise Refused('unknown_outcome:record_binding', 'the record is bound to another dispatch')
+    if committed is not None and 'streams' in committed:
+        # A remote run: its exit committed what the remote host signed. The record is the complete one only
+        # when this node received exactly that; then the file is checked against what its receiver closed.
+        kept = received(records, dispatch_id)
+        if remote_problem(kept, committed['streams']) is not None:
+            raise Refused(REMOTE_INCOMPLETE, 'the record kept here is not what the remote host signed it sent')
+        committed = kept.get('record') if isinstance(kept.get('record'), dict) else {}
     if committed is not None:
         if ('sha256:' + hashlib.sha256(data).hexdigest() != committed.get('digest')
                 or len(data) != committed.get('bytes')):

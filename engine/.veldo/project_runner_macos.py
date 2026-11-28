@@ -427,6 +427,9 @@ class Run:
                                output_bytes=len(output), deadline_stop=self.cause == 'runtime_cap')
             answer = dict(state='exited', process=self.process, termination=termination,
                           worker=read(self.directory / 'worker.json'), steps=self.steps)
+            if isinstance(result.get('streams'), dict):
+                # VELDO-0147 AC3: the wrapper's totals of what the engine printed, signed with this end.
+                answer['streams'] = result['streams']
         except Exception as error:
             with contextlib.suppress(Exception):
                 self.descendants(signal.SIGKILL)

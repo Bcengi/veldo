@@ -14,6 +14,7 @@ import sys
 import hashlib
 import tarfile
 import fcntl
+import threading
 import time
 import plistlib
 from types import SimpleNamespace
@@ -30,12 +31,72 @@ def organ(name):
 C = organ('project_runner_macos_control')
 CL = organ('control_worker_client')
 OUT = organ('control_worker_outbox')
+S = organ('project_runner_macos_stream')
 _git_process = organ('git_process')
 sleep = time.sleep  # Worker-local seam; never patch process-wide time.
 
 
 class RecorderFailure(OSError):
     """Delivery cannot continue safely without recording its next retry."""
+
+
+class Relay:
+    """VELDO-0147 AC3: sends a run's ordered output file down the receiver's own channel while the engine
+    runs, then one end frame with the totals of what was sent. The main node keeps the lines as the run's
+    execution record and checks its own totals against the ones the Mac signs in its result
+    (the wrapper's, of what the engine printed), so a chunk lost or changed here is found there."""
+    SECONDS = 0.5  # how often the file is read for new frames while the engine runs
+
+    def __init__(self, out):
+        self.out, self.tally, self.thread = out, S.Tally(), None
+        self.done, self.broken = threading.Event(), False
+
+    def send(self, data):
+        if self.broken:
+            return
+        try:
+            self.out.write(data)
+            self.out.flush()
+        except (OSError, ValueError):
+            self.broken = True  # the main node is gone; the run and its signed result go on without it
+
+    def frame(self, line):
+        parsed = S.parse(line)
+        if parsed is None or parsed[0] == S.END:
+            return
+        self.send(line)
+        if not self.broken:
+            self.tally.feed(*parsed)
+
+    def follow(self, path):
+        offset, rest = 0, b''
+        while True:
+            last = self.done.is_set()
+            try:
+                with open(path, 'rb') as stream:
+                    stream.seek(offset)
+                    data = stream.read()
+            except OSError:
+                data = b''
+            offset += len(data)
+            *lines, rest = (rest + data).split(b'\n')
+            for line in lines:
+                self.frame(line + b'\n')
+            if last:
+                return
+            self.done.wait(self.SECONDS)
+
+    def start(self, path):
+        self.thread = threading.Thread(target=self.follow, args=(path,), daemon=True)
+        self.thread.start()
+
+    def finish(self):
+        """After the wrapper has ended: send what is left of the file, then the end frame, once."""
+        if self.thread is not None:
+            self.done.set()
+            self.thread.join()
+            self.thread = None
+            self.send(S.end(self.tally.totals()))
 
 
 def engine_usage(started, engine):
@@ -71,7 +132,7 @@ def collect_files(clone, scratch, started, engine):
     return engine_usage(started, engine), {'output': target.resolve().as_uri() + '#sha256=' + digest}
 
 
-def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=None, delivery=None):
+def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=None, relay=None):
     keys = {str(Path(p).resolve()) for p in host.profile.get('signing_keys', [])}
     if not client.signing_key or client.signing_key not in keys:
         raise C.P.Refused('missing_evidence:worker_signing_key_custody')
@@ -93,12 +154,11 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
     accepted = client.launch(binding, 'accept', receiver=receiver, runtime_seconds=host.profile['runtime_seconds'])
     request['acceptance'] = accepted['record']['acceptance']
     request['environment']['VELDO_DISPATCH_ACCEPTANCE'] = request['acceptance']
-    if delivery is not None:
-        # VELDO-0147 AC4: the secrets file exists only once the authority accepted, before the wrapper starts.
-        delivery.secrets()
     CL.durable_json(Path(clone).parent / 'run-context.json',
                     dict(binding=binding, engine=request['engine']))
     started = host.start(request)
+    if relay is not None:
+        relay.start(started.directory / S.FILE)
     try:
         try:
             client.launch(binding, 'running', process=started.process)
@@ -107,6 +167,9 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
             # even when the running notification (or its acknowledgement) is lost.
             started.stop('authority_unavailable')
         observation = started.wait()
+        if relay is not None:
+            # The end frame leaves before the signed result; the main node needs neither to wait for the other.
+            relay.finish()
         usage, references = collect(started, observation) if collect else collect_files(clone, scratch, started, contract['capability']['adapter'])
         evidence = Path(clone).parent / 'result-evidence.json'
         client.outbox = Path(clone).parent / 'result-request.json'
@@ -136,6 +199,9 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
             started.stop('authority_unavailable')
             started.wait()
         raise
+    finally:
+        if relay is not None:
+            relay.finish()
 
 
 def apply_release(client, host, binding, outcome):
@@ -165,7 +231,7 @@ def recorder_failure(config, request, error):
     raise RecorderFailure(str(error)) from error
 
 
-def receive(config, request, *, queued=False, frames=None):
+def receive(config, request, *, queued=False, frames=None, relay=None):
     lock = None
     acquired = False
     recorder_failed = False
@@ -196,7 +262,7 @@ def receive(config, request, *, queued=False, frames=None):
                 return None
             acquired = True
             OUT.move(root, path, '.active', CL.durable_json, entry)
-        result = receive_locked(config, request, frames)
+        result = receive_locked(config, request, frames, relay)
         OUT.acknowledge(config, request['dispatch_id'],
                         release=result.get('host_released') or request.get('action') == 'release')
         return result
@@ -264,7 +330,7 @@ def retain_crashed_output(host, client, request, directory):
         observation=observation, usage=usage, references=references))
 
 
-def receive_locked(config, request, frames=None):
+def receive_locked(config, request, frames=None, relay=None):
     """Installed Mac endpoint: resolve a dispatch through its configured Linux relay.
 
     Source mirror, account profiles, host qualification and keys are operator
@@ -354,11 +420,12 @@ def receive_locked(config, request, frames=None):
     _git_process.run(['git', '-C', str(clone), 'checkout', '--detach', contract['source']['commit']],
                    check=True, capture_output=True, timeout=30)
     if delivery is None:
-        return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim)
+        return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim,
+                   relay=relay)
     try:
         account = dict(account, profiles={host.os.facts()['host']: delivery.open()})
         return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim,
-                   delivery=delivery)
+                   relay=relay)
     finally:
         delivery.close()
 
@@ -448,10 +515,12 @@ def main(config_path, resume=False, install=False):
             request = json.loads(sys.stdin.readline(65536))
             frames = None
             if config.get('login') == 'delivered':
-                # The login and secrets frames follow the binding on this same channel; Delivery checks them.
+                # The login frame follows the binding on this same channel; Delivery checks it and refuses
+                # any other line by name.
                 limit = organ('project_runner_macos_login').MAX_FRAME + 2
                 frames = [line for line in (sys.stdin.readline(limit) for _ in range(3)) if line]
-            result = receive(config, request, frames=frames)
+            # VELDO-0147 AC3: the run's output goes down this same channel, before the last line below.
+            result = receive(config, request, frames=frames, relay=Relay(sys.stdout.buffer))
         except Exception as error:
             if OUT.retryable(error):
                 raise
