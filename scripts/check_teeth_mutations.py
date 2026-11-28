@@ -18885,6 +18885,10 @@ def cases():
         'CREDENTIALS = frozenset().union(*(e.CREDENTIALS for e in ENGINES))\n',
         "CREDENTIALS = frozenset().union(*(e.CREDENTIALS for e in ENGINES)) - {'OPENAI_API_KEY'}  # defect\n",
         ['AC2/mac-paid-api-stop'])
+    # AC2: stop pointing the Mac Codex run at the system root file; the root-certificates row must fail.
+    add(147, 'mac147-codex-roots-unset', '157_veldo_0147_login.py', 'project_runner_macos_control.py',
+        "        environment.setdefault('SSL_CERT_FILE', SYSTEM_ROOTS)\n", '        pass  # defect\n',
+        ['AC2/mac-codex-root-certificates'])
     # AC4: put a credential value in the packet sent to the Mac instead of the secrets frame; the Mac
     # no-value-in-packet row must fail.
     add(147, 'mac147-value-in-packet', '157_veldo_0147_login.py', 'control_launch.py',

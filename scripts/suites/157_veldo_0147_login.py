@@ -132,6 +132,31 @@ def _v147_login():
             else:
                 raise AssertionError('paid-API key reached the Mac engine environment: ' + key)
 
+    def codex_roots(base):
+        # AC2: the Mac run's sandbox denies the keychain service Codex reads its root certificates from, so
+        # a Codex run is pointed at the system's root file; a Claude Code run is not, and an operator's own
+        # value is kept.
+        loaded = importlib.util.spec_from_file_location('v147_control_roots', control_module)
+        C = importlib.util.module_from_spec(loaded)
+        loaded.loader.exec_module(C)
+
+        class Host:
+            class os:
+                @staticmethod
+                def facts():
+                    return {'host': 'mac-147'}
+
+            @staticmethod
+            def run_environment(dispatch, scratch):
+                return {'HOME': scratch + '/home'}
+        codex = dict(id='codex-147', status='active', provider='codex', profiles={'mac-147': str(base / 'login')})
+        claude = dict(id='claude-147', status='active', provider='claude_code',
+                      profiles={'mac-147': str(base / 'claude')})
+        assert C.engine_environment(Host, codex, 'd-147', str(base), {})[1].get('SSL_CERT_FILE') == '/etc/ssl/cert.pem'
+        assert 'SSL_CERT_FILE' not in C.engine_environment(Host, claude, 'd-147', str(base), {})[1]
+        kept = C.engine_environment(Host, codex, 'd-147', str(base), {'SSL_CERT_FILE': '/opt/roots.pem'})[1]
+        assert kept['SSL_CERT_FILE'] == '/opt/roots.pem'
+
     launch_module = ROOT / ".veldo" / "control_launch.py"
 
     def relay_fixture(base):
@@ -272,7 +297,8 @@ def _v147_login():
                        'AC4/mac-delivery-checked-and-removed': mac_delivery,
                        'AC4/claude-frame-access-only': claude_frame, 'AC1/claude-frame-refusals': claude_refusals,
                        'AC2/codex-frame-access-only': codex_frame, 'AC4/mac-frame-refusals': mac_side_refusals,
-                       'AC1/mac-unexpected-launch': unexpected_launch, 'AC2/mac-paid-api-stop': paid_api_stop}.items():
+                       'AC1/mac-unexpected-launch': unexpected_launch, 'AC2/mac-paid-api-stop': paid_api_stop,
+                       'AC2/mac-codex-root-certificates': codex_roots}.items():
         with tempfile.TemporaryDirectory(prefix='v147-login-') as directory:
             try:
                 test(Path(directory))

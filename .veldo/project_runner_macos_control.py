@@ -25,6 +25,11 @@ P = organ('project_runner_macos_profile')
 ENGINES = (organ('control_engine_claude'), organ('control_engine_codex'))
 CREDENTIALS = frozenset().union(*(e.CREDENTIALS for e in ENGINES))
 STRIPPED = CREDENTIALS.union(*(e.SETTINGS for e in ENGINES))
+# Codex reads its root certificates through the keychain service, which the run's Seatbelt profile
+# denies (project_runner_macos_profile.sandbox): it then trusts no server and its first turn fails with
+# "workspace routing discovery failed". It reads this file instead when SSL_CERT_FILE names it. The
+# file is the system's own root list, readable inside the profile; the keychain stays denied (VELDO-0147).
+SYSTEM_ROOTS = '/etc/ssl/cert.pem'
 
 
 def engine_environment(host, account, dispatch, scratch, configured):
@@ -36,6 +41,8 @@ def engine_environment(host, account, dispatch, scratch, configured):
     environment = ACC.login_environment({'PATH': '/usr/bin:/bin:/usr/sbin:/sbin'}, account, name,
                                         STRIPPED, configured, CREDENTIALS)
     environment.update(host.run_environment(dispatch, scratch), VELDO_DISPATCH_ID=dispatch)
+    if account['provider'] == 'codex':
+        environment.setdefault('SSL_CERT_FILE', SYSTEM_ROOTS)
     return login, environment
 
 
