@@ -664,7 +664,8 @@ def _v147_login():
         class Channel:
             def write(self, data):
                 writes.append(data)
-                release.wait(20)  # a hang bound only: the row releases it itself
+                if len(writes) == 1:
+                    release.wait(WAITS.WAIT_HANG_SECONDS)  # the stalled write; the row releases it itself
 
             def flush(self):
                 pass
@@ -679,14 +680,12 @@ def _v147_login():
             assert len(writes) == 1, 'something was written to a stalled channel'
         finally:
             release.set()
-            sender.join(T_HANG)
+            sender.join(WAITS.WAIT_HANG_SECONDS)
+        # The same channel once it moves again: a relay that is not stalled ends with its end frame.
         whole = W.Relay(Channel())
-        (base / 'second').write_bytes(frames.chunk('stdout', b'one line\n'))
-        whole.start(base / 'second')
+        whole.start(base / frames.FILE)
         whole.finish()
-        assert not whole.stalled and frames.parse(writes[-1])[0] == frames.END
-
-    T_HANG = 600  # a hang bound only (VELDO-0358 contracts.md)
+        assert not whole.stalled and len(writes) == 3 and frames.parse(writes[-1])[0] == frames.END, len(writes)
 
     def login_left_behind(base):
         # The Mac cannot detach the login's disk. The result it signs says so, and the slot is not retired:
