@@ -2990,17 +2990,17 @@ class RemoteLaunch(Launch):
         resolved = ER.Resolved()
         for value in values:
             resolved.add('subscription_token', value)
-        records = self.records
+        kept = self.records
         try:
-            if records is None:
+            if kept is None:
                 database = self.dispatches.conn.execute('PRAGMA database_list').fetchone()[2]
-                records = ER.directory({'store': database})
+                kept = ER.directory({'store': database})
             contract = self.contract
             header = {'dispatch_id': contract['dispatch_id'], 'contract_digest': D.digest(contract),
                       'unit': contract['unit'], 'station': contract['station'],
                       'project': contract['reservation']['project'], 'account': contract['reservation']['account'],
                       'host': contract['input']['context']['host_route']['host']}
-            self.recorder, self.tally = ER.Recorder(records, header, resolved), MS.Tally()
+            self.recorder, self.tally = ER.Recorder(kept, header, resolved), MS.Tally()
         except (OSError, KeyError, TypeError, ValueError):
             self.recorder = None
 
