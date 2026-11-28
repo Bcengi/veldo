@@ -148,6 +148,12 @@ def main(engine, target, out):
                                 except ValueError:
                                     continue
                                 kind = str(event.get('type')) + ('/' + str(event.get('subtype')) if event.get('subtype') else '')
+                                if event.get('type') in ('error', 'turn.failed'):
+                                    # The engine's own error text, kept short; the scan above found no value in this file.
+                                    text = str(event.get('message') or (event.get('error') or {}).get('message'))[:300]
+                                    record.setdefault('engine_errors', [])
+                                    if text not in record['engine_errors'] and len(record['engine_errors']) < 4:
+                                        record['engine_errors'].append(text)
                                 kinds[kind] = kinds.get(kind, 0) + 1
                                 if event.get('type') == 'system' and event.get('subtype') == 'init':
                                     record['engine_init'] = dict(api_key_source=event.get('apiKeySource'),
