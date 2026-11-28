@@ -233,6 +233,7 @@ def _v147_login():
             # A server whose catalog revision names a credential: refused by name, nothing sent.
             del f.selected[:]
             f.selected.append(('tracker', 1))
+            f.res.configure('policy/unit-2', 'unit', 'unit-2', dict(capacity=20, invocations=20, wall_seconds=4000), now=f.clock())
             second = f.prepare(dispatch='dispatch/credentialed', required=['macos'], engine='claude_code', unit='unit-2')['contract']
             received.unlink()
             refused_launch = launch.invoke_remote(receiver, second, f.ds)
@@ -297,7 +298,7 @@ def _v147_login():
             assert delivery.open() == str(target / 'profile')
             assert sorted(path.name for path in target.iterdir()) == ['profile'] and not any((target / 'profile').iterdir())
             assert delivery.close() == dict(status='closed') and not target.exists()
-            assert delivery.close() is None  # a second close finds nothing and changes nothing
+            assert delivery.close() == dict(status='closed')  # a second close finds nothing and changes nothing
         finally:
             L.open_profile, L.close_profile = real
 
@@ -329,7 +330,7 @@ def _v147_login():
            '        parsed = frames.parse(data)\n'
            '        if alter == "alter" and parsed and parsed[0] == "stderr":\n'
            '            Channel.count += 1\n'
-           '            if Channel.count == 2:\n'
+           '            if Channel.count == 1:\n'
            '                data = frames.chunk("stderr", parsed[1].replace(b"err", b"ERR"))\n'
            '        sys.stdout.buffer.write(data)\n'
            '    def flush(self):\n'

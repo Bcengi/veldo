@@ -40,6 +40,10 @@ class RecorderFailure(OSError):
     """Delivery cannot continue safely without recording its next retry."""
 
 
+# VELDO-0147: the login frame read from this receiver's channel and the relay writing to it (receive).
+CHANNEL = {}
+
+
 class Relay:
     """VELDO-0147 AC3: sends a run's ordered output file down the receiver's own channel while the engine
     runs, then one end frame with the totals of what was sent. The main node keeps the lines as the run's
@@ -262,7 +266,10 @@ def receive(config, request, *, queued=False, frames=None, relay=None):
                 return None
             acquired = True
             OUT.move(root, path, '.active', CL.durable_json, entry)
-        result = receive_locked(config, request, frames, relay)
+        # What this receiver's own channel carries for the one dispatch it was started for. A queued or
+        # resumed entry has neither, and receive_locked keeps its two-argument call.
+        CHANNEL.update(frames=frames, relay=relay)
+        result = receive_locked(config, request)
         OUT.acknowledge(config, request['dispatch_id'],
                         release=result.get('host_released') or request.get('action') == 'release')
         return result
@@ -330,7 +337,7 @@ def retain_crashed_output(host, client, request, directory):
         observation=observation, usage=usage, references=references))
 
 
-def receive_locked(config, request, frames=None, relay=None):
+def receive_locked(config, request):
     """Installed Mac endpoint: resolve a dispatch through its configured Linux relay.
 
     Source mirror, account profiles, host qualification and keys are operator
@@ -341,6 +348,7 @@ def receive_locked(config, request, frames=None, relay=None):
     SIG = organ('control_signer')
     M = organ('project_runner_macos')
     host = M.Supervisor(config['profile'], config['qualification'], migrate=False)
+    frames, relay = CHANNEL.get('frames'), CHANNEL.get('relay')
     delivered = config.get('login') == 'delivered'
     if delivered:
         # VELDO-0147: this Mac keeps no login. The main node sends the dispatch's own for the run only.

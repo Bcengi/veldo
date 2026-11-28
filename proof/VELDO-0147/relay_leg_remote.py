@@ -160,9 +160,9 @@ def receive():
     W.install_resumer = lambda *arguments, **named: None  # no launch agent is left on this Mac by a probe
     production = W.receive_locked
 
-    def observed(config, request, frames=None, relay=None):
+    def observed(config, request):
         try:
-            return production(config, request, frames, relay)
+            return production(config, request)
         except BaseException:
             import traceback
             (STATE / 'receive-error.txt').write_text(traceback.format_exc())
