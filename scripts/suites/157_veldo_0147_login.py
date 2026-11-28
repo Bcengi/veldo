@@ -160,12 +160,18 @@ def _v147_login():
         assert kept['SSL_CERT_FILE'] == '/opt/roots.pem'
 
     launch_module = ROOT / ".veldo" / "control_launch.py"
+    worker_module = ROOT / ".veldo" / "control_worker.py"
+    record_module = ROOT / ".veldo" / "control_execution_record.py"
+    # A registered falsifier replaces one of the three paths above with its defective copy, which sits in a
+    # complete module tree. Every relay row loads all its modules from that one tree, or from production.
+    modules_tree = next((module.parent for module in (launch_module, worker_module, record_module)
+                         if module.parent != profile_module.parent), profile_module.parent)
 
     def relay_fixture(base):
         """The VELDO-0125 authority fixture over this tree's modules, with one prepared Claude dispatch whose
         account's main-node profile holds a subscription login good far past any run."""
         import os
-        os.environ['VELDO_0125_MODULES'] = str(launch_module.parent)
+        os.environ['VELDO_0125_MODULES'] = str(modules_tree)
         try:
             loaded = importlib.util.spec_from_file_location('v147_relay', ROOT / 'proof/VELDO-0125/checks.py')
             T = importlib.util.module_from_spec(loaded)
@@ -363,14 +369,14 @@ def _v147_login():
         contract = f.prepare(required=['macos'], engine='claude_code')['contract']
         f.start()
         client = f.client()
-        receiver = dict(argv=transport or [sys.executable, str(work / 'mac.py'), str(launch_module.parent), str(work), alter],
+        receiver = dict(argv=transport or [sys.executable, str(work / 'mac.py'), str(modules_tree), str(work), alter],
                         login='delivered', main_host='main')
         started = launch.invoke_remote(receiver, contract, f.ds)
         assert started.result == 'pending', (started.result, (started.record or {}).get('refusal'))
         binding = T.launch(client, contract['dispatch_id'])
-        started.child.wait(timeout=T.WAIT_HANG_SECONDS)
         totals = None
         if transport is None:
+            started.child.wait(timeout=T.WAIT_HANG_SECONDS)
             kept = json.loads((work / 'totals.json').read_text())
             assert kept['whole'], 'the wrapper could not write a chunk'
             totals = kept['totals']
@@ -443,8 +449,11 @@ def _v147_login():
         # the record is refused by name; so is one whose receiver kept nothing at all. A signed result whose
         # totals are malformed is refused before it ends the dispatch.
         import sys
+        # The transport prints its last line and then more than one read of other lines, so the launch ends
+        # it with output still in the pipe and takes that through its own line reader (found on the real Mac).
         T, f, launch, started, contract, work, totals, client, binding = mac_run(
-            base, transport=[sys.executable, '-c', 'import sys; sys.stdin.read()'])
+            base, transport=[sys.executable, '-c', 'import sys; sys.stdin.read(); '
+                             'sys.stdout.write(\'{"state": "ended"}\\n\' + (\'x\' * 999 + \'\\n\') * 100); sys.stdout.flush()'])
         try:
             frames, ER, dispatch = launch.MS, launch.ER, contract['dispatch_id']
             tally = frames.Tally()
@@ -458,6 +467,7 @@ def _v147_login():
             record = started.wait(timeout=T.WAIT_HANG_SECONDS)
             assert record['state'] == 'exited' and record['execution_record'] == {'streams': signed}
             assert not started.received['ended'] and started.received['streams']['stdout']['bytes'] == 0
+            assert started.last_line and started.pending == b'', 'the launch left unread lines'
             assert started.record_refusal == 'unknown_outcome:record_incomplete', started.record_refusal
             records = ER.directory({'store': str(f.store)})
 
@@ -482,7 +492,7 @@ def _v147_login():
         import subprocess
         import sys
         from unittest.mock import patch
-        loaded = importlib.util.spec_from_file_location('v147_wrapper', launch_module.parent / 'project_runner_macos_wrapper.py')
+        loaded = importlib.util.spec_from_file_location('v147_wrapper', modules_tree / 'project_runner_macos_wrapper.py')
         wrapper = importlib.util.module_from_spec(loaded)
         loaded.loader.exec_module(wrapper)
         frames = wrapper.stream_frames

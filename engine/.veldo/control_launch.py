@@ -2983,7 +2983,6 @@ class RemoteLaunch(Launch):
     last_line = False
     record_refusal = None
     received = None
-    buffer = b''
 
     def record_stream(self, values=()):
         """Open this run's execution record before the receiver can print; a record that cannot be opened
@@ -3005,19 +3004,25 @@ class RemoteLaunch(Launch):
         except (OSError, KeyError, TypeError, ValueError):
             self.recorder = None
 
-    def _take(self, chunk):
-        frames = MS
-        *lines, self.buffer = (self.buffer + chunk).split(b'\n')
-        for line in lines:
-            parsed = frames.parse(line)
-            if parsed is None:
-                # The receiver's own last line: nothing of the run follows it.
-                self.last_line = self.last_line or line.startswith(b'{"state"')
-            elif parsed[0] == frames.END:
-                self.stream_end = parsed[1]
-            elif self.recorder is not None and self.stream_end is None:
-                self.tally.feed(*parsed)
-                self.recorder.feed({'stdout': 'engine', 'stderr': 'stderr'}[parsed[0]], parsed[1])
+    def _take(self):
+        """One line of the receiver's output (the launch pipe's own reader, here for a remote receiver): a
+        chunk of the run's stream, its end frame, or the receiver's own last line. None is a message."""
+        line, _, self.pending = self.pending.partition(b'\n')
+        parsed = MS.parse(line)
+        if parsed is None:
+            # The receiver's own last line: nothing of the run follows it.
+            self.last_line = self.last_line or line.startswith(b'{"state"')
+        elif parsed[0] == MS.END:
+            self.stream_end = parsed[1]
+        elif self.recorder is not None and self.stream_end is None:
+            self.tally.feed(*parsed)
+            self.recorder.feed({'stdout': 'engine', 'stderr': 'stderr'}[parsed[0]], parsed[1])
+        return {}
+
+    def _feed(self, chunk):
+        self.pending += chunk
+        while b'\n' in self.pending:
+            self._take()
 
     def _read_to_end(self):
         """The authority has the run's end, so the Mac has sent its end frame: read up to it. Bounded by the
@@ -3031,7 +3036,7 @@ class RemoteLaunch(Launch):
             if not chunk:
                 self.lost = True
             else:
-                self._take(chunk)
+                self._feed(chunk)
 
     def _close_record(self):
         """Close the record with what was received, and compare it with what the Mac signed when the run's
@@ -3045,11 +3050,9 @@ class RemoteLaunch(Launch):
             self.record_refusal = ER.remote_problem(self.received, committed['streams'])
 
     def _end_receiver(self):
+        # What the reaped receiver had still left in its pipe is part of the run's stream: the base reader
+        # takes it line by line through _take above.
         super()._end_receiver()
-        if self.pending:
-            # What the reaped receiver had still left in its pipe is part of the run's stream.
-            taken, self.pending = self.pending, b''
-            self._take(taken)
         self._close_record()
 
     @property
@@ -3075,7 +3078,7 @@ class RemoteLaunch(Launch):
             if not chunk:
                 self.ended = self.lost = True
             else:
-                self._take(chunk)
+                self._feed(chunk)
         return self.ended
 
     def stop(self, reason='requested'):
