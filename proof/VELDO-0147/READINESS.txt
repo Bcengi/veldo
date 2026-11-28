@@ -229,3 +229,56 @@ as a context manager, which the Mac's pinned Python 3.12 does not support, so no
 production launch could start on the Mac.
 
 Falsifier registered: mac147-value-in-packet (AC4, row AC4/mac-no-value-in-packet).
+
+Round 5, 2026-11-27
+
+Why the Codex turn failed in round 4. Not the login: its access credential was
+good for days, and the pinned binary has a separate message for a refused login
+("workspace routing discovery unauthorized (401)") which did not appear. The
+run's Seatbelt profile denies the keychain service (com.apple.SecurityServer and
+com.apple.securityd). Codex 0.166.0 takes its root certificates from that
+service (http-client/src/native_roots.rs in the binary), so inside the run it
+trusted no server and every HTTPS request failed. Measured on the Mac with the
+same deny rule: the system root store lists 158 certificates without it and 0
+with it; /etc/ssl/cert.pem (128 roots) stays readable. Codex reads that file
+when SSL_CERT_FILE names it.
+
+Fix: project_runner_macos_control.engine_environment sets SSL_CERT_FILE to
+/etc/ssl/cert.pem for a Codex run on the Mac, unless the operator configured a
+value. The keychain stays denied. Claude Code is not given the variable. No
+login refresh was built: none was needed, and the Mac still gets no refresh
+credential.
+
+Real Mac, Codex 0.166.0 (mac-relay-codex-leg.json, replaced by this run): one
+dispatch through invoke_remote, SSH, control_worker and the signed relay, with
+the codex1 lease held for the whole Mac run. The turn completed: exit 0, usage
+reported (1 message), the file edited, commands claim, launch, launch, result,
+retired. CODEX_HOME is the delivered RAM-disk profile, no OPENAI_API_KEY or
+CODEX_API_KEY, keychain unchanged, RAM disk detached, no credential value in any
+Mac file or kept on the main node. One leg; the second allowed leg was not used.
+
+Row and falsifier: AC2/mac-codex-root-certificates in suite 157;
+mac147-codex-roots-unset removes the setting and that row must fail.
+
+Still not qualified. AC2: the Mac profile is a candidate and the capability
+comparison does not run on the relay path. AC3 is open. What is missing:
+1. The Mac wrapper writes the engine's output to two files in the slot
+   directory. control_worker would have to send their lines on the receiver's
+   standard output while the engine runs, and an end frame with each stream's
+   byte count and digest before it sends the signed result.
+2. RemoteLaunch.pump reads that output today only as a wakeup and discards it.
+   It would have to feed the lines to control_execution_record.Recorder with the
+   run's delivered values in the resolved set, and drain to the end frame before
+   it ends the receiver.
+3. The commitment. A Linux run's record is committed in the dispatch's exit
+   record by the receiver that wrote it. A Mac run's exit is written by the
+   worker service when the signed result arrives (control_worker_service.result,
+   control_dispatch.exit), in another process than the one holding the record.
+   Binding {lines, bytes, digest} into that exit needs a decision on who waits
+   for whom, and both files are outside this specification's footprint.
+4. The two output files lose the order between the streams; the criterion can be
+   met per stream only unless the wrapper changes.
+5. A run resumed after a receiver crash has no channel, so its record would be
+   incomplete and must be refused by name.
+Then the falsifier (drop the error stream at the relay) and real runs of both
+engines on a unit that calls tools, writes to its error stream and edits a file.

@@ -1,5 +1,5 @@
 {
- "account": "the dispatch account (name withheld)",
+ "account": "codex1",
  "authority": {
   "host": null,
   "reason": null,
@@ -10,27 +10,22 @@
   "cleaned": true,
   "ram_disks_now": 0
  },
- "commit": "7be395a9d405abd5673af148e1b7e00205abd0f7",
+ "commit": "7d64ae397673ccd5a111a21c59bf1c3a0982ff8e",
  "engine": "codex",
- "engine_errors": [
-  "Reconnecting... 2/5 (workspace routing discovery failed)",
-  "Reconnecting... 3/5 (workspace routing discovery failed)",
-  "Reconnecting... 4/5 (workspace routing discovery failed)",
-  "Reconnecting... 5/5 (workspace routing discovery failed)"
- ],
+ "engine_err_text": "Reading additional input from stdin...\n",
  "engine_events": {
-  "error": 10,
-  "item.completed": 1,
+  "item.completed": 5,
+  "item.started": 3,
   "thread.started": 1,
-  "turn.failed": 1,
+  "turn.completed": 1,
   "turn.started": 1
  },
- "engine_out_sha256": "850cf92e203e7f27e6fd8ddd0b54d22d2c5d0bc974b15317d4df0cf249f7f9f7",
+ "engine_out_sha256": "8a7d66ac61203e2c2186ed207689ae887514a3d71ab5a50997a32a63842c2f05",
  "invoke": {
   "delivered": {
    "account": "account",
    "credentials": [],
-   "dispatch_id": "dispatch/mac147/r4-codex-20261127220529",
+   "dispatch_id": "dispatch/mac147/r5-codex-20261127234348",
    "event": "remote_frames",
    "login_frame": true,
    "metrics": {
@@ -59,7 +54,7 @@
     "account": "account",
     "base_mode": "0o700",
     "device": "/dev/disk12",
-    "dispatch": "dispatch/mac147/r4-codex-20261127220529",
+    "dispatch": "dispatch/mac147/r5-codex-20261127234348",
     "engine": "codex",
     "files": {
      "auth.json": 3723
@@ -78,13 +73,13 @@
    "secrets": null
   },
   "engine": "codex",
-  "engine_err_bytes": 607,
+  "engine_err_bytes": 39,
   "engine_out": {
-   "bytes": 1179,
-   "lines": 14,
-   "sha256": "850cf92e203e7f27e6fd8ddd0b54d22d2c5d0bc974b15317d4df0cf249f7f9f7"
+   "bytes": 3075,
+   "lines": 11,
+   "sha256": "8a7d66ac61203e2c2186ed207689ae887514a3d71ab5a50997a32a63842c2f05"
   },
-  "file_edited": false,
+  "file_edited": true,
   "keychain_unchanged": true,
   "login_bases_now": 0,
   "observation": {
@@ -96,12 +91,15 @@
    "state": "exited",
    "termination": {
     "deadline_stop": false,
-    "output_bytes": 1179,
-    "output_digest": "sha256:850cf92e203e7f27e6fd8ddd0b54d22d2c5d0bc974b15317d4df0cf249f7f9f7",
-    "returncode": 1,
+    "output_bytes": 3075,
+    "output_digest": "sha256:8a7d66ac61203e2c2186ed207689ae887514a3d71ab5a50997a32a63842c2f05",
+    "returncode": 0,
     "signal": null
    },
-   "usage": null
+   "usage": {
+    "messages": 1,
+    "tokens": 60742
+   }
   },
   "ram_disks_now": 0,
   "readback": {
@@ -127,6 +125,7 @@
     "CODEX_HOME",
     "HOME",
     "PATH",
+    "SSL_CERT_FILE",
     "TEMP",
     "TMP",
     "TMPDIR",
@@ -149,7 +148,7 @@
   "slot": "retired"
  },
  "qualification": false,
- "run": "r4-codex-20261127220529",
+ "run": "r5-codex-20261127234348",
  "scan": {
   "credential_values": 2,
   "files": {
@@ -158,11 +157,11 @@
     "values_found": 0
    },
    "deliverables-engine.out": {
-    "bytes": 1179,
+    "bytes": 3075,
     "values_found": 0
    },
    "delivery-complete.json": {
-    "bytes": 11068,
+    "bytes": 11098,
     "values_found": 0
    },
    "delivery.json": {
@@ -170,11 +169,11 @@
     "values_found": 0
    },
    "engine.err": {
-    "bytes": 607,
+    "bytes": 39,
     "values_found": 0
    },
    "engine.out": {
-    "bytes": 1179,
+    "bytes": 3075,
     "values_found": 0
    },
    "go": {
@@ -182,19 +181,19 @@
     "values_found": 0
    },
    "request.json": {
-    "bytes": 8714,
+    "bytes": 8752,
     "values_found": 0
    },
    "result-evidence.json": {
-    "bytes": 1207,
+    "bytes": 1235,
     "values_found": 0
    },
    "result-request.json": {
-    "bytes": 2500,
+    "bytes": 2528,
     "values_found": 0
    },
    "result-request.json.ack": {
-    "bytes": 10827,
+    "bytes": 10857,
     "values_found": 0
    },
    "run-context.json": {
@@ -202,7 +201,7 @@
     "values_found": 0
    },
    "slot.json": {
-    "bytes": 11464,
+    "bytes": 11493,
     "values_found": 0
    }
   },
@@ -217,7 +216,7 @@
  "schema": "veldo.macos_relay_run/v1",
  "spec": "VELDO-0147",
  "worker_record": {
-  "charge": "unknown",
+  "charge": "reported",
   "host_is_mac": true,
   "operations": [
    "worker_claim",
@@ -226,8 +225,11 @@
    "worker_result",
    "worker_retired"
   ],
-  "returncode": 1,
+  "returncode": 0,
   "state": "exited",
-  "usage": null
+  "usage": {
+   "messages": 1,
+   "tokens": 60742
+  }
  }
 }

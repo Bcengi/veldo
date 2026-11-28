@@ -2,7 +2,7 @@
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0147",
   "commit": "5623ba86fb370f13aa2345dee7ee707934576233",
-  "producer": "Claude implementation agent (round 4, Mac legs)",
+  "producer": "Claude implementation agent (round 5, Mac legs)",
   "produced_at": "2026-11-27",
   "status": "remaining",
   "criteria": [
@@ -36,7 +36,7 @@
           "ref": "proof/VELDO-0147/mac-relay-codex-leg.json"
         }
       ],
-      "detail": "Waiting. The only free-at-launch-allowed Codex login (codex2) was leased by another run; codex1 is at its weekly limit. The Codex frame (auth.json without the refresh credential) is unit-tested only; Codex 0.166.0 is not installed on the Mac. Round 4: Codex 0.166.0 installed on the Mac; one real dispatch ran the whole relay path with CODEX_HOME delivered on a RAM disk and no paid-API key, but the first turn failed (workspace routing discovery failed). Not qualified."
+      "detail": "Waiting. The only free-at-launch-allowed Codex login (codex2) was leased by another run; codex1 is at its weekly limit. The Codex frame (auth.json without the refresh credential) is unit-tested only; Codex 0.166.0 is not installed on the Mac. Round 4: Codex 0.166.0 installed on the Mac; one real dispatch ran the whole relay path with CODEX_HOME delivered on a RAM disk and no paid-API key, but the first turn failed (workspace routing discovery failed). Not qualified. Round 5: cause of the failed turn found and fixed (the run's sandbox denies the keychain service Codex takes its root certificates from; the Mac Codex run now reads the system root file through SSL_CERT_FILE). One real Codex 0.166.0 dispatch through invoke_remote and the production receiver completed its turn: exit 0, usage reported, file edited, CODEX_HOME the delivered RAM-disk profile, no paid-API variable, nothing kept. Still pending: candidate Mac profile, no capability comparison on the relay path."
     },
     {
       "id": "AC3",
@@ -49,7 +49,7 @@
           "ref": "proof/VELDO-0147/mac-claude-leg.json"
         }
       ],
-      "detail": "Partial. The Mac engine stdout (63 lines) and stderr relayed over SSH matched the Mac copy line by line after exact redaction; the unit called Bash (error output seen), Read and Edit. The engine stderr was empty on the passing run, so the error-stream leg is not yet exercised; not through the production receiver; falsifier not registered."
+      "detail": "Partial. The Mac engine stdout (63 lines) and stderr relayed over SSH matched the Mac copy line by line after exact redaction; the unit called Bash (error output seen), Read and Edit. The engine stderr was empty on the passing run, so the error-stream leg is not yet exercised; not through the production receiver; falsifier not registered. Round 5: still open; READINESS.txt (Round 5) lists what is missing, including the exit commitment, which needs files outside the footprint."
     },
     {
       "id": "AC4",
