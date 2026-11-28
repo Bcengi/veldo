@@ -58,7 +58,7 @@ def engine_argv(engine):
     options = list(record['flags']) + list(record['baseline']['options'])
     for name, value in sorted(record['baseline']['configuration'].items()):
         options += ['-c', '%s=%s' % (name, json.dumps(value))]
-    return record['version'], [str(HOME / 'veldo-mac-runs/engines/codex-%s/codex' % record['version'])] + options + [
+    return record['version'], [str(HOME / 'veldo-mac-runs/engines/codex-%s/bin/codex' % record['version'])] + options + [
         '--skip-git-repo-check', '--sandbox', 'danger-full-access', PROMPT]
 
 
