@@ -164,11 +164,18 @@ def receive():
         return module
     W.organ = organ
     W.install_resumer = lambda *arguments, **named: None  # no launch agent is left on this Mac by a probe
-    W.main(str(STATE / 'config.json'))
+    try:
+        W.main(str(STATE / 'config.json'))
+    except BaseException:
+        import traceback
+        (STATE / 'receive-error.txt').write_text(traceback.format_exc())
+        raise
     return 0
 
 
 def run_directory():
+    if not (STATE / 'runs').is_dir():
+        return None
     found = [path for path in (STATE / 'runs').iterdir() if path.is_dir() and not path.name.startswith('.')]
     return found[0] if len(found) == 1 else None
 
@@ -181,6 +188,11 @@ def slot_directory():
 def summary(engine):
     out = dict(engine=engine, delivery=json.loads((STATE / 'delivery.json').read_text())
                if (STATE / 'delivery.json').exists() else None)
+    if (STATE / 'receive-error.txt').exists():
+        # The receiver's own failure, with this Mac's home and temp paths replaced.
+        text = (STATE / 'receive-error.txt').read_text().replace(str(HOME), '<home>').replace(
+            str(Path(os.confstr(65537)).resolve()), '<temp>').replace(os.confstr(65537), '<temp>/')
+        out['receive_error'] = text[-1800:]
     slot, run = slot_directory(), run_directory()
     if slot is not None and (slot / 'request.json').exists():
         request = json.loads((slot / 'request.json').read_text())
