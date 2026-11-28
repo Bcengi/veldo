@@ -10,6 +10,7 @@ kqueue NOTE_EXIT observes the held wrapper before release. Helpers that launchd
 spawns as separate jobs for a descendant (XPC services, the Simulator) are in their
 own coalitions; that escape matrix and PID reuse are Release 2.
 """
+import contextlib
 import ctypes
 import importlib.util
 import os
@@ -96,7 +97,7 @@ def wait_file(path, seconds):
     deadline = time.monotonic() + max(0, seconds)
     descriptor = os.open(path.parent, os.O_RDONLY)
     try:
-        with select.kqueue() as queue:
+        with contextlib.closing(select.kqueue()) as queue:
             queue.control([select.kevent(descriptor, filter=select.KQ_FILTER_VNODE,
                 flags=select.KQ_EV_ADD | select.KQ_EV_CLEAR,
                 fflags=select.KQ_NOTE_WRITE)], 0, 0)
@@ -114,7 +115,7 @@ def wait_file(path, seconds):
 
 def wait_members(pids, seconds):
     """Wait for an observed descendant exit or the next shutdown deadline."""
-    with select.kqueue() as queue:
+    with contextlib.closing(select.kqueue()) as queue:
         for pid in pids:
             try:
                 queue.control([select.kevent(pid, filter=select.KQ_FILTER_PROC,
