@@ -1,4 +1,55 @@
 {
+ "ac3": {
+  "lines": {
+   "differ_unredacted": 0,
+   "identical": 12,
+   "mac": 12,
+   "mac_by_stream": {
+    "stderr": 1,
+    "stdout": 11
+   },
+   "main": 12,
+   "order_equal": true,
+   "redacted": 0,
+   "values_in_record": 0
+  },
+  "read": {
+   "lines": 12
+  },
+  "received": {
+   "ended": true,
+   "record": {
+    "bytes": 4905,
+    "digest": "sha256:ecebd1a344eddbef6007971eefbe65aaae555c93dd5485b29631a4269acb690d",
+    "lines": 12
+   },
+   "streams": {
+    "stderr": {
+     "bytes": 39,
+     "lines": 1,
+     "sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+    },
+    "stdout": {
+     "bytes": 3046,
+     "lines": 11,
+     "sha256": "26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456"
+    }
+   }
+  },
+  "record_refusal": null,
+  "signed": {
+   "stderr": {
+    "bytes": 39,
+    "lines": 1,
+    "sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+   },
+   "stdout": {
+    "bytes": 3046,
+    "lines": 11,
+    "sha256": "26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456"
+   }
+  }
+ },
  "account": "codex1",
  "authority": {
   "host": null,
@@ -10,7 +61,7 @@
   "cleaned": true,
   "ram_disks_now": 0
  },
- "commit": "7d64ae397673ccd5a111a21c59bf1c3a0982ff8e",
+ "commit": "27a3b4bdc70394771ab1d81b6ab8cd6dfcfc9f56",
  "engine": "codex",
  "engine_err_text": "Reading additional input from stdin...\n",
  "engine_events": {
@@ -20,12 +71,12 @@
   "turn.completed": 1,
   "turn.started": 1
  },
- "engine_out_sha256": "8a7d66ac61203e2c2186ed207689ae887514a3d71ab5a50997a32a63842c2f05",
+ "engine_out_sha256": "26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456",
  "invoke": {
   "delivered": {
    "account": "account",
    "credentials": [],
-   "dispatch_id": "dispatch/mac147/r5-codex-20261127234348",
+   "dispatch_id": "dispatch/mac147/r6-codex-20261128003303",
    "event": "remote_frames",
    "login_frame": true,
    "metrics": {
@@ -34,7 +85,6 @@
     "launch_with_credentials": 0
    },
    "routes": [],
-   "secrets_frame": false,
    "servers": []
   },
   "refusal": null,
@@ -54,7 +104,7 @@
     "account": "account",
     "base_mode": "0o700",
     "device": "/dev/disk12",
-    "dispatch": "dispatch/mac147/r5-codex-20261127234348",
+    "dispatch": "dispatch/mac147/r6-codex-20261128003303",
     "engine": "codex",
     "files": {
      "auth.json": 3723
@@ -65,19 +115,17 @@
    },
    "order": [
     "login_open",
-    "secrets_after_acceptance",
     "close"
    ],
    "ram_disks_after": 0,
-   "ram_disks_open": 1,
-   "secrets": null
+   "ram_disks_open": 1
   },
   "engine": "codex",
   "engine_err_bytes": 39,
   "engine_out": {
-   "bytes": 3075,
+   "bytes": 3046,
    "lines": 11,
-   "sha256": "8a7d66ac61203e2c2186ed207689ae887514a3d71ab5a50997a32a63842c2f05"
+   "sha256": "26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456"
   },
   "file_edited": true,
   "keychain_unchanged": true,
@@ -89,16 +137,28 @@
     "terminated": true
    },
    "state": "exited",
+   "streams": {
+    "stderr": {
+     "bytes": 39,
+     "lines": 1,
+     "sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
+    },
+    "stdout": {
+     "bytes": 3046,
+     "lines": 11,
+     "sha256": "26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456"
+    }
+   },
    "termination": {
     "deadline_stop": false,
-    "output_bytes": 3075,
-    "output_digest": "sha256:8a7d66ac61203e2c2186ed207689ae887514a3d71ab5a50997a32a63842c2f05",
+    "output_bytes": 3046,
+    "output_digest": "sha256:26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456",
     "returncode": 0,
     "signal": null
    },
    "usage": {
     "messages": 1,
-    "tokens": 60742
+    "tokens": 60706
    }
   },
   "ram_disks_now": 0,
@@ -148,7 +208,7 @@
   "slot": "retired"
  },
  "qualification": false,
- "run": "r5-codex-20261127234348",
+ "run": "r6-codex-20261128003303",
  "scan": {
   "credential_values": 2,
   "files": {
@@ -157,15 +217,15 @@
     "values_found": 0
    },
    "deliverables-engine.out": {
-    "bytes": 3075,
+    "bytes": 3046,
     "values_found": 0
    },
    "delivery-complete.json": {
-    "bytes": 11098,
+    "bytes": 11346,
     "values_found": 0
    },
    "delivery.json": {
-    "bytes": 403,
+    "bytes": 358,
     "values_found": 0
    },
    "engine.err": {
@@ -173,7 +233,11 @@
     "values_found": 0
    },
    "engine.out": {
-    "bytes": 3075,
+    "bytes": 3046,
+    "values_found": 0
+   },
+   "engine.stream": {
+    "bytes": 4520,
     "values_found": 0
    },
    "go": {
@@ -185,15 +249,15 @@
     "values_found": 0
    },
    "result-evidence.json": {
-    "bytes": 1235,
+    "bytes": 1481,
     "values_found": 0
    },
    "result-request.json": {
-    "bytes": 2528,
+    "bytes": 2774,
     "values_found": 0
    },
    "result-request.json.ack": {
-    "bytes": 10857,
+    "bytes": 11105,
     "values_found": 0
    },
    "run-context.json": {
@@ -201,7 +265,7 @@
     "values_found": 0
    },
    "slot.json": {
-    "bytes": 11493,
+    "bytes": 11741,
     "values_found": 0
    }
   },
@@ -229,7 +293,7 @@
   "state": "exited",
   "usage": {
    "messages": 1,
-   "tokens": 60742
+   "tokens": 60706
   }
  }
 }

@@ -1,5 +1,56 @@
 {
- "account": "the dispatch account (name withheld)",
+ "ac3": {
+  "lines": {
+   "differ_unredacted": 0,
+   "identical": 74,
+   "mac": 76,
+   "mac_by_stream": {
+    "stderr": 0,
+    "stdout": 76
+   },
+   "main": 76,
+   "order_equal": true,
+   "redacted": 2,
+   "values_in_record": 0
+  },
+  "read": {
+   "lines": 76
+  },
+  "received": {
+   "ended": true,
+   "record": {
+    "bytes": 44909,
+    "digest": "sha256:d5515c36338f5756e54a93a203a31b02e0a375c368e6f742dda0e2af760cf896",
+    "lines": 76
+   },
+   "streams": {
+    "stderr": {
+     "bytes": 0,
+     "lines": 0,
+     "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+     "bytes": 34312,
+     "lines": 76,
+     "sha256": "917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425"
+    }
+   }
+  },
+  "record_refusal": null,
+  "signed": {
+   "stderr": {
+    "bytes": 0,
+    "lines": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+   },
+   "stdout": {
+    "bytes": 34312,
+    "lines": 76,
+    "sha256": "917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425"
+   }
+  }
+ },
+ "account": "acct7",
  "authority": {
   "host": null,
   "reason": null,
@@ -10,13 +61,13 @@
   "cleaned": true,
   "ram_disks_now": 0
  },
- "commit": "d5dea20cfb0ed2483e95250713c6eb34dde45abd",
+ "commit": "27a3b4bdc70394771ab1d81b6ab8cd6dfcfc9f56",
  "engine": "claude_code",
  "engine_events": {
   "assistant": 4,
   "rate_limit_event": 1,
   "result/success": 1,
-  "stream_event": 67,
+  "stream_event": 63,
   "system/init": 1,
   "system/status": 3,
   "user": 3
@@ -31,7 +82,7 @@
   ],
   "version": "2.1.317"
  },
- "engine_out_sha256": "6947c477f60e57554e26cf822af183fab4a79f15bf00c6c6d079db7464ac1050",
+ "engine_out_sha256": "917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425",
  "engine_result": {
   "is_error": false,
   "subtype": "success",
@@ -40,33 +91,17 @@
  "invoke": {
   "delivered": {
    "account": "account",
-   "credentials": [
-    "tracker-token"
-   ],
-   "dispatch_id": "dispatch/mac147/r4-claude-20261127220315",
+   "credentials": [],
+   "dispatch_id": "dispatch/mac147/r6-claude-20261128003224",
    "event": "remote_frames",
    "login_frame": true,
    "metrics": {
     "credential_unavailable": {},
-    "credentials_resolved": 1,
-    "launch_with_credentials": 1
+    "credentials_resolved": 0,
+    "launch_with_credentials": 0
    },
-   "routes": [
-    {
-     "credential": "tracker-token",
-     "field": "headers",
-     "name": "Authorization",
-     "route": "private_file",
-     "server": "tracker"
-    }
-   ],
-   "secrets_frame": true,
-   "servers": [
-    {
-     "id": "tracker",
-     "revision": 1
-    }
-   ]
+   "routes": [],
+   "servers": []
   },
   "refusal": null,
   "result": "pending"
@@ -85,7 +120,7 @@
     "account": "account",
     "base_mode": "0o700",
     "device": "/dev/disk12",
-    "dispatch": "dispatch/mac147/r4-claude-20261127220315",
+    "dispatch": "dispatch/mac147/r6-claude-20261128003224",
     "engine": "claude_code",
     "files": {
      ".credentials.json": 370
@@ -96,28 +131,17 @@
    },
    "order": [
     "login_open",
-    "secrets_after_acceptance",
     "close"
    ],
    "ram_disks_after": 0,
-   "ram_disks_open": 1,
-   "secrets": {
-    "credentials": [
-     "tracker-token"
-    ],
-    "directory_mode": "0o700",
-    "file": "secrets/mcp.json",
-    "file_mode": "0o600",
-    "size": 172,
-    "status": "written"
-   }
+   "ram_disks_open": 1
   },
   "engine": "claude_code",
   "engine_err_bytes": 0,
   "engine_out": {
-   "bytes": 35445,
-   "lines": 80,
-   "sha256": "6947c477f60e57554e26cf822af183fab4a79f15bf00c6c6d079db7464ac1050"
+   "bytes": 34312,
+   "lines": 76,
+   "sha256": "917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425"
   },
   "file_edited": true,
   "keychain_unchanged": true,
@@ -129,16 +153,28 @@
     "terminated": true
    },
    "state": "exited",
+   "streams": {
+    "stderr": {
+     "bytes": 0,
+     "lines": 0,
+     "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+     "bytes": 34312,
+     "lines": 76,
+     "sha256": "917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425"
+    }
+   },
    "termination": {
     "deadline_stop": false,
-    "output_bytes": 35445,
-    "output_digest": "sha256:6947c477f60e57554e26cf822af183fab4a79f15bf00c6c6d079db7464ac1050",
+    "output_bytes": 34312,
+    "output_digest": "sha256:917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425",
     "returncode": 0,
     "signal": null
    },
    "usage": {
     "messages": 4,
-    "tokens": 19424
+    "tokens": 19436
    }
   },
   "ram_disks_now": 0,
@@ -187,24 +223,24 @@
   "slot": "retired"
  },
  "qualification": false,
- "run": "r4-claude-20261127220315",
+ "run": "r6-claude-20261128003224",
  "scan": {
-  "credential_values": 2,
+  "credential_values": 1,
   "files": {
    "config.json": {
     "bytes": 4377,
     "values_found": 0
    },
    "deliverables-engine.out": {
-    "bytes": 35445,
+    "bytes": 34312,
     "values_found": 0
    },
    "delivery-complete.json": {
-    "bytes": 11119,
+    "bytes": 11365,
     "values_found": 0
    },
    "delivery.json": {
-    "bytes": 558,
+    "bytes": 372,
     "values_found": 0
    },
    "engine.err": {
@@ -212,7 +248,11 @@
     "values_found": 0
    },
    "engine.out": {
-    "bytes": 35445,
+    "bytes": 34312,
+    "values_found": 0
+   },
+   "engine.stream": {
+    "bytes": 48372,
     "values_found": 0
    },
    "go": {
@@ -224,15 +264,15 @@
     "values_found": 0
    },
    "result-evidence.json": {
-    "bytes": 1238,
+    "bytes": 1484,
     "values_found": 0
    },
    "result-request.json": {
-    "bytes": 2531,
+    "bytes": 2777,
     "values_found": 0
    },
    "result-request.json.ack": {
-    "bytes": 10878,
+    "bytes": 11124,
     "values_found": 0
    },
    "run-context.json": {
@@ -240,7 +280,7 @@
     "values_found": 0
    },
    "slot.json": {
-    "bytes": 11515,
+    "bytes": 11761,
     "values_found": 0
    }
   },
@@ -268,7 +308,7 @@
   "state": "exited",
   "usage": {
    "messages": 4,
-   "tokens": 19424
+   "tokens": 19436
   }
  }
 }

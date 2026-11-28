@@ -282,3 +282,76 @@ comparison does not run on the relay path. AC3 is open. What is missing:
    incomplete and must be refused by name.
 Then the falsifier (drop the error stream at the relay) and real runs of both
 engines on a unit that calls tools, writes to its error stream and edits a file.
+
+Round 6, 2026-11-28
+
+Two lead decisions were built.
+
+No outside-service credential goes to a Mac run. VELDO-0254 forbids delivering
+one into any run, so the secrets frame of round 4 is removed from
+control_launch.invoke_remote, from control_worker and from
+project_runner_macos_login. The login frame stays: it is the engine's own
+sign-in. A Mac run whose configuration selects an MCP server whose catalog
+revision names a credential is refused before a receiver is contacted, as
+unsupported_configuration:credential_in_run:<server>, and the report gives the
+reason: that server's calls go through the outside gate (VELDO-0257). Nothing is
+resolved from the keystore on this path. The Mac receiver accepts exactly one
+line after the binding, the login frame, and refuses any other by name. AC4's
+MCP part waits for VELDO-0257. A selected server that names no credential is
+not refused and is not delivered either: the Mac wrapper still starts the engine
+with the profile's fixed arguments.
+
+AC3 is built.
+- The Mac wrapper reads the engine's two output pipes itself. Each chunk goes to
+  engine.out or engine.err as before and, tagged stdout or stderr, to one file
+  in the order the wrapper read it (project_runner_macos_stream). The wrapper
+  counts each stream's lines and bytes and hashes it, and the supervisor puts
+  those totals in the observation the Mac signs.
+- control_worker sends that file's lines down its own channel while the engine
+  runs, then one end frame, then the signed result. It reads the file every
+  half second.
+- On the main node RemoteLaunch feeds every chunk to the run's execution record
+  (control_execution_record.Recorder), with the delivered login's values in the
+  set that is replaced before the scanner runs, and counts what it received.
+  When the authority has the run's end it reads up to the end frame, bounded by
+  ACCEPT_SECONDS, and closes the record with its totals beside it.
+- The dispatch's exit, written by the worker service from the signed result
+  alone, commits {streams: {stdout, stderr}}. A Mac cannot know the digest of
+  the record kept on Linux, so that is what its exit can commit.
+- One comparison, control_execution_record.remote_problem: the totals this node
+  computed must equal the signed ones. The launch runs it when it sees the exit
+  and names the refusal; control_execution_record.read runs it for every reader
+  and refuses with unknown_outcome:record_incomplete. The end frame is not
+  evidence. No process waits for another.
+- A run resumed with no channel, or whose receiver kept nothing, is refused by
+  that same name.
+
+Real Mac, both engines, one leg each at 27a3b4bdc, each login lease held for the
+whole run and the Mac slot held through remote_run.
+- Claude Code 2.1.317 (mac-relay-claude-leg.json, replaces the round 4 file):
+  exit 0, file edited. Signed and received totals equal: stdout 76 lines, 34312
+  bytes, same SHA-256; stderr empty on both. The kept record has 76 lines in the
+  Mac's order; 74 identical, 2 with a redaction, none different without one; no
+  login value in it.
+- Codex 0.166.0 (mac-relay-codex-leg.json, replaces the round 5 file): exit 0,
+  file edited. Signed and received totals equal: stdout 11 lines, 3046 bytes;
+  stderr 1 line, 39 bytes. The kept record has 12 lines in the Mac's order, the
+  error line among them, all identical.
+Both: RAM disk detached, keychain unchanged, no login value in any Mac file or
+kept on the main node. The first Claude attempt failed in my new main-node code
+(a method name that hid the launch pipe's reader); fixed, with a suite check.
+
+Rows in suite 157: AC3/mac-complete-record, AC3/mac-altered-chunk-refused,
+AC3/mac-resumed-run-record-refused, AC3/mac-wrapper-ordered-stream; the AC4
+rows now check the refusal and that nothing is resolved. Falsifiers (finding
+147): mac147-drop-error-stream (the spec's AC3 falsifier),
+mac147-record-comparison-skipped, mac147-credentialed-server-not-refused, and
+mac147-value-in-packet, which now plants the login's value in the packet.
+
+Still not qualified. AC1 and AC2: the Mac profile is a candidate and the
+capability comparison does not run on the relay path. AC3: the order between
+the two streams is the order the wrapper read its two pipes, not the order the
+engine wrote them; Claude Code printed nothing on its error stream in this run;
+a Mac run's lines are not hinted to the API while it runs; a Mac run's exit
+still binds an incomplete artifact (VELDO-0125). AC4: the MCP part waits for
+VELDO-0257.

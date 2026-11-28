@@ -2,8 +2,8 @@
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0147",
   "commit": "5623ba86fb370f13aa2345dee7ee707934576233",
-  "producer": "Claude implementation agent (round 5, Mac legs)",
-  "produced_at": "2026-11-27",
+  "producer": "Claude implementation agent (round 6, Mac legs)",
+  "produced_at": "2026-11-28",
   "status": "remaining",
   "criteria": [
     {
@@ -20,7 +20,7 @@
           "ref": "proof/VELDO-0147/mac-relay-claude-leg.json"
         }
       ],
-      "detail": "Partial. One real Claude Code 2.1.317 run on the Mac with the dispatch account delivered from the main node on a RAM disk for the run only: subscription login confirmed by the initialize answer before the prompt (Guard), pinned digest bound, Keychain-denying Seatbelt, environment read-back with no paid-API variable. Not yet through the signed relay; capability comparison against an accepted revision and the falsifier are not registered. Round 4: one real Claude Code dispatch went through invoke_remote, SSH, the production Mac receiver and the signed relay with the login delivered on a RAM disk; the Mac profile was a candidate without a qualification stamp, and the handshake guard and capability comparison did not run on that path."
+      "detail": "Partial. One real Claude Code 2.1.317 run on the Mac with the dispatch account delivered from the main node on a RAM disk for the run only: subscription login confirmed by the initialize answer before the prompt (Guard), pinned digest bound, Keychain-denying Seatbelt, environment read-back with no paid-API variable. Not yet through the signed relay; capability comparison against an accepted revision and the falsifier are not registered. Round 4: one real Claude Code dispatch went through invoke_remote, SSH, the production Mac receiver and the signed relay with the login delivered on a RAM disk; the Mac profile was a candidate without a qualification stamp, and the handshake guard and capability comparison did not run on that path. Round 6: one more real Claude Code leg through the relay with the stream kept (mac-relay-claude-leg.json)."
     },
     {
       "id": "AC2",
@@ -36,7 +36,7 @@
           "ref": "proof/VELDO-0147/mac-relay-codex-leg.json"
         }
       ],
-      "detail": "Waiting. The only free-at-launch-allowed Codex login (codex2) was leased by another run; codex1 is at its weekly limit. The Codex frame (auth.json without the refresh credential) is unit-tested only; Codex 0.166.0 is not installed on the Mac. Round 4: Codex 0.166.0 installed on the Mac; one real dispatch ran the whole relay path with CODEX_HOME delivered on a RAM disk and no paid-API key, but the first turn failed (workspace routing discovery failed). Not qualified. Round 5: cause of the failed turn found and fixed (the run's sandbox denies the keychain service Codex takes its root certificates from; the Mac Codex run now reads the system root file through SSL_CERT_FILE). One real Codex 0.166.0 dispatch through invoke_remote and the production receiver completed its turn: exit 0, usage reported, file edited, CODEX_HOME the delivered RAM-disk profile, no paid-API variable, nothing kept. Still pending: candidate Mac profile, no capability comparison on the relay path."
+      "detail": "Waiting. The only free-at-launch-allowed Codex login (codex2) was leased by another run; codex1 is at its weekly limit. The Codex frame (auth.json without the refresh credential) is unit-tested only; Codex 0.166.0 is not installed on the Mac. Round 4: Codex 0.166.0 installed on the Mac; one real dispatch ran the whole relay path with CODEX_HOME delivered on a RAM disk and no paid-API key, but the first turn failed (workspace routing discovery failed). Not qualified. Round 5: cause of the failed turn found and fixed (the run's sandbox denies the keychain service Codex takes its root certificates from; the Mac Codex run now reads the system root file through SSL_CERT_FILE). One real Codex 0.166.0 dispatch through invoke_remote and the production receiver completed its turn: exit 0, usage reported, file edited, CODEX_HOME the delivered RAM-disk profile, no paid-API variable, nothing kept. Still pending: candidate Mac profile, no capability comparison on the relay path. Round 6: one more real Codex leg through the relay with the stream kept (mac-relay-codex-leg.json)."
     },
     {
       "id": "AC3",
@@ -47,9 +47,15 @@
         },
         {
           "ref": "proof/VELDO-0147/mac-claude-leg.json"
+        },
+        {
+          "ref": "proof/VELDO-0147/mac-relay-claude-leg.json"
+        },
+        {
+          "ref": "proof/VELDO-0147/mac-relay-codex-leg.json"
         }
       ],
-      "detail": "Partial. The Mac engine stdout (63 lines) and stderr relayed over SSH matched the Mac copy line by line after exact redaction; the unit called Bash (error output seen), Read and Edit. The engine stderr was empty on the passing run, so the error-stream leg is not yet exercised; not through the production receiver; falsifier not registered. Round 5: still open; READINESS.txt (Round 5) lists what is missing, including the exit commitment, which needs files outside the footprint."
+      "detail": "Partial. The Mac engine stdout (63 lines) and stderr relayed over SSH matched the Mac copy line by line after exact redaction; the unit called Bash (error output seen), Read and Edit. The engine stderr was empty on the passing run, so the error-stream leg is not yet exercised; not through the production receiver; falsifier not registered. Round 5: still open; READINESS.txt (Round 5) lists what is missing, including the exit commitment, which needs files outside the footprint. Round 6: built. One ordered stream from the Mac wrapper, relayed by control_worker, kept by RemoteLaunch as the execution record; the exit commits the stream totals the Mac signed and the record is refused as unknown_outcome:record_incomplete unless the main node received exactly those. One real leg per engine passed with equal totals (mac-relay-claude-leg.json, mac-relay-codex-leg.json). Falsifiers mac147-drop-error-stream and mac147-record-comparison-skipped registered. Open: see READINESS.txt, Round 6."
     },
     {
       "id": "AC4",
@@ -65,19 +71,19 @@
           "ref": "proof/VELDO-0147/mac-relay-claude-leg.json"
         }
       ],
-      "detail": "Partial (login only). The account login travels in one frame on SSH stdin, lands mode 0600 on a RAM disk in a 0700 directory and is detached after the run; no value in the kept record, the Mac process command lines or environments; keychain Claude items unchanged. MCP server secrets frame and its falsifier not implemented. Round 4: the secrets frame travels after the binding on the receiver channel and is written 0600 in a 0700 directory on the run RAM disk after acceptance; falsifier mac147-value-in-packet registered. The engine does not read the file yet (fixed arguments in the Mac wrapper)."
+      "detail": "Partial (login only). The account login travels in one frame on SSH stdin, lands mode 0600 on a RAM disk in a 0700 directory and is detached after the run; no value in the kept record, the Mac process command lines or environments; keychain Claude items unchanged. MCP server secrets frame and its falsifier not implemented. Round 4: the secrets frame travels after the binding on the receiver channel and is written 0600 in a 0700 directory on the run RAM disk after acceptance; falsifier mac147-value-in-packet registered. The engine does not read the file yet (fixed arguments in the Mac wrapper). Round 6 (lead decision): the secrets frame is removed; no outside-service credential is sent to a Mac run (VELDO-0254). A run selecting a credentialed MCP server is refused as unsupported_configuration:credential_in_run:<server>. The MCP part waits for VELDO-0257. mac147-value-in-packet now plants the login value."
     }
   ],
   "checks": [
     {
       "name": "unit",
       "status": "pending",
-      "detail": "scripts/suites/157_veldo_0147_login.py: 4 rows on the login frame (selftest --suite, partial run only). No acceptance falsifier registered."
+      "detail": "scripts/suites/157_veldo_0147_login.py: 14 rows (login frame, credential refusal, AC3 stream and record). Seven falsifiers registered under finding 147. Partial runs only; the gate is the lead's."
     },
     {
       "name": "integration",
       "status": "pending",
-      "detail": "One real Mac Claude run (proof/VELDO-0147/mac-claude-leg.json); Codex leg waiting for a free login."
+      "detail": "Real Mac legs through the signed relay: Claude Code and Codex, one each in round 6, with the signed stream totals equal to the received ones."
     },
     {
       "name": "canonical_gate",
@@ -90,11 +96,11 @@
     }
   ],
   "artifacts": {
-    "proof/VELDO-0147/READINESS.txt": "sha256:ff4bbb3e3d8c9709632fa4ebc3a5409cb07587608d47087748bf244d512f4cc2",
+    "proof/VELDO-0147/READINESS.txt": "sha256:d4e43d393719ba3156b1fffcce6115e6be86c4b0be6d64131537e70ed46223d5",
     "proof/VELDO-0147/baseline-suites.txt": "sha256:bad4707f1d32431e4ba2d9f03ba83e4f3b00aa67816111f8ad65008f5d331c0c",
     "proof/VELDO-0147/lint.txt": "sha256:94f240075cd7f6230a4c7fdd2a774775cc4742f99f8baff1efb6ef3a6fad1a69",
     "proof/VELDO-0147/mac-preflight.txt": "sha256:5725b37332ee62fcdd8807cfd3e7e43626dcbae758e86fce04d3e8f52f02b574",
     "proof/VELDO-0147/personal-setup.txt": "sha256:0a1888feaec94d11a9a2a92076dc4bb39c82ea53eba7ccd894c3448e72bae305",
-    "proof/VELDO-0147/preflight.py": "sha256:8c0dca68619ff7d5e46f88dda230485ea76e59b2d66435875608ec7b5f6a7d02"
+    "proof/VELDO-0147/preflight.py": "sha256:f9d598fa6d46d3758b1acbb87b7749140a63c3e88f48660c1bd756cfb3053f85"
   }
 }
