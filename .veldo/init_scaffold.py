@@ -335,6 +335,9 @@ _FILES = [
     ".veldo/control_credential_keystore.py",
     # VELDO-0158: each Linux run's credentials, resolved from the keystore by the launch receiver.
     ".veldo/control_credential_delivery.py",
+    # VELDO-0147: the login and secrets frames a Mac receiver is sent for one run, which control_launch.py
+    # loads on the main node (invoke_remote); the same file is the Mac's half. Standard library only.
+    ".veldo/project_runner_macos_login.py",
     # VELDO-0127: accepted role capability revisions and their engine handoff, which control_launch.py
     # loads; runtime assets, no validator import, not REQUIRED_SUBSTRATE.
     ".veldo/control_agent_config.py",
