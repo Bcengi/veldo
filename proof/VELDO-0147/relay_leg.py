@@ -95,6 +95,8 @@ def main(engine, target, out):
                 dispatch = 'dispatch/mac147/' + run
                 contract = f.prepare(dispatch, ['macos'], source=candidate['source'], engine=engine,
                                      deadline_seconds=900)['contract']
+                # The domain registry defaults to the directory above the installation: keep it in this scratch.
+                f.config['domain_registry'] = str(Path(scratch) / 'domains.sqlite3')
                 f.start(ipc=True)
                 socket_path = '/tmp/veldo-0147-%s.sock' % run
                 reply(ssh(remote + ' configure', json.dumps(dict(workspace=str(f.repo), binding=f.binding,
