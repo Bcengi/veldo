@@ -2,26 +2,26 @@
  "ac3": {
   "lines": {
    "differ_unredacted": 0,
-   "identical": 74,
-   "mac": 76,
+   "identical": 77,
+   "mac": 79,
    "mac_by_stream": {
     "stderr": 0,
-    "stdout": 76
+    "stdout": 79
    },
-   "main": 76,
+   "main": 79,
    "order_equal": true,
    "redacted": 2,
    "values_in_record": 0
   },
   "read": {
-   "lines": 76
+   "lines": 79
   },
   "received": {
    "ended": true,
    "record": {
-    "bytes": 44909,
-    "digest": "sha256:d5515c36338f5756e54a93a203a31b02e0a375c368e6f742dda0e2af760cf896",
-    "lines": 76
+    "bytes": 46305,
+    "digest": "sha256:092eb37ab9c7acaa3b1efe225a2cebdcbdcfb1ceb52da605be6b21040a1df11c",
+    "lines": 79
    },
    "streams": {
     "stderr": {
@@ -30,9 +30,9 @@
      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "stdout": {
-     "bytes": 34312,
-     "lines": 76,
-     "sha256": "917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425"
+     "bytes": 35336,
+     "lines": 79,
+     "sha256": "e8f3a79ec9924b9709ec4be67fafb7ffaaefd10ef445b3733c7bebb869408432"
     }
    }
   },
@@ -44,9 +44,9 @@
     "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
    },
    "stdout": {
-    "bytes": 34312,
-    "lines": 76,
-    "sha256": "917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425"
+    "bytes": 35336,
+    "lines": 79,
+    "sha256": "e8f3a79ec9924b9709ec4be67fafb7ffaaefd10ef445b3733c7bebb869408432"
    }
   }
  },
@@ -61,13 +61,13 @@
   "cleaned": true,
   "ram_disks_now": 0
  },
- "commit": "27a3b4bdc70394771ab1d81b6ab8cd6dfcfc9f56",
+ "commit": "5a32a0d413ffb6dd029ed777405fce1095c566cd",
  "engine": "claude_code",
  "engine_events": {
   "assistant": 4,
-  "rate_limit_event": 1,
+  "rate_limit_event": 2,
   "result/success": 1,
-  "stream_event": 63,
+  "stream_event": 65,
   "system/init": 1,
   "system/status": 3,
   "user": 3
@@ -82,7 +82,7 @@
   ],
   "version": "2.1.317"
  },
- "engine_out_sha256": "917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425",
+ "engine_out_sha256": "e8f3a79ec9924b9709ec4be67fafb7ffaaefd10ef445b3733c7bebb869408432",
  "engine_result": {
   "is_error": false,
   "subtype": "success",
@@ -92,7 +92,7 @@
   "delivered": {
    "account": "account",
    "credentials": [],
-   "dispatch_id": "dispatch/mac147/r6-claude-20261128003224",
+   "dispatch_id": "dispatch/mac147/r8-claude-20261128022913",
    "event": "remote_frames",
    "login_frame": true,
    "metrics": {
@@ -115,12 +115,31 @@
  "mac_summary": {
   "delivery": {
    "base_absent": true,
-   "close": null,
+   "close": {
+    "detached": true,
+    "device": "/dev/disk12",
+    "removed": true,
+    "status": "closed"
+   },
    "login": {
     "account": "account",
     "base_mode": "0o700",
     "device": "/dev/disk12",
-    "dispatch": "dispatch/mac147/r6-claude-20261128003224",
+    "device_modes": {
+     "attached": {
+      "disk12": "0o640",
+      "rdisk12": "0o640"
+     },
+     "final": {
+      "disk12": "0o600",
+      "rdisk12": "0o600"
+     },
+     "mounted": {
+      "disk12": "0o600",
+      "rdisk12": "0o600"
+     }
+    },
+    "dispatch": "dispatch/mac147/r8-claude-20261128022913",
     "engine": "claude_code",
     "files": {
      ".credentials.json": 370
@@ -131,6 +150,7 @@
    },
    "order": [
     "login_open",
+    "close",
     "close"
    ],
    "ram_disks_after": 0,
@@ -139,9 +159,9 @@
   "engine": "claude_code",
   "engine_err_bytes": 0,
   "engine_out": {
-   "bytes": 34312,
-   "lines": 76,
-   "sha256": "917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425"
+   "bytes": 35336,
+   "lines": 79,
+   "sha256": "e8f3a79ec9924b9709ec4be67fafb7ffaaefd10ef445b3733c7bebb869408432"
   },
   "file_edited": true,
   "keychain_unchanged": true,
@@ -152,6 +172,10 @@
     "clone_removed": true,
     "terminated": true
    },
+   "login": {
+    "detached": true,
+    "status": "closed"
+   },
    "state": "exited",
    "streams": {
     "stderr": {
@@ -160,21 +184,21 @@
      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "stdout": {
-     "bytes": 34312,
-     "lines": 76,
-     "sha256": "917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425"
+     "bytes": 35336,
+     "lines": 79,
+     "sha256": "e8f3a79ec9924b9709ec4be67fafb7ffaaefd10ef445b3733c7bebb869408432"
     }
    },
    "termination": {
     "deadline_stop": false,
-    "output_bytes": 34312,
-    "output_digest": "sha256:917e0dffc26118042e7671121a73de01814bedcb015cd7db3288f3ae67908425",
+    "output_bytes": 35336,
+    "output_digest": "sha256:e8f3a79ec9924b9709ec4be67fafb7ffaaefd10ef445b3733c7bebb869408432",
     "returncode": 0,
     "signal": null
    },
    "usage": {
     "messages": 4,
-    "tokens": 19436
+    "tokens": 19394
    }
   },
   "ram_disks_now": 0,
@@ -223,7 +247,7 @@
   "slot": "retired"
  },
  "qualification": false,
- "run": "r6-claude-20261128003224",
+ "run": "r8-claude-20261128022913",
  "scan": {
   "credential_values": 1,
   "files": {
@@ -232,15 +256,15 @@
     "values_found": 0
    },
    "deliverables-engine.out": {
-    "bytes": 34312,
+    "bytes": 35336,
     "values_found": 0
    },
    "delivery-complete.json": {
-    "bytes": 11365,
+    "bytes": 11414,
     "values_found": 0
    },
    "delivery.json": {
-    "bytes": 372,
+    "bytes": 630,
     "values_found": 0
    },
    "engine.err": {
@@ -248,11 +272,11 @@
     "values_found": 0
    },
    "engine.out": {
-    "bytes": 34312,
+    "bytes": 35336,
     "values_found": 0
    },
    "engine.stream": {
-    "bytes": 48372,
+    "bytes": 49855,
     "values_found": 0
    },
    "go": {
@@ -264,15 +288,15 @@
     "values_found": 0
    },
    "result-evidence.json": {
-    "bytes": 1484,
+    "bytes": 1533,
     "values_found": 0
    },
    "result-request.json": {
-    "bytes": 2777,
+    "bytes": 2826,
     "values_found": 0
    },
    "result-request.json.ack": {
-    "bytes": 11124,
+    "bytes": 11173,
     "values_found": 0
    },
    "run-context.json": {
@@ -280,7 +304,7 @@
     "values_found": 0
    },
    "slot.json": {
-    "bytes": 11761,
+    "bytes": 11810,
     "values_found": 0
    }
   },
@@ -308,7 +332,7 @@
   "state": "exited",
   "usage": {
    "messages": 4,
-   "tokens": 19436
+   "tokens": 19394
   }
  }
 }

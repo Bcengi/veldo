@@ -2,26 +2,26 @@
  "ac3": {
   "lines": {
    "differ_unredacted": 0,
-   "identical": 12,
-   "mac": 12,
+   "identical": 10,
+   "mac": 10,
    "mac_by_stream": {
     "stderr": 1,
-    "stdout": 11
+    "stdout": 9
    },
-   "main": 12,
+   "main": 10,
    "order_equal": true,
    "redacted": 0,
    "values_in_record": 0
   },
   "read": {
-   "lines": 12
+   "lines": 10
   },
   "received": {
    "ended": true,
    "record": {
-    "bytes": 4905,
-    "digest": "sha256:ecebd1a344eddbef6007971eefbe65aaae555c93dd5485b29631a4269acb690d",
-    "lines": 12
+    "bytes": 2952,
+    "digest": "sha256:499cfb58b4cedcee66e58a4b97637220408aceff6b9eb6270093f7aa54d7e085",
+    "lines": 10
    },
    "streams": {
     "stderr": {
@@ -30,9 +30,9 @@
      "sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
     },
     "stdout": {
-     "bytes": 3046,
-     "lines": 11,
-     "sha256": "26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456"
+     "bytes": 1530,
+     "lines": 9,
+     "sha256": "050767d058c2f3f0f69ee2e91f06871ae726f656c124b0978e811b5d3fb252a1"
     }
    }
   },
@@ -44,9 +44,9 @@
     "sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
    },
    "stdout": {
-    "bytes": 3046,
-    "lines": 11,
-    "sha256": "26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456"
+    "bytes": 1530,
+    "lines": 9,
+    "sha256": "050767d058c2f3f0f69ee2e91f06871ae726f656c124b0978e811b5d3fb252a1"
    }
   }
  },
@@ -61,22 +61,22 @@
   "cleaned": true,
   "ram_disks_now": 0
  },
- "commit": "27a3b4bdc70394771ab1d81b6ab8cd6dfcfc9f56",
+ "commit": "5a32a0d413ffb6dd029ed777405fce1095c566cd",
  "engine": "codex",
  "engine_err_text": "Reading additional input from stdin...\n",
  "engine_events": {
-  "item.completed": 5,
-  "item.started": 3,
+  "item.completed": 4,
+  "item.started": 2,
   "thread.started": 1,
   "turn.completed": 1,
   "turn.started": 1
  },
- "engine_out_sha256": "26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456",
+ "engine_out_sha256": "050767d058c2f3f0f69ee2e91f06871ae726f656c124b0978e811b5d3fb252a1",
  "invoke": {
   "delivered": {
    "account": "account",
    "credentials": [],
-   "dispatch_id": "dispatch/mac147/r6-codex-20261128003303",
+   "dispatch_id": "dispatch/mac147/r8-codex-20261128022949",
    "event": "remote_frames",
    "login_frame": true,
    "metrics": {
@@ -99,12 +99,31 @@
  "mac_summary": {
   "delivery": {
    "base_absent": true,
-   "close": null,
+   "close": {
+    "detached": true,
+    "device": "/dev/disk12",
+    "removed": true,
+    "status": "closed"
+   },
    "login": {
     "account": "account",
     "base_mode": "0o700",
     "device": "/dev/disk12",
-    "dispatch": "dispatch/mac147/r6-codex-20261128003303",
+    "device_modes": {
+     "attached": {
+      "disk12": "0o640",
+      "rdisk12": "0o640"
+     },
+     "final": {
+      "disk12": "0o600",
+      "rdisk12": "0o600"
+     },
+     "mounted": {
+      "disk12": "0o600",
+      "rdisk12": "0o600"
+     }
+    },
+    "dispatch": "dispatch/mac147/r8-codex-20261128022949",
     "engine": "codex",
     "files": {
      "auth.json": 3723
@@ -115,6 +134,7 @@
    },
    "order": [
     "login_open",
+    "close",
     "close"
    ],
    "ram_disks_after": 0,
@@ -123,9 +143,9 @@
   "engine": "codex",
   "engine_err_bytes": 39,
   "engine_out": {
-   "bytes": 3046,
-   "lines": 11,
-   "sha256": "26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456"
+   "bytes": 1530,
+   "lines": 9,
+   "sha256": "050767d058c2f3f0f69ee2e91f06871ae726f656c124b0978e811b5d3fb252a1"
   },
   "file_edited": true,
   "keychain_unchanged": true,
@@ -136,6 +156,10 @@
     "clone_removed": true,
     "terminated": true
    },
+   "login": {
+    "detached": true,
+    "status": "closed"
+   },
    "state": "exited",
    "streams": {
     "stderr": {
@@ -144,21 +168,21 @@
      "sha256": "1aa26269eb1cc57f86b235a03cda53c004edb5b1e9fc99d4da4f00843293d721"
     },
     "stdout": {
-     "bytes": 3046,
-     "lines": 11,
-     "sha256": "26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456"
+     "bytes": 1530,
+     "lines": 9,
+     "sha256": "050767d058c2f3f0f69ee2e91f06871ae726f656c124b0978e811b5d3fb252a1"
     }
    },
    "termination": {
     "deadline_stop": false,
-    "output_bytes": 3046,
-    "output_digest": "sha256:26efcde5bf021cd0ccdf52ef63a2621c5ef20dfd50fe5af6daff3c3d27a02456",
+    "output_bytes": 1530,
+    "output_digest": "sha256:050767d058c2f3f0f69ee2e91f06871ae726f656c124b0978e811b5d3fb252a1",
     "returncode": 0,
     "signal": null
    },
    "usage": {
     "messages": 1,
-    "tokens": 60706
+    "tokens": 45012
    }
   },
   "ram_disks_now": 0,
@@ -208,7 +232,7 @@
   "slot": "retired"
  },
  "qualification": false,
- "run": "r6-codex-20261128003303",
+ "run": "r8-codex-20261128022949",
  "scan": {
   "credential_values": 2,
   "files": {
@@ -217,15 +241,15 @@
     "values_found": 0
    },
    "deliverables-engine.out": {
-    "bytes": 3046,
+    "bytes": 1530,
     "values_found": 0
    },
    "delivery-complete.json": {
-    "bytes": 11346,
+    "bytes": 11394,
     "values_found": 0
    },
    "delivery.json": {
-    "bytes": 358,
+    "bytes": 616,
     "values_found": 0
    },
    "engine.err": {
@@ -233,11 +257,11 @@
     "values_found": 0
    },
    "engine.out": {
-    "bytes": 3046,
+    "bytes": 1530,
     "values_found": 0
    },
    "engine.stream": {
-    "bytes": 4520,
+    "bytes": 2434,
     "values_found": 0
    },
    "go": {
@@ -249,15 +273,15 @@
     "values_found": 0
    },
    "result-evidence.json": {
-    "bytes": 1481,
+    "bytes": 1529,
     "values_found": 0
    },
    "result-request.json": {
-    "bytes": 2774,
+    "bytes": 2822,
     "values_found": 0
    },
    "result-request.json.ack": {
-    "bytes": 11105,
+    "bytes": 11153,
     "values_found": 0
    },
    "run-context.json": {
@@ -265,7 +289,7 @@
     "values_found": 0
    },
    "slot.json": {
-    "bytes": 11741,
+    "bytes": 11789,
     "values_found": 0
    }
   },
@@ -293,7 +317,7 @@
   "state": "exited",
   "usage": {
    "messages": 1,
-   "tokens": 60706
+   "tokens": 45012
   }
  }
 }

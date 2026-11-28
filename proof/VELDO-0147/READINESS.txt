@@ -355,3 +355,65 @@ engine wrote them; Claude Code printed nothing on its error stream in this run;
 a Mac run's lines are not hinted to the API while it runs; a Mac run's exit
 still binds an incomplete artifact (VELDO-0125). AC4: the MCP part waits for
 VELDO-0257.
+
+Round 8 (2026-11-28): review fixes
+----------------------------------
+Code at 70453c1d1. Nothing is qualified by this round.
+
+What changed, by review finding:
+1. A Mac result that says it has no stream totals (the wrapper lost a chunk)
+   is refused by the worker service as missing_evidence:streams. A result that
+   names no totals at all ends the run and its exit commits {streams: None};
+   every reader of that record, the API included, is refused with
+   unknown_outcome:record_incomplete. The service cannot refuse the second kind
+   too: the VELDO-0125 fixtures post such exits, and their file is bound by
+   digest in that proof.
+2, 3. A run on a remote host that selects any MCP server is refused before a
+   receiver is contacted, as unsupported_configuration:mcp_on_remote:<server>,
+   whatever the receiver's login setting. The catalog is not read.
+4. The Mac closes the delivered login as soon as the engine has ended and puts
+   the close result in the observation it signs. While a login is left behind
+   the slot is not retired: the release stays pending (login_left_behind).
+5. The Codex frame reads the access credential's expiry and sends two named
+   top-level fields only. Both engines compare the expiry with the contract's
+   deadline plus 30 minutes.
+6. The RAM disk's two device nodes are made 0600 after attach and checked
+   again after the mount, before the login is written. Measured on the real
+   Mac in both legs: macOS hands them out 0640 (group read); they were 0600
+   after attach and stayed 0600 through the mount.
+7. A disk is detached only when the mount table shows that device on this
+   base's own mount point, or when open_profile attached it in the same call.
+8. The receiver waits 30 seconds for its sender after the engine ends, then
+   marks the channel stalled and sends nothing more on it.
+9. SSL_CERT_FILE is assigned for a Codex run. A configured SSL_CERT_FILE or
+   SSL_CERT_DIR is refused by name for either engine.
+10. The record is complete only when the totals agree and the main node read
+   the end frame.
+
+Real Mac, one leg per engine at 5a32a0d41 (the modules are the same at
+70453c1d1), each login lease held for the whole run, Mac slot held through
+remote_run.
+- Claude Code 2.1.317 (mac-relay-claude-leg.json): exit 0, file edited. Signed
+  and received totals equal: stdout 79 lines, 35336 bytes; stderr empty. End
+  frame read. 79 record lines in the Mac's order, 77 identical, 2 redacted.
+- Codex 0.166.0 (mac-relay-codex-leg.json): exit 0, file edited. Signed and
+  received totals equal: stdout 9 lines, 1530 bytes; stderr 1 line, 39 bytes.
+  End frame read. 10 record lines, all identical.
+Both: the signed observation carries login {status: closed, detached: true};
+device nodes 0640 as attached, 0600 before the login was written; RAM disk
+detached, keychain unchanged, no login value in any Mac file or kept here.
+
+Rows added to suite 157: AC3/mac-missing-end-frame-refused,
+AC3/mac-unsigned-streams-refused,
+AC3/mac-stalled-channel-does-not-hold-the-result,
+AC4/remote-mcp-selection-refused, AC4/mac-login-left-behind-holds-release,
+AC4/mac-login-disk-private-and-own. Rows changed: AC2/codex-frame-access-only,
+AC1/claude-frame-refusals, AC2/mac-codex-root-certificates,
+AC4/mac-no-value-in-packet. Finding 147 now has 17 falsifiers; all 17 were
+rejected on pc1 at 70453c1d1.
+
+Open: the VELDO-0127 live captures are not retaken, so its two rows stay red
+and 4 role127 cases have no verdict. The API's read is tested through
+control_execution_record.read with the commitment the API passes, not through
+the API service. control_memory_feed.py:565 is outside the footprint and is
+unchanged. An unknown end of a remote run commits nothing, as before.
