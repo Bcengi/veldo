@@ -136,6 +136,10 @@ def main(engine, target, out):
                     for member in archive.getmembers():
                         data = archive.extractfile(member).read()
                         scan['files'][member.name] = dict(bytes=len(data), values_found=sum(data.count(v) for v in values))
+                        if member.name == 'engine.err' and 0 < len(data) <= 600 and not any(v in data for v in values):
+                            # A short engine error is kept as text, with the Mac's own paths replaced.
+                            import re
+                            record['engine_err_text'] = re.sub(r'/(Users|private|var)/[^\s\'":]+', '<path>', data.decode(errors='replace'))
                         if member.name == 'engine.out':
                             kinds = {}
                             for line in data.splitlines():
