@@ -2462,6 +2462,8 @@ class Runner:
         if route and route['host'] != self.local_host:
             launch = invoke_remote(self.remote_receivers.get(route['host']), contract, self.dispatches,
                                    clock=self.clock)
+            if getattr(launch, 'delivered', None):
+                self.observe(launch.delivered)
         else:
             launch = self.receiver(contract)
         self.launches[contract['dispatch_id']] = launch
@@ -3033,11 +3035,36 @@ class RemoteLaunch(Launch):
         return self.record
 
 
+def remote_frames(receiver, contract, conn, *, keystore=None, now=None):
+    """VELDO-0147: what follows the prepared binding on the channel of a receiver configured
+    `login: delivered` (a Mac that keeps no login): the login frame of the dispatch's own account, read from
+    this main node's profile of it, and, when the configuration selects MCP servers, one secrets frame with
+    exactly their credential values (VELDO-0158's resolution). Returns (frames, report); the report names the
+    account, servers and credential ids, never a value. A receiver without that setting gets no frame."""
+    if not isinstance(receiver, dict) or receiver.get('login') != 'delivered':
+        return [], None
+    ML = _organ('project_runner_macos_login')
+    engine, dispatch, account = contract['capability']['adapter'], contract['dispatch_id'], contract['reservation']['account']
+    profile = ACC.profile(ACC.read(conn, account), receiver.get('main_host') or socket.gethostname())[1]
+    frames, routes, servers = [ML.frame(engine, profile, dispatch, account, now=now)[0]], [], []
+    configuration = contract['capability']['configuration']
+    if DL.selections(configuration):
+        if engine != 'claude_code':
+            raise DL.Undeliverable('invalid_input:mcp_delivery:' + str(engine))
+        servers = DL.resolve(conn, contract['domain'], configuration, keystore)
+        entries = {server['id']: ENGINES[engine]._mcp_entry(server, routes) for server in servers}
+        frames.append(ML.secrets_frame(dispatch, account, entries, {route['credential'] for route in routes}))
+    return frames, dict(DL.report(dispatch, servers, routes=routes), event='remote_frames', account=account,
+                        login_frame=True, secrets_frame=len(frames) == 2)
+
+
 def invoke_remote(receiver, contract, dispatches, *, clock=time.time):
     """Start an operator-configured transport argv; send only the prepared binding.
 
     The installed endpoint calls control_worker.receive on the Mac. No shell or
     command-line argument is built from unit data, and no Linux receiver is used.
+    The binding line never carries a login or a credential value: for a receiver
+    configured for it, those follow as frames on the same channel (remote_frames).
     """
     launch = RemoteLaunch(None, contract, dispatches, clock)
     argv = receiver.get('argv') if isinstance(receiver, dict) else None
@@ -3047,11 +3074,22 @@ def invoke_remote(receiver, contract, dispatches, *, clock=time.time):
         launch.result, launch.ended = 'refused', True
         return launch
     try:
+        frames, launch.delivered = remote_frames(receiver, contract, dispatches.conn)
+    except Exception as error:  # noqa: BLE001 - nothing was sent: a conclusive refusal by name, never a held unit
+        code = getattr(error, 'code', None)
+        launch.record = dispatches.refuse(contract['dispatch_id'], D.digest(contract),
+            code if isinstance(code, str) and code else 'unavailable_service:login_delivery',
+            now=clock(), expected_state='prepared')
+        launch.result, launch.ended = 'refused', True
+        return launch
+    try:
         launch.child = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                         stderr=subprocess.DEVNULL)
         request = dict(dispatch_id=contract['dispatch_id'], contract_digest=D.digest(contract),
                        domain=contract['domain'], repository=contract['repository'])
         launch.child.stdin.write(json.dumps(request).encode() + b'\n')
+        for frame in frames:
+            launch.child.stdin.write(frame)
         launch.child.stdin.close()
     except (OSError, ValueError):
         if launch.child is not None:

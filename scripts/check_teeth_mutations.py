@@ -18885,6 +18885,15 @@ def cases():
         'CREDENTIALS = frozenset().union(*(e.CREDENTIALS for e in ENGINES))\n',
         "CREDENTIALS = frozenset().union(*(e.CREDENTIALS for e in ENGINES)) - {'OPENAI_API_KEY'}  # defect\n",
         ['AC2/mac-paid-api-stop'])
+    # AC4: put a credential value in the packet sent to the Mac instead of the secrets frame; the Mac
+    # no-value-in-packet row must fail.
+    add(147, 'mac147-value-in-packet', '157_veldo_0147_login.py', 'control_launch.py',
+        "        launch.child.stdin.write(json.dumps(request).encode() + b'\\n')\n"
+        "        for frame in frames:\n",
+        "        request['secrets'] = [frame.decode() for frame in frames[1:]]  # defect: values in the packet\n"
+        "        launch.child.stdin.write(json.dumps(request).encode() + b'\\n')\n"
+        "        for frame in frames[:1]:\n",
+        ['AC4/mac-no-value-in-packet'])
 
     # VELDO-0210 AC6: a stop queued before child registration must be masked, then
     # kill the starting tree. Both controls and mutants run the complete confined suite.

@@ -71,7 +71,7 @@ def collect_files(clone, scratch, started, engine):
     return engine_usage(started, engine), {'output': target.resolve().as_uri() + '#sha256=' + digest}
 
 
-def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=None):
+def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=None, delivery=None):
     keys = {str(Path(p).resolve()) for p in host.profile.get('signing_keys', [])}
     if not client.signing_key or client.signing_key not in keys:
         raise C.P.Refused('missing_evidence:worker_signing_key_custody')
@@ -93,6 +93,9 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
     accepted = client.launch(binding, 'accept', receiver=receiver, runtime_seconds=host.profile['runtime_seconds'])
     request['acceptance'] = accepted['record']['acceptance']
     request['environment']['VELDO_DISPATCH_ACCEPTANCE'] = request['acceptance']
+    if delivery is not None:
+        # VELDO-0147 AC4: the secrets file exists only once the authority accepted, before the wrapper starts.
+        delivery.secrets()
     CL.durable_json(Path(clone).parent / 'run-context.json',
                     dict(binding=binding, engine=request['engine']))
     started = host.start(request)
@@ -137,6 +140,10 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
 
 def apply_release(client, host, binding, outcome):
     if outcome.get('host_released'):
+        login = getattr(host, 'delivered_login', None)
+        if login is not None and login.exists():
+            # VELDO-0147: a login a dead receiver left mounted goes before the slot is retired.
+            organ('project_runner_macos_login').close_profile(login)
         directory = Path(client.outbox).parent
         CL.durable_json(directory / 'retirement-request.json', dict(binding=binding, outcome=outcome))
         host.release_authority(binding['dispatch_id'], binding['contract_digest'], outcome)
@@ -158,7 +165,7 @@ def recorder_failure(config, request, error):
     raise RecorderFailure(str(error)) from error
 
 
-def receive(config, request, *, queued=False):
+def receive(config, request, *, queued=False, frames=None):
     lock = None
     acquired = False
     recorder_failed = False
@@ -189,7 +196,7 @@ def receive(config, request, *, queued=False):
                 return None
             acquired = True
             OUT.move(root, path, '.active', CL.durable_json, entry)
-        result = receive_locked(config, request)
+        result = receive_locked(config, request, frames)
         OUT.acknowledge(config, request['dispatch_id'],
                         release=result.get('host_released') or request.get('action') == 'release')
         return result
@@ -257,7 +264,7 @@ def retain_crashed_output(host, client, request, directory):
         observation=observation, usage=usage, references=references))
 
 
-def receive_locked(config, request):
+def receive_locked(config, request, frames=None):
     """Installed Mac endpoint: resolve a dispatch through its configured Linux relay.
 
     Source mirror, account profiles, host qualification and keys are operator
@@ -268,6 +275,12 @@ def receive_locked(config, request):
     SIG = organ('control_signer')
     M = organ('project_runner_macos')
     host = M.Supervisor(config['profile'], config['qualification'], migrate=False)
+    delivered = config.get('login') == 'delivered'
+    if delivered:
+        # VELDO-0147: this Mac keeps no login. The main node sends the dispatch's own for the run only.
+        LG = organ('project_runner_macos_login')
+        host.delivered_login = (Path(C.P.canonical(host.os.user_temp(), missing=True))
+                                / ('veldo-login-' + host.label(request['dispatch_id'])[17:41]))
     key = str(Path(config['signing_key']).resolve())
     if key not in {str(Path(p).resolve()) for p in host.profile.get('signing_keys', [])}:
         raise C.P.Refused('missing_evidence:worker_signing_key_custody')
@@ -328,6 +341,11 @@ def receive_locked(config, request):
             or contract['domain'] != request['domain'] or contract['repository'] != request['repository']):
         raise C.P.Refused('binding_mismatch:receiver_contract')
     account = config['accounts'][contract['reservation']['account']]
+    delivery = None
+    if delivered:
+        # Refused by name before a clone or a disk is made: no frame, another dispatch's or account's frame.
+        delivery = LG.Delivery(frames, host.delivered_login, request['dispatch_id'], account['id'],
+                               contract['capability']['adapter'])
     clone, scratch = directory / 'clone', directory / 'scratch'
     scratch.mkdir()
     # The source mirror is installed configuration, never a source URL from work.
@@ -335,7 +353,14 @@ def receive_locked(config, request):
                    check=True, capture_output=True, timeout=60)
     _git_process.run(['git', '-C', str(clone), 'checkout', '--detach', contract['source']['commit']],
                    check=True, capture_output=True, timeout=30)
-    return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim)
+    if delivery is None:
+        return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim)
+    try:
+        account = dict(account, profiles={host.os.facts()['host']: delivery.open()})
+        return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim,
+                   delivery=delivery)
+    finally:
+        delivery.close()
 
 
 def resume_pending(config, *, drain=False):
@@ -420,7 +445,13 @@ def main(config_path, resume=False, install=False):
     else:
         install_resumer(config_path, config)
         try:
-            result = receive(config, json.loads(sys.stdin.readline(65536)))
+            request = json.loads(sys.stdin.readline(65536))
+            frames = None
+            if config.get('login') == 'delivered':
+                # The login and secrets frames follow the binding on this same channel; Delivery checks them.
+                limit = organ('project_runner_macos_login').MAX_FRAME + 2
+                frames = [line for line in (sys.stdin.readline(limit) for _ in range(3)) if line]
+            result = receive(config, request, frames=frames)
         except Exception as error:
             if OUT.retryable(error):
                 raise

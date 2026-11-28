@@ -68,7 +68,7 @@ def _v147_login():
         Path(base, 'exists').mkdir()
         refused(lambda: L.open_profile(Path(base, 'exists'), Stream(good.encode())), 'stale_version:profile_base_exists')
 
-    # The registered falsifiers (scripts/check_teeth_mutations.py, finding 147) replace these two production
+    # The registered falsifiers (scripts/check_teeth_mutations.py, finding 147) replace these production
     # paths with a defective copy inside a complete module tree; every row below loads its modules from there.
     profile_module = ROOT / ".veldo" / "project_runner_macos_profile.py"
     control_module = ROOT / ".veldo" / "project_runner_macos_control.py"
@@ -130,7 +130,145 @@ def _v147_login():
             else:
                 raise AssertionError('paid-API key reached the Mac engine environment: ' + key)
 
-    for name, test in {'AC4/claude-frame-access-only': claude_frame, 'AC1/claude-frame-refusals': claude_refusals,
+    launch_module = ROOT / ".veldo" / "control_launch.py"
+
+    def relay_fixture(base):
+        """The VELDO-0125 authority fixture over this tree's modules, with one prepared Claude dispatch whose
+        account's main-node profile holds a subscription login good far past any run."""
+        import os
+        import types
+        os.environ['VELDO_0125_MODULES'] = str(launch_module.parent)
+        try:
+            loaded = importlib.util.spec_from_file_location('v147_relay', ROOT / 'proof/VELDO-0125/checks.py')
+            T = importlib.util.module_from_spec(loaded)
+            loaded.loader.exec_module(T)
+        finally:
+            os.environ.pop('VELDO_0125_MODULES', None)
+        f = T.Fixture(base / 'authority')
+        launch = T.W.SV.L
+        profile = base / 'main-profile'
+        profile.mkdir()
+        claude(profile, expiresAt=4_102_444_800_000)
+        record = dict(id='account', status='active', provider='claude_code', profiles={'main': str(profile)})
+        launch.ACC.read = lambda conn, account: record if account == 'account' else None
+        server = dict(id='tracker', revision=1, transport='http', command=None, arguments=[], url='https://tracker.invalid/mcp',
+                      environment={}, headers={'Authorization': {'credential': 'tracker-token', 'handle':
+                                                                 types.SimpleNamespace(reveal=lambda: 'Bearer mcp-value-147')}})
+        launch.DL.selections = lambda configuration: [('tracker', 1)]
+        launch.DL.resolve = lambda conn, domain, configuration, keystore=None: [server]
+        return T, f, launch
+
+    def sink(base):
+        import sys
+        received = base / 'received'
+        return received, dict(argv=[sys.executable, '-c', 'import sys; open(sys.argv[1], "wb").write(sys.stdin.buffer.read())',
+                                    str(received)], login='delivered', main_host='main')
+
+    def relay_frames(base):
+        # AC4 on the relay transport: the binding line is identity only; the login and the one secrets frame
+        # follow it on the same channel; what is kept names ids, never a value.
+        T, f, launch = relay_fixture(base)
+        try:
+            contract = f.prepare(required=['macos'], engine='claude_code')['contract']
+            assert launch.remote_frames(dict(argv=['x']), contract, f.conn) == ([], None)
+            received, receiver = sink(base)
+            started = launch.invoke_remote(receiver, contract, f.ds)
+            assert started.result == 'pending', (started.result, (started.record or {}).get('refusal'))
+            started.child.wait(timeout=T.WAIT_HANG_SECONDS)
+            lines = received.read_bytes().splitlines()
+            assert len(lines) == 3, len(lines)
+            packet = json.loads(lines[0])
+            assert set(packet) == {'dispatch_id', 'contract_digest', 'domain', 'repository'}, sorted(packet)
+            values = (b'access-value-147', b'mcp-value-147', b'refresh-value-147')
+            assert not any(value in lines[0] for value in values), 'a credential value is in the packet'
+            login, secrets = json.loads(lines[1]), json.loads(lines[2])
+            assert login['schema'] == L.SCHEMA and login['dispatch'] == contract['dispatch_id'] and login['account'] == 'account'
+            assert b'access-value-147' in lines[1] and b'refresh' not in lines[1] and b'mcp-value-147' not in lines[1]
+            assert secrets['schema'] == L.SECRETS_SCHEMA and secrets['credentials'] == ['tracker-token']
+            assert secrets['dispatch'] == contract['dispatch_id'] and set(secrets['files']) == {L.SECRETS_FILE}
+            entry = json.loads(secrets['files'][L.SECRETS_FILE])['mcpServers']['tracker']
+            assert entry['headers'] == {'Authorization': 'Bearer mcp-value-147'} and b'access-value-147' not in lines[2]
+            report = started.delivered
+            assert report['credentials'] == ['tracker-token'] and report['account'] == 'account'
+            assert report['login_frame'] and report['secrets_frame']
+            assert [route['route'] for route in report['routes']] == ['private_file']
+            kept = json.dumps([report, contract, f.ds.record(contract['dispatch_id'])]).encode()
+            f.conn.commit()
+            kept += b''.join(path.read_bytes() for path in sorted(f.store.parent.glob(f.store.name + '*')))
+            assert not any(value in kept for value in values), 'a credential value was kept on the main node'
+        finally:
+            f.close()
+
+    def relay_refusal(base):
+        # A login that cannot be delivered refuses the dispatch by name and contacts no receiver.
+        T, f, launch = relay_fixture(base)
+        try:
+            contract = f.prepare(required=['macos'], engine='claude_code')['contract']
+            launch.ACC.read = lambda conn, account: None
+            received, receiver = sink(base)
+            refused_launch = launch.invoke_remote(receiver, contract, f.ds)
+            assert refused_launch.result == 'refused' and refused_launch.child is None
+            assert refused_launch.record['refusal'] == 'missing_authority:account', refused_launch.record['refusal']
+            assert not received.exists()
+        finally:
+            f.close()
+
+    def mac_delivery(base):
+        # The Mac receiver's side: frames checked before a disk is made, the secrets file 0600 in a 0700
+        # directory on the mounted login only, and nothing left after close.
+        login, _ = L.frame('claude_code', claude(base), 'd-147', 'acct-test', now=now)
+        secrets = L.secrets_frame('d-147', 'acct-test', {'tracker': {'type': 'http', 'url': 'https://tracker.invalid/mcp',
+                                  'headers': {'Authorization': 'Bearer mcp-value-147'}}}, {'tracker-token'})
+        target = base / 'login'
+        for lines, arguments, code in (
+                (None, ('d-147', 'acct-test', 'claude_code'), 'missing_evidence:login_frame'),
+                ([secrets], ('d-147', 'acct-test', 'claude_code'), 'missing_evidence:login_frame'),
+                ([login], ('d-other', 'acct-test', 'claude_code'), 'binding_mismatch:login_frame'),
+                ([login], ('d-147', 'acct-other', 'claude_code'), 'binding_mismatch:login_frame'),
+                ([login], ('d-147', 'acct-test', 'codex'), 'binding_mismatch:login_frame'),
+                ([login, L.secrets_frame('d-other', 'acct-test', {}, [])], ('d-147', 'acct-test', 'claude_code'),
+                 'binding_mismatch:secrets_frame'),
+                ([login, login], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame'),
+                ([login, secrets, secrets], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame'),
+                ([login, b'{"schema": "other"}'], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame'),
+                ([login, b'x' * (L.MAX_FRAME + 1)], ('d-147', 'acct-test', 'claude_code'), 'invalid_input:frame_size')):
+            refused(lambda: L.Delivery(lines, target, *arguments), code)
+        assert not target.exists()
+        delivery = L.Delivery([login.decode(), secrets.decode()], target, 'd-147', 'acct-test', 'claude_code')
+        mounted = []
+
+        def fake_open(directory, stream):
+            # Linux has no hdiutil: the mount is a plain directory here; the real one is the Mac run's evidence.
+            assert json.loads(stream.read())['files']
+            (Path(directory) / 'profile').mkdir(parents=True, mode=0o700)
+            mounted.append(Path(directory) / 'profile')
+            return dict(status='open')
+
+        def fake_close(directory):
+            import shutil
+            shutil.rmtree(directory)
+            mounted.clear()
+            return dict(status='closed')
+        real = L.open_profile, L.close_profile, L._mounted
+        L.open_profile, L.close_profile, L._mounted = fake_open, fake_close, lambda path: Path(path) in [m.resolve() for m in mounted]
+        try:
+            refused(lambda: L.write_secrets(target, secrets), 'unavailable_service:ram_disk_mount')
+            assert delivery.open() == str(target / 'profile')
+            assert not (target / 'profile' / L.SECRETS_DIRECTORY).exists(), 'the secrets file was written before acceptance'
+            delivery.secrets()
+            written = delivery.report['secrets']
+            assert written['file_mode'] == '0o600' and written['directory_mode'] == '0o700'
+            assert written['credentials'] == ['tracker-token'] and 'mcp-value-147' not in json.dumps(delivery.report)
+            text = (target / 'profile' / L.SECRETS_DIRECTORY / L.SECRETS_FILE).read_text()
+            assert json.loads(text)['mcpServers']['tracker']['headers']['Authorization'] == 'Bearer mcp-value-147'
+            assert delivery.close() == dict(status='closed') and not target.exists()
+            assert delivery.close() == dict(status='closed')  # a second close finds nothing and changes nothing
+        finally:
+            L.open_profile, L.close_profile, L._mounted = real
+
+    for name, test in {'AC4/mac-no-value-in-packet': relay_frames, 'AC4/relay-login-refused-by-name': relay_refusal,
+                       'AC4/mac-delivery-checked-and-removed': mac_delivery,
+                       'AC4/claude-frame-access-only': claude_frame, 'AC1/claude-frame-refusals': claude_refusals,
                        'AC2/codex-frame-access-only': codex_frame, 'AC4/mac-frame-refusals': mac_side_refusals,
                        'AC1/mac-unexpected-launch': unexpected_launch, 'AC2/mac-paid-api-stop': paid_api_stop}.items():
         with tempfile.TemporaryDirectory(prefix='v147-login-') as directory:

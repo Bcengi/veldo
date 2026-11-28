@@ -20,6 +20,9 @@ footprint:
   - "engine/.veldo/control_launch*.py"
   - ".veldo/control_launch*.py"
   - "packs/*/.veldo/control_launch*.py"
+  - "engine/.veldo/control_worker*.py"
+  - ".veldo/control_worker*.py"
+  - "packs/*/.veldo/control_worker*.py"
   - "engine/.veldo/control_engine*.py"
   - ".veldo/control_engine*.py"
   - "packs/*/.veldo/control_engine*.py"
@@ -176,6 +179,10 @@ requirement. The Linux specifications keep their own evidence; this one records 
 negative controls. It is built after VELDO-0124 and VELDO-0125 in stage 3 of the design's critical path.
 
 ## History
+
+2026-11-27: round 4 (owner brief). The footprint gains `control_worker*.py`: the Mac receiver of VELDO-0125
+is where the login and secrets frames are read, so the wiring the owner ordered cannot be made outside it.
+The frames follow the prepared binding on the receiver's own SSH channel; no criterion text changed.
 
 2026-11-26: round 2 (owner Telegram 43735). Lead decision: the main node delivers the dispatch's login to the
 Mac for the run only, on a RAM disk, never the keychain. One real Claude run on the Mac passed its own checks; the Codex
