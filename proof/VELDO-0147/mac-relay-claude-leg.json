@@ -1,0 +1,274 @@
+{
+ "account": "the dispatch account (name withheld)",
+ "authority": {
+  "host": null,
+  "reason": null,
+  "refusal": null,
+  "state": "exited"
+ },
+ "clean": {
+  "cleaned": true,
+  "ram_disks_now": 0
+ },
+ "commit": "d5dea20cfb0ed2483e95250713c6eb34dde45abd",
+ "engine": "claude_code",
+ "engine_events": {
+  "assistant": 4,
+  "rate_limit_event": 1,
+  "result/success": 1,
+  "stream_event": 67,
+  "system/init": 1,
+  "system/status": 3,
+  "user": 3
+ },
+ "engine_init": {
+  "api_key_source": "none",
+  "mcp_servers": [],
+  "tools": [
+   "Bash",
+   "Edit",
+   "Read"
+  ],
+  "version": "2.1.317"
+ },
+ "engine_out_sha256": "6947c477f60e57554e26cf822af183fab4a79f15bf00c6c6d079db7464ac1050",
+ "engine_result": {
+  "is_error": false,
+  "subtype": "success",
+  "turns": 4
+ },
+ "invoke": {
+  "delivered": {
+   "account": "account",
+   "credentials": [
+    "tracker-token"
+   ],
+   "dispatch_id": "dispatch/mac147/r4-claude-20261127220315",
+   "event": "remote_frames",
+   "login_frame": true,
+   "metrics": {
+    "credential_unavailable": {},
+    "credentials_resolved": 1,
+    "launch_with_credentials": 1
+   },
+   "routes": [
+    {
+     "credential": "tracker-token",
+     "field": "headers",
+     "name": "Authorization",
+     "route": "private_file",
+     "server": "tracker"
+    }
+   ],
+   "secrets_frame": true,
+   "servers": [
+    {
+     "id": "tracker",
+     "revision": 1
+    }
+   ]
+  },
+  "refusal": null,
+  "result": "pending"
+ },
+ "lease_flock_held": true,
+ "mac": {
+  "binary_digest": "sha256:09f153b46b5df9e8b3454716d682a91901de020cbca630f61dec1a015b32b5e9",
+  "os_version": "26.5.1",
+  "platform": "darwin"
+ },
+ "mac_summary": {
+  "delivery": {
+   "base_absent": true,
+   "close": null,
+   "login": {
+    "account": "account",
+    "base_mode": "0o700",
+    "device": "/dev/disk12",
+    "dispatch": "dispatch/mac147/r4-claude-20261127220315",
+    "engine": "claude_code",
+    "files": {
+     ".credentials.json": 370
+    },
+    "profile_mode": "0o700",
+    "ram_disk": true,
+    "status": "open"
+   },
+   "order": [
+    "login_open",
+    "secrets_after_acceptance",
+    "close"
+   ],
+   "ram_disks_after": 0,
+   "ram_disks_open": 1,
+   "secrets": {
+    "credentials": [
+     "tracker-token"
+    ],
+    "directory_mode": "0o700",
+    "file": "secrets/mcp.json",
+    "file_mode": "0o600",
+    "size": 172,
+    "status": "written"
+   }
+  },
+  "engine": "claude_code",
+  "engine_err_bytes": 0,
+  "engine_out": {
+   "bytes": 35445,
+   "lines": 80,
+   "sha256": "6947c477f60e57554e26cf822af183fab4a79f15bf00c6c6d079db7464ac1050"
+  },
+  "file_edited": true,
+  "keychain_unchanged": true,
+  "login_bases_now": 0,
+  "observation": {
+   "cleanup": {
+    "cleaned": true,
+    "clone_removed": true,
+    "terminated": true
+   },
+   "state": "exited",
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 35445,
+    "output_digest": "sha256:6947c477f60e57554e26cf822af183fab4a79f15bf00c6c6d079db7464ac1050",
+    "returncode": 0,
+    "signal": null
+   },
+   "usage": {
+    "messages": 4,
+    "tokens": 19424
+   }
+  },
+  "ram_disks_now": 0,
+  "readback": {
+   "argv_flags": [
+    "--print",
+    "--output-format",
+    "--verbose",
+    "--setting-sources=",
+    "--strict-mcp-config",
+    "--disable-slash-commands",
+    "--mcp-config",
+    "--settings",
+    "--include-partial-messages",
+    "--tools=Bash,Edit,Read",
+    "--allowedTools=Bash,Edit,Read",
+    "--model"
+   ],
+   "binary_digest": "sha256:09f153b46b5df9e8b3454716d682a91901de020cbca630f61dec1a015b32b5e9",
+   "login_is_delivered_ram_disk": true,
+   "login_variable": "CLAUDE_CONFIG_DIR",
+   "names": [
+    "CLAUDE_CODE_TMPDIR",
+    "CLAUDE_CONFIG_DIR",
+    "HOME",
+    "PATH",
+    "TEMP",
+    "TMP",
+    "TMPDIR",
+    "VELDO_DISPATCH_ACCEPTANCE",
+    "VELDO_DISPATCH_ID"
+   ],
+   "other_login_variables": [],
+   "paid_present": [],
+   "policy_denies_keychain": true
+  },
+  "run_files": [
+   "deliverables.tar",
+   "delivery-complete.json",
+   "result-evidence.json",
+   "result-request.json",
+   "result-request.json.ack",
+   "retirement-request.json",
+   "run-context.json"
+  ],
+  "slot": "retired"
+ },
+ "qualification": false,
+ "run": "r4-claude-20261127220315",
+ "scan": {
+  "credential_values": 2,
+  "files": {
+   "config.json": {
+    "bytes": 4377,
+    "values_found": 0
+   },
+   "deliverables-engine.out": {
+    "bytes": 35445,
+    "values_found": 0
+   },
+   "delivery-complete.json": {
+    "bytes": 11119,
+    "values_found": 0
+   },
+   "delivery.json": {
+    "bytes": 558,
+    "values_found": 0
+   },
+   "engine.err": {
+    "bytes": 0,
+    "values_found": 0
+   },
+   "engine.out": {
+    "bytes": 35445,
+    "values_found": 0
+   },
+   "go": {
+    "bytes": 127,
+    "values_found": 0
+   },
+   "request.json": {
+    "bytes": 9364,
+    "values_found": 0
+   },
+   "result-evidence.json": {
+    "bytes": 1238,
+    "values_found": 0
+   },
+   "result-request.json": {
+    "bytes": 2531,
+    "values_found": 0
+   },
+   "result-request.json.ack": {
+    "bytes": 10878,
+    "values_found": 0
+   },
+   "run-context.json": {
+    "bytes": 235,
+    "values_found": 0
+   },
+   "slot.json": {
+    "bytes": 11515,
+    "values_found": 0
+   }
+  },
+  "main_node_kept_values_found": 0,
+  "packet_keys": [
+   "contract_digest",
+   "dispatch_id",
+   "domain",
+   "repository"
+  ]
+ },
+ "schema": "veldo.macos_relay_run/v1",
+ "spec": "VELDO-0147",
+ "worker_record": {
+  "charge": "reported",
+  "host_is_mac": true,
+  "operations": [
+   "worker_claim",
+   "worker_launch",
+   "worker_launch",
+   "worker_result",
+   "worker_retired"
+  ],
+  "returncode": 0,
+  "state": "exited",
+  "usage": {
+   "messages": 4,
+   "tokens": 19424
+  }
+ }
+}

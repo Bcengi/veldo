@@ -1,0 +1,233 @@
+{
+ "account": "the dispatch account (name withheld)",
+ "authority": {
+  "host": null,
+  "reason": null,
+  "refusal": null,
+  "state": "exited"
+ },
+ "clean": {
+  "cleaned": true,
+  "ram_disks_now": 0
+ },
+ "commit": "7be395a9d405abd5673af148e1b7e00205abd0f7",
+ "engine": "codex",
+ "engine_errors": [
+  "Reconnecting... 2/5 (workspace routing discovery failed)",
+  "Reconnecting... 3/5 (workspace routing discovery failed)",
+  "Reconnecting... 4/5 (workspace routing discovery failed)",
+  "Reconnecting... 5/5 (workspace routing discovery failed)"
+ ],
+ "engine_events": {
+  "error": 10,
+  "item.completed": 1,
+  "thread.started": 1,
+  "turn.failed": 1,
+  "turn.started": 1
+ },
+ "engine_out_sha256": "850cf92e203e7f27e6fd8ddd0b54d22d2c5d0bc974b15317d4df0cf249f7f9f7",
+ "invoke": {
+  "delivered": {
+   "account": "account",
+   "credentials": [],
+   "dispatch_id": "dispatch/mac147/r4-codex-20261127220529",
+   "event": "remote_frames",
+   "login_frame": true,
+   "metrics": {
+    "credential_unavailable": {},
+    "credentials_resolved": 0,
+    "launch_with_credentials": 0
+   },
+   "routes": [],
+   "secrets_frame": false,
+   "servers": []
+  },
+  "refusal": null,
+  "result": "pending"
+ },
+ "lease_flock_held": true,
+ "mac": {
+  "binary_digest": "sha256:39acf979729dd290f9a24ee38b2914e036c91b65952872e28ae2a6b88a7db7c1",
+  "os_version": "26.5.1",
+  "platform": "darwin"
+ },
+ "mac_summary": {
+  "delivery": {
+   "base_absent": true,
+   "close": null,
+   "login": {
+    "account": "account",
+    "base_mode": "0o700",
+    "device": "/dev/disk12",
+    "dispatch": "dispatch/mac147/r4-codex-20261127220529",
+    "engine": "codex",
+    "files": {
+     "auth.json": 3723
+    },
+    "profile_mode": "0o700",
+    "ram_disk": true,
+    "status": "open"
+   },
+   "order": [
+    "login_open",
+    "secrets_after_acceptance",
+    "close"
+   ],
+   "ram_disks_after": 0,
+   "ram_disks_open": 1,
+   "secrets": null
+  },
+  "engine": "codex",
+  "engine_err_bytes": 607,
+  "engine_out": {
+   "bytes": 1179,
+   "lines": 14,
+   "sha256": "850cf92e203e7f27e6fd8ddd0b54d22d2c5d0bc974b15317d4df0cf249f7f9f7"
+  },
+  "file_edited": false,
+  "keychain_unchanged": true,
+  "login_bases_now": 0,
+  "observation": {
+   "cleanup": {
+    "cleaned": true,
+    "clone_removed": true,
+    "terminated": true
+   },
+   "state": "exited",
+   "termination": {
+    "deadline_stop": false,
+    "output_bytes": 1179,
+    "output_digest": "sha256:850cf92e203e7f27e6fd8ddd0b54d22d2c5d0bc974b15317d4df0cf249f7f9f7",
+    "returncode": 1,
+    "signal": null
+   },
+   "usage": null
+  },
+  "ram_disks_now": 0,
+  "readback": {
+   "argv_flags": [
+    "--json",
+    "-c",
+    "--ignore-user-config",
+    "--ignore-rules",
+    "--disable",
+    "-c",
+    "-c",
+    "-c",
+    "-c",
+    "-c",
+    "--skip-git-repo-check",
+    "--sandbox"
+   ],
+   "binary_digest": "sha256:39acf979729dd290f9a24ee38b2914e036c91b65952872e28ae2a6b88a7db7c1",
+   "login_is_delivered_ram_disk": true,
+   "login_variable": "CODEX_HOME",
+   "names": [
+    "CLAUDE_CODE_TMPDIR",
+    "CODEX_HOME",
+    "HOME",
+    "PATH",
+    "TEMP",
+    "TMP",
+    "TMPDIR",
+    "VELDO_DISPATCH_ACCEPTANCE",
+    "VELDO_DISPATCH_ID"
+   ],
+   "other_login_variables": [],
+   "paid_present": [],
+   "policy_denies_keychain": true
+  },
+  "run_files": [
+   "deliverables.tar",
+   "delivery-complete.json",
+   "result-evidence.json",
+   "result-request.json",
+   "result-request.json.ack",
+   "retirement-request.json",
+   "run-context.json"
+  ],
+  "slot": "retired"
+ },
+ "qualification": false,
+ "run": "r4-codex-20261127220529",
+ "scan": {
+  "credential_values": 2,
+  "files": {
+   "config.json": {
+    "bytes": 3733,
+    "values_found": 0
+   },
+   "deliverables-engine.out": {
+    "bytes": 1179,
+    "values_found": 0
+   },
+   "delivery-complete.json": {
+    "bytes": 11068,
+    "values_found": 0
+   },
+   "delivery.json": {
+    "bytes": 403,
+    "values_found": 0
+   },
+   "engine.err": {
+    "bytes": 607,
+    "values_found": 0
+   },
+   "engine.out": {
+    "bytes": 1179,
+    "values_found": 0
+   },
+   "go": {
+    "bytes": 127,
+    "values_found": 0
+   },
+   "request.json": {
+    "bytes": 8714,
+    "values_found": 0
+   },
+   "result-evidence.json": {
+    "bytes": 1207,
+    "values_found": 0
+   },
+   "result-request.json": {
+    "bytes": 2500,
+    "values_found": 0
+   },
+   "result-request.json.ack": {
+    "bytes": 10827,
+    "values_found": 0
+   },
+   "run-context.json": {
+    "bytes": 228,
+    "values_found": 0
+   },
+   "slot.json": {
+    "bytes": 11464,
+    "values_found": 0
+   }
+  },
+  "main_node_kept_values_found": 0,
+  "packet_keys": [
+   "contract_digest",
+   "dispatch_id",
+   "domain",
+   "repository"
+  ]
+ },
+ "schema": "veldo.macos_relay_run/v1",
+ "spec": "VELDO-0147",
+ "worker_record": {
+  "charge": "unknown",
+  "host_is_mac": true,
+  "operations": [
+   "worker_claim",
+   "worker_launch",
+   "worker_launch",
+   "worker_result",
+   "worker_retired"
+  ],
+  "returncode": 1,
+  "state": "exited",
+  "usage": null
+ }
+}
