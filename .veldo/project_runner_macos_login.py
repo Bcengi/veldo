@@ -73,6 +73,9 @@ def _codex(profile, now):
         raise Refused('unsupported_configuration:no_subscription_login')
     kept = {k: tokens[k] for k in ('id_token', 'access_token', 'account_id') if k in tokens}
     values = [v for k, v in sorted(kept.items()) if k != 'account_id' and isinstance(v, str)]
+    # Codex 0.166.0 refuses a login file without this field ("missing field `refresh_token`", seen on the
+    # real Mac). It is sent empty: the Mac can use the access credential but can never rotate the login.
+    kept['refresh_token'] = ''
     out = {k: document[k] for k in document if k not in ('tokens', 'OPENAI_API_KEY')}
     out.update(OPENAI_API_KEY=None, tokens=kept)
     return {'auth.json': json.dumps(out)}, values

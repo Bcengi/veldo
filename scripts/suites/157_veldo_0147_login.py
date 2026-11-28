@@ -48,7 +48,9 @@ def _v147_login():
                     tokens=dict(id_token='id-147', access_token='acc-147', refresh_token='ref-147', account_id='x'))
         Path(base, 'auth.json').write_text(json.dumps(auth))
         body, values = L.frame('codex', base, 'd', 'codex-test', now=now)
-        assert b'ref-147' not in body and b'refresh_token' not in body and sorted(values) == ['acc-147', 'id-147']
+        assert b'ref-147' not in body and sorted(values) == ['acc-147', 'id-147']
+        # The field the pinned binary requires is present and empty: nothing on the Mac can rotate the login.
+        assert json.loads(json.loads(body)['files']['auth.json'])['tokens']['refresh_token'] == ''
         Path(base, 'auth.json').write_text(json.dumps(dict(auth, OPENAI_API_KEY='sk-147')))
         refused(lambda: L.frame('codex', base, 'd', 'a', now=now), 'unsupported_configuration:no_subscription_login')
 
