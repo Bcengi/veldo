@@ -12,7 +12,7 @@ VELDO-0124 and VELDO-0125 native probes.
 
 The account's lease must be held for the whole Mac run (scripts/account_lease.sh flock) by this run's
 holder. The account record is supplied by this driver, not read from an account store. No MCP server is
-selected: no outside-service credential is delivered into a run (VELDO-0254).
+selected: a remote run that selects one is refused by name.
 
 Usage: python3 relay_leg.py <claude_code|codex> <ssh target> <out dir>
 """
@@ -55,13 +55,13 @@ def main(engine, target, out):
         account_dir = Path(os.environ.get('CLAUDE_ACCOUNTS_ROOT') or Path(os.environ['CLAUDE_CONFIG_DIR']).parent) / account_name
     else:
         account_name, account_dir = 'codex1', Path.home() / '.codex'
-    run = 'r6-%s-%s' % (engine.split('_')[0], time.strftime('%Y%m%d%H%M%S'))
+    run = 'r8-%s-%s' % (engine.split('_')[0], time.strftime('%Y%m%d%H%M%S'))
     record = dict(schema='veldo.macos_relay_run/v1', spec='VELDO-0147', engine=engine, account=account_name,
                   run=run, qualification=False, lease_flock_held=lease_held(account_dir))
     if not record['lease_flock_held']:
         record['refusal'] = 'unavailable_service:account_lease_not_held'
         return record
-    remote_root = 'veldo-mac-runs/veldo-0147-r6/' + run
+    remote_root = 'veldo-mac-runs/veldo-0147-r8/' + run
     remote = 'cd %s && %s proof/VELDO-0147/relay_leg_remote.py' % (remote_root, PY)
 
     def ssh(command, data=None):

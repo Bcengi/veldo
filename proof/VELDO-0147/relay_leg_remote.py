@@ -216,7 +216,8 @@ def summary(engine):
             out['observation'] = dict(state=kept['observation'].get('state'),
                                       termination=kept['observation'].get('termination'),
                                       cleanup=kept['observation'].get('cleanup'), usage=kept.get('usage'),
-                                      streams=kept['observation'].get('streams'))
+                                      streams=kept['observation'].get('streams'),
+                                      login=kept['observation'].get('login'))
         archive = run / 'deliverables.tar'
         if archive.exists():
             with tarfile.open(archive) as tar:

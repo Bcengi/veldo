@@ -18887,7 +18887,11 @@ def cases():
         ['AC2/mac-paid-api-stop'])
     # AC2: stop pointing the Mac Codex run at the system root file; the root-certificates row must fail.
     add(147, 'mac147-codex-roots-unset', '157_veldo_0147_login.py', 'project_runner_macos_control.py',
-        "        environment.setdefault('SSL_CERT_FILE', SYSTEM_ROOTS)\n", '        pass  # defect\n',
+        "        environment['SSL_CERT_FILE'] = SYSTEM_ROOTS\n", '        pass  # defect\n',
+        ['AC2/mac-codex-root-certificates'])
+    # Review finding 9: let the capability configuration name the roots a Mac run trusts; the same row must fail.
+    add(147, 'mac147-configured-roots-accepted', '157_veldo_0147_login.py', 'project_runner_macos_control.py',
+        "ROOT_VARIABLES = ('SSL_CERT_FILE', 'SSL_CERT_DIR')\n", 'ROOT_VARIABLES = ()  # defect\n',
         ['AC2/mac-codex-root-certificates'])
     # AC4: put a credential value in the packet sent to the Mac; the Mac no-value-in-packet row must fail.
     # Since round 6 no outside-service credential is sent at all, so the value planted is the login's.
@@ -18898,10 +18902,21 @@ def cases():
         "        launch.child.stdin.write(json.dumps(request).encode() + b'\\n')\n"
         "        for frame in frames[:0]:\n",
         ['AC4/mac-no-value-in-packet'])
-    # AC4: let a Mac run that selects a server needing a credential through; the same row must fail.
-    add(147, 'mac147-credentialed-server-not-refused', '157_veldo_0147_login.py', 'control_launch.py',
-        "            raise DL.Undeliverable('unsupported_configuration:credential_in_run:' + server, None, OUTSIDE_GATE_REASON)\n",
-        "            pass  # defect\n", ['AC4/mac-no-value-in-packet'])
+    # Review findings 2 and 3: let a remote run that selects an MCP server through, and check the selection
+    # only for a receiver the login is delivered to; the remote MCP row must fail for each.
+    add(147, 'mac147-mcp-selection-not-refused', '157_veldo_0147_login.py', 'control_launch.py',
+        "        raise DL.Undeliverable('unsupported_configuration:mcp_on_remote:' + str(server), None, REMOTE_MCP_REASON)\n",
+        "        pass  # defect\n", ['AC4/remote-mcp-selection-refused'])
+    add(147, 'mac147-mcp-refusal-behind-login-gate', '157_veldo_0147_login.py', 'control_launch.py',
+        "    for server, _revision in DL.selections(contract['capability']['configuration']):\n"
+        "        raise DL.Undeliverable('unsupported_configuration:mcp_on_remote:' + str(server), None, REMOTE_MCP_REASON)\n"
+        "    if not isinstance(receiver, dict) or receiver.get('login') != 'delivered':\n"
+        "        return [], None, []\n",
+        "    if not isinstance(receiver, dict) or receiver.get('login') != 'delivered':\n"
+        "        return [], None, []\n"
+        "    for server, _revision in DL.selections(contract['capability']['configuration']):  # defect: after the gate\n"
+        "        raise DL.Undeliverable('unsupported_configuration:mcp_on_remote:' + str(server), None, REMOTE_MCP_REASON)\n",
+        ['AC4/remote-mcp-selection-refused'])
     # AC3, the spec's falsifier: drop the Mac run's error stream at the relay; the Mac complete-record check
     # must fail.
     add(147, 'mac147-drop-error-stream', '157_veldo_0147_login.py', 'control_worker.py',
@@ -18914,6 +18929,44 @@ def cases():
         "    if not isinstance(kept, dict) or not isinstance(signed, dict) or kept.get('streams') != signed:\n"
         "        return REMOTE_INCOMPLETE\n", '',
         ['AC3/mac-altered-chunk-refused', 'AC3/mac-resumed-run-record-refused'])
+    # Review finding 10: serve a record whose receiver never read the end frame; its row must fail.
+    add(147, 'mac147-end-frame-not-required', '157_veldo_0147_login.py', 'control_execution_record.py',
+        "    if kept.get('ended') is not True:\n        return REMOTE_INCOMPLETE\n", '',
+        ['AC3/mac-missing-end-frame-refused'])
+    # Review finding 1: end a remote run whose result names no stream totals with no commitment at all, so
+    # the API's read skips every comparison; the unsigned-streams row must fail.
+    add(147, 'mac147-unsigned-streams-uncommitted', '157_veldo_0147_login.py', 'control_worker_service.py',
+        "                            execution_record={'streams': streams})\n",
+        "                            execution_record={'streams': streams} if streams is not None else None)  # defect\n",
+        ['AC3/mac-unsigned-streams-refused'])
+    # Review finding 4: retire the slot with the delivered login still on the Mac; its row must fail.
+    add(147, 'mac147-left-login-retired', '157_veldo_0147_login.py', 'control_worker.py',
+        "            if organ('project_runner_macos_login').close_profile(login).get('status') != 'closed':\n"
+        "                raise OUT.WaitingForRelease('login_left_behind')\n",
+        "            organ('project_runner_macos_login').close_profile(login)  # defect: the result is ignored\n",
+        ['AC4/mac-login-left-behind-holds-release'])
+    # Review finding 8: keep writing to a channel whose sender is still inside a write; its row must fail.
+    add(147, 'mac147-stalled-relay-not-marked', '157_veldo_0147_login.py', 'control_worker.py',
+        "                self.broken = self.stalled = True\n", "                pass  # defect\n",
+        ['AC3/mac-stalled-channel-does-not-hold-the-result'])
+    # Review finding 5: send a Codex login without reading when it ends, and send every top-level field of
+    # the login file; the Codex frame row must fail for each.
+    add(147, 'mac147-codex-expiry-unchecked', '157_veldo_0147_login.py', 'project_runner_macos_login.py',
+        "    _outlives(_jwt_expiry(tokens['access_token']), ends)\n", '', ['AC2/codex-frame-access-only'])
+    add(147, 'mac147-codex-unknown-field-sent', '157_veldo_0147_login.py', 'project_runner_macos_login.py',
+        "    out = {k: document[k] for k in CODEX_FIELDS if isinstance(document.get(k), str)}\n",
+        "    out = {k: document[k] for k in document if k not in ('tokens', 'OPENAI_API_KEY')}  # defect\n",
+        ['AC2/codex-frame-access-only'])
+    # Review finding 6: accept a RAM disk whose device node keeps a group or other bit; the disk row must fail.
+    add(147, 'mac147-device-node-left-open', '157_veldo_0147_login.py', 'project_runner_macos_login.py',
+        "            if os.stat(node).st_mode & 0o077:\n                raise Refused('unavailable_service:ram_disk_private')\n",
+        '', ['AC4/mac-login-disk-private-and-own'])
+    # Review finding 7: detach the kept device name without checking what is mounted where; the same row must fail.
+    add(147, 'mac147-detach-unchecked-device', '157_veldo_0147_login.py', 'project_runner_macos_login.py',
+        "    ours = device.startswith('/dev/disk') and (\n"
+        "        device == attached or (mount.is_dir() and _mounted(mount.resolve()) == device))\n",
+        "    ours = device.startswith('/dev/disk')  # defect: the name alone\n",
+        ['AC4/mac-login-disk-private-and-own'])
 
     # VELDO-0210 AC6: a stop queued before child registration must be masked, then
     # kill the starting tree. Both controls and mutants run the complete confined suite.

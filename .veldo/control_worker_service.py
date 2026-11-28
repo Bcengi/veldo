@@ -443,12 +443,18 @@ class Service(SV.Service):
                 # result. The exit commits them and nothing else about the record: whoever reads the record
                 # kept on this node compares what was received with these (control_execution_record.read).
                 streams = observation.get('streams')
+                if 'streams' in observation and streams is None:
+                    # The Mac says it lost a chunk of the engine's output (its wrapper could not write one),
+                    # so it has no totals to sign. That is not an exit this node can keep a record for.
+                    raise SV.Refused('missing_evidence:streams')
                 if streams is not None and D._execution_record_problems({'streams': streams}):
                     raise SV.Refused('invalid_input:streams')
                 if record['state'] == 'running':
                     ds.exit(dispatch, record['contract_digest'], record['process'], termination, now=now,
                             artifact=dict(verdict='incomplete', complete=False, digest=D.digest(references)),
-                            execution_record={'streams': streams} if streams is not None else None)
+                            # A result that names no totals at all (a host whose wrapper does not count
+                            # them) commits {streams: None}: no reader is served that run's record.
+                            execution_record={'streams': streams})
                 elif record['state'] == 'accepted':
                     ds.unknown(dispatch, record['contract_digest'], 'remote_launch_evidence_missing', now=now,
                                expected_state='accepted')

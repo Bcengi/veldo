@@ -50,10 +50,14 @@ class Relay:
     execution record and checks its own totals against the ones the Mac signs in its result
     (the wrapper's, of what the engine printed), so a chunk lost or changed here is found there."""
     SECONDS = 0.5  # how often the file is read for new frames while the engine runs
+    # How long finish waits for the sender once the engine has ended. A channel that is stalled but not
+    # closed blocks the sender's write for as long as TCP takes to give up; the signed result and the
+    # removal of the login do not wait for that.
+    JOIN_SECONDS = 30
 
     def __init__(self, out):
         self.out, self.tally, self.thread = out, S.Tally(), None
-        self.done, self.broken = threading.Event(), False
+        self.done, self.broken, self.stalled = threading.Event(), False, False
 
     def send(self, data):
         if self.broken:
@@ -98,7 +102,11 @@ class Relay:
         """After the wrapper has ended: send what is left of the file, then the end frame, once."""
         if self.thread is not None:
             self.done.set()
-            self.thread.join()
+            self.thread.join(self.JOIN_SECONDS)
+            if self.thread.is_alive():
+                # The sender is still inside a write: nothing more goes down this channel, the end frame
+                # included, so the main node refuses the record as incomplete.
+                self.broken = self.stalled = True
             self.thread = None
             self.send(S.end(self.tally.totals()))
 
@@ -136,7 +144,8 @@ def collect_files(clone, scratch, started, engine):
     return engine_usage(started, engine), {'output': target.resolve().as_uri() + '#sha256=' + digest}
 
 
-def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=None, relay=None):
+def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=None, relay=None,
+        delivery=None):
     keys = {str(Path(p).resolve()) for p in host.profile.get('signing_keys', [])}
     if not client.signing_key or client.signing_key not in keys:
         raise C.P.Refused('missing_evidence:worker_signing_key_custody')
@@ -174,6 +183,11 @@ def run(client, host, dispatch, clone, scratch, account, *, collect=None, claim=
         if relay is not None:
             # The end frame leaves before the signed result; the main node needs neither to wait for the other.
             relay.finish()
+        if delivery is not None:
+            # VELDO-0147: the delivered login goes as soon as the engine has ended, before the result is
+            # signed, so the result says whether it went. One left behind keeps the release pending.
+            closed = delivery.close() or {}
+            observation = dict(observation, login=dict(status=closed.get('status'), detached=closed.get('detached')))
         usage, references = collect(started, observation) if collect else collect_files(clone, scratch, started, contract['capability']['adapter'])
         evidence = Path(clone).parent / 'result-evidence.json'
         client.outbox = Path(clone).parent / 'result-request.json'
@@ -212,8 +226,10 @@ def apply_release(client, host, binding, outcome):
     if outcome.get('host_released'):
         login = getattr(host, 'delivered_login', None)
         if login is not None and login.exists():
-            # VELDO-0147: a login a dead receiver left mounted goes before the slot is retired.
-            organ('project_runner_macos_login').close_profile(login)
+            # VELDO-0147: a login a dead receiver left mounted goes before the slot is retired. While the
+            # Mac cannot remove it the slot is not retired: the release stays pending and is tried again.
+            if organ('project_runner_macos_login').close_profile(login).get('status') != 'closed':
+                raise OUT.WaitingForRelease('login_left_behind')
         directory = Path(client.outbox).parent
         CL.durable_json(directory / 'retirement-request.json', dict(binding=binding, outcome=outcome))
         host.release_authority(binding['dispatch_id'], binding['contract_digest'], outcome)
@@ -433,9 +449,9 @@ def receive_locked(config, request):
     try:
         account = dict(account, profiles={host.os.facts()['host']: delivery.open()})
         return run(client, host, request['dispatch_id'], str(clone), str(scratch), account, claim=claim,
-                   relay=relay)
+                   relay=relay, delivery=delivery)
     finally:
-        delivery.close()
+        delivery.close()  # run closes it before it signs; this is for a run that ended before that
 
 
 def resume_pending(config, *, drain=False):
@@ -529,7 +545,8 @@ def main(config_path, resume=False, install=False):
                 frames = [line for line in (sys.stdin.readline(limit) for _ in range(3)) if line]
             # VELDO-0147 AC3: the run's output goes down this same channel, before the last line below.
             channel = getattr(sys.stdout, 'buffer', None)  # a receiver with no byte channel sends no output
-            result = receive(config, request, frames=frames, relay=Relay(channel) if channel is not None else None)
+            relay = Relay(channel) if channel is not None else None
+            result = receive(config, request, frames=frames, relay=relay)
         except Exception as error:
             if OUT.retryable(error):
                 raise
@@ -538,7 +555,8 @@ def main(config_path, resume=False, install=False):
             print(json.dumps(dict(state='parked', reason=str(error))), flush=True)
             return
         else:
-            print(json.dumps(dict(state=result['record']['state'] if result else 'delivery_pending')), flush=True)
+            if relay is None or not relay.stalled:  # a stalled channel would block this line too
+                print(json.dumps(dict(state=result['record']['state'] if result else 'delivery_pending')), flush=True)
         finally:
             # Schedule local orphans on every receiver outcome. Never deliver the
             # backlog on the incoming request's network path.

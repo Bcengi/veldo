@@ -176,9 +176,10 @@ def main(path):
             reader.join()
     result = dict(returncode=returncode, process=parent, dispatch_id=request['dispatch_id'],
                   deadline_stop=deadline_stop, remaining=remaining)
-    if kept == [True]:
-        # What the engine printed, by stream. Absent when a chunk could not be written: nothing is signed then.
-        result['streams'] = tally.totals()
+    if kept:
+        # What the engine printed, by stream. None when a chunk could not be written: the Mac then signs
+        # that it has no totals, and the main node refuses the result (missing_evidence:streams).
+        result['streams'] = tally.totals() if kept == [True] else None
     write(directory / 'result.json', result)
     return 0
 

@@ -3125,34 +3125,33 @@ class RemoteLaunch(Launch):
 
 
 def remote_frames(receiver, contract, conn, *, now=None):
-    """VELDO-0147: what follows the prepared binding on the channel of a receiver configured
-    `login: delivered` (a Mac that keeps no login): the login frame of the dispatch's own account, read from
-    this main node's profile of it. That is the engine's own sign-in and the only credential sent. No
-    outside-service credential is delivered into a run (VELDO-0254): a configuration that selects an MCP
-    server whose catalog revision names a credential is refused as
-    unsupported_configuration:credential_in_run:<server>, because that server's calls go through the outside
-    gate (VELDO-0257), and nothing is resolved or sent. Returns (frames, report, values): the report names
-    the account and servers, never a value; `values` are the login's exact values, for the run's record to
-    replace. A receiver without that setting gets no frame."""
+    """VELDO-0147: what follows the prepared binding on a remote receiver's channel. Returns (frames, report,
+    values): the report names the account, never a value; `values` are the login's exact values, for the
+    run's record to replace.
+
+    First, for every remote receiver whatever its settings: a configuration that selects an MCP server is
+    refused as unsupported_configuration:mcp_on_remote:<server>. The remote wrapper starts the engine with
+    the host profile's fixed arguments, so a selected server would be dropped there without a word, and one
+    that needs a credential could not get it (no outside-service credential is delivered into a run,
+    VELDO-0254). The catalog is not read and nothing is resolved or sent.
+
+    Then, for a receiver configured `login: delivered` (a Mac that keeps no login): the login frame of the
+    dispatch's own account, read from this main node's profile of it. That is the engine's own sign-in and
+    the only credential sent. A receiver without that setting gets no frame."""
+    for server, _revision in DL.selections(contract['capability']['configuration']):
+        raise DL.Undeliverable('unsupported_configuration:mcp_on_remote:' + str(server), None, REMOTE_MCP_REASON)
     if not isinstance(receiver, dict) or receiver.get('login') != 'delivered':
         return [], None, []
     ML = _organ('project_runner_macos_login')
     engine, dispatch, account = contract['capability']['adapter'], contract['dispatch_id'], contract['reservation']['account']
-    selected = DL.selections(contract['capability']['configuration'])
-    for server, revision in selected:
-        row = DL.MC.entity(conn, DL.MC.revision_id(contract['domain'], server, revision))
-        if row is None or row['kind'] != DL.MC.KIND or row['data'].get('id') != server:
-            raise DL.Undeliverable('missing_evidence:mcp_server:%s:%d' % (server, revision))
-        if any('reference' in item for field in ('environment', 'headers') for item in row['data'][field].values()):
-            raise DL.Undeliverable('unsupported_configuration:credential_in_run:' + server, None, OUTSIDE_GATE_REASON)
     profile = ACC.profile(ACC.read(conn, account), receiver.get('main_host') or socket.gethostname())[1]
-    frame, values = ML.frame(engine, profile, dispatch, account, now=now)
-    return [frame], dict(DL.report(dispatch, [], selected=selected), event='remote_frames', account=account,
+    frame, values = ML.frame(engine, profile, dispatch, account, now=now, deadline=contract.get('deadline'))
+    return [frame], dict(DL.report(dispatch, [], selected=[]), event='remote_frames', account=account,
                          login_frame=True), values
 
 
-# Why a Mac run that names a credentialed MCP server is refused (remote_frames), for the report.
-OUTSIDE_GATE_REASON = 'calls to this server go through the outside gate (VELDO-0257); no credential is delivered into a run'
+# Why a remote run that selects an MCP server is refused (remote_frames), for the report.
+REMOTE_MCP_REASON = 'a run on a remote host starts its engine with no MCP server; capability delivery does not exist there yet'
 
 
 def invoke_remote(receiver, contract, dispatches, *, clock=time.time):

@@ -337,11 +337,14 @@ def _artifact_problems(value):
 def _execution_record_problems(value):
     """Whether an exit's execution record binding is malformed: None (no record kept) or exactly {lines,
     bytes, digest}, the record's line count, byte count and SHA-256 (VELDO-0141), or, for a remote run,
-    exactly {streams: {stdout, stderr}}, each exactly {lines, bytes, sha256} (VELDO-0147)."""
+    exactly {streams: {stdout, stderr}}, each exactly {lines, bytes, sha256} (VELDO-0147), or {streams: None}
+    for a remote run whose host signed no totals: that record is refused to every reader by name."""
     if value is None:
         return False
     if isinstance(value, dict) and set(value) == {'streams'}:
         streams = value['streams']
+        if streams is None:
+            return False
         return (not isinstance(streams, dict) or set(streams) != set(REMOTE_STREAMS) or any(
             not isinstance(s, dict) or set(s) != set(REMOTE_STREAM_FIELDS) or not _count(s['lines'], 0)
             or not _count(s['bytes'], 0) or not isinstance(s['sha256'], str) or len(s['sha256']) != 64

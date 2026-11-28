@@ -12,7 +12,8 @@ Two halves, one file, so both ends agree on the frame:
     run's redaction set must replace. The frame carries an access credential only: the
     refresh credential stays on the main node, because a refresh on the Mac would rotate
     it and log the main node's own copy out (one login, one holder). A Mac run therefore
-    cannot outlive the access credential's expiry; frame() refuses one that would.
+    cannot outlive the access credential's expiry; frame() refuses, for both engines, a login
+    that expires less than MARGIN_SECONDS after the run's deadline.
   Mac: `python3 project_runner_macos_login.py open <base>` reads one frame from stdin and
     mounts it at <base>/profile; `close <base>` detaches the disk and removes <base>. Both
     print one JSON line of identifiers, file names and sizes, never a value.
@@ -28,8 +29,11 @@ macOS facts this relies on (recorded in proof/VELDO-0147): Claude Code on macOS 
 login from the keychain first and, when the keychain is unreachable (the run's Seatbelt
 profile denies the SecurityServer lookups), from <CLAUDE_CONFIG_DIR>/.credentials.json.
 An unprivileged user can attach and format a RAM disk; it mounts with noowners, so the
-0700 parent directory, not the volume's modes, is what keeps other users out.
+0700 parent directory, not the volume's modes, is what keeps other users out of the mounted
+files. The disk's two device nodes are another way to the same bytes: open_profile makes both
+readable by their owner only before anything is written, and refuses a disk it cannot make so.
 """
+import base64
 import io
 import json
 import os
@@ -42,7 +46,11 @@ SCHEMA = 'veldo.macos_login_frame/v1'
 MAX_FRAME = 256 * 1024
 DISK_SECTORS = 16384  # 8 MiB of RAM: a login profile is a few kilobytes.
 FILES = {'claude_code': ('.credentials.json',), 'codex': ('auth.json',)}
-MARGIN_SECONDS = 1800  # an access credential must outlive the run by this much
+MARGIN_SECONDS = 1800  # an access credential must outlive the run's deadline by this much
+# The top-level fields of a Codex login file that are sent besides the access credentials: named, so a
+# field a later Codex build adds is not sent until it is read and listed here.
+CODEX_FIELDS = ('auth_mode', 'last_refresh')
+EXPIRES = 'unavailable_service:login_expires_before_run'
 
 
 class Refused(Exception):
@@ -53,39 +61,59 @@ class Refused(Exception):
 
 # ---- main node -------------------------------------------------------------------------
 
-def _claude(profile, now):
+def _outlives(expiry, ends):
+    """Refuse a login whose access credential expires less than MARGIN_SECONDS after `ends`."""
+    if isinstance(expiry, bool) or not isinstance(expiry, (int, float)) or expiry - ends < MARGIN_SECONDS:
+        raise Refused(EXPIRES)
+
+
+def _jwt_expiry(token):
+    """The `exp` of an access credential that is a JWT, or None when it cannot be read."""
+    try:
+        payload = token.split('.')[1]
+        return json.loads(base64.urlsafe_b64decode(payload + '=' * (-len(payload) % 4))).get('exp')
+    except (AttributeError, IndexError, ValueError):
+        return None
+
+
+def _claude(profile, ends):
     document = json.loads(Path(profile, '.credentials.json').read_text())
     oauth = document.get('claudeAiOauth') or {}
     if not oauth.get('accessToken') or oauth.get('subscriptionType') in (None, ''):
         raise Refused('unsupported_configuration:no_subscription_login')
-    if oauth.get('expiresAt', 0) / 1000 - now < MARGIN_SECONDS:
-        raise Refused('unavailable_service:login_expires_before_run')
+    expiry = oauth.get('expiresAt')
+    _outlives(expiry / 1000 if isinstance(expiry, (int, float)) and not isinstance(expiry, bool) else None, ends)
     kept = {k: oauth[k] for k in ('accessToken', 'expiresAt', 'scopes', 'subscriptionType',
                                     'rateLimitTier') if k in oauth}
     return {'.credentials.json': json.dumps({'claudeAiOauth': kept})}, [oauth['accessToken']]
 
 
-def _codex(profile, now):
+def _codex(profile, ends):
     document = json.loads(Path(profile, 'auth.json').read_text())
     tokens = document.get('tokens') or {}
     if document.get('OPENAI_API_KEY') or not tokens.get('access_token'):
         raise Refused('unsupported_configuration:no_subscription_login')
+    # The Mac gets no refresh credential, so an access credential that ends during the run cannot be
+    # renewed there. One whose expiry cannot be read is refused the same way.
+    _outlives(_jwt_expiry(tokens['access_token']), ends)
     kept = {k: tokens[k] for k in ('id_token', 'access_token', 'account_id') if k in tokens}
     values = [v for k, v in sorted(kept.items()) if k != 'account_id' and isinstance(v, str)]
     # Codex 0.166.0 refuses a login file without this field ("missing field `refresh_token`", seen on the
     # real Mac). It is sent empty: the Mac can use the access credential but can never rotate the login.
     kept['refresh_token'] = ''
-    out = {k: document[k] for k in document if k not in ('tokens', 'OPENAI_API_KEY')}
+    out = {k: document[k] for k in CODEX_FIELDS if isinstance(document.get(k), str)}
     out.update(OPENAI_API_KEY=None, tokens=kept)
     return {'auth.json': json.dumps(out)}, values
 
 
-def frame(engine, profile, dispatch, account, now=None):
-    """(frame bytes, exact values to redact) for one Mac run of <engine> with <profile>."""
+def frame(engine, profile, dispatch, account, now=None, deadline=None):
+    """(frame bytes, exact values to redact) for one Mac run of <engine> with <profile>. `deadline` is the
+    run's own (the contract's, seconds since the epoch): the login must outlive it by MARGIN_SECONDS."""
     now = time.time() if now is None else now
     if engine not in FILES:
         raise Refused('unsupported_configuration:engine')
-    files, values = (_claude if engine == 'claude_code' else _codex)(profile, now)
+    ends = max(now, deadline) if isinstance(deadline, (int, float)) and not isinstance(deadline, bool) else now
+    files, values = (_claude if engine == 'claude_code' else _codex)(profile, ends)
     body = json.dumps(dict(schema=SCHEMA, engine=engine, dispatch=dispatch, account=account,
                            files=files), sort_keys=True).encode() + b'\n'
     if len(body) > MAX_FRAME:
@@ -100,9 +128,39 @@ def _run(argv):
 
 
 def _mounted(path):
+    """The device /sbin/mount shows mounted on `path`, or None."""
     listing = _run(['/sbin/mount']).stdout
-    return any(line.split(' on ', 1)[1].startswith(str(path) + ' (') for line in listing.splitlines()
-               if ' on ' in line)
+    for line in listing.splitlines():
+        device, found, rest = line.partition(' on ')
+        if found and rest.startswith(str(path) + ' ('):
+            return device
+    return None
+
+
+def _nodes(device):
+    """The block and the raw device node of one disk."""
+    return [device, device.replace('/dev/disk', '/dev/rdisk', 1)]
+
+
+def private_nodes(nodes):
+    """Make each device node of the login's RAM disk readable and writable by this user only, and return
+    the mode each was found with. macOS gives the nodes to the attaching user; any group or other bit lets
+    another local account read the raw volume, login included. Refused by name when a node is not this
+    user's or will not take the mode."""
+    found = {}
+    for node in nodes:
+        try:
+            before = os.stat(node)
+            found[os.path.basename(node)] = oct(before.st_mode & 0o777)
+            if before.st_uid != os.getuid():
+                raise Refused('unavailable_service:ram_disk_private')
+            if before.st_mode & 0o077:
+                os.chmod(node, 0o600)
+            if os.stat(node).st_mode & 0o077:
+                raise Refused('unavailable_service:ram_disk_private')
+        except OSError:
+            raise Refused('unavailable_service:ram_disk_private') from None
+    return found
 
 
 def open_profile(base, stream):
@@ -135,12 +193,17 @@ def open_profile(base, stream):
         raise Refused('unavailable_service:ram_disk')
     (base / 'device').write_text(device + '\n')
     try:
+        modes = dict(attached=private_nodes(_nodes(device)))
         if _run(['/sbin/newfs_hfs', '-v', 'VeldoLogin', device]).returncode != 0:
             raise Refused('unavailable_service:ram_disk_format')
         if _run(['/usr/sbin/diskutil', 'mount', '-mountPoint', str(mount), device]).returncode != 0:
             raise Refused('unavailable_service:ram_disk_mount')
-        if not _mounted(mount.resolve()):
+        if _mounted(mount.resolve()) != device:
             raise Refused('unavailable_service:ram_disk_mount')
+        # Again after the mount, in case mounting gave the nodes their first modes back; nothing of the
+        # login is on the disk before this.
+        modes['mounted'] = private_nodes(_nodes(device))
+        modes['final'] = {os.path.basename(node): oct(os.stat(node).st_mode & 0o777) for node in _nodes(device)}
         (mount / '.metadata_never_index').touch(mode=0o600)
         os.chmod(mount, 0o700)
         sizes = {}
@@ -150,25 +213,33 @@ def open_profile(base, stream):
                 out.write(text)
             sizes[name] = len(text.encode())
     except BaseException:
-        close_profile(base)
+        close_profile(base, attached=device)
         raise
     return dict(status='open', engine=engine, dispatch=document.get('dispatch'),
-                account=document.get('account'), device=device, ram_disk=True,
+                account=document.get('account'), device=device, ram_disk=True, device_modes=modes,
                 profile_mode=oct(os.stat(mount).st_mode & 0o777), base_mode=oct(os.stat(base).st_mode & 0o777),
                 files=sizes)
 
 
-def close_profile(base):
+def close_profile(base, attached=None):
+    """Detach the login's disk and remove <base>. The device name kept in <base>/device is only a name: after
+    a restart it can belong to another run's login disk or to a disk the owner attached. So a disk is
+    detached only when /sbin/mount shows that device on this base's own `profile` now, or when the caller
+    attached it in this same call (`attached`, open_profile's own failure before the mount). Otherwise only
+    the directories go."""
     base = Path(base)
     device = (base / 'device').read_text().strip() if (base / 'device').is_file() else ''
     mount = base / 'profile'
     detached = None
-    if device.startswith('/dev/disk'):
+    ours = device.startswith('/dev/disk') and (
+        device == attached or (mount.is_dir() and _mounted(mount.resolve()) == device))
+    if ours:
         detached = _run(['/usr/bin/hdiutil', 'detach', '-force', device]).returncode == 0
     # Files are written only after the disk is mounted, so the bare mount point is empty here.
-    if mount.is_dir() and not _mounted(mount.resolve()):
+    if mount.is_dir() and _mounted(mount.resolve()) is None:
         mount.rmdir()
-    if (base / 'device').exists():
+    # The name is kept while the disk is still mounted here, so a later close can detach it.
+    if not mount.exists() and (base / 'device').exists():
         (base / 'device').unlink()
     if base.is_dir() and not any(base.iterdir()):
         base.rmdir()

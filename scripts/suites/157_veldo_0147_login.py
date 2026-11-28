@@ -10,7 +10,9 @@ def _v147_login():
     from pathlib import Path
     import tempfile
 
-    spec = importlib.util.spec_from_file_location('v147_login', ROOT / 'engine/.veldo/project_runner_macos_login.py')
+    # The registered falsifiers of the login module replace this path with a defective copy.
+    login_module = ROOT / ".veldo" / "project_runner_macos_login.py"
+    spec = importlib.util.spec_from_file_location('v147_login', login_module)
     L = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(L)
     now = 1_900_000_000.0  # a fixed instant: frame() takes the clock as an argument
@@ -44,17 +46,114 @@ def _v147_login():
         refused(lambda: L.frame('claude_code', claude(base, subscriptionType=None), 'd', 'a', now=now),
                 'unsupported_configuration:no_subscription_login')
         refused(lambda: L.frame('gemini', claude(base), 'd', 'a', now=now), 'unsupported_configuration:engine')
+        # The login must outlive the run's own deadline by the margin, not only the next half hour.
+        refused(lambda: L.frame('claude_code', claude(base), 'd', 'a', now=now, deadline=now + 6000),
+                'unavailable_service:login_expires_before_run')
+        assert L.frame('claude_code', claude(base), 'd', 'a', now=now, deadline=now + 5000)[1] == ['access-value-147']
 
     def codex_frame(base):
-        auth = dict(OPENAI_API_KEY=None, last_refresh='2026-11-26T00:00:00Z',
-                    tokens=dict(id_token='id-147', access_token='acc-147', refresh_token='ref-147', account_id='x'))
-        Path(base, 'auth.json').write_text(json.dumps(auth))
+        import base64
+
+        def access(expires):
+            # An access credential shaped as Codex keeps it: a JWT whose payload carries `exp`.
+            payload = base64.urlsafe_b64encode(json.dumps(dict(exp=expires)).encode()).decode().rstrip('=')
+            return 'header147.' + payload + '.signature147'
+
+        def write(token, **top):
+            auth = dict(OPENAI_API_KEY=None, last_refresh='2026-11-26T00:00:00Z', auth_mode='chatgpt',
+                        tokens=dict(id_token='id-147', access_token=token, refresh_token='ref-147', account_id='x'))
+            auth.update(top)
+            Path(base, 'auth.json').write_text(json.dumps(auth))
+        good = access(now + 7200)
+        write(good, added_by_a_later_build='top-level-secret-147')
         body, values = L.frame('codex', base, 'd', 'codex-test', now=now)
-        assert b'ref-147' not in body and sorted(values) == ['acc-147', 'id-147']
+        assert b'ref-147' not in body and sorted(values) == sorted([good, 'id-147'])
+        sent = json.loads(json.loads(body)['files']['auth.json'])
         # The field the pinned binary requires is present and empty: nothing on the Mac can rotate the login.
-        assert json.loads(json.loads(body)['files']['auth.json'])['tokens']['refresh_token'] == ''
-        Path(base, 'auth.json').write_text(json.dumps(dict(auth, OPENAI_API_KEY='sk-147')))
+        assert sent['tokens']['refresh_token'] == ''
+        # Named top-level fields only: one a later build adds is not sent.
+        assert set(sent) == {'OPENAI_API_KEY', 'auth_mode', 'last_refresh', 'tokens'}, sorted(sent)
+        assert b'top-level-secret-147' not in body and sent['OPENAI_API_KEY'] is None
+        # An access credential that ends before the run could, or whose end cannot be read, is refused by name.
+        write(access(now + 60))
+        refused(lambda: L.frame('codex', base, 'd', 'a', now=now), 'unavailable_service:login_expires_before_run')
+        write(good)
+        refused(lambda: L.frame('codex', base, 'd', 'a', now=now, deadline=now + 6000),
+                'unavailable_service:login_expires_before_run')
+        assert L.frame('codex', base, 'd', 'a', now=now, deadline=now + 5000)[1]
+        write('not-a-jwt-147')
+        refused(lambda: L.frame('codex', base, 'd', 'a', now=now), 'unavailable_service:login_expires_before_run')
+        write(good, OPENAI_API_KEY='sk-147')
         refused(lambda: L.frame('codex', base, 'd', 'a', now=now), 'unsupported_configuration:no_subscription_login')
+
+    def login_disk(base):
+        # The Mac's disk steps over a recorded hdiutil, diskutil and mount (Linux has none; the real ones are
+        # the Mac run's evidence). The disk's device nodes end readable by their owner only before the login is
+        # written; a node that will not take that mode refuses the login; and close detaches a disk only when
+        # the mount table shows it on this base's own mount point.
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        import os
+        import shutil
+        mounts, calls, chmod = {}, [], os.chmod
+        nodes = [base / 'disk99', base / 'rdisk99']
+
+        def run(argv):
+            calls.append(argv[:2])
+            out = ''
+            if argv[:2] == ['/usr/bin/hdiutil', 'attach']:
+                out = '/dev/disk99          \n'
+                for node in nodes:
+                    node.write_bytes(b'')
+                    chmod(node, 0o640)  # as macOS could hand them out: group read
+            elif argv[0] == '/usr/sbin/diskutil':
+                mounts[str(Path(argv[3]).resolve())] = argv[4]
+            elif argv[0] == '/sbin/mount':
+                out = ''.join('%s on %s (hfs, local, nodev, nosuid, noowners)\n' % (d, m) for m, d in mounts.items())
+            elif argv[:2] == ['/usr/bin/hdiutil', 'detach']:
+                for place in [m for m, d in mounts.items() if d == argv[3]]:
+                    del mounts[place]
+                    for item in Path(place).iterdir():  # the volume's files go with the disk
+                        item.unlink()
+            return SimpleNamespace(returncode=0, stdout=out)
+        frame = io.BytesIO(L.frame('claude_code', claude(base), 'd-147', 'acct-test', now=now)[0])
+        with patch.object(L, '_run', run), patch.object(L, '_nodes', lambda device: [str(node) for node in nodes]):
+            target = base / 'login'
+            report = L.open_profile(target, frame)
+            assert report['device_modes']['attached'] == {'disk99': '0o640', 'rdisk99': '0o640'}, report['device_modes']
+            assert report['device_modes']['final'] == {'disk99': '0o600', 'rdisk99': '0o600'}, report['device_modes']
+            assert all(node.stat().st_mode & 0o777 == 0o600 for node in nodes)
+            assert (target / 'profile' / '.credentials.json').stat().st_mode & 0o777 == 0o600
+            closed = L.close_profile(target)
+            assert closed['status'] == 'closed' and closed['detached'] is True and not target.exists(), closed
+            assert calls.count(['/usr/bin/hdiutil', 'detach']) == 1
+            # A base left from before a restart: its kept name now belongs to a disk mounted somewhere else.
+            stale, other = base / 'stale', base / 'another-run'
+            (stale / 'profile').mkdir(parents=True)
+            other.mkdir()
+            (stale / 'device').write_text('/dev/disk99\n')
+            mounts[str(other.resolve())] = '/dev/disk99'
+            closed = L.close_profile(stale)
+            assert closed['status'] == 'closed' and closed['detached'] is None and not stale.exists(), closed
+            assert calls.count(['/usr/bin/hdiutil', 'detach']) == 1, 'a disk mounted elsewhere was detached'
+            assert mounts == {str(other.resolve()): '/dev/disk99'}
+            # A disk that stays mounted is reported as left behind, and its name is kept for the next close.
+            held = base / 'held'
+            (held / 'profile').mkdir(parents=True)
+            (held / 'device').write_text('/dev/disk77\n')
+            mounts[str((held / 'profile').resolve())] = '/dev/disk77'
+            failing = lambda argv: SimpleNamespace(returncode=1, stdout='') if argv[:2] == ['/usr/bin/hdiutil', 'detach'] else run(argv)
+            with patch.object(L, '_run', failing):
+                closed = L.close_profile(held)
+            assert closed['status'] == 'left_behind' and closed['detached'] is False, closed
+            assert (held / 'device').read_text() == '/dev/disk77\n'
+            assert L.close_profile(held)['status'] == 'closed' and not held.exists()
+            # A node that keeps a group or other bit: no login is written and the disk it attached goes.
+            frame.seek(0)
+            with patch.object(L.os, 'chmod', lambda *arguments, **named: None):
+                refused(lambda: L.open_profile(base / 'open-node', frame), 'unavailable_service:ram_disk_private')
+            assert not (base / 'open-node').exists() and calls[-1] != ['/usr/sbin/diskutil', 'mount']
+            assert calls.count(['/usr/sbin/diskutil', 'mount']) == 1
 
     def mac_side_refusals(base):
         # Every malformed frame is refused before a directory or RAM disk is made.
@@ -136,8 +235,8 @@ def _v147_login():
 
     def codex_roots(base):
         # AC2: the Mac run's sandbox denies the keychain service Codex reads its root certificates from, so
-        # a Codex run is pointed at the system's root file; a Claude Code run is not, and an operator's own
-        # value is kept.
+        # a Codex run is pointed at the system's root file; a Claude Code run is not. Which roots a run
+        # trusts is never the configuration's to say: a configured root file or directory is refused by name.
         loaded = importlib.util.spec_from_file_location('v147_control_roots', control_module)
         C = importlib.util.module_from_spec(loaded)
         loaded.loader.exec_module(C)
@@ -156,15 +255,23 @@ def _v147_login():
                       profiles={'mac-147': str(base / 'claude')})
         assert C.engine_environment(Host, codex, 'd-147', str(base), {})[1].get('SSL_CERT_FILE') == '/etc/ssl/cert.pem'
         assert 'SSL_CERT_FILE' not in C.engine_environment(Host, claude, 'd-147', str(base), {})[1]
-        kept = C.engine_environment(Host, codex, 'd-147', str(base), {'SSL_CERT_FILE': '/opt/roots.pem'})[1]
-        assert kept['SSL_CERT_FILE'] == '/opt/roots.pem'
+        for account in (codex, claude):
+            for variable in ('SSL_CERT_FILE', 'SSL_CERT_DIR'):
+                try:
+                    C.engine_environment(Host, account, 'd-147', str(base), {variable: str(base / 'roots.pem')})
+                except Exception as error:
+                    assert getattr(error, 'code', '') == 'invalid_input:adapter_environment:' + variable, error
+                else:
+                    raise AssertionError('a configured root list reached the Mac engine environment: ' + variable)
 
     launch_module = ROOT / ".veldo" / "control_launch.py"
     worker_module = ROOT / ".veldo" / "control_worker.py"
     record_module = ROOT / ".veldo" / "control_execution_record.py"
-    # A registered falsifier replaces one of the three paths above with its defective copy, which sits in a
+    service_module = ROOT / ".veldo" / "control_worker_service.py"
+    # A registered falsifier replaces one of the paths above with its defective copy, which sits in a
     # complete module tree. Every relay row loads all its modules from that one tree, or from production.
-    modules_tree = next((module.parent for module in (launch_module, worker_module, record_module)
+    modules_tree = next((module.parent for module in (launch_module, worker_module, record_module, service_module,
+                                                      login_module)
                          if module.parent != profile_module.parent), profile_module.parent)
 
     def relay_fixture(base):
@@ -214,7 +321,6 @@ def _v147_login():
         try:
             contract = f.prepare(required=['macos'], engine='claude_code')['contract']
             assert launch.remote_frames(dict(argv=['x']), contract, f.conn) == ([], None, [])
-            f.selected.append(('notes', 1))  # a server that names no credential is not refused
             received, receiver = sink(base)
             started = launch.invoke_remote(receiver, contract, f.ds)
             assert started.result == 'pending', (started.result, (started.record or {}).get('refusal'))
@@ -236,16 +342,29 @@ def _v147_login():
             f.conn.commit()
             kept += b''.join(path.read_bytes() for path in sorted(f.store.parent.glob(f.store.name + '*')))
             assert not any(value in kept for value in values), 'a credential value was kept on the main node'
-            # A server whose catalog revision names a credential: refused by name, nothing sent.
-            del f.selected[:]
-            f.selected.append(('tracker', 1))
-            f.res.configure('policy/unit-2', 'unit', 'unit-2', dict(capacity=20, invocations=20, wall_seconds=4000), now=f.clock())
-            second = f.prepare(dispatch='dispatch/credentialed', required=['macos'], engine='claude_code', unit='unit-2')['contract']
-            received.unlink()
-            refused_launch = launch.invoke_remote(receiver, second, f.ds)
-            assert refused_launch.result == 'refused' and refused_launch.child is None
-            assert refused_launch.record['refusal'] == 'unsupported_configuration:credential_in_run:tracker', refused_launch.record['refusal']
-            assert 'outside gate' in refused_launch.delivered['reason'] and not received.exists()
+        finally:
+            f.close()
+
+    def mcp_refused(base):
+        # A run on a remote host starts its engine with no MCP server, so a configuration that selects one is
+        # refused by name before a receiver is contacted: a server that needs a credential and one that needs
+        # none, and whether or not the receiver is one the login is delivered to. Nothing is resolved.
+        T, f, launch = relay_fixture(base)
+        try:
+            received, delivered = sink(base)
+            plain = dict(argv=delivered['argv'])
+            for number, (server, receiver) in enumerate((('tracker', delivered), ('notes', delivered),
+                                                         ('tracker', plain), ('notes', plain))):
+                del f.selected[:]
+                f.selected.append((server, 1))
+                unit = 'unit-mcp-%d' % number
+                f.res.configure('policy/' + unit, 'unit', unit, dict(capacity=20, invocations=20, wall_seconds=4000), now=f.clock())
+                contract = f.prepare(dispatch='dispatch/mcp-%d' % number, required=['macos'], engine='claude_code', unit=unit)['contract']
+                refused_launch = launch.invoke_remote(receiver, contract, f.ds)
+                assert refused_launch.result == 'refused' and refused_launch.child is None, (server, refused_launch.result)
+                assert refused_launch.record['refusal'] == 'unsupported_configuration:mcp_on_remote:' + server, refused_launch.record['refusal']
+                assert refused_launch.delivered['refusal'] == refused_launch.record['refusal']
+                assert 'no MCP server' in refused_launch.delivered['reason'] and not received.exists()
         finally:
             f.close()
 
@@ -334,6 +453,8 @@ def _v147_login():
            '    count = 0\n'
            '    def write(self, data):\n'
            '        parsed = frames.parse(data)\n'
+           '        if alter == "noend" and parsed and parsed[0] == frames.END:\n'
+           '            return\n'
            '        if alter == "alter" and parsed and parsed[0] == "stderr":\n'
            '            Channel.count += 1\n'
            '            if Channel.count == 1:\n'
@@ -483,6 +604,158 @@ def _v147_login():
         finally:
             f.close()
 
+    def refused_read(ER, records, dispatch, record):
+        """The refusal of the API's read of an ended run's record: it passes what the exit committed."""
+        assert record['state'] == 'exited' and record['execution_record'] is not None, record.get('execution_record')
+        try:
+            ER.read(records, dispatch, 0, 1000, committed=record['execution_record'])
+        except ER.Refused as error:
+            return error.code
+        return None
+
+    def missing_end_frame(base):
+        # Every chunk arrived and the totals equal the signed ones, but the channel stopped before the end
+        # frame: that is not a finished stream, and the record is refused by name.
+        T, f, launch, started, contract, work, totals, client, binding = mac_run(base, alter='noend')
+        try:
+            ER, dispatch = launch.ER, contract['dispatch_id']
+            client.result(binding, dict(T.observation(), streams=totals), references={})
+            record = started.wait(timeout=T.WAIT_HANG_SECONDS)
+            assert started.received['streams'] == totals and started.received['ended'] is False, started.received
+            assert started.record_refusal == 'unknown_outcome:record_incomplete', started.record_refusal
+            assert refused_read(ER, ER.directory({'store': str(f.store)}), dispatch, record) == 'unknown_outcome:record_incomplete'
+        finally:
+            f.close()
+
+    def unsigned_streams(base):
+        # A Mac that lost a chunk signs that it has no totals: the result is refused by name and ends nothing.
+        # A Mac whose result names no totals at all (an older wrapper) ends the run, and the exit commits that
+        # there are none, so the API's read of the record this node kept is refused by name, not served.
+        T, f, launch, started, contract, work, totals, client, binding = mac_run(base)
+        try:
+            ER, dispatch = launch.ER, contract['dispatch_id']
+            T.refused(lambda: client.result(binding, dict(T.observation(), streams=None), references={}),
+                      'missing_evidence:streams')
+            assert f.ds.record(dispatch)['state'] == 'running'
+            client.result(binding, T.observation(), references={})
+            record = started.wait(timeout=T.WAIT_HANG_SECONDS)
+            assert record['state'] == 'exited' and record['execution_record'] == {'streams': None}, record.get('execution_record')
+            assert started.received['ended'] and started.received['streams'] == totals, started.received
+            assert started.record_refusal == 'unknown_outcome:record_incomplete', started.record_refusal
+            records = ER.directory({'store': str(f.store)})
+            assert Path(ER.path(records, dispatch)).stat().st_size > 0
+            assert refused_read(ER, records, dispatch, record) == 'unknown_outcome:record_incomplete'
+        finally:
+            f.close()
+
+    def worker(name):
+        loaded = importlib.util.spec_from_file_location(name, modules_tree / 'control_worker.py')
+        W = importlib.util.module_from_spec(loaded)
+        loaded.loader.exec_module(W)
+        return W
+
+    def stalled_channel(base):
+        # The main node's channel is stalled but not closed, so the sender's write does not return. The
+        # receiver stops waiting for it after its bound and sends nothing more, the end frame included.
+        import threading
+        W = worker('v147_worker_stalled')
+        frames, release, writes = W.S, threading.Event(), []
+
+        class Channel:
+            def write(self, data):
+                writes.append(data)
+                release.wait(20)  # a hang bound only: the row releases it itself
+
+            def flush(self):
+                pass
+        relay = W.Relay(Channel())
+        relay.JOIN_SECONDS = 0.2
+        (base / frames.FILE).write_bytes(frames.chunk('stdout', b'one line\n'))
+        relay.start(base / frames.FILE)
+        sender = relay.thread
+        try:
+            relay.finish()
+            assert relay.broken and relay.stalled and sender.is_alive(), (relay.broken, relay.stalled)
+            assert len(writes) == 1, 'something was written to a stalled channel'
+        finally:
+            release.set()
+            sender.join(T_HANG)
+        whole = W.Relay(Channel())
+        (base / 'second').write_bytes(frames.chunk('stdout', b'one line\n'))
+        whole.start(base / 'second')
+        whole.finish()
+        assert not whole.stalled and frames.parse(writes[-1])[0] == frames.END
+
+    T_HANG = 600  # a hang bound only (VELDO-0358 contracts.md)
+
+    def login_left_behind(base):
+        # The Mac cannot detach the login's disk. The result it signs says so, and the slot is not retired:
+        # the release stays pending until a later close removes the login.
+        import os
+        from types import SimpleNamespace
+        W = worker('v147_worker_release')
+        key = base / 'signing-key'
+        key.write_text('')
+        (base / 'run').mkdir()
+        login = base / 'login'
+        login.mkdir()
+        calls, signed, status = [], [], ['left_behind']
+
+        def close_profile(directory):
+            if status[0] == 'closed':
+                Path(directory).rmdir()
+            return dict(status=status[0], detached=status[0] == 'closed')
+        real, real_c = W.organ, W.C.organ
+        W.organ = lambda name: SimpleNamespace(close_profile=close_profile) if name == 'project_runner_macos_login' else real(name)
+        W.C.organ = lambda name: SimpleNamespace(identity=lambda pid: dict(pid=pid)) if name == 'project_runner_macos_os' else real_c(name)
+
+        class Host:
+            profile = dict(signing_keys=[str(key)], runtime_seconds=5)
+            delivered_login = login
+            os = SimpleNamespace(facts=lambda: dict(host='mac-147', platform='darwin'))
+            run_environment = staticmethod(lambda dispatch, scratch: {'HOME': scratch + '/home'})
+            preflight = staticmethod(lambda request: None)
+            release_authority = staticmethod(lambda *arguments: calls.append('release_authority'))
+
+            @staticmethod
+            def start(request):
+                return SimpleNamespace(directory=base, temp=None, process=dict(pid=1), state='exited',
+                                       wait=lambda: dict(state='exited', termination=dict(returncode=0)),
+                                       retirement=lambda: {}, stop=lambda reason: None)
+
+        class Client:
+            signing_key, outbox = str(key.resolve()), None
+            launch = staticmethod(lambda binding, phase, **fields: dict(record=dict(acceptance='accepted-147')))
+
+            @staticmethod
+            def result(binding, observation, usage=None, references=None):
+                signed.append(observation)
+                return dict(host_released=True, record=dict(state='exited'))
+
+            @staticmethod
+            def retired(binding):
+                calls.append('retired')
+                return dict(host_released=True, record=dict(state='exited'))
+        contract = dict(input=dict(context=dict(host_route=dict(runtime_profile=W.C.P.digest(Host.profile), platform='darwin'))),
+                        reservation=dict(account='codex-147'), capability=dict(adapter='codex', configuration={}))
+        binding = dict(host='mac-147', dispatch_id='d-147', contract_digest='sha256:' + '0' * 64)
+        account = dict(id='codex-147', status='active', provider='codex', profiles={'mac-147': str(login / 'profile')})
+        delivery = SimpleNamespace(close=lambda: close_profile(login) if login.exists() else None)
+        try:
+            W.run(Client, Host, 'd-147', str(base / 'run' / 'clone'), str(base / 'run' / 'scratch'), account,
+                  collect=lambda started, observation: (None, {}), claim=dict(contract=contract, binding=binding),
+                  delivery=delivery)
+        except W.OUT.WaitingForRelease as error:
+            assert str(error) == 'login_left_behind', str(error)
+        else:
+            raise AssertionError('the slot was retired with the login still on the Mac')
+        assert signed and signed[-1]['login'] == dict(status='left_behind', detached=False), signed
+        assert calls == [] and login.exists(), calls
+        # A later try (the resumer's) that can remove it retires the slot.
+        status[0] = 'closed'
+        W.apply_release(Client, Host, binding, dict(host_released=True, record=dict(state='exited')))
+        assert calls == ['release_authority', 'retired'] and not login.exists(), calls
+
     def wrapper_stream(base):
         # The production wrapper, whole, over a real child with two pipes: engine.out and engine.err hold
         # what the engine printed, the one ordered file holds the same bytes by stream, and result.json
@@ -533,6 +806,12 @@ def _v147_login():
         assert joined == {'stdout': out, 'stderr': err} and tally.totals() == result['streams']
 
     for name, test in {'AC3/mac-complete-record': complete_record, 'AC3/mac-altered-chunk-refused': altered_chunk,
+                       'AC3/mac-missing-end-frame-refused': missing_end_frame,
+                       'AC3/mac-unsigned-streams-refused': unsigned_streams,
+                       'AC3/mac-stalled-channel-does-not-hold-the-result': stalled_channel,
+                       'AC4/remote-mcp-selection-refused': mcp_refused,
+                       'AC4/mac-login-left-behind-holds-release': login_left_behind,
+                       'AC4/mac-login-disk-private-and-own': login_disk,
                        'AC3/mac-resumed-run-record-refused': resumed_run, 'AC3/mac-wrapper-ordered-stream': wrapper_stream,
                        'AC4/mac-no-value-in-packet': relay_frames, 'AC4/relay-login-refused-by-name': relay_refusal,
                        'AC4/mac-delivery-checked-and-removed': mac_delivery,

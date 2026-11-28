@@ -30,6 +30,9 @@ STRIPPED = CREDENTIALS.union(*(e.SETTINGS for e in ENGINES))
 # "workspace routing discovery failed". It reads this file instead when SSL_CERT_FILE names it. The
 # file is the system's own root list, readable inside the profile; the keychain stays denied (VELDO-0147).
 SYSTEM_ROOTS = '/etc/ssl/cert.pem'
+# Which roots a Mac run trusts is never the capability configuration's to say: a configured one of these
+# (a file in the clone, say) is refused by name, and the Codex value is assigned, not defaulted.
+ROOT_VARIABLES = ('SSL_CERT_FILE', 'SSL_CERT_DIR')
 
 
 def engine_environment(host, account, dispatch, scratch, configured):
@@ -37,12 +40,15 @@ def engine_environment(host, account, dispatch, scratch, configured):
     own login variable, and a run scoped HOME and TMPDIR so no engine falls back to the
     owner's home via getpwuid."""
     name = host.os.facts()['host']
+    for variable in ROOT_VARIABLES:
+        if variable in (configured or {}):
+            raise ACC.Refused('invalid_input:adapter_environment:' + variable, variable)
     login = ACC.profile(account, name)[1]
     environment = ACC.login_environment({'PATH': '/usr/bin:/bin:/usr/sbin:/sbin'}, account, name,
                                         STRIPPED, configured, CREDENTIALS)
     environment.update(host.run_environment(dispatch, scratch), VELDO_DISPATCH_ID=dispatch)
     if account['provider'] == 'codex':
-        environment.setdefault('SSL_CERT_FILE', SYSTEM_ROOTS)
+        environment['SSL_CERT_FILE'] = SYSTEM_ROOTS
     return login, environment
 
 

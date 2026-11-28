@@ -697,8 +697,12 @@ def remote_problem(kept, signed):
     over what it received (`kept`, from `received`) equal the totals the remote host signed in its result
     (`signed`, {stdout, stderr}, as the dispatch's exit committed them), else REMOTE_INCOMPLETE. A run whose
     receiver kept nothing (it was resumed with no channel, or the receiver ended before the run did) has no
-    `kept` and is refused the same way. The end frame is not evidence: only the signed totals are compared."""
+    `kept` and is refused the same way, and so is one whose exit committed no totals (`signed` is None: the
+    remote host signed none). The receiver must also have read the sender's end frame (`ended`): a channel
+    that stopped after the last chunk is not a finished stream, even when the totals agree."""
     if not isinstance(kept, dict) or not isinstance(signed, dict) or kept.get('streams') != signed:
+        return REMOTE_INCOMPLETE
+    if kept.get('ended') is not True:
         return REMOTE_INCOMPLETE
     return None
 
@@ -709,8 +713,9 @@ def read(records, dispatch_id, after, limit, committed=None):
     another dispatch (unknown_outcome:record_binding), a cursor past the end (invalid_input:cursor_past_end),
     and, when `committed` ({lines, bytes, digest} of the dispatch's exit) is given, a file whose count, size
     or digest differ (unknown_outcome:record_digest). A remote run's `committed` is {streams} (VELDO-0147): a
-    record whose receiver did not receive exactly what the remote host signed is refused as
-    unknown_outcome:record_incomplete. A line still being written is not yet a line."""
+    record whose receiver did not receive exactly what the remote host signed, up to its end frame, is
+    refused as unknown_outcome:record_incomplete, and so is every record of a run whose host signed no
+    totals ({streams: None}). A line still being written is not yet a line."""
     try:
         with open(path(records, dispatch_id), 'rb') as handle:
             data = handle.read()

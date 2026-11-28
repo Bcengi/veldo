@@ -33,6 +33,7 @@ footprint:
   - ".veldo/control_dispatch.py"
   - "packs/*/.veldo/control_dispatch.py"
   - "scripts/suites/103_veldo_0124_macos.py"
+  - "scripts/suites/104_veldo_0124_control.py"
   - "engine/.veldo/control_execution_record*.py"
   - ".veldo/control_execution_record*.py"
   - "packs/*/.veldo/control_execution_record*.py"
@@ -183,6 +184,15 @@ requirement. The Linux specifications keep their own evidence; this one records 
 negative controls. It is built after VELDO-0124 and VELDO-0125 in stage 3 of the design's critical path.
 
 ## History
+
+2026-11-28: round 8 (review). Two things, no criterion text.
+The footprint gains `scripts/suites/104_veldo_0124_control.py`. This branch added `CLAUDE_CODE_TMPDIR` to
+the environment a Mac run starts with, so Claude Code's own folder stays inside the run's grants. That
+suite's row compared the run's environment with four names; commit 9a0b31915 made it name the fifth and
+did not add the file to the footprint.
+The end frame is required. A Mac run's record is the complete one only when the main node received exactly
+the totals the Mac signed and also read the Mac's end frame. A channel that stopped after the last chunk is
+refused as `unknown_outcome:record_incomplete`, even when the totals agree.
 
 2026-11-28: round 6 (lead decisions). Two things changed, no criterion text.
 AC4's MCP part waits for the outside gate (VELDO-0257). VELDO-0254 says no outside-service credential is
