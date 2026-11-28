@@ -164,12 +164,17 @@ def receive():
         return module
     W.organ = organ
     W.install_resumer = lambda *arguments, **named: None  # no launch agent is left on this Mac by a probe
-    try:
-        W.main(str(STATE / 'config.json'))
-    except BaseException:
-        import traceback
-        (STATE / 'receive-error.txt').write_text(traceback.format_exc())
-        raise
+    production = W.receive_locked
+
+    def observed(config, request, frames=None):
+        try:
+            return production(config, request, frames)
+        except BaseException:
+            import traceback
+            (STATE / 'receive-error.txt').write_text(traceback.format_exc())
+            raise
+    W.receive_locked = observed
+    W.main(str(STATE / 'config.json'))
     return 0
 
 
