@@ -179,3 +179,53 @@ comparison: the driver had not applied the qualification's engine_plugins.
 
 Open: Codex leg (waiting for a free Codex login); MCP secrets frame (AC4,
 follow-up); relay wiring and the AC3/AC4 falsifiers (need VELDO-0125 on main).
+
+Round 4, 2026-11-27
+
+Restacked onto main 166952517, which now carries the VELDO-0125 port. The login
+delivery is wired through it. control_launch.invoke_remote writes, after the
+prepared binding and on the same SSH channel, the login frame of the dispatch's
+account and, when the configuration selects MCP servers, one secrets frame. The
+binding line stays identity only. A receiver gets frames only when its operator
+configuration says login: delivered. On the Mac, control_worker reads the frames,
+checks them against the dispatch, account and engine before a clone or a disk is
+made, mounts the login on a RAM disk before admission, writes the secrets file
+(0600 in a 0700 directory on that RAM disk) only after the authority accepted the
+launch, and detaches the disk when the run ends or when a release finds one left.
+
+Real Mac, Claude Code 2.1.317 (mac-relay-claude-leg.json): one dispatch prepared
+by a disposable Linux authority, started by invoke_remote over SSH, received by
+control_worker.main on the Mac, claimed through control_relay with signed worker
+commands carried back inside the same SSH connection. Authority record: exited,
+return code 0, usage reported, commands claim, launch, launch, result, retired.
+Read-back: CLAUDE_CONFIG_DIR is the delivered RAM-disk profile, no other login
+variable, no paid-API variable, Keychain denied by the policy. The engine
+reported apiKeySource none, used Bash, Read and Edit, and edited the file. Order
+on the Mac: login mounted, secrets written after acceptance, disk detached. No
+credential value in any Mac run file, the engine output, the packet, the
+contract, the authority store or this record; keychain unchanged; no RAM disk or
+login directory left.
+
+Limits of that run, stated plainly. The Mac profile was a candidate and its
+qualification stamp was skipped, as in the VELDO-0124 and VELDO-0125 native
+probes. The account record and the MCP server were supplied by the driver, and
+the MCP value was a random test value. The Mac wrapper starts the engine with the
+profile's fixed arguments, so the engine did not read the delivered MCP file, the
+handshake guard and capability comparison of round 3 did not run on this path,
+and the production relay does not stream the engine's output to Linux (it is
+collected on the Mac and its digest reported). AC3's falsifier has no target yet.
+
+Real Mac, Codex 0.166.0 (mac-relay-codex-leg.json): the pinned macOS build was
+installed on the Mac from the vendor registry package (integrity matched,
+signature valid). The same path ran end to end: CODEX_HOME is the delivered
+RAM-disk profile, no OPENAI_API_KEY or CODEX_API_KEY, signed lifecycle, cleanup.
+The engine's first turn failed: five reconnects with "workspace routing discovery
+failed", exit 1. Cause not established. The first attempt showed that this build
+refuses a login file without a refresh_token field; the frame now sends the field
+empty, so the Mac still cannot rotate the login. AC2 is not qualified.
+
+Found by the real run and fixed: project_runner_macos_os.py used select.kqueue
+as a context manager, which the Mac's pinned Python 3.12 does not support, so no
+production launch could start on the Mac.
+
+Falsifier registered: mac147-value-in-packet (AC4, row AC4/mac-no-value-in-packet).

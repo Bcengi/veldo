@@ -2,8 +2,8 @@
   "schema": "veldo.proof/v1",
   "spec_id": "VELDO-0147",
   "commit": "5623ba86fb370f13aa2345dee7ee707934576233",
-  "producer": "Claude implementation agent (round 2, Mac legs)",
-  "produced_at": "2026-11-26",
+  "producer": "Claude implementation agent (round 4, Mac legs)",
+  "produced_at": "2026-11-27",
   "status": "remaining",
   "criteria": [
     {
@@ -15,9 +15,12 @@
         },
         {
           "ref": "proof/VELDO-0147/mac-claude-leg.json"
+        },
+        {
+          "ref": "proof/VELDO-0147/mac-relay-claude-leg.json"
         }
       ],
-      "detail": "Partial. One real Claude Code 2.1.317 run on the Mac with the dispatch account delivered from the main node on a RAM disk for the run only: subscription login confirmed by the initialize answer before the prompt (Guard), pinned digest bound, Keychain-denying Seatbelt, environment read-back with no paid-API variable. Not yet through the signed relay; capability comparison against an accepted revision and the falsifier are not registered."
+      "detail": "Partial. One real Claude Code 2.1.317 run on the Mac with the dispatch account delivered from the main node on a RAM disk for the run only: subscription login confirmed by the initialize answer before the prompt (Guard), pinned digest bound, Keychain-denying Seatbelt, environment read-back with no paid-API variable. Not yet through the signed relay; capability comparison against an accepted revision and the falsifier are not registered. Round 4: one real Claude Code dispatch went through invoke_remote, SSH, the production Mac receiver and the signed relay with the login delivered on a RAM disk; the Mac profile was a candidate without a qualification stamp, and the handshake guard and capability comparison did not run on that path."
     },
     {
       "id": "AC2",
@@ -28,9 +31,12 @@
         },
         {
           "ref": "proof/VELDO-0147/mac-claude-leg.json"
+        },
+        {
+          "ref": "proof/VELDO-0147/mac-relay-codex-leg.json"
         }
       ],
-      "detail": "Waiting. The only free-at-launch-allowed Codex login (codex2) was leased by another run; codex1 is at its weekly limit. The Codex frame (auth.json without the refresh credential) is unit-tested only; Codex 0.166.0 is not installed on the Mac."
+      "detail": "Waiting. The only free-at-launch-allowed Codex login (codex2) was leased by another run; codex1 is at its weekly limit. The Codex frame (auth.json without the refresh credential) is unit-tested only; Codex 0.166.0 is not installed on the Mac. Round 4: Codex 0.166.0 installed on the Mac; one real dispatch ran the whole relay path with CODEX_HOME delivered on a RAM disk and no paid-API key, but the first turn failed (workspace routing discovery failed). Not qualified."
     },
     {
       "id": "AC3",
@@ -54,9 +60,12 @@
         },
         {
           "ref": "proof/VELDO-0147/mac-claude-leg.json"
+        },
+        {
+          "ref": "proof/VELDO-0147/mac-relay-claude-leg.json"
         }
       ],
-      "detail": "Partial (login only). The account login travels in one frame on SSH stdin, lands mode 0600 on a RAM disk in a 0700 directory and is detached after the run; no value in the kept record, the Mac process command lines or environments; keychain Claude items unchanged. MCP server secrets frame and its falsifier not implemented."
+      "detail": "Partial (login only). The account login travels in one frame on SSH stdin, lands mode 0600 on a RAM disk in a 0700 directory and is detached after the run; no value in the kept record, the Mac process command lines or environments; keychain Claude items unchanged. MCP server secrets frame and its falsifier not implemented. Round 4: the secrets frame travels after the binding on the receiver channel and is written 0600 in a 0700 directory on the run RAM disk after acceptance; falsifier mac147-value-in-packet registered. The engine does not read the file yet (fixed arguments in the Mac wrapper)."
     }
   ],
   "checks": [
