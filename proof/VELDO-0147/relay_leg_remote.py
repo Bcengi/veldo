@@ -50,7 +50,7 @@ def engine_argv(engine):
                                    skillOverrides={name: 'off' for name in entry.get('engine_skills', [])}),
                               sort_keys=True)
         return '2.1.317', [str(HOME / '.local/share/claude/versions/2.1.317'), '--print', '--output-format',
-                           'stream-json', '--verbose', '--setting-sources', '', '--strict-mcp-config',
+                           'stream-json', '--verbose', '--setting-sources=', '--strict-mcp-config',
                            '--disable-slash-commands', '--mcp-config', '{"mcpServers":{}}', '--settings', settings,
                            '--include-partial-messages', '--tools=Bash,Edit,Read', '--allowedTools=Bash,Edit,Read',
                            '--model', 'opus', PROMPT]
